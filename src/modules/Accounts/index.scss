@@ -1,0 +1,51 @@
+.wallets {
+    position: absolute;
+    right: 20px;
+    top: 13px;
+
+    @media only screen and (max-width: 767px) {
+        background: linear-gradient(0deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
+        padding: 12px 16px;
+        position: static;
+    }
+}
+
+.wallet {
+    &__wrapper {
+        align-items: center;
+        column-gap: 15px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__user-avatar {
+        position: relative;
+        width: 24px;
+
+        .wallet-icon {
+            bottom: -2px;
+            position: absolute;
+            right: -2px;
+        }
+    }
+
+    &__address {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+
+    &__balance {
+        color: rgba(255, 255, 255, 0.56);
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        line-height: 16px;
+    }
+}
+
+.btn.btn-logout {
+    padding: 0;
+    svg {
+        fill: #c5e4f3;
+    }
+}
