@@ -20,18 +20,18 @@ import { debug, error } from '@/utils'
 
 export type Account = Permissions['accountInteraction']
 
-export type WalletState = {
-    hasProvider: boolean;
-    isConnecting: boolean;
-    isInitialized: boolean;
-    isInitializing: boolean;
-}
-
 export type WalletData = {
     account?: Account;
     balance: string;
     contract?: ContractState | FullContractState;
     transaction?: Transaction;
+}
+
+export type WalletState = {
+    hasProvider: boolean;
+    isConnecting: boolean;
+    isInitialized: boolean;
+    isInitializing: boolean;
 }
 
 
@@ -111,9 +111,7 @@ export class CrystalWalletService {
      * @protected
      */
     protected async init(): Promise<void> {
-        runInAction(() => {
-            this.state.isInitializing = true
-        })
+        this.state.isInitializing = true
 
         const hasProvider = await hasTonProvider()
 

@@ -108,7 +108,7 @@ const circles = [
 ]
 
 export function UserAvatar({ address, size, className }: Props): JSX.Element {
-    const hash = address.split(':')[1] ?? []
+    const hash = address.split(':')[1] ?? address.split('x')[1] ?? []
 
     let pxSize: number
 
@@ -123,7 +123,6 @@ export function UserAvatar({ address, size, className }: Props): JSX.Element {
             pxSize = 36
     }
 
-
     const colors: string[] = []
     for (let i = 0; i < 16; i++) {
         colors.push(
@@ -131,7 +130,7 @@ export function UserAvatar({ address, size, className }: Props): JSX.Element {
             }${hash[i * 4]
             }${hash[i * 4 + 1]
             }${hash[i * 4 + 2]
-            }${hash[63]
+            }${hash[63] || hash[39]
             }${hash[i * 4 + 3]}`,
         )
     }

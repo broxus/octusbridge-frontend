@@ -4,19 +4,19 @@ import { useIntl } from 'react-intl'
 
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { useCrystalWallet } from '@/stores/CrystalWalletService'
+import { useWeb3Wallet } from '@/stores/Web3WalletService'
 import { amount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
 
-export function CrystalWallet(): JSX.Element | null {
+export function Web3Wallet(): JSX.Element | null {
     const intl = useIntl()
-    const wallet = useCrystalWallet()
+    const wallet = useWeb3Wallet()
 
     return (
         <Observer>
-            {() => (wallet.isInitialized ? (
+            {() => (
                 <div key="crystal-wallet" className="wallet">
                     {!wallet.isConnected ? (
                         <button
@@ -28,34 +28,36 @@ export function CrystalWallet(): JSX.Element | null {
                             onClick={wallet.connect}
                         >
                             {intl.formatMessage({
-                                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
+                                id: 'EVM_WALLET_CONNECT_BTN_TEXT',
                             })}
                         </button>
                     ) : (
                         <div key="wrapper" className="wallet__wrapper">
                             <div className="wallet__user-avatar">
-                                <UserAvatar
-                                    address={wallet.address!}
-                                    size="small"
-                                />
+                                {wallet.userData?.account !== undefined && (
+                                    <UserAvatar
+                                        address={wallet.userData?.account}
+                                        size="small"
+                                    />
+                                )}
                                 <div className="wallet-icon">
-                                    <Icon icon="tonWalletIcon" />
+                                    <Icon icon="ethWalletIcon" />
                                 </div>
                             </div>
                             <div className="wallet__info">
-                                <div className="wallet__address">
-                                    {sliceAddress(wallet.address)}
+                                <div className="wallet__address" data-address={wallet.userData?.account}>
+                                    {sliceAddress(wallet.userData?.account)}
                                 </div>
-                                {wallet.balance !== undefined && (
+                                {wallet.userData?.balance !== undefined && (
                                     <div key="balance" className="wallet__balance">
                                         {intl.formatMessage({
                                             id: 'WALLET_BALANCE_HINT',
                                         }, {
                                             value: amount(
-                                                wallet.balance,
+                                                wallet.userData?.balance,
                                                 9,
                                             ) || 0,
-                                            currency: 'TON',
+                                            currency: 'ETH',
                                         })}
                                     </div>
                                 )}
@@ -72,7 +74,7 @@ export function CrystalWallet(): JSX.Element | null {
                         </div>
                     )}
                 </div>
-            ) : null)}
+            )}
         </Observer>
     )
 }

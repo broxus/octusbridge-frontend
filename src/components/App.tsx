@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom'
 
 import { Header } from '@/components/layout/Header'
-import { CrystalWallet } from '@/modules/Accounts'
+import { CrystalWallet, Web3Wallet } from '@/modules/Accounts'
 import messages from '@/lang/en'
 import { noop } from '@/utils'
 
@@ -34,7 +34,10 @@ export function App(): JSX.Element {
                             </Route>
                         </Switch>
                     </main>
-                    <CrystalWallet />
+                    <div className="wallets">
+                        <Web3Wallet />
+                        <CrystalWallet />
+                    </div>
                 </div>
             </Router>
         </IntlProvider>

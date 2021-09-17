@@ -11,6 +11,5 @@ export default {
 
     CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect Crystal Wallet',
 
-
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',
 }
