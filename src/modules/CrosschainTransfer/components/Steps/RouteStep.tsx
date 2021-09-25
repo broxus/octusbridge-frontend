@@ -63,6 +63,10 @@ export function RouteStep(): JSX.Element {
                         })}
                         network={transfer.leftNetwork}
                         networks={networks.filter(({ chainId, type }) => chainId !== '1' && type !== 'ton')}
+                        shouldDisplayNetworkAlert={(
+                            transfer.leftNetwork?.chainId !== undefined
+                            && evmWallet.chainId !== parseInt(transfer.leftNetwork.chainId, 10)
+                        )}
                         wallet={evmWallet}
                     />
                 )}

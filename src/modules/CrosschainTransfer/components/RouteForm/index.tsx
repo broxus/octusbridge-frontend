@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 
 import { Select } from '@/components/common/Select'
 import { CrystalWalletService } from '@/stores/CrystalWalletService'
-import { EvmWalletService } from '@/stores/EvmWalletService'
+import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { NetworkShape } from '@/modules/CrosschainTransfer/types'
 
 
@@ -18,6 +18,7 @@ type Props = {
     network?: NetworkShape;
     networkFieldDisabled?: boolean;
     networks: NetworkShape[];
+    shouldDisplayNetworkAlert?: boolean;
     wallet: CrystalWalletService | EvmWalletService;
 }
 
@@ -32,12 +33,18 @@ export function RouteForm({
     network,
     networkFieldDisabled,
     networks,
+    shouldDisplayNetworkAlert,
     wallet,
 }: Props): JSX.Element {
     const intl = useIntl()
+    const evmWallet = useEvmWallet()
 
     const onChangeAddress: React.ChangeEventHandler<HTMLInputElement> = event => {
         changeAddress(event.target.value)
+    }
+
+    const onChangeNetwork = async () => {
+        await evmWallet.changeNetwork(network!.chainId)
     }
 
     return (
@@ -93,6 +100,23 @@ export function RouteForm({
                             )}
                         </Observer>
                     </div>
+
+                    {shouldDisplayNetworkAlert && (
+                        <div key="alert" className="alert alert--danger">
+                            <span className="text-sm">
+                                Wrong blockchain selected in MetaMask. Open the wallet to select
+                                {' '}
+                                {network?.label}
+                            </span>
+                            <button
+                                type="button"
+                                className="btn btn-s btn--empty"
+                                onClick={onChangeNetwork}
+                            >
+                                Change Network
+                            </button>
+                        </div>
+                    )}
                 </fieldset>
 
                 <fieldset className="form-fieldset">

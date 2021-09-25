@@ -112,6 +112,22 @@ export class EvmWalletService {
         catch (e) {
             error('Chain ID request error', e)
         }
+
+        this.#provider.on('accountsChanged', () => {
+            this.fetchAccountData()
+        })
+
+        this.#provider.on('chainChanged', (chainId: string) => {
+            runInAction(() => {
+                this.data.chainId = parseInt(chainId, 16)
+            })
+            this.fetchAccountData()
+        })
+
+        this.#provider.on('networkChanged', () => {
+            this.fetchAccountData()
+        })
+
     }
 
     public async connect(): Promise<UserData | undefined> {
@@ -134,23 +150,11 @@ export class EvmWalletService {
             })
         }
 
-        this.#provider.on('accountsChanged', () => {
-            this.fetchAccountData()
-        })
-
-        this.#provider.on('chainChanged', () => {
-            this.fetchAccountData()
-        })
-
-        this.#provider.on('networkChanged', () => {
-            this.fetchAccountData()
-        })
-
         // eslint-disable-next-line no-return-await
         return await this.fetchAccountData()
     }
 
-    public async disconnect(): Promise<any> {
+    public async disconnect(): Promise<void> {
         try {
             await this.clearCachedProvider()
             await this.#provider?.close?.()
@@ -169,12 +173,46 @@ export class EvmWalletService {
         }
     }
 
+    public async changeNetwork(chainId: string): Promise<void> {
+        if (this.#provider === undefined) {
+            return
+        }
+
+        try {
+            await this.#provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
+            })
+        }
+        catch (switchError) {
+            // TODO add network configurations
+            // This error code indicates that the chain has not been added to MetaMask.
+            // @ts-ignore
+            if (switchError.code === 4902) {
+                // try {
+                //     await this.#provider.request({
+                //         method: 'wallet_addEthereumChain',
+                //         params: [{ chainId: '0xf00', rpcUrl: 'https://...' /* ... */ }],
+                //     })
+                // }
+                // catch (addError) {
+                //     // handle "add" error
+                // }
+            }
+            // handle other "switch" errors
+        }
+    }
+
     public get account(): UserData | undefined {
         return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
     }
 
     public get address(): WalletData['address'] {
         return this.account?.address
+    }
+
+    public get chainId(): number {
+        return this.data.chainId
     }
 
     public get web3(): Web3 | undefined {

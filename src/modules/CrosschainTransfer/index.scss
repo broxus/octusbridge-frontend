@@ -35,10 +35,14 @@
         justify-content: space-between;
     }
 
-    &__controls + &__controls {
+    &__controls + &__controls,
+    &__controls + .alert {
         margin-top: 16px;
     }
 
+    &__controls + .alert {
+        gap: 12px;
+    }
     &__control {
         width: 100%;
     }
