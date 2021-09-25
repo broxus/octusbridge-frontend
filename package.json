@@ -13,9 +13,12 @@
     },
     "dependencies": {
         "@broxus/await-semaphore": "^0.1.4",
+        "@broxus/ethereum-abi-types-generator": "^1.1.4",
         "@walletconnect/web3-provider": "^1.3.4",
+        "abi-decoder": "^2.4.0",
         "bignumber.js": "^9.0.1",
         "classnames": "^2.3.1",
+        "eth-ton-abi-converter": "^0.1.3",
         "fp-ts": "^2.11.2",
         "lightweight-charts": "^3.6.1",
         "lodash.isequal": "^4.5.0",
@@ -24,6 +27,7 @@
         "mobx": "^6.3.3",
         "mobx-react-lite": "^3.2.1",
         "normalize.css": "^8.0.1",
+        "rc-select": "^13.1.0-alpha.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-intl": "^5.20.10",
@@ -32,6 +36,8 @@
         "ton-inpage-provider": "^0.1.20",
         "web3": "^1.5.2",
         "web3-core": "^1.5.2",
+        "web3-eth-contract": "^1.5.2",
+        "web3-utils": "^1.5.2",
         "web3modal": "^1.9.4"
     },
     "devDependencies": {

@@ -1,9 +1,6 @@
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import {
-    action, makeAutoObservable, runInAction,
-} from 'mobx'
+import { action, makeAutoObservable, runInAction } from 'mobx'
 import Web3 from 'web3'
-import { AbstractProvider } from 'web3-core'
 import Web3Modal from 'web3modal'
 
 import { UserData } from '@/models/UserData'
@@ -11,8 +8,9 @@ import { error } from '@/utils'
 
 
 export type WalletData = {
-    account?: string;
+    address?: string;
     balance?: string;
+    chainId: number;
 }
 
 export type WalletState = {
@@ -23,8 +21,9 @@ export type WalletState = {
 }
 
 const DEFAULT_WALLET_DATA: WalletData = {
-    account: undefined,
+    address: undefined,
     balance: '0',
+    chainId: 1,
 }
 
 const DEFAULT_WALLET_STATE: WalletState = {
@@ -35,7 +34,7 @@ const DEFAULT_WALLET_STATE: WalletState = {
 }
 
 
-export class Web3WalletService {
+export class EvmWalletService {
 
     /**
      * Current data of the wallet
@@ -95,13 +94,23 @@ export class Web3WalletService {
             await this.fetchAccountData()
         }
         catch (e) {
-            error(e)
+            error('Fetch account data error', e)
             runInAction(() => {
                 this.state.isConnected = false
                 this.state.isConnecting = false
                 this.state.isInitialized = false
                 this.state.isInitializing = false
             })
+        }
+
+        try {
+            const chainId = await this.#web3.eth.getChainId()
+            runInAction(() => {
+                this.data.chainId = chainId
+            })
+        }
+        catch (e) {
+            error('Chain ID request error', e)
         }
     }
 
@@ -149,7 +158,7 @@ export class Web3WalletService {
 
             runInAction(() => {
                 this.state.isConnected = false
-                this.data.account = undefined
+                this.data.address = undefined
             })
 
             this.#web3 = undefined
@@ -160,18 +169,16 @@ export class Web3WalletService {
         }
     }
 
-    public calculateSignature(data: any, callback: (err: any, result: any) => void): void {
-        const id = this.data.account;
-        (this.#web3?.currentProvider as AbstractProvider)?.sendAsync?.({
-            method: 'personal_sign',
-            params: [data, id],
-            id,
-            jsonrpc: '', // fixme
-        }, callback)
+    public get account(): UserData | undefined {
+        return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
     }
 
-    public get userData(): UserData | undefined {
-        return new UserData(this.data.account, this.data.balance, this.#provider, this.#web3)
+    public get address(): WalletData['address'] {
+        return this.account?.address
+    }
+
+    public get web3(): Web3 | undefined {
+        return this.#web3
     }
 
     public get isConnected(): WalletState['isConnected'] {
@@ -205,7 +212,7 @@ export class Web3WalletService {
             try {
                 const [account] = await this.#web3.eth.getAccounts()
                 runInAction(() => {
-                    this.data.account = account
+                    this.data.address = account
                     this.state.isConnecting = false
                     this.state.isConnected = account !== undefined
                 })
@@ -213,15 +220,15 @@ export class Web3WalletService {
             catch (e) {
                 error(e)
                 runInAction(() => {
-                    this.data.account = undefined
+                    this.data.address = undefined
                     this.state.isConnecting = false
                     this.state.isConnected = false
                 })
             }
 
             try {
-                if (this.data.account !== undefined) {
-                    const balance = await this.#web3?.eth.getBalance(this.data.account)
+                if (this.data.address !== undefined) {
+                    const balance = await this.#web3?.eth.getBalance(this.data.address)
                     runInAction(() => {
                         this.data.balance = balance
                     })
@@ -234,7 +241,7 @@ export class Web3WalletService {
                 })
             }
 
-            return new UserData(this.data.account, this.data.balance, this.#provider, this.#web3)
+            return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
         }
         return undefined
     }
@@ -248,8 +255,8 @@ export class Web3WalletService {
 }
 
 
-const Web3lWalletServiceStore = new Web3WalletService()
+const EvmWalletServiceStore = new EvmWalletService()
 
-export function useWeb3Wallet(): Web3WalletService {
-    return Web3lWalletServiceStore
+export function useEvmWallet(): EvmWalletService {
+    return EvmWalletServiceStore
 }

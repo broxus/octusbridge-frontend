@@ -4,15 +4,15 @@ import { useIntl } from 'react-intl'
 
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { useWeb3Wallet } from '@/stores/Web3WalletService'
+import { useEvmWallet } from '@/stores/EvmWalletService'
 import { amount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
 
-export function Web3Wallet(): JSX.Element | null {
+export function EvmWallet(): JSX.Element | null {
     const intl = useIntl()
-    const wallet = useWeb3Wallet()
+    const wallet = useEvmWallet()
 
     return (
         <Observer>
@@ -22,7 +22,7 @@ export function Web3Wallet(): JSX.Element | null {
                         <button
                             key="guest"
                             type="button"
-                            className="btn btn-secondary"
+                            className="btn btn--secondary"
                             disabled={wallet.isConnecting}
                             aria-disabled={wallet.isConnecting}
                             onClick={wallet.connect}
@@ -34,9 +34,9 @@ export function Web3Wallet(): JSX.Element | null {
                     ) : (
                         <div key="wrapper" className="wallet__wrapper">
                             <div className="wallet__user-avatar">
-                                {wallet.userData?.account !== undefined && (
+                                {wallet.account?.address !== undefined && (
                                     <UserAvatar
-                                        address={wallet.userData?.account}
+                                        address={wallet.account?.address}
                                         size="small"
                                     />
                                 )}
@@ -45,17 +45,17 @@ export function Web3Wallet(): JSX.Element | null {
                                 </div>
                             </div>
                             <div className="wallet__info">
-                                <div className="wallet__address" data-address={wallet.userData?.account}>
-                                    {sliceAddress(wallet.userData?.account)}
+                                <div className="wallet__address" data-address={wallet.account?.address}>
+                                    {sliceAddress(wallet.account?.address)}
                                 </div>
-                                {wallet.userData?.balance !== undefined && (
+                                {wallet.account?.balance !== undefined && (
                                     <div key="balance" className="wallet__balance">
                                         {intl.formatMessage({
                                             id: 'WALLET_BALANCE_HINT',
                                         }, {
                                             value: amount(
-                                                wallet.userData?.balance,
-                                                9,
+                                                wallet.account?.balance,
+                                                18,
                                             ) || 0,
                                             currency: 'ETH',
                                         })}

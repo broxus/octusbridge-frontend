@@ -85,7 +85,7 @@
     }
 }
 
-.btn-primary {
+.btn--primary {
     @include btn-reset;
 
     background-color: #c5e4f3;
@@ -99,9 +99,14 @@
     &:hover {
         background-color: darken(#c5e4f3, 10%);
     }
+
+    &:disabled {
+        background-color: #c5e4f3 !important;
+        color: #293166 !important;
+    }
 }
 
-.btn-secondary {
+.btn--secondary {
     @include btn-reset;
 
     background-color: rgba(197, 228, 243, 0.16);
@@ -118,7 +123,7 @@
     }
 }
 
-.btn-tertiary {
+.btn--tertiary {
     @include btn-reset;
 
     background-color: rgba(197, 228, 243, 0.16);
@@ -135,7 +140,7 @@
     }
 }
 
-.btn-danger {
+.btn--danger {
     @include btn-reset;
 
     background-color: #eb4361;
@@ -169,6 +174,19 @@
     }
 }
 
+.btn-link {
+    @include btn-reset;
+
+    background-color: transparent;
+    color: #c5e4f3;
+    font-weight: 700;
+    padding: 0 16px;
+
+    &:hover {
+        color: darken(#ffffff, 10%);
+    }
+}
+
 .btn-icon {
     align-items: center;
     border: none 0;
@@ -199,14 +217,8 @@
     &.btn-fav {
         &.active {
             svg {
-                fill: #fff;
+                fill: #ffffff;
             }
         }
     }
-}
-
-.btn-with-icon {
-    display: flex;
-    align-items: center;
-    column-gap: 10px;
 }

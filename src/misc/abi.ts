@@ -1,1327 +1,5 @@
 /* eslint-disable max-classes-per-file */
-export class DexAbi {
-
-    static Root = {
-        'ABI version': 2,
-        header: ['pubkey', 'time', 'expire'],
-        functions: [
-            {
-                name: 'constructor',
-                inputs: [
-                    { name: 'initial_owner', type: 'address' },
-                    { name: 'initial_vault', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'installPlatformOnce',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'installOrUpdateAccountCode',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'installOrUpdatePairCode',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getAccountVersion',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
-            },
-            {
-                name: 'getPairVersion',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
-            },
-            {
-                name: 'setVaultOnce',
-                inputs: [
-                    { name: 'new_vault', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getVault',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'setActive',
-                inputs: [
-                    { name: 'new_active', type: 'bool' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'isActive',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
-            },
-            {
-                name: 'upgrade',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'requestUpgradeAccount',
-                inputs: [
-                    { name: 'current_version', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                    { name: 'account_owner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'forceUpgradeAccount',
-                inputs: [
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'upgradePair',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'resetGas',
-                inputs: [
-                    { name: 'receiver', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'resetTargetGas',
-                inputs: [
-                    { name: 'target', type: 'address' },
-                    { name: 'receiver', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getOwner',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'dex_owner', type: 'address' },
-                ],
-            },
-            {
-                name: 'getPendingOwner',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'dex_pending_owner', type: 'address' },
-                ],
-            },
-            {
-                name: 'transferOwner',
-                inputs: [
-                    { name: 'new_owner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'acceptOwner',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getExpectedAccountAddress',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'account_owner', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getExpectedPairAddress',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'deployAccount',
-                inputs: [
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'deployPair',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'onPairCreated',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'platform_code',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'platform_code', type: 'cell' },
-                ],
-            },
-            {
-                name: 'account_code',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'account_code', type: 'cell' },
-                ],
-            },
-            {
-                name: 'pair_code',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'pair_code', type: 'cell' },
-                ],
-            },
-        ],
-        data: [
-            { key: 1, name: '_nonce', type: 'uint32' },
-        ],
-        events: [
-            {
-                name: 'AccountCodeUpgraded',
-                inputs: [
-                    { name: 'version', type: 'uint32' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'PairCodeUpgraded',
-                inputs: [
-                    { name: 'version', type: 'uint32' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'RootCodeUpgraded',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'ActiveUpdated',
-                inputs: [
-                    { name: 'new_active', type: 'bool' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'RequestedPairUpgrade',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'RequestedForceAccountUpgrade',
-                inputs: [
-                    { name: 'account_owner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'RequestedOwnerTransfer',
-                inputs: [
-                    { name: 'old_owner', type: 'address' },
-                    { name: 'new_owner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'OwnerTransferAccepted',
-                inputs: [
-                    { name: 'old_owner', type: 'address' },
-                    { name: 'new_owner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'NewPairCreated',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-        ],
-    } as const;
-
-    static Pair = {
-        'ABI version': 2,
-        header: ['pubkey', 'time', 'expire'],
-        functions: [
-            {
-                name: 'constructor',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'resetGas',
-                inputs: [
-                    { name: 'receiver', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getRoot',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'dex_root', type: 'address' },
-                ],
-            },
-            {
-                name: 'getTokenRoots',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'left', type: 'address' },
-                    { name: 'right', type: 'address' },
-                    { name: 'lp', type: 'address' },
-                ],
-            },
-            {
-                name: 'getTokenWallets',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'left', type: 'address' },
-                    { name: 'right', type: 'address' },
-                    { name: 'lp', type: 'address' },
-                ],
-            },
-            {
-                name: 'getVersion',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'version', type: 'uint32' },
-                ],
-            },
-            {
-                name: 'getVault',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'dex_vault', type: 'address' },
-                ],
-            },
-            {
-                name: 'getVaultWallets',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'left', type: 'address' },
-                    { name: 'right', type: 'address' },
-                ],
-            },
-            {
-                name: 'setFeeParams',
-                inputs: [
-                    { name: 'numerator', type: 'uint16' },
-                    { name: 'denominator', type: 'uint16' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getFeeParams',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'numerator', type: 'uint16' },
-                    { name: 'denominator', type: 'uint16' },
-                ],
-            },
-            {
-                name: 'isActive',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
-            },
-            {
-                name: 'getBalances',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { components: [{ name: 'lp_supply', type: 'uint128' }, { name: 'left_balance', type: 'uint128' }, { name: 'right_balance', type: 'uint128' }], name: 'value0', type: 'tuple' },
-                ],
-            },
-            {
-                name: 'buildExchangePayload',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                    { name: 'expected_amount', type: 'uint128' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
-            },
-            {
-                name: 'buildDepositLiquidityPayload',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
-            },
-            {
-                name: 'buildWithdrawLiquidityPayload',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
-            },
-            {
-                name: 'buildCrossPairExchangePayload',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'id', type: 'uint64' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                    { name: 'expected_amount', type: 'uint128' },
-                    { components: [{ name: 'amount', type: 'uint128' }, { name: 'root', type: 'address' }], name: 'steps', type: 'tuple[]' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
-            },
-            {
-                name: 'tokensReceivedCallback',
-                inputs: [
-                    { name: 'token_wallet', type: 'address' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'tokens_amount', type: 'uint128' },
-                    { name: 'sender_public_key', type: 'uint256' },
-                    { name: 'sender_address', type: 'address' },
-                    { name: 'sender_wallet', type: 'address' },
-                    { name: 'original_gas_to', type: 'address' },
-                    { name: 'value7', type: 'uint128' },
-                    { name: 'payload', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'expectedDepositLiquidity',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'left_amount', type: 'uint128' },
-                    { name: 'right_amount', type: 'uint128' },
-                    { name: 'auto_change', type: 'bool' },
-                ],
-                outputs: [
-                    { components: [{ name: 'step_1_left_deposit', type: 'uint128' }, { name: 'step_1_right_deposit', type: 'uint128' }, { name: 'step_1_lp_reward', type: 'uint128' }, { name: 'step_2_left_to_right', type: 'bool' }, { name: 'step_2_right_to_left', type: 'bool' }, { name: 'step_2_spent', type: 'uint128' }, { name: 'step_2_fee', type: 'uint128' }, { name: 'step_2_received', type: 'uint128' }, { name: 'step_3_left_deposit', type: 'uint128' }, { name: 'step_3_right_deposit', type: 'uint128' }, { name: 'step_3_lp_reward', type: 'uint128' }], name: 'value0', type: 'tuple' },
-                ],
-            },
-            {
-                name: 'depositLiquidity',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                    { name: 'left_amount', type: 'uint128' },
-                    { name: 'right_amount', type: 'uint128' },
-                    { name: 'expected_lp_root', type: 'address' },
-                    { name: 'auto_change', type: 'bool' },
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'value6', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'expectedWithdrawLiquidity',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'lp_amount', type: 'uint128' },
-                ],
-                outputs: [
-                    { name: 'expected_left_amount', type: 'uint128' },
-                    { name: 'expected_right_amount', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'withdrawLiquidity',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                    { name: 'lp_amount', type: 'uint128' },
-                    { name: 'expected_lp_root', type: 'address' },
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'value4', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'expectedExchange',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'spent_token_root', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'expected_amount', type: 'uint128' },
-                    { name: 'expected_fee', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'expectedSpendAmount',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'receive_amount', type: 'uint128' },
-                    { name: 'receive_token_root', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'expected_amount', type: 'uint128' },
-                    { name: 'expected_fee', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'exchange',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                    { name: 'spent_amount', type: 'uint128' },
-                    { name: 'spent_token_root', type: 'address' },
-                    { name: 'receive_token_root', type: 'address' },
-                    { name: 'expected_amount', type: 'uint128' },
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'value6', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'crossPairExchange',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'value1', type: 'uint32' },
-                    { name: 'prev_pair_left_root', type: 'address' },
-                    { name: 'prev_pair_right_root', type: 'address' },
-                    { name: 'spent_token_root', type: 'address' },
-                    { name: 'spent_amount', type: 'uint128' },
-                    { name: 'sender_public_key', type: 'uint256' },
-                    { name: 'sender_address', type: 'address' },
-                    { name: 'original_gas_to', type: 'address' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                    { name: 'payload', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'checkPair',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                    { name: 'account_owner', type: 'address' },
-                    { name: 'value2', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'upgrade',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                    { name: 'new_version', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'afterInitialize',
-                inputs: [
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'liquidityTokenRootDeployed',
-                inputs: [
-                    { name: 'lp_root_', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'liquidityTokenRootNotDeployed',
-                inputs: [
-                    { name: 'value0', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'expectedWalletAddressCallback',
-                inputs: [
-                    { name: 'wallet', type: 'address' },
-                    { name: 'wallet_public_key', type: 'uint256' },
-                    { name: 'owner_address', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'platform_code',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'platform_code', type: 'cell' },
-                ],
-            },
-            {
-                name: 'lp_wallet',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'lp_wallet', type: 'address' },
-                ],
-            },
-            {
-                name: 'left_wallet',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'left_wallet', type: 'address' },
-                ],
-            },
-            {
-                name: 'right_wallet',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'right_wallet', type: 'address' },
-                ],
-            },
-            {
-                name: 'vault_left_wallet',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'vault_left_wallet', type: 'address' },
-                ],
-            },
-            {
-                name: 'vault_right_wallet',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'vault_right_wallet', type: 'address' },
-                ],
-            },
-            {
-                name: 'lp_root',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'lp_root', type: 'address' },
-                ],
-            },
-            {
-                name: 'lp_supply',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'lp_supply', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'left_balance',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'left_balance', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'right_balance',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'right_balance', type: 'uint128' },
-                ],
-            },
-        ],
-        data: [
-        ],
-        events: [
-            {
-                name: 'PairCodeUpgraded',
-                inputs: [
-                    { name: 'version', type: 'uint32' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'FeesParamsUpdated',
-                inputs: [
-                    { name: 'numerator', type: 'uint16' },
-                    { name: 'denominator', type: 'uint16' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'DepositLiquidity',
-                inputs: [
-                    { name: 'left', type: 'uint128' },
-                    { name: 'right', type: 'uint128' },
-                    { name: 'lp', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'WithdrawLiquidity',
-                inputs: [
-                    { name: 'lp', type: 'uint128' },
-                    { name: 'left', type: 'uint128' },
-                    { name: 'right', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'ExchangeLeftToRight',
-                inputs: [
-                    { name: 'left', type: 'uint128' },
-                    { name: 'fee', type: 'uint128' },
-                    { name: 'right', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'ExchangeRightToLeft',
-                inputs: [
-                    { name: 'right', type: 'uint128' },
-                    { name: 'fee', type: 'uint128' },
-                    { name: 'left', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-        ],
-    } as const;
-
-    static Account = {
-        'ABI version': 2,
-        header: ['pubkey', 'time', 'expire'],
-        functions: [
-            {
-                name: 'constructor',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'resetGas',
-                inputs: [
-                    { name: 'receiver', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getRoot',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getOwner',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getVersion',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
-            },
-            {
-                name: 'getVault',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getWalletData',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                    { name: 'token_root', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'wallet', type: 'address' },
-                    { name: 'balance', type: 'uint128' },
-                ],
-            },
-            {
-                name: 'getWallets',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'value0', type: 'map(address,address)' },
-                ],
-            },
-            {
-                name: 'getBalances',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'value0', type: 'map(address,uint128)' },
-                ],
-            },
-            {
-                name: 'getNonce',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint64' },
-                ],
-            },
-            {
-                name: 'tokensReceivedCallback',
-                inputs: [
-                    { name: 'token_wallet', type: 'address' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'tokens_amount', type: 'uint128' },
-                    { name: 'value3', type: 'uint256' },
-                    { name: 'value4', type: 'address' },
-                    { name: 'sender_wallet', type: 'address' },
-                    { name: 'original_gas_to', type: 'address' },
-                    { name: 'value7', type: 'uint128' },
-                    { name: 'payload', type: 'cell' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'withdraw',
-                inputs: [
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'recipient_public_key', type: 'uint256' },
-                    { name: 'recipient_address', type: 'address' },
-                    { name: 'deploy_wallet_grams', type: 'uint128' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'transfer',
-                inputs: [
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'to_dex_account', type: 'address' },
-                    { name: 'willing_to_deploy', type: 'bool' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'internalAccountTransfer',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'sender_owner', type: 'address' },
-                    { name: 'willing_to_deploy', type: 'bool' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'internalPairTransfer',
-                inputs: [
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'token_root', type: 'address' },
-                    { name: 'sender_left_root', type: 'address' },
-                    { name: 'sender_right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'exchange',
-                inputs: [
-                    { name: 'spent_amount', type: 'uint128' },
-                    { name: 'spent_token_root', type: 'address' },
-                    { name: 'receive_token_root', type: 'address' },
-                    { name: 'expected_amount', type: 'uint128' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'depositLiquidity',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'left_amount', type: 'uint128' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'right_amount', type: 'uint128' },
-                    { name: 'expected_lp_root', type: 'address' },
-                    { name: 'auto_change', type: 'bool' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'withdrawLiquidity',
-                inputs: [
-                    { name: 'lp_amount', type: 'uint128' },
-                    { name: 'lp_root', type: 'address' },
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'addPair',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'checkPairCallback',
-                inputs: [
-                    { name: 'original_call_id', type: 'uint64' },
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'lp_root', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'expectedWalletAddressCallback',
-                inputs: [
-                    { name: 'wallet', type: 'address' },
-                    { name: 'wallet_public_key', type: 'uint256' },
-                    { name: 'owner_address', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'requestUpgrade',
-                inputs: [
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'upgrade',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                    { name: 'new_version', type: 'uint32' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'successCallback',
-                inputs: [
-                    { name: 'call_id', type: 'uint64' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'gc',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'platform_code',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'platform_code', type: 'cell' },
-                ],
-            },
-        ],
-        data: [
-        ],
-        events: [
-            {
-                name: 'AddPair',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'pair', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'WithdrawTokens',
-                inputs: [
-                    { name: 'root', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'TransferTokens',
-                inputs: [
-                    { name: 'root', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'ExchangeTokens',
-                inputs: [
-                    { name: 'from', type: 'address' },
-                    { name: 'to', type: 'address' },
-                    { name: 'spent_amount', type: 'uint128' },
-                    { name: 'expected_amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'DepositLiquidity',
-                inputs: [
-                    { name: 'left_root', type: 'address' },
-                    { name: 'left_amount', type: 'uint128' },
-                    { name: 'right_root', type: 'address' },
-                    { name: 'right_amount', type: 'uint128' },
-                    { name: 'auto_change', type: 'bool' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'WithdrawLiquidity',
-                inputs: [
-                    { name: 'lp_amount', type: 'uint128' },
-                    { name: 'lp_balance', type: 'uint128' },
-                    { name: 'lp_root', type: 'address' },
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'TokensReceived',
-                inputs: [
-                    { name: 'token_root', type: 'address' },
-                    { name: 'tokens_amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                    { name: 'sender_wallet', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'TokensReceivedFromAccount',
-                inputs: [
-                    { name: 'token_root', type: 'address' },
-                    { name: 'tokens_amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                    { name: 'sender', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'TokensReceivedFromPair',
-                inputs: [
-                    { name: 'token_root', type: 'address' },
-                    { name: 'tokens_amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                    { name: 'left_root', type: 'address' },
-                    { name: 'right_root', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'OperationRollback',
-                inputs: [
-                    { name: 'token_root', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'balance', type: 'uint128' },
-                    { name: 'from', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'ExpectedPairNotExist',
-                inputs: [
-                    { name: 'pair', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'AccountCodeUpgraded',
-                inputs: [
-                    { name: 'version', type: 'uint32' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'CodeUpgradeRequested',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'GarbageCollected',
-                inputs: [
-                ],
-                outputs: [
-                ],
-            },
-        ],
-    } as const;
-
-    static Callbacks = {
-        'ABI version': 2,
-        header: ['time'],
-        functions: [
-            {
-                name: 'dexAccountOnSuccess',
-                inputs: [{ name: 'nonce', type: 'uint64' }],
-                outputs: [],
-            },
-            {
-                name: 'dexAccountOnBounce',
-                inputs: [
-                    { name: 'nonce', type: 'uint64' },
-                    { name: 'functionId', type: 'uint32' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'dexPairDepositLiquiditySuccess',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'via_account', type: 'bool' },
-                    {
-                        name: 'result',
-                        components: [
-                            { name: 'step_1_left_deposit', type: 'uint128' },
-                            { name: 'step_1_right_deposit', type: 'uint128' },
-                            { name: 'step_1_lp_reward', type: 'uint128' },
-                            { name: 'step_2_left_to_right', type: 'bool' },
-                            { name: 'step_2_right_to_left', type: 'bool' },
-                            { name: 'step_2_spent', type: 'uint128' },
-                            { name: 'step_2_fee', type: 'uint128' },
-                            { name: 'step_2_received', type: 'uint128' },
-                            { name: 'step_3_left_deposit', type: 'uint128' },
-                            { name: 'step_3_right_deposit', type: 'uint128' },
-                            { name: 'step_3_lp_reward', type: 'uint128' },
-                        ],
-                        type: 'tuple',
-                    },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'dexPairExchangeSuccess',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'via_account', type: 'bool' },
-                    {
-                        name: 'result',
-                        components: [
-                            { name: 'left_to_right', type: 'bool' },
-                            { name: 'spent', type: 'uint128' },
-                            { name: 'fee', type: 'uint128' },
-                            { name: 'received', type: 'uint128' },
-                        ],
-                        type: 'tuple',
-                    },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'dexPairWithdrawSuccess',
-                inputs: [
-                    { name: 'id', type: 'uint64' },
-                    { name: 'via_account', type: 'bool' },
-                    {
-                        name: 'result',
-                        components: [
-                            { name: 'lp', type: 'uint128' },
-                            { name: 'left', type: 'uint128' },
-                            { name: 'right', type: 'uint128' },
-                        ],
-                        type: 'tuple',
-                    },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'dexPairOperationCancelled',
-                inputs: [{ name: 'id', type: 'uint64' }],
-                outputs: [],
-            },
-        ],
-        data: [],
-        events: [],
-    } as const;
-
-}
+import { AbiItem } from 'web3-utils'
 
 export class TokenAbi {
 
@@ -1773,161 +451,366 @@ export class TokenAbi {
         ],
     } as const;
 
-    static Factory = {
+    static TokenTransferEthEvent = {
         'ABI version': 2,
-        header: ['time'],
+        version: '2.1',
+        header: ['pubkey', 'time', 'expire'],
         functions: [
             {
                 name: 'constructor',
                 inputs: [
-                    { name: 'storage_code_', type: 'cell' },
-                    { name: 'initial_owner', type: 'address' },
+                    { name: '_initializer', type: 'address' },
+                    { name: '_meta', type: 'cell' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'transferOwner',
+                name: 'getDetails',
                 inputs: [
-                    { name: 'new_owner', type: 'address' },
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: '_eventInitData', type: 'tuple' },
+                    { name: '_status', type: 'uint8' },
+                    { name: '_confirms', type: 'uint256[]' },
+                    { name: '_rejects', type: 'uint256[]' },
+                    { name: 'empty', type: 'uint256[]' },
+                    { name: 'balance', type: 'uint128' },
+                    { name: '_initializer', type: 'address' },
+                    { name: '_meta', type: 'cell' },
+                    { name: '_requiredVotes', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'getDecodedData',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'tokens', type: 'uint128' },
+                    { name: 'wid', type: 'int8' },
+                    { name: 'owner_addr', type: 'uint256' },
+                    { name: 'owner_address', type: 'address' },
+                ],
+            },
+            {
+                name: 'getEventInitData',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'value0', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'confirm',
+                inputs: [
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'acceptOwner',
+                name: 'reject',
                 inputs: [
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'getOwner',
+                name: 'receiveRoundAddress',
                 inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getPendingOwner',
-                inputs: [
-                    { name: '_answer_id', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'setRootCode',
-                inputs: [
-                    { name: 'root_code_', type: 'cell' },
+                    { name: 'roundContract', type: 'address' },
+                    { name: 'roundNum', type: 'uint32' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'setWalletCode',
+                name: 'receiveRoundRelays',
                 inputs: [
-                    { name: 'wallet_code_', type: 'cell' },
+                    { name: 'keys', type: 'uint256[]' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'Token',
+                name: 'getVoters',
                 inputs: [
-                    { name: 'answer_id', type: 'uint32' },
-                    { name: 'root_public_key', type: 'uint256' },
-                    { name: 'root_owner_address', type: 'address' },
-                    { name: 'name', type: 'bytes' },
-                    { name: 'symbol', type: 'bytes' },
-                    { name: 'decimals', type: 'uint8' },
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'vote', type: 'uint8' },
                 ],
                 outputs: [
+                    { name: 'voters', type: 'uint256[]' },
                 ],
             },
             {
-                name: 'onTokenGetDetails',
+                name: 'getVote',
                 inputs: [
-                    { components: [{ name: 'name', type: 'bytes' }, { name: 'symbol', type: 'bytes' }, { name: 'decimals', type: 'uint8' }, { name: 'root_public_key', type: 'uint256' }, { name: 'root_owner_address', type: 'address' }, { name: 'total_supply', type: 'uint128' }], name: 'details', type: 'tuple' },
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'voter', type: 'uint256' },
                 ],
                 outputs: [
+                    { name: 'vote', type: 'optional(uint8)' },
                 ],
             },
             {
-                name: 'onStorageReadWithDetails',
+                name: 'encodeEthereumEventData',
                 inputs: [
-                    { components: [{ name: 'answer_id', type: 'uint32' }, { name: 'pending_token', type: 'address' }, { name: 'root_public_key', type: 'uint256' }, { name: 'root_owner_address', type: 'address' }, { name: 'name', type: 'bytes' }, { name: 'symbol', type: 'bytes' }, { name: 'decimals', type: 'uint8' }, { name: 'sender', type: 'address' }], name: 'data', type: 'tuple' },
+                    { name: 'tokens', type: 'uint256' },
+                    { name: 'wid', type: 'int128' },
+                    { name: 'owner_addr', type: 'uint256' },
+                ],
+                outputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+            },
+            {
+                name: 'decodeEthereumEventData',
+                inputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+                outputs: [
+                    { name: 'tokens', type: 'uint128' },
+                    { name: 'wid', type: 'int8' },
+                    { name: 'owner_addr', type: 'uint256' },
+                ],
+            },
+            {
+                name: 'encodeTonEventData',
+                inputs: [
+                    { name: 'wid', type: 'int8' },
+                    { name: 'addr', type: 'uint256' },
+                    { name: 'tokens', type: 'uint128' },
+                    { name: 'ethereum_address', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+            },
+            {
+                name: 'decodeTonEventData',
+                inputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+                outputs: [
+                    { name: 'wid', type: 'int8' },
+                    { name: 'addr', type: 'uint256' },
+                    { name: 'tokens', type: 'uint128' },
+                    { name: 'ethereum_address', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'status',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'status', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'votes',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'votes', type: 'map(uint256,uint8)' },
+                ],
+            },
+            {
+                name: 'initializer',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'initializer', type: 'address' },
+                ],
+            },
+            {
+                name: 'meta',
+                inputs: [
+                ],
+                outputs: [
                     { name: 'meta', type: 'cell' },
                 ],
+            },
+            {
+                name: 'requiredVotes',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'requiredVotes', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'confirms',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'confirms', type: 'uint16' },
+                ],
+            },
+            {
+                name: 'rejects',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'rejects', type: 'uint16' },
+                ],
+            },
+            {
+                name: 'relay_round',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'relay_round', type: 'address' },
+                ],
+            },
+            {
+                name: 'round_number',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'round_number', type: 'uint32' },
+                ],
+            },
+        ],
+        data: [
+            {
+                components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], key: 1, name: 'eventInitData', type: 'tuple',
+            },
+        ],
+        events: [
+            {
+                name: 'Confirm',
+                inputs: [
+                    { name: 'relay', type: 'uint256' },
+                ],
                 outputs: [
                 ],
             },
             {
-                name: 'onStoragePruneNotify',
+                name: 'Reject',
                 inputs: [
-                    { components: [{ name: 'answer_id', type: 'uint32' }, { name: 'pending_token', type: 'address' }, { name: 'root_public_key', type: 'uint256' }, { name: 'root_owner_address', type: 'address' }, { name: 'name', type: 'bytes' }, { name: 'symbol', type: 'bytes' }, { name: 'decimals', type: 'uint8' }, { name: 'sender', type: 'address' }], name: 'data', type: 'tuple' },
+                    { name: 'relay', type: 'uint256' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'onStoragePruneReturn',
+                name: 'Closed',
                 inputs: [
-                    { components: [{ name: 'answer_id', type: 'uint32' }, { name: 'pending_token', type: 'address' }, { name: 'root_public_key', type: 'uint256' }, { name: 'root_owner_address', type: 'address' }, { name: 'name', type: 'bytes' }, { name: 'symbol', type: 'bytes' }, { name: 'decimals', type: 'uint8' }, { name: 'sender', type: 'address' }], name: 'data', type: 'tuple' },
+                ],
+                outputs: [
+                ],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'status', type: 'uint8' },
+            { name: 'votes', type: 'map(uint256,uint8)' },
+            { name: 'initializer', type: 'address' },
+            { name: 'meta', type: 'cell' },
+            { name: 'requiredVotes', type: 'uint32' },
+            { name: 'confirms', type: 'uint16' },
+            { name: 'rejects', type: 'uint16' },
+            { name: 'relay_round', type: 'address' },
+            { name: 'round_number', type: 'uint32' },
+            { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData', type: 'tuple' },
+        ],
+    } as const;
+
+    static EthEventConfig = {
+        'ABI version': 2,
+        version: '2.1',
+        header: ['time', 'expire'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                    { name: '_owner', type: 'address' },
+                    { name: '_meta', type: 'cell' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'upgrade',
+                name: 'setMeta',
                 inputs: [
-                    { name: 'code', type: 'cell' },
+                    { name: '_meta', type: 'cell' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'resetGas',
+                name: 'setEndBlockNumber',
                 inputs: [
-                    { name: 'receiver', type: 'address' },
+                    { name: 'endBlockNumber', type: 'uint32' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'resetTargetGas',
+                name: 'deployEvent',
                 inputs: [
-                    { name: 'target', type: 'address' },
-                    { name: 'receiver', type: 'address' },
+                    { components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'eventVoteData', type: 'tuple' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'root_code',
+                name: 'deriveEventAddress',
                 inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'eventVoteData', type: 'tuple' },
                 ],
                 outputs: [
-                    { name: 'root_code', type: 'cell' },
+                    { name: 'eventContract', type: 'address' },
                 ],
             },
             {
-                name: 'wallet_code',
+                name: 'getDetails',
                 inputs: [
+                    { name: 'answerId', type: 'uint32' },
                 ],
                 outputs: [
-                    { name: 'wallet_code', type: 'cell' },
+                    { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: '_basicConfiguration', type: 'tuple' },
+                    { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: '_networkConfiguration', type: 'tuple' },
+                    { name: '_meta', type: 'cell' },
                 ],
             },
             {
-                name: 'storage_code',
+                name: 'getType',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: '_type', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'broxusBridgeCallback',
+                inputs: [
+                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData', type: 'tuple' },
+                    { name: 'gasBackAddress', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'transferOwnership',
+                inputs: [
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'renounceOwnership',
                 inputs: [
                 ],
                 outputs: [
-                    { name: 'storage_code', type: 'cell' },
                 ],
             },
             {
@@ -1939,49 +822,3072 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'pending_owner',
+                name: 'basicConfiguration',
                 inputs: [
                 ],
                 outputs: [
-                    { name: 'pending_owner', type: 'address' },
+                    { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: 'basicConfiguration', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'networkConfiguration',
+                inputs: [
+                ],
+                outputs: [
+                    { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: 'networkConfiguration', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'meta',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'meta', type: 'cell' },
                 ],
             },
         ],
         data: [
-            { key: 1, name: '_nonce', type: 'uint32' },
+            {
+                components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], key: 1, name: 'basicConfiguration', type: 'tuple',
+            },
+            {
+                components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], key: 2, name: 'networkConfiguration', type: 'tuple',
+            },
         ],
         events: [
-        ],
-    } as const;
-
-    static TokenRootDeployCallbacks = {
-        'ABI version': 2,
-        header: ['pubkey', 'time', 'expire'],
-        functions: [
             {
-                name: 'notifyTokenRootDeployed',
+                name: 'OwnershipTransferred',
                 inputs: [
-                    { name: 'answer_id', type: 'uint32' },
-                    { name: 'token_root', type: 'address' },
+                    { name: 'previousOwner', type: 'address' },
+                    { name: 'newOwner', type: 'address' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'notifyTokenRootNotDeployed',
+                name: 'NewEventContract',
                 inputs: [
-                    { name: 'answer_id', type: 'uint32' },
-                    { name: 'token_root', type: 'address' },
+                    { name: 'eventContract', type: 'address' },
                 ],
                 outputs: [
                 ],
             },
-
         ],
-        data: [
-        ],
-        events: [
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'owner', type: 'address' },
+            { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: 'basicConfiguration', type: 'tuple' },
+            { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: 'networkConfiguration', type: 'tuple' },
+            { name: 'meta', type: 'cell' },
         ],
     } as const;
+
+}
+
+export class EthAbi {
+
+    static Bridge: AbiItem[] = [
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'relay',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'status',
+                    type: 'bool',
+                },
+            ],
+            name: 'BanRelay',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'active',
+                    type: 'bool',
+                },
+            ],
+            name: 'EmergencyShutdown',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'uint32',
+                    name: 'round',
+                    type: 'uint32',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'uint32',
+                            name: 'end',
+                            type: 'uint32',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'ttl',
+                            type: 'uint32',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'relays',
+                            type: 'uint32',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'requiredSignatures',
+                            type: 'uint32',
+                        },
+                    ],
+                    indexed: false,
+                    internalType: 'struct IBridge.Round',
+                    name: 'meta',
+                    type: 'tuple',
+                },
+            ],
+            name: 'NewRound',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'previousOwner',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'newOwner',
+                    type: 'address',
+                },
+            ],
+            name: 'OwnershipTransferred',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+            ],
+            name: 'Paused',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'uint32',
+                    name: 'round',
+                    type: 'uint32',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'relay',
+                    type: 'address',
+                },
+            ],
+            name: 'RoundRelay',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+            ],
+            name: 'Unpaused',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint32',
+                    name: 'value',
+                    type: 'uint32',
+                },
+            ],
+            name: 'UpdateMinimumRequiredSignatures',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int8',
+                            name: 'wid',
+                            type: 'int8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    indexed: false,
+                    internalType: 'struct IBridge.TONAddress',
+                    name: 'configuration',
+                    type: 'tuple',
+                },
+            ],
+            name: 'UpdateRoundRelaysConfiguration',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: '_roundSubmitter',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateRoundSubmitter',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint32',
+                    name: 'value',
+                    type: 'uint32',
+                },
+            ],
+            name: 'UpdateRoundTTL',
+            type: 'event',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address[]',
+                    name: '_relays',
+                    type: 'address[]',
+                },
+            ],
+            name: 'banRelays',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            name: 'blacklist',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes32',
+                    name: '',
+                    type: 'bytes32',
+                },
+            ],
+            name: 'cache',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+            ],
+            name: 'decodeRoundRelaysEventData',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: 'round',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint160[]',
+                    name: '_relays',
+                    type: 'uint160[]',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'roundEnd',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'pure',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+            ],
+            name: 'decodeTonEvent',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'uint64',
+                            name: 'eventTransactionLt',
+                            type: 'uint64',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'eventTimestamp',
+                            type: 'uint32',
+                        },
+                        {
+                            internalType: 'bytes',
+                            name: 'eventData',
+                            type: 'bytes',
+                        },
+                        {
+                            internalType: 'int8',
+                            name: 'configurationWid',
+                            type: 'int8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'configurationAddress',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'int8',
+                            name: 'eventContractWid',
+                            type: 'int8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'eventContractAddress',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'address',
+                            name: 'proxy',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'round',
+                            type: 'uint32',
+                        },
+                    ],
+                    internalType: 'struct IBridge.TONEvent',
+                    name: 'tonEvent',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'pure',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'emergencyShutdown',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint160[]',
+                    name: '_relays',
+                    type: 'uint160[]',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'roundEnd',
+                    type: 'uint32',
+                },
+            ],
+            name: 'forceRoundRelays',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'initialRound',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '_owner',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: '_roundSubmitter',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint32',
+                    name: '_minimumRequiredSignatures',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: '_roundTTL',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: '_initialRound',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: '_initialRoundEnd',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint160[]',
+                    name: '_relays',
+                    type: 'uint160[]',
+                },
+            ],
+            name: 'initialize',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'candidate',
+                    type: 'address',
+                },
+            ],
+            name: 'isBanned',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: 'round',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'address',
+                    name: 'candidate',
+                    type: 'address',
+                },
+            ],
+            name: 'isRelay',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: 'round',
+                    type: 'uint32',
+                },
+            ],
+            name: 'isRoundRotten',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'lastRound',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'minimumRequiredSignatures',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'owner',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'pause',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'paused',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+                {
+                    internalType: 'bytes',
+                    name: 'signature',
+                    type: 'bytes',
+                },
+            ],
+            name: 'recoverSignature',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: 'signer',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'pure',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            name: 'relays',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'renounceOwnership',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'roundRelaysConfiguration',
+            outputs: [
+                {
+                    internalType: 'int8',
+                    name: 'wid',
+                    type: 'int8',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'addr',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'roundSubmitter',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'roundTTL',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: '',
+                    type: 'uint32',
+                },
+            ],
+            name: 'rounds',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: 'end',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'ttl',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'relays',
+                    type: 'uint32',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'requiredSignatures',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+                {
+                    internalType: 'bytes[]',
+                    name: 'signatures',
+                    type: 'bytes[]',
+                },
+            ],
+            name: 'setRoundRelays',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '_roundSubmitter',
+                    type: 'address',
+                },
+            ],
+            name: 'setRoundSubmitter',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'newOwner',
+                    type: 'address',
+                },
+            ],
+            name: 'transferOwnership',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address[]',
+                    name: '_relays',
+                    type: 'address[]',
+                },
+            ],
+            name: 'unbanRelays',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'unpause',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: '_minimumRequiredSignatures',
+                    type: 'uint32',
+                },
+            ],
+            name: 'updateMinimumRequiredSignatures',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int8',
+                            name: 'wid',
+                            type: 'int8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IBridge.TONAddress',
+                    name: '_roundRelaysConfiguration',
+                    type: 'tuple',
+                },
+            ],
+            name: 'updateRoundRelaysConfiguration',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint32',
+                    name: '_roundTTL',
+                    type: 'uint32',
+                },
+            ],
+            name: 'updateRoundTTL',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+                {
+                    internalType: 'bytes[]',
+                    name: 'signatures',
+                    type: 'bytes[]',
+                },
+            ],
+            name: 'verifySignedTonEvent',
+            outputs: [
+                {
+                    internalType: 'uint32',
+                    name: 'errorCode',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+
+    static ERC20: AbiItem[] = [
+        {
+            constant: true,
+            inputs: [],
+            name: 'name',
+            outputs: [
+                {
+                    name: '',
+                    type: 'string',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: '_spender',
+                    type: 'address',
+                },
+                {
+                    name: '_value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'approve',
+            outputs: [
+                {
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            payable: false,
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            constant: true,
+            inputs: [],
+            name: 'totalSupply',
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: '_from',
+                    type: 'address',
+                },
+                {
+                    name: '_to',
+                    type: 'address',
+                },
+                {
+                    name: '_value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'transferFrom',
+            outputs: [
+                {
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            payable: false,
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            constant: true,
+            inputs: [],
+            name: 'decimals',
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint8',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            constant: true,
+            inputs: [
+                {
+                    name: '_owner',
+                    type: 'address',
+                },
+            ],
+            name: 'balanceOf',
+            outputs: [
+                {
+                    name: 'balance',
+                    type: 'uint256',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            constant: true,
+            inputs: [],
+            name: 'symbol',
+            outputs: [
+                {
+                    name: '',
+                    type: 'string',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: '_to',
+                    type: 'address',
+                },
+                {
+                    name: '_value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'transfer',
+            outputs: [
+                {
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            payable: false,
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            constant: true,
+            inputs: [
+                {
+                    name: '_owner',
+                    type: 'address',
+                },
+                {
+                    name: '_spender',
+                    type: 'address',
+                },
+            ],
+            name: 'allowance',
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            payable: true,
+            stateMutability: 'payable',
+            type: 'fallback',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    name: 'owner',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    name: 'spender',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    name: 'value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'Approval',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    name: 'from',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    name: 'to',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    name: 'value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'Transfer',
+            type: 'event',
+        },
+    ];
+
+    static Vault: AbiItem[] = [
+        {
+            name: 'Deposit',
+            inputs: [
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'wid',
+                    type: 'int128',
+                    indexed: false,
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'PendingWithdrawalUpdate',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'bounty',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'open',
+                    type: 'bool',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateBridge',
+            inputs: [
+                {
+                    name: 'bridge',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateWrapper',
+            inputs: [
+                {
+                    name: 'wrapper',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateConfiguration',
+            inputs: [
+                {
+                    name: 'configuration',
+                    type: '(int128,uint256)',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateRewards',
+            inputs: [
+                {
+                    name: 'rewards',
+                    type: '(int128,uint256)',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateStrategyRewards',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'rewards',
+                    type: '(int128,uint256)',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateDepositFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: '(uint256,uint256)',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateWithdrawFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: '(uint256,uint256)',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyAdded',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'minDebtPerHarvest',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'maxDebtPerHarvest',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyReported',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'gain',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'loss',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'debtPaid',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'totalGain',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'totalSkim',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'totalLoss',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'totalDebt',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'debtAdded',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateGovernance',
+            inputs: [
+                {
+                    name: 'governance',
+                    type: 'address',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'NewPendingGovernance',
+            inputs: [
+                {
+                    name: 'governance',
+                    type: 'address',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateManagement',
+            inputs: [
+                {
+                    name: 'management',
+                    type: 'address',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateDepositLimit',
+            inputs: [
+                {
+                    name: 'depositLimit',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdatePerformanceFee',
+            inputs: [
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateManagementFee',
+            inputs: [
+                {
+                    name: 'managementFee',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateGuardian',
+            inputs: [
+                {
+                    name: 'guardian',
+                    type: 'address',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'EmergencyShutdown',
+            inputs: [
+                {
+                    name: 'active',
+                    type: 'bool',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateWithdrawalQueue',
+            inputs: [
+                {
+                    name: 'queue',
+                    type: 'address[20]',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyUpdateDebtRatio',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyUpdateMinDebtPerHarvest',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'minDebtPerHarvest',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyUpdateMaxDebtPerHarvest',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'maxDebtPerHarvest',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyUpdatePerformanceFee',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyMigrated',
+            inputs: [
+                {
+                    name: 'oldVersion',
+                    type: 'address',
+                    indexed: true,
+                },
+                {
+                    name: 'newVersion',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyRevoked',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyRemovedFromQueue',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'StrategyAddedToQueue',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                    indexed: true,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'initialize',
+            inputs: [
+                {
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    name: 'governance',
+                    type: 'address',
+                },
+                {
+                    name: 'bridge',
+                    type: 'address',
+                },
+                {
+                    name: 'wrapper',
+                    type: 'address',
+                },
+                {
+                    name: 'guardian',
+                    type: 'address',
+                },
+                {
+                    name: 'management',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 367155,
+        },
+        {
+            stateMutability: 'pure',
+            type: 'function',
+            name: 'apiVersion',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'string',
+                },
+            ],
+            gas: 5946,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setDepositFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'step',
+                            type: 'uint256',
+                        },
+                        {
+                            name: 'size',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 76514,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setWithdrawFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'step',
+                            type: 'uint256',
+                        },
+                        {
+                            name: 'size',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 76544,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setWrapper',
+            inputs: [
+                {
+                    name: 'wrapper',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 38805,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setConfiguration',
+            inputs: [
+                {
+                    name: 'configuration',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 74089,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setGovernance',
+            inputs: [
+                {
+                    name: 'governance',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 39071,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'acceptGovernance',
+            inputs: [],
+            outputs: [],
+            gas: 38997,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setManagement',
+            inputs: [
+                {
+                    name: 'management',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 39135,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setStrategyRewards',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'rewards',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 82246,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setRewards',
+            inputs: [
+                {
+                    name: 'rewards',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 74239,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setLockedProfitDegradation',
+            inputs: [
+                {
+                    name: 'degradation',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 37879,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setDepositLimit',
+            inputs: [
+                {
+                    name: 'limit',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 39155,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setPerformanceFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 39289,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setManagementFee',
+            inputs: [
+                {
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 39319,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setGuardian',
+            inputs: [
+                {
+                    name: 'guardian',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 41863,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setEmergencyShutdown',
+            inputs: [
+                {
+                    name: 'active',
+                    type: 'bool',
+                },
+            ],
+            outputs: [],
+            gas: 41934,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setWithdrawalQueue',
+            inputs: [
+                {
+                    name: 'queue',
+                    type: 'address[20]',
+                },
+            ],
+            outputs: [],
+            gas: 1348979,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setPendingWithdrawalBounty',
+            inputs: [
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 49722,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'totalAssets',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 8578,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'deposit',
+            inputs: [
+                {
+                    name: 'sender',
+                    type: 'address',
+                },
+                {
+                    name: 'recipient',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+                {
+                    name: '_amount',
+                    type: 'uint256',
+                },
+                {
+                    name: 'pendingWithdrawalId',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+                {
+                    name: 'sendTransferToTon',
+                    type: 'bool',
+                },
+            ],
+            outputs: [],
+            gas: 196701,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'saveWithdraw',
+            inputs: [
+                {
+                    name: 'payloadId',
+                    type: 'bytes32',
+                },
+                {
+                    name: 'recipient',
+                    type: 'address',
+                },
+                {
+                    name: '_amount',
+                    type: 'uint256',
+                },
+                {
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 246913,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'cancelPendingWithdrawal',
+            inputs: [
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: 'recipient',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            outputs: [],
+            gas: 80444,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'withdraw',
+            inputs: [
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'withdraw',
+            inputs: [
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: 'recipient',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'withdraw',
+            inputs: [
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: 'recipient',
+                    type: 'address',
+                },
+                {
+                    name: 'maxLoss',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'addStrategy',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                },
+                {
+                    name: 'minDebtPerHarvest',
+                    type: 'uint256',
+                },
+                {
+                    name: 'maxDebtPerHarvest',
+                    type: 'uint256',
+                },
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 1638399,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'updateStrategyDebtRatio',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 121685,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'updateStrategyMinDebtPerHarvest',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'minDebtPerHarvest',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 47551,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'updateStrategyMaxDebtPerHarvest',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'maxDebtPerHarvest',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 47581,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'updateStrategyPerformanceFee',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 42794,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'migrateStrategy',
+            inputs: [
+                {
+                    name: 'oldVersion',
+                    type: 'address',
+                },
+                {
+                    name: 'newVersion',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 1324247,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'revokeStrategy',
+            inputs: [],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'revokeStrategy',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'addStrategyToQueue',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 1255524,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'removeStrategyFromQueue',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 23635413,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'debtOutstanding',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'debtOutstanding',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'creditAvailable',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'creditAvailable',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'availableDepositLimit',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 21201,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'expectedReturn',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'expectedReturn',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'report',
+            inputs: [
+                {
+                    name: 'gain',
+                    type: 'uint256',
+                },
+                {
+                    name: 'loss',
+                    type: 'uint256',
+                },
+                {
+                    name: '_debtPayment',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 660170,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'sweep',
+            inputs: [
+                {
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'sweep',
+            inputs: [
+                {
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'emergencyWithdrawAndRevoke',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'emergencyWithdrawAndRevoke',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+                {
+                    name: '_amountNeeded',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'skim',
+            inputs: [
+                {
+                    name: 'strategy',
+                    type: 'address',
+                },
+            ],
+            outputs: [],
+            gas: 59036,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'token',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3618,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'governance',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3648,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'management',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3678,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'guardian',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3708,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'pendingWithdrawalsPerUser',
+            inputs: [
+                {
+                    name: 'arg0',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 3953,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'pendingWithdrawals',
+            inputs: [
+                {
+                    name: 'arg0',
+                    type: 'address',
+                },
+                {
+                    name: 'arg1',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+                {
+                    name: 'open',
+                    type: 'bool',
+                },
+            ],
+            gas: 8914,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'pendingWithdrawalsTotal',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 3798,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'withdrawIds',
+            inputs: [
+                {
+                    name: 'arg0',
+                    type: 'bytes32',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            gas: 3943,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'wrapper',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3858,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'bridge',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 3888,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'configuration',
+            inputs: [],
+            outputs: [
+                {
+                    name: 'wid',
+                    type: 'int128',
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
+                },
+            ],
+            gas: 6452,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'rewards',
+            inputs: [],
+            outputs: [
+                {
+                    name: 'wid',
+                    type: 'int128',
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
+                },
+            ],
+            gas: 6482,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'depositFee',
+            inputs: [],
+            outputs: [
+                {
+                    name: 'step',
+                    type: 'uint256',
+                },
+                {
+                    name: 'size',
+                    type: 'uint256',
+                },
+            ],
+            gas: 6512,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'withdrawFee',
+            inputs: [],
+            outputs: [
+                {
+                    name: 'step',
+                    type: 'uint256',
+                },
+                {
+                    name: 'size',
+                    type: 'uint256',
+                },
+            ],
+            gas: 6542,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'strategies',
+            inputs: [
+                {
+                    name: 'arg0',
+                    type: 'address',
+                },
+            ],
+            outputs: [
+                {
+                    name: 'performanceFee',
+                    type: 'uint256',
+                },
+                {
+                    name: 'activation',
+                    type: 'uint256',
+                },
+                {
+                    name: 'debtRatio',
+                    type: 'uint256',
+                },
+                {
+                    name: 'minDebtPerHarvest',
+                    type: 'uint256',
+                },
+                {
+                    name: 'maxDebtPerHarvest',
+                    type: 'uint256',
+                },
+                {
+                    name: 'lastReport',
+                    type: 'uint256',
+                },
+                {
+                    name: 'totalDebt',
+                    type: 'uint256',
+                },
+                {
+                    name: 'totalGain',
+                    type: 'uint256',
+                },
+                {
+                    name: 'totalSkim',
+                    type: 'uint256',
+                },
+                {
+                    name: 'totalLoss',
+                    type: 'uint256',
+                },
+                {
+                    name: 'rewardsManager',
+                    type: 'address',
+                },
+                {
+                    name: 'rewards',
+                    type: 'tuple',
+                    components: [
+                        {
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                },
+            ],
+            gas: 32100,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'withdrawalQueue',
+            inputs: [
+                {
+                    name: 'arg0',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [
+                {
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            gas: 4177,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'emergencyShutdown',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            gas: 4098,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'depositLimit',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4128,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'debtRatio',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4158,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'totalDebt',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4188,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'lastReport',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4218,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'activation',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4248,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'lockedProfit',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4278,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'lockedProfitDegradation',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4308,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'managementFee',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4338,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'performanceFee',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4368,
+        },
+    ];
+
+    static VaultWrapper: AbiItem[] = [
+        {
+            inputs: [],
+            name: 'apiVersion',
+            outputs: [
+                {
+                    internalType: 'string',
+                    name: 'api_version',
+                    type: 'string',
+                },
+            ],
+            stateMutability: 'pure',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+            ],
+            name: 'decodeWithdrawEventData',
+            outputs: [
+                {
+                    internalType: 'int8',
+                    name: 'sender_wid',
+                    type: 'int8',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'sender_addr',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint128',
+                    name: 'amount',
+                    type: 'uint128',
+                },
+                {
+                    internalType: 'uint160',
+                    name: '_recipient',
+                    type: 'uint160',
+                },
+                {
+                    internalType: 'uint32',
+                    name: 'chainId',
+                    type: 'uint32',
+                },
+            ],
+            stateMutability: 'pure',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int128',
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IVault.TONAddress',
+                    name: 'recipient',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'deposit',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int128',
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IVault.TONAddress',
+                    name: 'recipient',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IVault.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalsIdsToFill',
+                    type: 'tuple[]',
+                },
+            ],
+            name: 'depositWithFillings',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'getChainID',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '_vault',
+                    type: 'address',
+                },
+            ],
+            name: 'initialize',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+                {
+                    internalType: 'bytes[]',
+                    name: 'signatures',
+                    type: 'bytes[]',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            name: 'saveWithdraw',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'vault',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
 
 }

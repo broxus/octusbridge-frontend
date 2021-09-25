@@ -16,19 +16,21 @@
     }
 }
 
-.alert {
-    align-items: center;
-    background: rgba(230, 172, 0, 0.48);
-    border-left: 4px solid #e6ac00;
+.container {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    padding: 12px;
+    flex-direction: column;
+    flex-grow: 1;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+
+    &--small { max-width: 520px; }
+
+    &--large { max-width: 1200px; }
 }
 
 .section {
     box-sizing: border-box;
-    margin: 0 auto;
     padding: 0;
     width: 100%;
 
@@ -38,7 +40,7 @@
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        margin: 64px 0 32px;
+        margin: 16px 0 32px;
 
         &:first-child {
             margin-top: 0;
@@ -63,6 +65,33 @@
         }
     }
 
+    &-title {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.15px;
+        line-height: 28px;
+
+        .small {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            line-height: 20px;
+            margin-bottom: 4px;
+            opacity: 0.56;
+        }
+    }
+
+    &-subtitle {
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+        margin-top: 4px;
+    }
+
     &__header-actions {
         align-items: center;
         column-gap: 20px;
@@ -70,11 +99,38 @@
         justify-content: space-between;
     }
 
-    &--small { max-width: 520px; }
-    &--large { max-width: 1200px; }
+    &__wrapper {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 24px;
+
+        @media only screen and (min-width: 768px) {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+        }
+
+        @media only screen and (min-width: 1200px) {
+            gap: 40px;
+        }
+    }
 
     + .section {
         margin-top: 64px;
+    }
+}
+
+.sidebar {
+    max-width: 100%;
+    width: 100%;
+
+    @media only screen and (min-width: 768px) {
+        width: 320px;
+    }
+
+    @media only screen and (min-width: 960px) {
+        width: 360px;
     }
 }
 
@@ -117,7 +173,7 @@
 
 .divider {
     background: none;
-    border-top: 1px dashed rgba(255, 255, 255, 0.16);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
     margin: 16px 0;
     opacity: 1;
 }

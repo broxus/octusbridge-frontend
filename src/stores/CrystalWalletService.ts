@@ -5,7 +5,6 @@ import {
     runInAction,
 } from 'mobx'
 import ton, {
-    Contract,
     ContractState,
     FullContractState,
     hasTonProvider,
@@ -14,7 +13,7 @@ import ton, {
     Transaction,
 } from 'ton-inpage-provider'
 
-import { connectToWallet, DexAbi } from '@/misc'
+import { connectToWallet } from '@/misc'
 import { debug, error } from '@/utils'
 
 
@@ -327,16 +326,6 @@ export class CrystalWalletService {
     }
 
     /**
-     * Returns connected account Contract Dex ABI Callbacks.
-     * @returns {Contract<typeof DexAbi.Callbacks>}
-     */
-    public get walletContractCallbacks(): Contract<typeof DexAbi.Callbacks> | undefined {
-        return this.account?.address !== undefined
-            ? new Contract(DexAbi.Callbacks, this.account?.address)
-            : undefined
-    }
-
-    /**
      * Returns computed last successful transaction data
      * @returns {WalletData['transaction']}
      */
@@ -380,7 +369,7 @@ export class CrystalWalletService {
      *
      */
     public get isConnected(): boolean {
-        return Boolean(this.address)
+        return this.address !== undefined
     }
 
     /**

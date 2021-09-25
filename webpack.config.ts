@@ -175,7 +175,7 @@ export default (_: any, options: any): WebpackConfig => {
             '@': path.resolve(__dirname, 'src')
         },
 
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.scss', '.css'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.scss', '.css'],
 
         fallback: {
             assert: require.resolve('assert'),

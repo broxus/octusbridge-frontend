@@ -1,76 +1,47 @@
 @import '_mix';
 
-.form-row {
-    align-items: center;
-    color: rgba(255, 255, 255, 0.64);
-    display: flex;
-    font-size: 14px;
-    justify-content: space-between;
-    letter-spacing: 0.75px;
-    line-height: 20px;
-    margin: 16px 16px 16px 20px;
-
-    & + .form-submit {
-        margin-top: 16px;
-    }
-
-    &__btn {
-        @include btn-reset;
-
-        display: inline-block;
-        height: 24px;
-        margin-left: 8px;
-        position: relative;
-        top: -1px;
-        vertical-align: middle;
-        width: 24px;
-    }
-
-    @media only screen and (max-width: 767px) {
-        margin: 16px 0;
-    }
-}
-
-.form-rows {
-    margin: 16px 0;
-
-    .form-row {
-        margin: 8px 16px 8px 20px;
-    }
-
-    & + .form-submit {
-        margin-top: 16px;
-    }
-
-    @media only screen and (max-width: 767px) {
-        .form-row {
-            margin: 8px 0;
-        }
-    }
-}
-
 .form-label { display: block; }
 
 .form-fieldset {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    display: block;
-    height: 78px;
-    margin-bottom: 5px;
+    flex-grow: 1;
+    margin: 0;
     outline: none;
-    padding: 10px 16px 10px 20px;
+    padding: 0;
 
-    &--small {
-        height: 72px;
+    + .form-fieldset {
+        margin-top: 16px;
     }
+}
 
-    &--dark {
-        background-color: rgba(0, 0, 0, 0.08);
-    }
+.form-legend {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.75px;
+    line-height: 20px;
+    margin-bottom: 4px;
+    position: relative;
+}
 
-    &.checking {
-        animation: 1.5s linear 0s infinite alternate checking;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        box-shadow: 0 0 2px 0 rgba(255, 255, 255, 0.16);
+.form-input {
+    @include input-reset;
+
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-sizing: border-box;
+    color: #ffffff;
+    cursor: text;
+    font-size: 14px;
+    font-weight: 400;
+    height: 36px;
+    letter-spacing: 0.5px;
+    line-height: 20px;
+    overflow: hidden;
+    padding: 0 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--lg {
+        height: 44px;
     }
 
     &.caution {
@@ -82,49 +53,6 @@
         border-color: #eb4361;
         box-shadow: 0 0 2px 0 #eb4361;
     }
-
-    &__header {
-        align-items: center;
-        color: #ffffff;
-        display: flex;
-        font-size: 14px;
-        justify-content: space-between;
-        letter-spacing: 0.75px;
-        line-height: 20px;
-        margin-bottom: 4px;
-        opacity: 0.64;
-    }
-
-    &__main {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .frame {
-        margin: 4px 0 0 -10px;
-        width: calc(100% + 20px);
-    }
-
-    @media only screen and (max-width: 767px) {
-        padding-left: 10px;
-        .frame {
-            margin: 4px 0 0;
-            width: 100%;
-        }
-    }
-}
-
-.form-input {
-    @include input-reset;
-
-    color: #ffffff;
-    cursor: text;
-    font-size: 24px;
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 
     &::-webkit-input-placeholder {
         color: #ffffff;
@@ -154,6 +82,13 @@
     &:-webkit-autofill {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+    }
+
+    &:disabled {
+        background-color: rgba(0, 0, 0, 0.08);
+        border-color: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.72);
+        cursor: not-allowed;
     }
 }
 

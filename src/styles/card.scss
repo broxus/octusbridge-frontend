@@ -5,8 +5,13 @@
     padding: 32px 40px;
     width: 100%;
 
+    &--ghost {
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
     &--small {
-        padding: 32px;
+        padding: 24px;
     }
 
     &--flat {
@@ -36,10 +41,10 @@
 
 .card-title {
     color: #ffffff;
-    font-size: 28px;
+    font-size: 18px;
     font-weight: bold;
-    letter-spacing: 0.25px;
-    line-height: 36px;
+    letter-spacing: 0.06px;
+    line-height: 24px;
     margin: 0;
 
     @media only screen and (max-width: 767px) {

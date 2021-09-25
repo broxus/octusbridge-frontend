@@ -4,7 +4,6 @@
     align-items: stretch;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     min-height: 100vh;
     overflow: hidden;
     position: relative;
@@ -12,14 +11,29 @@
 }
 
 .main {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    padding: 72px 16px;
-    width: 100%;
+    padding: 32px 0;
 
-    @media only screen and (max-width: 767px) {
-        padding: 32px 16px;
+    @media only screen and (min-width: 768px) {
+        padding: 72px 0;
+    }
+}
+
+.content {
+    flex: 1;
+    min-width: 1px;
+}
+
+.page {
+    &-header {
+        margin-bottom: 32px;
+    }
+
+    &-title {
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.25px;
+        line-height: 32px;
     }
 }
 

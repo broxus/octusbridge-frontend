@@ -70,3 +70,41 @@
     transition: stroke 0.25s, fill 0.25s;
     width: 100%;
 }
+
+@mixin txt-xxl {
+    color: #ffffff;
+    font-size: 20px;
+    letter-spacing: 0.15px;
+    line-height: 24px;
+}
+
+@mixin txt-xl {
+    color: #ffffff;
+    font-size: 18px;
+    letter-spacing: 0.15px;
+    line-height: 24px;
+}
+
+@mixin txt-lg {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.25px;
+    line-height: 1.25;
+}
+
+@mixin txt {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    line-height: 20px;
+}
+
+@mixin txt-s {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    line-height: 16px;
+}

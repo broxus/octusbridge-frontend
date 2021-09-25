@@ -8,8 +8,10 @@ import {
 } from 'react-router-dom'
 
 import { Header } from '@/components/layout/Header'
-import { CrystalWallet, Web3Wallet } from '@/modules/Accounts'
 import messages from '@/lang/en'
+import { CrystalWallet, EvmWallet } from '@/modules/Accounts'
+import Bridge from '@/pages/bridge'
+import Status from '@/pages/bridge/status'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -27,15 +29,21 @@ export function App(): JSX.Element {
             <Router>
                 <div className="wrapper">
                     <Header key="header" />
-                    <main className="main">
+                    <div className="main">
                         <Switch>
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
+                            <Route path="/bridge/:fromType-:fromId/:toType-:toId/:txHash">
+                                <Status />
+                            </Route>
+                            <Route path="/bridge">
+                                <Bridge />
+                            </Route>
                         </Switch>
-                    </main>
+                    </div>
                     <div className="wallets">
-                        <Web3Wallet />
+                        <EvmWallet />
                         <CrystalWallet />
                     </div>
                 </div>

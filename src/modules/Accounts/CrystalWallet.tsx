@@ -22,7 +22,7 @@ export function CrystalWallet(): JSX.Element | null {
                         <button
                             key="guest"
                             type="button"
-                            className="btn btn-secondary"
+                            className="btn btn--secondary"
                             disabled={wallet.isConnecting}
                             aria-disabled={wallet.isConnecting}
                             onClick={wallet.connect}

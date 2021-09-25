@@ -1,0 +1,59 @@
+@import '../../../styles/_mix';
+
+.simple-radio {
+    display: block;
+    margin-bottom: 16px;
+    &:last-child { margin-bottom: 0; }
+    &__main {
+        @include txt-s;
+
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+        cursor: pointer;
+        display: block;
+        font-weight: 400;
+        padding: 16px 16px 16px 48px;
+        position: relative;
+        span {
+            color: #ffffff;
+            display: block;
+            margin-top: 4px;
+            &:first-child { margin-top: 0; }
+        }
+        &::before,
+        &::after {
+            border-radius: 50%;
+            content: '';
+            display: block;
+            position: absolute;
+        }
+        &::before {
+            border: 1px solid rgba(255, 255, 255, 0.48);
+            height: 16px;
+            left: 18px;
+            top: 18px;
+            width: 16px;
+        }
+        &::after {
+            background-color: #c5e4f3;
+            display: none;
+            height: 8px;
+            left: 22px;
+            top: 22px;
+            width: 8px;
+        }
+    }
+    &__title {
+        @include txt-lg;
+
+        display: block;
+    }
+    input {
+        display: none;
+        &:checked + .simple-radio__main {
+            background-color: rgba(197, 228, 243, 0.24);
+            &::before { border-color: #c5e4f3; }
+            &::after { display: block; }
+        }
+    }
+}
