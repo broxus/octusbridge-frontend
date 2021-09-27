@@ -35,7 +35,6 @@ export const DEFAULT_CROSSCHAIN_TRANSFER_STORE_DATA: CrosschainTransferStoreData
 
 export const DEFAULT_CROSSCHAIN_TRANSFER_STORE_STATE: CrosschainTransferStoreState = {
     isAwaitConfirmation: false,
-    shouldRedirect: false,
     step: CrosschainTransferStep.SELECT_ROUTE,
 }
 

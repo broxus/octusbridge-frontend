@@ -4,11 +4,12 @@ import {
     IReactionDisposer,
     makeAutoObservable,
     reaction,
+    runInAction,
     when,
 } from 'mobx'
-import { Contract } from 'web3-eth-contract'
+import ton, { Address, Contract } from 'ton-inpage-provider'
 
-import { EthAbi } from '@/misc'
+import { TokenAbi } from '@/misc'
 import {
     DEFAULT_CROSSCHAIN_TRANSFER_STORE_DATA,
     DEFAULT_CROSSCHAIN_TRANSFER_STORE_STATE,
@@ -20,41 +21,45 @@ import {
     NetworkFields,
 } from '@/modules/CrosschainTransfer/types'
 import { findNetwork, getFreeTonNetwork } from '@/modules/CrosschainTransfer/utils'
-import { CrystalWalletService, useCrystalWallet } from '@/stores/CrystalWalletService'
+import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import {
-    TokenCache as EvmTokenCache,
-    EvmTokensCacheService,
-    TokenAssetVault,
-    useEvmTokensCache,
-} from '@/stores/EvmTokensCacheService'
-import {
-    TokenCache as TonTokenCache,
-    TonTokensCacheService,
-    useTonTokensCache,
-} from '@/stores/TonTokensCacheService'
+    TokenCache,
+    TokensCacheService,
+    useTokensCache,
+} from '@/stores/TokensCacheService'
 import { debug, error, isGoodBignumber } from '@/utils'
 
 
 export class CrosschainTransfer {
 
+    /**
+     *
+     * @protected
+     */
     protected data: CrosschainTransferStoreData = DEFAULT_CROSSCHAIN_TRANSFER_STORE_DATA
 
+    /**
+     *
+     * @protected
+     */
     protected state: CrosschainTransferStoreState = DEFAULT_CROSSCHAIN_TRANSFER_STORE_STATE
 
     constructor(
-        protected readonly crystalWallet: CrystalWalletService,
-        protected readonly toTokensCache: TonTokensCacheService,
+        protected readonly tonWallet: TonWalletService,
         protected readonly evmWallet: EvmWalletService,
-        protected readonly evmTokensCache: EvmTokensCacheService,
+        protected readonly tokensCache: TokensCacheService,
     ) {
         makeAutoObservable<CrosschainTransfer, 'handleChangeToken'>(this, {
             handleChangeToken: action.bound,
         })
     }
 
+    /**
+     *
+     */
     public init(): void {
-        this.#crystalWalletDisposer = when(() => !this.crystalWallet.isConnected, () => {
+        this.#tonWalletDisposer = when(() => !this.tonWallet.isConnected, () => {
             this.changeData('leftNetwork', undefined)
             this.changeData('leftAddress', '')
         })
@@ -67,8 +72,11 @@ export class CrosschainTransfer {
         this.#tokenDisposer = reaction(() => this.data.selectedToken, this.handleChangeToken)
     }
 
+    /**
+     *
+     */
     public dispose(): void {
-        this.#crystalWalletDisposer?.()
+        this.#tonWalletDisposer?.()
         this.#evmWalletDisposer?.()
         this.#tokenDisposer?.()
         this.reset()
@@ -88,31 +96,33 @@ export class CrosschainTransfer {
 
         if (key === 'leftNetwork') {
             if (value.chainId === '1' && value.type === 'ton') {
-                this.changeData('leftAddress', this.crystalWallet.address || '')
+                this.changeData('leftAddress', this.tonWallet.address || '')
                 this.changeData('rightAddress', this.evmWallet.address || '')
                 this.changeData('rightNetwork', this.leftNetwork)
             }
             else {
                 this.changeData('leftAddress', this.evmWallet.address || '')
-                this.changeData('rightAddress', this.crystalWallet.address || '')
+                this.changeData('rightAddress', this.tonWallet.address || '')
                 this.changeData('rightNetwork', getFreeTonNetwork())
             }
         }
 
         if (key === 'rightNetwork') {
             if (value.chainId !== '1' && value.type !== 'ton') {
-                this.changeData('leftAddress', this.crystalWallet.address || '')
+                this.changeData('leftAddress', this.tonWallet.address || '')
                 this.changeData('leftNetwork', getFreeTonNetwork())
                 this.changeData('rightAddress', this.evmWallet.address || '')
             }
             else {
                 this.changeData('leftAddress', this.evmWallet.address || '')
                 this.changeData('leftNetwork', this.rightNetwork)
-                this.changeData('rightAddress', this.crystalWallet.address || '')
+                this.changeData('rightAddress', this.tonWallet.address || '')
             }
         }
 
         this.changeData(key, value)
+        this.changeData('amount', '')
+        this.changeData('selectedToken', undefined)
     }
 
     public changeStep(value: CrosschainTransferStoreState['step']): void {
@@ -131,75 +141,59 @@ export class CrosschainTransfer {
         this.state = DEFAULT_CROSSCHAIN_TRANSFER_STORE_STATE
     }
 
-    protected async handleChangeToken(root?: string): Promise<void> {
-        if (root === undefined) {
+    protected async handleChangeToken(selectedToken?: string): Promise<void> {
+        if (selectedToken === undefined) {
             return
         }
 
         if (this.isEvmToTon) {
-            if (
-                this.evmWallet.web3 === undefined
-                || this.evmTokenContract === undefined
-                || this.evmTokenVault?.vault === undefined
-                || this.evmTokenVaultContract === undefined
-            ) {
-                return
-            }
-
-            let address: string
-
-            try {
-                address = await this.evmTokenVaultContract.methods.token().call()
-                this.evmTokensCache.update(root, 'evm', {
-                    address,
-                    decimals: (this.token as EvmTokenCache).evm.decimals,
-                })
-
-            }
-            catch (e) {
-                error(e)
-                return
-            }
-
-            try {
-                const balance = await this.evmTokenContract.methods.balanceOf(this.evmWallet.address).call()
-                const decimals = await this.evmTokenContract.methods.decimals().call()
-
-                this.evmTokensCache.update(root, 'evm', {
-                    address,
-                    decimals: parseInt(decimals, 10),
-                })
-
-                this.evmTokensCache.update(root, 'balance', balance)
-            }
-            catch (e) {
-                error(e)
-            }
+            await this.tokensCache.syncEvmToken(selectedToken, this.leftNetwork!.chainId)
+            const vault = this.tokensCache.getTokenVault(selectedToken, this.leftNetwork!.chainId)
+            runInAction(() => {
+                this.data.balance = vault?.balance
+            })
+        }
+        else {
+            await this.tokensCache.syncTonToken(selectedToken)
+            runInAction(() => {
+                this.data.balance = this.token?.balance
+            })
         }
     }
 
     public async approve(): Promise<void> {
-        if (this.evmTokenContract === undefined) {
+        if (this.token === undefined || this.leftNetwork === undefined) {
+            return
+        }
+
+        const vault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
+
+        if (vault === undefined) {
+            return
+        }
+
+        const tokenContract = this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
+
+        if (tokenContract === undefined) {
             return
         }
 
         this.changeState('isAwaitConfirmation', true)
 
-        let result: any // todo add type
+        let result: unknown
 
         try {
             if (this.approvalStrategy === 'infinity') {
-                result = await this.evmTokenContract.methods.approve(
-                    this.evmTokenVault!.vault,
+                result = await tokenContract.methods.approve(
+                    vault.vault,
                     '340282366920938463426481119284349108225',
                 ).send({
                     from: this.evmWallet.address,
                 })
-
             }
             else {
-                result = await this.evmTokenContract.methods.approve(
-                    this.evmTokenVault!.vault,
+                result = await tokenContract.methods.approve(
+                    vault.vault,
                     this.amountNumber.toFixed(),
                 ).send({
                     from: this.evmWallet.address,
@@ -211,29 +205,44 @@ export class CrosschainTransfer {
             error('Approve error', e)
         }
 
-        debug(result)
+        debug('Approve result', result)
     }
 
     public async checkAllowance(): Promise<void> {
         if (
-            !this.isEvmToTon
-            || this.evmTokenContract === undefined
-            || this.evmTokenVault === undefined
-            || this.token === undefined
+            this.token === undefined
+            || this.data.selectedToken === undefined
+            || this.leftNetwork?.chainId === undefined
         ) {
             return
         }
 
-        const allowance = await this.evmTokenContract.methods.allowance(
+        const vault = this.tokensCache.getTokenVault(
+            this.data.selectedToken,
+            this.leftNetwork.chainId,
+        )
+
+        if (vault?.decimals === undefined) {
+            return
+        }
+
+        const tokenContract = this.tokensCache.getEthTokenContract(
+            this.data.selectedToken,
+            this.leftNetwork.chainId,
+        )
+
+        if (tokenContract === undefined) {
+            return
+        }
+
+        const allowance = await tokenContract.methods.allowance(
             this.evmWallet.address,
-            this.evmTokenVault.vault,
+            vault.vault,
         ).call()
 
         const delta = new BigNumber(allowance).minus(
-            this.amountNumber.shiftedBy((this.token as EvmTokenCache).evm.decimals),
+            this.amountNumber.shiftedBy(vault.decimals),
         )
-
-        debug('ALLOWANCE', allowance, delta.toFixed())
 
         if (delta.lt(0)) {
             this.changeData('approvalDelta', delta.abs())
@@ -244,31 +253,32 @@ export class CrosschainTransfer {
         }
     }
 
-    public async transfer(): Promise<void> {
-        if (
-            this.evmWallet.web3 === undefined
-            || this.evmTokenVaultContract === undefined
-            || this.leftNetwork === undefined
-            || this.rightNetwork === undefined
-        ) {
+    public async transfer(rejected?: () => void): Promise<void> {
+        if (this.token === undefined || this.leftNetwork === undefined) {
             return
         }
 
-        const wrapperAddress = await this.evmTokenVaultContract.methods.wrapper().call()
+        const vault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
 
-        debug(wrapperAddress)
+        if (vault?.decimals === undefined) {
+            return
+        }
 
-        const wrapper = new this.evmWallet.web3.eth.Contract(
-            EthAbi.VaultWrapper,
-            wrapperAddress,
+        const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
+            this.token.root,
+            this.leftNetwork.chainId,
         )
+
+        if (wrapperContract === undefined) {
+            return
+        }
 
         const target = this.rightAddress.split(':')
 
         try {
-            await wrapper.methods.deposit(
+            await wrapperContract.methods.deposit(
                 [target[0], `0x${target[1]}`],
-                this.amountNumber.shiftedBy((this.token as EvmTokenCache).evm.decimals),
+                this.amountNumber.shiftedBy(vault.decimals),
             ).send({
                 from: this.evmWallet.address,
             }).once('transactionHash', (transactionHash: string) => {
@@ -276,7 +286,106 @@ export class CrosschainTransfer {
             })
         }
         catch (e) {
-            error(e)
+            error('Transfer deposit error', e)
+            rejected?.()
+        }
+    }
+
+    public async prepareTonToEvm(reject?: () => void): Promise<void> {
+        if (this.rightNetwork?.chainId === undefined) {
+            return
+        }
+
+        const chainId = this.rightNetwork?.chainId
+        const evmAddress = this.rightAddress
+        const { proxy } = this.tokensCache.assets[this.token!.root]
+
+        const r = [{ name: 'addr', type: 'uint160' }, { name: 'chainId', type: 'uint32' }] as const
+
+        const data = await ton.packIntoCell({
+            structure: r,
+            data: {
+                chainId,
+                addr: evmAddress,
+            },
+        })
+
+        const proxyContract = new Contract(TokenAbi.TokenTransferProxy, new Address(proxy))
+        const proxyDetails = await proxyContract.methods.getDetails({
+            answerId: 0,
+        }).call()
+        const tonConfigurationAddress = proxyDetails.value0.tonConfiguration
+        const tonConfigurationContract = new Contract(TokenAbi.TonEventConfig, tonConfigurationAddress)
+
+        const subscriber = ton.createSubscriber()
+
+        try {
+            const eventStream = subscriber.transactions(
+                tonConfigurationAddress,
+            ).flatMap(a => a.transactions).filterMap(async tx => {
+                const decodedTx = await tonConfigurationContract.decodeTransaction({
+                    methods: ['deployEvent'],
+                    transaction: tx,
+                })
+
+                if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                    const { eventData } = decodedTx.input.eventVoteData
+                    const r2 = [
+                        { name: 'wid', type: 'int8' },
+                        { name: 'addr', type: 'uint256' },
+                        { name: 'tokens', type: 'uint128' },
+                        { name: 'eth_addr', type: 'uint160' },
+                        { name: 'chainId', type: 'uint32' },
+                    ] as const
+                    const event = await ton.unpackFromCell({
+                        structure: r2,
+                        boc: eventData,
+                        allowPartial: true,
+                    })
+
+                    const checkAddress = `${event.data.wid}:${new BigNumber(event.data.addr).toString(16).padStart(64, '0')}`
+                    const checkEvmAddress = `0x${new BigNumber(event.data.eth_addr).toString(16).padStart(40, '0')}`
+
+                    if (
+                        checkAddress.toLowerCase() === this.leftAddress.toLowerCase()
+                        && checkEvmAddress.toLowerCase() === evmAddress.toLowerCase()
+                    ) {
+                        const eventAddress = await tonConfigurationContract.methods.deriveEventAddress({
+                            answerId: 0,
+                            eventVoteData: decodedTx.input.eventVoteData,
+                        }).call()
+                        return eventAddress.eventContract
+                    }
+                    return undefined
+                }
+                return undefined
+            })
+
+            const walletContract = new Contract(TokenAbi.Wallet, new Address(this.token!.wallet!))
+            await walletContract.methods.burnByOwner({
+                tokens: this.amountNumber.shiftedBy(this.token!.decimals!).toFixed(),
+                grams: '0',
+                send_gas_to: this.tonWallet.account!.address,
+                callback_address: new Address(proxy),
+                callback_payload: data.boc,
+            }).send({
+                from: new Address(this.leftAddress),
+                amount: '6000000000',
+                bounce: true,
+            })
+
+            const eventAddress = await eventStream.first()
+            console.log(eventAddress)
+
+            runInAction(() => {
+                // for redirect
+                this.data.txHash = eventAddress.toString()
+            })
+        }
+        catch (e) {
+            await subscriber.unsubscribe()
+            reject?.()
+            console.log(e)
         }
     }
 
@@ -288,13 +397,20 @@ export class CrosschainTransfer {
         return new BigNumber(this.data.amount)
     }
 
-    public get approvalDelta(): CrosschainTransferStoreData['approvalDelta'] {
-        return this.data.approvalDelta
+    public get balance(): CrosschainTransferStoreData['balance'] {
+        return this.data.balance
     }
 
-    public get formattedApprovalDelta(): string {
-        const token = this.token as EvmTokenCache
-        return this.approvalDelta.shiftedBy(-token.evm.decimals).toFixed()
+    public get decimals(): number | undefined {
+        if (this.token?.root === undefined || this.leftNetwork?.chainId === undefined) {
+            return undefined
+        }
+
+        if (this.isTonToEvm) {
+            return this.token?.decimals
+        }
+
+        return this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)?.decimals
     }
 
     public get leftNetwork(): CrosschainTransferStoreData['leftNetwork'] {
@@ -325,52 +441,24 @@ export class CrosschainTransfer {
         return this.data.approvalStrategy
     }
 
-    public get token(): TonTokenCache | EvmTokenCache | undefined {
+    public get token(): TokenCache | undefined {
         if (this.data.selectedToken === undefined) {
             return undefined
         }
 
         if (this.isEvmToTon && this.leftNetwork !== undefined) {
-            return this.evmTokensCache.filterTokens(this.leftNetwork.chainId).find(
+            return this.tokensCache.filterTokensByChainId(this.leftNetwork.chainId).find(
                 ({ root }) => root === this.data.selectedToken,
             )
         }
 
-        if (this.isTonToEvm) {
-            return this.toTokensCache.get(this.data.selectedToken)
+        if (this.isTonToEvm && this.rightNetwork !== undefined) {
+            return this.tokensCache.filterTokensByChainId(this.rightNetwork.chainId).find(
+                ({ root }) => root === this.data.selectedToken,
+            )
         }
 
         return undefined
-    }
-
-    public get evmTokenContract(): Contract | undefined {
-        if (this.evmWallet.web3 === undefined || this.token === undefined) {
-            return undefined
-        }
-        return new this.evmWallet.web3.eth.Contract(
-            EthAbi.ERC20,
-            (this.token as EvmTokenCache).evm.address,
-        )
-    }
-
-    public get evmTokenVault(): TokenAssetVault | undefined {
-        if (this.token === undefined) {
-            return undefined
-        }
-        const asset = this.evmTokensCache.assets[(this.token as EvmTokenCache).root]
-        return asset?.vaults.find(
-            ({ chainId }) => chainId === this.leftNetwork?.chainId,
-        )
-    }
-
-    public get evmTokenVaultContract(): Contract | undefined {
-        if (this.evmWallet.web3 === undefined || this.evmTokenVault === undefined) {
-            return undefined
-        }
-        return new this.evmWallet.web3.eth.Contract(
-            EthAbi.Vault,
-            this.evmTokenVault.vault,
-        )
     }
 
     public get isAwaitConfirmation(): boolean {
@@ -386,7 +474,7 @@ export class CrosschainTransfer {
 
     public get isRouteValid(): boolean {
         return (
-            this.crystalWallet.isConnected
+            this.tonWallet.isConnected
             && this.evmWallet.isConnected
             && this.leftNetwork !== undefined
             && !!this.leftAddress
@@ -411,7 +499,7 @@ export class CrosschainTransfer {
         return network?.type === 'evm'
     }
 
-    #crystalWalletDisposer: IReactionDisposer | undefined
+    #tonWalletDisposer: IReactionDisposer | undefined
 
     #evmWalletDisposer: IReactionDisposer | undefined
 
@@ -420,10 +508,9 @@ export class CrosschainTransfer {
 }
 
 const CrosschainTransferStore = new CrosschainTransfer(
-    useCrystalWallet(),
-    useTonTokensCache(),
+    useTonWallet(),
     useEvmWallet(),
-    useEvmTokensCache(),
+    useTokensCache(),
 )
 
 export function useCrosschainTransfer(): CrosschainTransfer {

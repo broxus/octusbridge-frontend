@@ -4,16 +4,16 @@ import { Observer } from 'mobx-react-lite'
 import classNames from 'classnames'
 
 import { Select } from '@/components/common/Select'
-import { TokenCache } from '@/stores/TonTokensCacheService'
+import { TokenCache } from '@/stores/TokensCacheService'
 import { useAmountField } from '@/hooks/useAmountField'
-import { useBalanceValidation } from '@/hooks/useBalanceValidation'
-import { useTokenFormattedBalance } from '@/hooks/useTokenFormattedBalance'
 
 
 type Props = {
     amount: string;
+    balance?: string;
     changeAmount: (value: string) => void;
     changeToken: (value?: string) => void;
+    isAmountValid?: boolean;
     token?: TokenCache;
     tokens: TokenCache[];
 }
@@ -21,15 +21,15 @@ type Props = {
 
 export function AssetForm({
     amount,
+    balance,
     changeAmount,
     changeToken,
+    isAmountValid,
     token,
     tokens,
 }: Props): JSX.Element {
     const intl = useIntl()
     const field = useAmountField({ value: amount, token, onChange: changeAmount })
-    const isAmountValid = useBalanceValidation(token, amount)
-    const balance = useTokenFormattedBalance(token, { subscriberPrefix: 'transfer' })
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
@@ -101,7 +101,7 @@ export function AssetForm({
                                             id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_BALANCE_HINT',
                                         }, {
                                             symbol: token?.symbol,
-                                            value: balance.value || 0,
+                                            value: balance || 0,
                                         })}
                                     </div>
                                 ) : null)}

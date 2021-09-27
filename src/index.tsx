@@ -1,7 +1,7 @@
-import 'polyfills'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import init from 'eth-ton-abi-converter'
+import 'polyfills'
 
 import { App } from '@/components/App'
 

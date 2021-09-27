@@ -4,20 +4,20 @@ import { useIntl } from 'react-intl'
 
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { useCrystalWallet } from '@/stores/CrystalWalletService'
+import { useTonWallet } from '@/stores/TonWalletService'
 import { amount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
 
-export function CrystalWallet(): JSX.Element | null {
+export function TonWallet(): JSX.Element | null {
     const intl = useIntl()
-    const wallet = useCrystalWallet()
+    const wallet = useTonWallet()
 
     return (
         <Observer>
             {() => (wallet.isInitialized ? (
-                <div key="crystal-wallet" className="wallet">
+                <div key="ton-wallet" className="wallet">
                     {!wallet.isConnected ? (
                         <button
                             key="guest"

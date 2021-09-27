@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { TransferForm } from '@/modules/CrosschainTransfer/components/TransferForm'
+import { EvmTransferForm } from '@/modules/CrosschainTransfer/components/EvmTransferForm'
 
 
-export function TransferStep(): JSX.Element {
+export function EvmTransferStep(): JSX.Element {
     const intl = useIntl()
 
     return (
@@ -22,7 +22,7 @@ export function TransferStep(): JSX.Element {
                 </h2>
             </header>
 
-            <TransferForm />
+            <EvmTransferForm />
         </>
     )
 }

@@ -2,16 +2,26 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
-import { useCrosschainTransferStatusStore } from '@/modules/CrosschainTransfer/providers'
+import { useEvmTransferStatusStore } from '@/modules/CrosschainTransfer/providers'
 import { useCrosschainTransfer } from '@/modules/CrosschainTransfer/stores/CrosschainTransfer'
 
 
-export function TransferForm(): JSX.Element {
+export function EvmTransferForm(): JSX.Element {
     const transfer = useCrosschainTransfer()
-    const transferStatus = useCrosschainTransferStatusStore()
+    const transferStatus = useEvmTransferStatusStore()
+
+    const [transferStatusState, setTransferStatus] = React.useState<'pending' | 'disabled'>()
 
     const onTransfer = async () => {
-        await transfer.transfer()
+        try {
+            setTransferStatus('pending')
+            await transfer.transfer(() => {
+                setTransferStatus('disabled')
+            })
+        }
+        catch (e) {
+            setTransferStatus('disabled')
+        }
     }
 
     const onPrepare = async () => {
@@ -26,14 +36,15 @@ export function TransferForm(): JSX.Element {
                         <div className="crosschain-transfer__status">
                             <div className="crosschain-transfer__status-label">
                                 <StatusIndicator
-                                    status={transferStatus.transferState?.status || 'disabled'}
+                                    status={transferStatus.transferState?.status || transferStatusState || 'disabled'}
                                 >
                                     {(() => {
                                         const {
                                             confirmedBlocksCount = 0,
                                             eventBlocksToConfirm = 0,
-                                            status = 'disabled',
+                                            status = transferStatusState || 'disabled',
                                         } = { ...transferStatus.transferState }
+
                                         switch (true) {
                                             case status === 'pending' && confirmedBlocksCount === 0:
                                                 return 'Pending'
@@ -58,7 +69,11 @@ export function TransferForm(): JSX.Element {
                                     type="button"
                                     className="btn btn-s btn--primary"
                                     onClick={onTransfer}
-                                    disabled={!!transferStatus.transferState}
+                                    disabled={
+                                        transferStatus.transferState?.status === 'pending'
+                                        || transferStatusState === 'pending'
+                                        || !!transferStatus.transferState
+                                    }
                                 >
                                     Transfer
                                 </button>
@@ -144,7 +159,6 @@ export function TransferForm(): JSX.Element {
                                 </p>
                             </div>
                         </div>
-
                     )}
                 </Observer>
 

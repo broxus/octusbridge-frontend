@@ -9,9 +9,10 @@ import {
 
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
-import { CrystalWallet, EvmWallet } from '@/modules/Accounts'
+import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
-import Status from '@/pages/bridge/status'
+import EvmTransferStatus from '@/pages/bridge/evm-transfer-status'
+import TonTransferStatus from '@/pages/bridge/ton-transfer-status'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -34,8 +35,11 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            <Route path="/bridge/:fromType-:fromId/:toType-:toId/:txHash">
-                                <Status />
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})">
+                                <EvmTransferStatus />
+                            </Route>
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Da-f0-9]{64})">
+                                <TonTransferStatus />
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />
@@ -44,7 +48,7 @@ export function App(): JSX.Element {
                     </div>
                     <div className="wallets">
                         <EvmWallet />
-                        <CrystalWallet />
+                        <TonWallet />
                     </div>
                 </div>
             </Router>

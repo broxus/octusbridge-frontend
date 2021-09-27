@@ -1,7 +1,6 @@
 import * as React from 'react'
 
-import { TokenCache as EvmTokenCache } from '@/stores/EvmTokensCacheService'
-import { TokenCache as TonTokenCache } from '@/stores/TonTokensCacheService'
+import { TokenCache } from '@/stores/TokensCacheService'
 import { formatAmount } from '@/utils'
 
 
@@ -11,7 +10,7 @@ type FieldShape = {
 }
 
 type Props = {
-    token?: EvmTokenCache | TonTokenCache;
+    token?: TokenCache;
     value?: string;
     onChange?: (value: string) => void;
 }

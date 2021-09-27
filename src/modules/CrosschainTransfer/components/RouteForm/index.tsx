@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Select } from '@/components/common/Select'
-import { CrystalWalletService } from '@/stores/CrystalWalletService'
+import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { NetworkShape } from '@/modules/CrosschainTransfer/types'
 
@@ -19,7 +19,7 @@ type Props = {
     networkFieldDisabled?: boolean;
     networks: NetworkShape[];
     shouldDisplayNetworkAlert?: boolean;
-    wallet: CrystalWalletService | EvmWalletService;
+    wallet: TonWalletService | EvmWalletService;
 }
 
 

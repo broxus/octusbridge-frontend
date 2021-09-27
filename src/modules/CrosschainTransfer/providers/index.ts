@@ -1,1 +1,2 @@
-export * from '@/modules/CrosschainTransfer/providers/CrosschainTransferStatusStoreProvider'
+export * from '@/modules/CrosschainTransfer/providers/EvmTransferStatusStoreProvider'
+export * from '@/modules/CrosschainTransfer/providers/TonTransferStatusStoreProvider'

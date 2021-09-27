@@ -2,18 +2,18 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { useBalanceValidation } from '@/hooks/useBalanceValidation'
 import { AssetForm } from '@/modules/CrosschainTransfer/components/AssetForm'
 import { useCrosschainTransfer } from '@/modules/CrosschainTransfer/stores/CrosschainTransfer'
 import { CrosschainTransferStep } from '@/modules/CrosschainTransfer/types'
-import { useEvmTokensCache } from '@/stores/EvmTokensCacheService'
-import { useTonTokensCache } from '@/stores/TonTokensCacheService'
+import { useTokensCache } from '@/stores/TokensCacheService'
+import { formatBalance } from '@/utils'
 
 
 export function AssetStep(): JSX.Element {
     const intl = useIntl()
     const transfer = useCrosschainTransfer()
-    const tonTokensCache = useTonTokensCache()
-    const ethTokensCache = useEvmTokensCache()
+    const tokensCache = useTokensCache()
 
     const changeAmount = (value: string) => {
         transfer.changeData('amount', value)
@@ -24,7 +24,12 @@ export function AssetStep(): JSX.Element {
     }
 
     const nextStep = async () => {
-        await transfer.checkAllowance()
+        if (transfer.isEvmToTon) {
+            await transfer.checkAllowance()
+        }
+        else {
+            transfer.changeStep(CrosschainTransferStep.TRANSFER)
+        }
     }
 
     const prevStep = () => {
@@ -50,13 +55,19 @@ export function AssetStep(): JSX.Element {
                 {() => (
                     <AssetForm
                         amount={transfer.amount}
+                        balance={formatBalance(
+                            transfer.balance || '0',
+                            transfer.decimals,
+                        )}
                         changeAmount={changeAmount}
                         changeToken={changeToken}
+                        isAmountValid={useBalanceValidation(transfer.balance, transfer.amount, transfer.decimals)}
                         token={transfer.token}
                         tokens={
+                            // fixme to memo
                             transfer.isEvmToTon
-                                ? ethTokensCache.filterTokens(transfer.leftNetwork!.chainId)
-                                : tonTokensCache.tokens
+                                ? tokensCache.filterTokensByChainId(transfer.leftNetwork!.chainId)
+                                : tokensCache.filterTokensByChainId(transfer.rightNetwork!.chainId)
                         }
                     />
                 )}
@@ -68,7 +79,6 @@ export function AssetStep(): JSX.Element {
                         <button
                             type="button"
                             className="btn btn-lg btn-link crosschain-transfer__btn-prev"
-                            disabled={!transfer.isRouteValid}
                             onClick={prevStep}
                         >
                             {intl.formatMessage({
@@ -78,11 +88,16 @@ export function AssetStep(): JSX.Element {
                         <button
                             type="button"
                             className="btn btn-lg btn--primary crosschain-transfer__btn-next"
-                            disabled={!transfer.isAssetValid}
+                            disabled={
+                                !transfer.isAssetValid
+                                || !useBalanceValidation(transfer.balance, transfer.amount, transfer.decimals)
+                            }
                             onClick={nextStep}
                         >
                             {intl.formatMessage({
-                                id: 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT',
+                                id: transfer.isEvmToTon
+                                    ? 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT'
+                                    : 'CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT',
                             })}
                         </button>
                     </footer>

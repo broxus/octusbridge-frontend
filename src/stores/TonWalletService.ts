@@ -13,7 +13,6 @@ import ton, {
     Transaction,
 } from 'ton-inpage-provider'
 
-import { connectToWallet } from '@/misc'
 import { debug, error } from '@/utils'
 
 
@@ -49,7 +48,19 @@ const DEFAULT_WALLET_STATE: WalletState = {
 }
 
 
-export class CrystalWalletService {
+export async function connectToWallet(): Promise<void> {
+    const hasProvider = await hasTonProvider()
+
+    if (hasProvider) {
+        await ton.ensureInitialized()
+        await ton.requestPermissions({
+            permissions: ['tonClient', 'accountInteraction'],
+        })
+    }
+}
+
+
+export class TonWalletService {
 
     /**
      * Current data of the wallet
@@ -382,8 +393,8 @@ export class CrystalWalletService {
 }
 
 
-const CrystalWalletServiceStore = new CrystalWalletService()
+const TonWalletServiceStore = new TonWalletService()
 
-export function useCrystalWallet(): CrystalWalletService {
-    return CrystalWalletServiceStore
+export function useTonWallet(): TonWalletService {
+    return TonWalletServiceStore
 }

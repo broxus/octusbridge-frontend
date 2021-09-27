@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { CrosschainTransferStatusStoreProvider, Status } from '@/modules/CrosschainTransfer'
+import { EvmStatus, EvmTransferStatusStoreProvider } from '@/modules/CrosschainTransfer'
 
 
 export default function Page(): JSX.Element {
@@ -17,9 +17,9 @@ export default function Page(): JSX.Element {
                 </h1>
             </header>
 
-            <CrosschainTransferStatusStoreProvider>
-                <Status />
-            </CrosschainTransferStatusStoreProvider>
+            <EvmTransferStatusStoreProvider>
+                <EvmStatus />
+            </EvmTransferStatusStoreProvider>
         </div>
     )
 }

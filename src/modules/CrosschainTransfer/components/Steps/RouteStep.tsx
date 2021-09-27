@@ -11,14 +11,14 @@ import {
     NetworkFields,
     NetworkShape,
 } from '@/modules/CrosschainTransfer/types'
-import { useCrystalWallet } from '@/stores/CrystalWalletService'
+import { useTonWallet } from '@/stores/TonWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 
 
 export function RouteStep(): JSX.Element {
     const intl = useIntl()
     const transfer = useCrosschainTransfer()
-    const crystalWallet = useCrystalWallet()
+    const crystalWallet = useTonWallet()
     const evmWallet = useEvmWallet()
 
     const changeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
@@ -62,8 +62,8 @@ export function RouteStep(): JSX.Element {
                             id: 'CROSSCHAIN_TRANSFER_ROUTE_FROM_LABEL',
                         })}
                         network={transfer.leftNetwork}
-                        networks={networks.filter(({ chainId, type }) => chainId !== '1' && type !== 'ton')}
-                        shouldDisplayNetworkAlert={(
+                        networks={networks}
+                        shouldDisplayNetworkAlert={transfer.isEvmToTon && (
                             transfer.leftNetwork?.chainId !== undefined
                             && evmWallet.chainId !== parseInt(transfer.leftNetwork.chainId, 10)
                         )}
@@ -91,6 +91,10 @@ export function RouteStep(): JSX.Element {
                             || (transfer.leftNetwork.chainId !== '1' && transfer.leftNetwork.type !== 'ton')
                         }
                         networks={networks.filter(({ chainId }) => chainId !== transfer.leftNetwork?.chainId)}
+                        shouldDisplayNetworkAlert={transfer.isTonToEvm && (
+                            transfer.rightNetwork?.chainId !== undefined
+                            && evmWallet.chainId !== parseInt(transfer.rightNetwork.chainId, 10)
+                        )}
                         wallet={crystalWallet}
                     />
                 )}

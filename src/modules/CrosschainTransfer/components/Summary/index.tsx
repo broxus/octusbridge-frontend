@@ -3,9 +3,8 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { AccountExplorerLink } from '@/components/common/AccountExplorerLink'
-import { TokenCache } from '@/stores/TonTokensCacheService'
-import { sliceAddress } from '@/utils'
 import { NetworkShape } from '@/modules/CrosschainTransfer/types'
+import { TokenCache } from '@/stores/TokensCacheService'
 
 
 type Props = {
@@ -49,9 +48,7 @@ export function Summary({
                                 })}
                             </span>
                             {leftAddress ? (
-                                <AccountExplorerLink
-                                    address={sliceAddress(leftAddress)}
-                                />
+                                <AccountExplorerLink address={leftAddress} />
                             ) : (
                                 <span>–</span>
                             )}
@@ -67,9 +64,7 @@ export function Summary({
                                 })}
                             </span>
                             {rightAddress ? (
-                                <AccountExplorerLink
-                                    address={sliceAddress(rightAddress)}
-                                />
+                                <AccountExplorerLink address={rightAddress} />
                             ) : (
                                 <span>–</span>
                             )}
@@ -88,7 +83,11 @@ export function Summary({
                         <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT',
+                                    id: token?.symbol !== undefined
+                                        ? 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN'
+                                        : 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT',
+                                }, {
+                                    symbol: token?.symbol,
                                 })}
                             </span>
                             <span className="text-lg">

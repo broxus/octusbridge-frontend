@@ -17,31 +17,29 @@ import { Transaction } from 'web3-core'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
 import { EthAbi, TokenAbi } from '@/misc'
-import { CrosschainTransferStatusParams } from '@/modules/CrosschainTransfer/providers'
-import { TokenCache as EvmTokenCache, EvmTokensCacheService } from '@/stores/EvmTokensCacheService'
-import { TokenCache as TonTokenCache, TonTokensCacheService } from '@/stores/TonTokensCacheService'
-import { CrystalWalletService } from '@/stores/CrystalWalletService'
+import { EvmTransferStatusParams, NetworkShape } from '@/modules/CrosschainTransfer/types'
+import { findNetwork } from '@/modules/CrosschainTransfer/utils'
+import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { debug, error } from '@/utils'
-import { findNetwork } from '@/modules/CrosschainTransfer/utils'
-import { NetworkShape } from '@/modules/CrosschainTransfer/types'
+
 
 type EventVoteData = DecodedAbiFunctionInputs<typeof TokenAbi.EthEventConfig, 'deployEvent'>['eventVoteData']
 
-
-type CrosschainStatusStoreData = {
+type EvmTransferStatusStoreData = {
     amount: string;
+    deriveEventAddress?: Address;
     ethConfigAddress?: string;
     eventVoteData?: EventVoteData;
-    deriveEventAddress?: Address;
     leftAddress?: string;
     log?: LogItem;
     rightAddress?: string;
-    token: TonTokenCache | EvmTokenCache | undefined;
+    token: TokenCache | undefined;
     tx?: Transaction;
 }
 
-type CrosschainStatusStoreState = {
+type EvmTransferStatusStoreState = {
     transferState?: {
         confirmedBlocksCount: number;
         eventBlocksToConfirm: number;
@@ -56,25 +54,24 @@ type CrosschainStatusStoreState = {
 }
 
 
-export class CrosschainStatus {
+export class EvmTransferStatus {
 
-    protected data: CrosschainStatusStoreData = {
+    protected data: EvmTransferStatusStoreData = {
         amount: '',
         token: undefined,
     }
 
-    protected state: CrosschainStatusStoreState = {
+    protected state: EvmTransferStatusStoreState = {
         transferState: undefined,
         prepareState: 'disabled',
         eventState: undefined,
     }
 
     constructor(
-        protected readonly crystalWallet: CrystalWalletService,
-        protected readonly tonTokensCache: TonTokensCacheService,
+        protected readonly crystalWallet: TonWalletService,
         protected readonly evmWallet: EvmWalletService,
-        protected readonly evmTokensCache: EvmTokensCacheService,
-        protected readonly params?: CrosschainTransferStatusParams,
+        protected readonly tokensCache: TokensCacheService,
+        protected readonly params?: EvmTransferStatusParams,
     ) {
         makeAutoObservable(this)
     }
@@ -84,7 +81,7 @@ export class CrosschainStatus {
             return
         }
 
-        this.#tokensDisposer = reaction(() => this.evmTokensCache.tokens, async () => {
+        this.#tokensDisposer = reaction(() => this.tokensCache.tokens, async () => {
             await this.resolve()
         })
         await this.resolve()
@@ -108,6 +105,10 @@ export class CrosschainStatus {
 
         debug(tx)
 
+        if (tx == null) {
+            return
+        }
+
         const wrapperAddress = tx.to
 
         if (wrapperAddress == null) {
@@ -127,7 +128,7 @@ export class CrosschainStatus {
         )
         const vaultWrapperAddress = await vault.methods.wrapper().call()
 
-        const token = this.evmTokensCache.findByVault(vaultAddress, this.leftNetwork.chainId)
+        const token = this.tokensCache.findByVaultAddress(vaultAddress, this.leftNetwork.chainId)
 
         runInAction(() => {
             this.data.token = token
@@ -198,7 +199,7 @@ export class CrosschainStatus {
             const networkBlockNumber = await this.evmWallet.web3?.eth.getBlockNumber()
 
             if (txBlockNumber && networkBlockNumber) {
-                const transferState: CrosschainStatusStoreState['transferState'] = {
+                const transferState: EvmTransferStatusStoreState['transferState'] = {
                     confirmedBlocksCount: networkBlockNumber - txBlockNumber,
                     eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
                     status: this.state.transferState?.status || 'pending',
@@ -253,7 +254,7 @@ export class CrosschainStatus {
                 })
             }
             else {
-                const transferState: CrosschainStatusStoreState['transferState'] = {
+                const transferState: EvmTransferStatusStoreState['transferState'] = {
                     confirmedBlocksCount: 0,
                     eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
                     status: 'pending',
@@ -364,17 +365,25 @@ export class CrosschainStatus {
         }
     }
 
-    public get amount(): CrosschainStatusStoreData['amount'] {
+    public get amount(): EvmTransferStatusStoreData['amount'] {
         return this.data.amount
     }
 
     public get amountNumber(): BigNumber {
-        return this.data.token === undefined
-            ? new BigNumber(0)
-            : new BigNumber(this.data.amount).shiftedBy(-(this.data.token as EvmTokenCache).evm.decimals)
+        if (this.data.token === undefined || this.leftNetwork?.chainId === undefined) {
+            return new BigNumber(0)
+        }
+
+        const vault = this.tokensCache.getTokenVault(this.data.token.root, this.leftNetwork.chainId)
+
+        if (vault?.decimals === undefined) {
+            return new BigNumber(0)
+        }
+
+        return new BigNumber(this.data.amount).shiftedBy(-vault.decimals)
     }
 
-    public get leftAddress(): CrosschainStatusStoreData['leftAddress'] {
+    public get leftAddress(): EvmTransferStatusStoreData['leftAddress'] {
         return this.data.leftAddress
     }
 
@@ -385,7 +394,7 @@ export class CrosschainStatus {
         return findNetwork(this.params.fromId, this.params.fromType) as NetworkShape
     }
 
-    public get rightAddress(): CrosschainStatusStoreData['rightAddress'] {
+    public get rightAddress(): EvmTransferStatusStoreData['rightAddress'] {
         return this.data.rightAddress
     }
 
@@ -396,23 +405,23 @@ export class CrosschainStatus {
         return findNetwork(this.params.toId, this.params.toType) as NetworkShape
     }
 
-    public get token(): TonTokenCache | EvmTokenCache | undefined {
+    public get token(): TokenCache | undefined {
         return this.data.token
     }
 
-    public get transferState(): CrosschainStatusStoreState['transferState'] {
+    public get transferState(): EvmTransferStatusStoreState['transferState'] {
         return this.state.transferState
     }
 
-    public get prepareState(): CrosschainStatusStoreState['prepareState'] {
+    public get prepareState(): EvmTransferStatusStoreState['prepareState'] {
         return this.state.prepareState
     }
 
-    public get eventState(): CrosschainStatusStoreState['eventState'] {
+    public get eventState(): EvmTransferStatusStoreState['eventState'] {
         return this.state.eventState
     }
 
-    public get txHash(): CrosschainTransferStatusParams['txHash'] | undefined {
+    public get txHash(): EvmTransferStatusParams['txHash'] | undefined {
         return this.params?.txHash
     }
 

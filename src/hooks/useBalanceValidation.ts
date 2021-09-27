@@ -1,15 +1,11 @@
 import BigNumber from 'bignumber.js'
 
-import { TokenCache as EvmTokenCache } from '@/stores/EvmTokensCacheService'
-import { TokenCache as TonTokenCache } from '@/stores/TonTokensCacheService'
 
-
-export function useBalanceValidation(token?: EvmTokenCache | TonTokenCache, amount?: string): boolean {
-    if (token && amount) {
-        const balanceBN = new BigNumber(token.balance || 0)
-        const amountBN = new BigNumber(amount).shiftedBy(token.decimals)
+export function useBalanceValidation(balance?: string, amount?: string, decimals?: number): boolean {
+    if (balance && amount && decimals) {
+        const balanceBN = new BigNumber(balance || 0)
+        const amountBN = new BigNumber(amount).shiftedBy(decimals)
         return amountBN.lte(balanceBN)
     }
-
     return true
 }

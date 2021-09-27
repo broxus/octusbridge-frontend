@@ -6,9 +6,10 @@ import { useHistory } from 'react-router-dom'
 import {
     ApproveStep,
     AssetStep,
+    EvmTransferStep,
     RouteStep,
     Summary,
-    TransferStep,
+    TonTransferStep,
 } from '@/modules/CrosschainTransfer/components'
 import { useCrosschainTransfer } from '@/modules/CrosschainTransfer/stores/CrosschainTransfer'
 import { CrosschainTransferStep } from '@/modules/CrosschainTransfer/types'
@@ -17,8 +18,8 @@ import './index.scss'
 
 
 export function Bridge(): JSX.Element {
-    const transfer = useCrosschainTransfer()
     const history = useHistory()
+    const transfer = useCrosschainTransfer()
 
     React.useEffect(() => {
         transfer.init()
@@ -31,7 +32,7 @@ export function Bridge(): JSX.Element {
             const leftNetwork = `${transfer.leftNetwork?.type}-${transfer.leftNetwork?.chainId}`
             const rightNetwork = `${transfer.rightNetwork?.type}-${transfer.rightNetwork?.chainId}`
 
-            history.push(`/bridge/${leftNetwork}/${rightNetwork}/${value}`)
+            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}`)
         })
 
         return () => {
@@ -55,8 +56,11 @@ export function Bridge(): JSX.Element {
                                 case transfer.step === CrosschainTransferStep.TRANSFER && transfer.isAwaitConfirmation:
                                     return <ApproveStep key="approve" />
 
-                                case transfer.step === CrosschainTransferStep.TRANSFER:
-                                    return <TransferStep key="transfer" />
+                                case transfer.step === CrosschainTransferStep.TRANSFER && transfer.isEvmToTon:
+                                    return <EvmTransferStep key="evm-transfer" />
+
+                                case transfer.step === CrosschainTransferStep.TRANSFER && transfer.isTonToEvm:
+                                    return <TonTransferStep key="ton-transfer" />
 
                                 default:
                                     return <RouteStep key="step" />

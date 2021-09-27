@@ -3,14 +3,13 @@ import { useIntl } from 'react-intl'
 
 import { SimpleRadio } from '@/components/common/SimpleRadio'
 import { ApprovalStrategies } from '@/modules/CrosschainTransfer/types'
-import { TokenCache as EvmTokenCache } from '@/stores/EvmTokensCacheService'
-import { TokenCache as TonTokenCache } from '@/stores/TonTokensCacheService'
+import { TokenCache } from '@/stores/TokensCacheService'
 
 
 type Props = {
     amount: string;
     strategy: ApprovalStrategies;
-    token?: TonTokenCache | EvmTokenCache;
+    token?: TokenCache;
     onChange: (value: ApprovalStrategies) => void;
 }
 

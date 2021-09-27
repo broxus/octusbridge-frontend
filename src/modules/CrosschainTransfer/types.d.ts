@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 
+
 export type NetworkShape = {
     label: string;
     chainId: string;
@@ -12,6 +13,7 @@ export type CrosschainTransferStoreData = {
     amount: string;
     approvalDelta: BigNumber;
     approvalStrategy: ApprovalStrategies;
+    balance?: string;
     leftAddress: string;
     leftNetwork?: NetworkShape;
     rightAddress: string;
@@ -34,4 +36,20 @@ export enum CrosschainTransferStep {
 export type CrosschainTransferStoreState = {
     isAwaitConfirmation: boolean;
     step: CrosschainTransferStep;
+}
+
+export type EvmTransferStatusParams = {
+    fromId: string;
+    fromType: string;
+    toId: string;
+    toType: string;
+    txHash: string;
+}
+
+export type TonTransferStatusParams = {
+    fromId: string;
+    fromType: string;
+    toId: string;
+    toType: string;
+    contractAddress: string;
 }
