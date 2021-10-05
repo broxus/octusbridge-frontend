@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { TonStatus, TonTransferStatusStoreProvider } from '@/modules/CrosschainTransfer'
+import { TonStatus, TonTransferStoreProvider } from '@/modules/Bridge'
 
 
 export default function Page(): JSX.Element {
@@ -17,9 +17,9 @@ export default function Page(): JSX.Element {
                 </h1>
             </header>
 
-            <TonTransferStatusStoreProvider>
+            <TonTransferStoreProvider>
                 <TonStatus />
-            </TonTransferStatusStoreProvider>
+            </TonTransferStoreProvider>
         </div>
     )
 }

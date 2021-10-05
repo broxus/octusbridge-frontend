@@ -226,13 +226,6 @@ export class TonWalletService {
     }
 
     /**
-     * Cancel connecting state
-     */
-    public cancelConnecting(): void {
-        this.state.isConnecting = false
-    }
-
-    /**
      * Reset wallet data to defaults
      * @protected
      */

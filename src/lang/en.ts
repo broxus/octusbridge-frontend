@@ -1,4 +1,6 @@
 /* eslint-disable */
+import * as React from 'react'
+
 export default {
     OPEN_IN_EXPLORER: 'Open in explorer',
 
@@ -8,6 +10,7 @@ export default {
     NAV_LINK_TEXT_RELAYERS: 'Relayers',
 
     WALLET_BALANCE_HINT: '{value} {currency}',
+    WALLET_CONNECTING: 'Connecting...',
 
     FREE_TON_NETWORK: 'Free TON',
     ETHEREUM_NETWORK: 'Ethereum',
@@ -16,6 +19,8 @@ export default {
 
     CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect Crystal Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',
+    EVM_WALLET_WRONG_NETWORK_NOTE: 'Wrong blockchain selected in MetaMask. Open the wallet to select {networkName}.',
+    EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
 
     CROSSCHAIN_TRANSFER_HEADER_TITLE: 'Crosschain transfer',
     CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT: 'Connect wallet',
@@ -40,13 +45,49 @@ export default {
     CROSSCHAIN_TRANSFER_STEP_3_HINT: 'Step 3',
     CROSSCHAIN_TRANSFER_STEP_3_TITLE: 'Approve the amount to spend from your wallet',
     CROSSCHAIN_TRANSFER_STEP_3_SUBTITLE: 'The Bridge requires your permission to spend funds from your wallet. Blockchain fees may apply.',
+    CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_LABEL: 'The infinite amount',
+    CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_NOTE: '<p>Approve the infinite amount if you don’t want to pay the approval fee again next time.</p><p>The Bridge will spend only the amount of transfer you have requested.</p>',
+    CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL: '{amount} {symbol}',
+    CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_NOTE: 'Approve only the amount of this transfer.',
 
     CROSSCHAIN_TRANSFER_STEP_4_HINT: 'Step 4',
     CROSSCHAIN_TRANSFER_STEP_4_TITLE: 'Transfer status',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_PENDING: 'Pending',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_CONFIRMED: 'Confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_CONFIRMATION: 'Confirmation {confirmed}/{confirmations}',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_REJECTED: 'Failed',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE: 'Transfer tokens to the Ethereum vault',
+    CROSSCHAIN_TRANSFER_STATUS_TRANSFER_BTN_TEXT: 'Transfer',
+
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING: 'Pending',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_CONFIRMED: 'Confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE: 'Prepare transfer in Free TON',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_BTN_TEXT: 'Prepare',
+
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_PENDING: 'Pending',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMED: 'Confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMATION: 'Confirmation {confirmed}/{confirmations}',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_REJECTED: 'Failed',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE: 'Transfer checked by relayers',
+
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING: 'Pending',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED: 'Confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED: 'Failed',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE: 'Release transfer in Free TON',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_ETH_NOTE: 'Release transfer in Ethereum',
+    CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT: 'Release',
+
+    CROSSCHAIN_TRANSFER_STATUS_WAITING_NETWORK: 'Waiting network',
+    CROSSCHAIN_TRANSFER_STATUS_WAITING_WALLET: 'Waiting wallet',
 
     CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT: 'Next',
     CROSSCHAIN_TRANSFER_PREV_STEP_BTN_TEXT: 'Back',
     CROSSCHAIN_TRANSFER_CONFIRM_BTN_TEXT: 'Confirm',
+    CROSSCHAIN_TRANSFER_CONFIRMING_BTN_TEXT: 'Awaiting approve',
     CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT: 'Transfer',
 
     CROSSCHAIN_TRANSFER_SUMMARY_FROM: 'From address',

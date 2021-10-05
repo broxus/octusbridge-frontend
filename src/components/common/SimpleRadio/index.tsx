@@ -1,11 +1,13 @@
 import * as React from 'react'
 
 import './index.scss'
+import classNames from 'classnames'
 
 
 type Props<T> = {
     annotation?: React.ReactNode;
     checked?: boolean;
+    disabled?: boolean;
     label?: React.ReactNode;
     name?: string;
     onChange?: (value: T) => void;
@@ -13,27 +15,40 @@ type Props<T> = {
 
 export function SimpleRadio<T extends string>({
     annotation,
-    label,
     checked,
+    disabled,
+    label,
     name,
     onChange: onChangeCallback,
 }: Props<T>): JSX.Element {
     const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+        if (disabled) {
+            return
+        }
         onChangeCallback?.(event.target.name as T)
     }
 
     return (
-        <label className="simple-radio">
+        <label
+            className={classNames('simple-radio', {
+                disabled,
+            })}
+        >
             <input
-                type="radio"
-                name={name}
                 checked={checked}
+                disabled={disabled}
                 hidden
+                name={name}
+                type="radio"
                 onChange={onChange}
             />
             <div className="simple-radio__main">
                 <span className="simple-radio__title">{label}</span>
-                <div>{annotation}</div>
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: annotation as string,
+                    }}
+                />
             </div>
         </label>
     )

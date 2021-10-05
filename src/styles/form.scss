@@ -44,6 +44,13 @@
         height: 44px;
     }
 
+    &:disabled {
+        background-color: rgba(0, 0, 0, 0.08);
+        border-color: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.72);
+        cursor: not-allowed;
+    }
+
     &.caution {
         border-color: #e6ac00;
         box-shadow: 0 0 2px 0 #e6ac00;
@@ -82,13 +89,6 @@
     &:-webkit-autofill {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-    }
-
-    &:disabled {
-        background-color: rgba(0, 0, 0, 0.08);
-        border-color: rgba(255, 255, 255, 0.16);
-        color: rgba(255, 255, 255, 0.72);
-        cursor: not-allowed;
     }
 }
 

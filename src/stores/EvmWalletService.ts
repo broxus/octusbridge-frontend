@@ -10,7 +10,7 @@ import { error } from '@/utils'
 export type WalletData = {
     address?: string;
     balance?: string;
-    chainId: number;
+    chainId: string;
 }
 
 export type WalletState = {
@@ -23,7 +23,7 @@ export type WalletState = {
 const DEFAULT_WALLET_DATA: WalletData = {
     address: undefined,
     balance: '0',
-    chainId: 1,
+    chainId: '1',
 }
 
 const DEFAULT_WALLET_STATE: WalletState = {
@@ -62,6 +62,9 @@ export class EvmWalletService {
     }
 
     protected async init(): Promise<void> {
+        this.state.isConnecting = true
+        this.state.isInitializing = true
+
         this.#provider = Web3.givenProvider
         this.#web3 = new Web3(this.#provider)
 
@@ -82,16 +85,13 @@ export class EvmWalletService {
         })
 
         try {
-            this.state.isConnected = this.#provider.selectedAddress != null
-        }
-        catch (e) {}
-
-        if (!this.isConnected) {
-            return
-        }
-
-        try {
+            await this.syncChainId()
             await this.fetchAccountData()
+
+            runInAction(() => {
+                this.state.isInitialized = this.cachedProvider === 'injected'
+                this.state.isInitializing = false
+            })
         }
         catch (e) {
             error('Fetch account data error', e)
@@ -103,39 +103,27 @@ export class EvmWalletService {
             })
         }
 
-        try {
-            const chainId = await this.#web3.eth.getChainId()
+        this.#provider.on('accountsChanged', async () => {
+            await this.fetchAccountData()
+        })
+
+        this.#provider.on('chainChanged', async (chainId: string) => {
             runInAction(() => {
-                this.data.chainId = chainId
+                this.data.chainId = parseInt(chainId, 16).toString()
             })
-        }
-        catch (e) {
-            error('Chain ID request error', e)
-        }
-
-        this.#provider.on('accountsChanged', () => {
-            this.fetchAccountData()
+            await this.fetchAccountData()
         })
-
-        this.#provider.on('chainChanged', (chainId: string) => {
-            runInAction(() => {
-                this.data.chainId = parseInt(chainId, 16)
-            })
-            this.fetchAccountData()
-        })
-
-        this.#provider.on('networkChanged', () => {
-            this.fetchAccountData()
-        })
-
     }
 
     public async connect(): Promise<UserData | undefined> {
         try {
-            this.state.isInitializing = true
+            this.state.isConnecting = true
             this.#provider = await this.#web3modal?.connect?.()
             this.#web3 = new Web3(this.#provider)
+
             runInAction(() => {
+                this.data.address = this.#provider.selectedAddress
+                this.state.isConnected = this.#provider.selectedAddress != null
                 this.state.isInitialized = this.cachedProvider === 'injected'
                 this.state.isInitializing = false
             })
@@ -149,6 +137,8 @@ export class EvmWalletService {
                 this.state.isInitializing = false
             })
         }
+
+        await this.syncChainId()
 
         // eslint-disable-next-line no-return-await
         return await this.fetchAccountData()
@@ -183,6 +173,7 @@ export class EvmWalletService {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
             })
+            await this.syncChainId()
         }
         catch (switchError) {
             // TODO add network configurations
@@ -203,47 +194,24 @@ export class EvmWalletService {
         }
     }
 
-    public get account(): UserData | undefined {
-        return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
+    public async syncChainId(): Promise<void> {
+        if (this.#web3 === undefined) {
+            return
+        }
+
+        try {
+            const chainId = await this.#web3.eth.getChainId()
+
+            runInAction(() => {
+                this.data.chainId = chainId.toString()
+            })
+        }
+        catch (e) {
+            error('Chain ID request error', e)
+        }
     }
 
-    public get address(): WalletData['address'] {
-        return this.account?.address
-    }
-
-    public get chainId(): number {
-        return this.data.chainId
-    }
-
-    public get web3(): Web3 | undefined {
-        return this.#web3
-    }
-
-    public get isConnected(): WalletState['isConnected'] {
-        return this.state.isConnected
-    }
-
-    public get isConnecting(): WalletState['isConnecting'] {
-        return this.state.isConnecting
-    }
-
-    public get isInitialized(): WalletState['isInitialized'] {
-        return this.state.isInitialized
-    }
-
-    public get isInitializing(): WalletState['isInitializing'] {
-        return this.state.isInitializing
-    }
-
-    protected get cachedProvider(): string | undefined {
-        return this.#web3modal?.cachedProvider
-    }
-
-    protected clearCachedProvider(): void {
-        this.#web3modal?.clearCachedProvider()
-    }
-
-    protected async fetchAccountData(): Promise<UserData | undefined> {
+    public async fetchAccountData(): Promise<UserData | undefined> {
         if (this.#web3 !== undefined) {
             this.state.isConnecting = true
 
@@ -282,6 +250,50 @@ export class EvmWalletService {
             return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
         }
         return undefined
+    }
+
+    public get account(): UserData | undefined {
+        return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
+    }
+
+    public get address(): WalletData['address'] {
+        return this.account?.address
+    }
+
+    public get chainId(): string {
+        return this.data.chainId
+    }
+
+    public get web3(): Web3 | undefined {
+        return this.#web3
+    }
+
+    public get isMetaMask(): boolean {
+        return this.#provider.isMetaMask
+    }
+
+    public get isConnected(): WalletState['isConnected'] {
+        return this.state.isConnected
+    }
+
+    public get isConnecting(): WalletState['isConnecting'] {
+        return this.state.isConnecting
+    }
+
+    public get isInitialized(): WalletState['isInitialized'] {
+        return this.state.isInitialized
+    }
+
+    public get isInitializing(): WalletState['isInitializing'] {
+        return this.state.isInitializing
+    }
+
+    protected get cachedProvider(): string | undefined {
+        return this.#web3modal?.cachedProvider
+    }
+
+    protected clearCachedProvider(): void {
+        this.#web3modal?.clearCachedProvider()
     }
 
     #provider: any

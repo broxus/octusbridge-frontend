@@ -22,8 +22,8 @@ export function App(): JSX.Element {
     return (
         <IntlProvider
             key="intl"
-            locale="en"
             defaultLocale="en"
+            locale="en"
             messages={messages}
             onError={noop}
         >

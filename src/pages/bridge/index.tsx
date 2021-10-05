@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Bridge } from '@/modules/CrosschainTransfer'
+import { Bridge } from '@/modules/Bridge'
 
 
 export default function Page(): JSX.Element {

@@ -16,7 +16,7 @@ export function EvmWallet(): JSX.Element | null {
 
     return (
         <Observer>
-            {() => (
+            {() => (wallet.isInitialized ? (
                 <div key="crystal-wallet" className="wallet">
                     {!wallet.isConnected ? (
                         <button
@@ -63,18 +63,20 @@ export function EvmWallet(): JSX.Element | null {
                                 )}
                             </div>
 
-                            <button
-                                key="logout"
-                                type="button"
-                                className="btn btn-logout"
-                                onClick={wallet.disconnect}
-                            >
-                                <Icon icon="logout" />
-                            </button>
+                            {!wallet.isMetaMask && (
+                                <button
+                                    key="logout"
+                                    type="button"
+                                    className="btn btn-logout"
+                                    onClick={wallet.disconnect}
+                                >
+                                    <Icon icon="logout" />
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
-            )}
+            ) : null)}
         </Observer>
     )
 }

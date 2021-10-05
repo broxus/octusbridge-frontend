@@ -2,10 +2,12 @@ import { Mutex } from '@broxus/await-semaphore'
 import {
     makeAutoObservable, reaction, runInAction,
 } from 'mobx'
-import { Address, Subscription } from 'ton-inpage-provider'
+import { Address, Contract, Subscription } from 'ton-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
 
-import { BridgeConstants, EthAbi, TokenWallet } from '@/misc'
+import {
+    BridgeConstants, EthAbi, TokenAbi, TokenWallet,
+} from '@/misc'
 import { TokensListService } from '@/stores/TokensListService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
@@ -129,6 +131,10 @@ export class TokensCacheService {
 
         this.data.tokens = this.tokensList.tokens.map(token => {
             const asset = this.assets[token.address]
+            const cachedToken = this.get(token.address)
+            const vaults = (cachedToken?.vaults !== undefined && cachedToken.vaults.length > 0)
+                ? cachedToken?.vaults
+                : asset?.vaults
             return {
                 decimals: token.decimals,
                 icon: token.logoURI,
@@ -139,7 +145,7 @@ export class TokensCacheService {
                 root: token.address,
                 symbol: token.symbol,
                 updatedAt: -1,
-                vaults: asset?.vaults || [],
+                vaults: vaults || [],
             }
         })
     }
@@ -312,11 +318,78 @@ export class TokensCacheService {
 
     /**
      *
+     * @param root
+     */
+    public getTokenProxyAddress(root: string): Address | undefined {
+        const proxy = this.get(root)?.proxy
+
+        if (proxy === undefined) {
+            return undefined
+        }
+
+        return new Address(proxy)
+    }
+
+    /**
+     *
+     * @param root
+     */
+    public getTokenProxyContract(root: string): Contract<typeof TokenAbi.TokenTransferProxy> | undefined {
+        const proxyAddress = this.getTokenProxyAddress(root)
+
+        if (proxyAddress === undefined) {
+            return undefined
+        }
+
+        return new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
+    }
+
+    /**
+     *
+     * @param root
+     */
+    public async getTonConfigurationContract(
+        root: string,
+    ): Promise<Contract<typeof TokenAbi.TonEventConfig> | undefined> {
+        const proxyContract = this.getTokenProxyContract(root)
+
+        if (proxyContract === undefined) {
+            return undefined
+        }
+
+        const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
+        const tonConfigurationAddress = proxyDetails.value0.tonConfiguration
+
+        return new Contract(TokenAbi.TonEventConfig, tonConfigurationAddress)
+    }
+
+    /**
+     *
      * @param {string} root
      * @param {string} chainId
      */
     public getTokenVault(root: string, chainId: string): TokenAssetVault | undefined {
         return this.get(root)?.vaults.find(vault => vault.chainId === chainId)
+    }
+
+    /**
+     *
+     * @param root
+     */
+    public async getTonTokenWalletContract(root: string): Promise<Contract<typeof TokenAbi.Wallet> | undefined> {
+        let wallet = this.get(root)?.wallet
+
+        if (wallet === undefined) {
+            await this.syncTonTokenWalletAddress(root)
+        }
+
+        wallet = this.get(root)?.wallet
+
+        if (wallet === undefined) {
+            return undefined
+        }
+
+        return new Contract(TokenAbi.Wallet, new Address(wallet))
     }
 
     /**

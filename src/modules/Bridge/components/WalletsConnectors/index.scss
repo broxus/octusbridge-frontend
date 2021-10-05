@@ -1,0 +1,11 @@
+.wallets-connectors {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    &__wrapper {
+        height: 250px;
+        justify-content: center;
+    }
+}
