@@ -2,9 +2,10 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { AccountExplorerLink } from '@/components/common/AccountExplorerLink'
+import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { NetworkShape } from '@/modules/Bridge/types'
 import { TokenCache } from '@/stores/TokensCacheService'
+import {EtherscanAddressLink} from "@/components/common/EtherscanAddressLink";
 
 
 type Props = {
@@ -47,8 +48,15 @@ export function Summary({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
                                 })}
                             </span>
-                            {leftAddress ? (
-                                <AccountExplorerLink address={leftAddress} />
+                            {leftAddress !== undefined ? (
+                                <>
+                                    {leftNetwork?.type === 'ton' && (
+                                        <TonscanAccountLink key="ton-address" address={leftAddress} />
+                                    )}
+                                    {leftNetwork?.type === 'evm' && (
+                                        <EtherscanAddressLink key="evm-address" address={leftAddress} />
+                                    )}
+                                </>
                             ) : (
                                 <span>–</span>
                             )}
@@ -63,8 +71,15 @@ export function Summary({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
                                 })}
                             </span>
-                            {rightAddress ? (
-                                <AccountExplorerLink address={rightAddress} />
+                            {rightAddress !== undefined ? (
+                                <>
+                                    {rightNetwork?.type === 'ton' && (
+                                        <TonscanAccountLink key="ton-address" address={rightAddress} />
+                                    )}
+                                    {rightNetwork?.type === 'evm' && (
+                                        <EtherscanAddressLink key="evm-address" address={rightAddress} />
+                                    )}
+                                </>
                             ) : (
                                 <span>–</span>
                             )}

@@ -2,7 +2,8 @@
 import * as React from 'react'
 
 export default {
-    OPEN_IN_EXPLORER: 'Open in explorer',
+    OPEN_IN_EXPLORER: 'Open in TONscan',
+    OPEN_IN_ETHERSCAN: 'Open in Etherscan',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
     NAV_LINK_TEXT_STAKING: 'Staking',
@@ -11,11 +12,6 @@ export default {
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
-
-    FREE_TON_NETWORK: 'Free TON',
-    ETHEREUM_NETWORK: 'Ethereum',
-    ETHEREUM_NETWORK_ROPSTEN: 'Ropsten',
-    ETHEREUM_NETWORK_GOERLI: 'Goerli',
 
     CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect Crystal Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',

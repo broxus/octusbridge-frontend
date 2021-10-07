@@ -10,14 +10,15 @@ type Props = {
     className?: string;
 }
 
-export function AccountExplorerLink({ address, children, className }: Props): JSX.Element {
+
+export function EtherscanAddressLink({ address, children, className }: Props): JSX.Element {
     const intl = useIntl()
 
     return (
         <a
             className={className}
-            href={`https://ton-explorer.com/accounts/${address}`}
-            title={intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })}
+            href={`https://etherscan.io/address/${address}`}
+            title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
             target="_blank"
             rel="noopener noreferrer"
         >
