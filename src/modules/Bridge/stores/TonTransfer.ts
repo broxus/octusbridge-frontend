@@ -281,7 +281,6 @@ export class TonTransfer {
                 && this.evmWallet.chainId === this.rightNetwork?.chainId
                 && this.eventState.status === 'confirmed'
             ) {
-                this.changeState('releaseState', 'pending')
                 this.runReleaseUpdater()
             }
 
@@ -418,6 +417,8 @@ export class TonTransfer {
                 && this.rightNetwork !== undefined
                 && this.evmWallet.chainId === this.rightNetwork.chainId
             ) {
+                this.changeState('releaseState', 'pending')
+
                 const vaultContract = this.tokensCache.getEthTokenVaultContract(
                     this.token.root,
                     this.rightNetwork.chainId,
