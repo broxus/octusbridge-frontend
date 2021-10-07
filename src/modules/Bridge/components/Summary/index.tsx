@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { EtherscanAddressLink } from '@/components/common/EtherscanAddressLink'
+import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { TokenCache } from '@/stores/TokensCacheService'
 import { NetworkShape } from '@/bridge'
@@ -15,6 +15,7 @@ type Props = {
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     token?: TokenCache;
+    vaultBalance?: string;
 }
 
 
@@ -25,6 +26,7 @@ export function Summary({
     rightAddress,
     rightNetwork,
     token,
+    vaultBalance,
 }: Props): JSX.Element {
     const intl = useIntl()
 
@@ -54,7 +56,11 @@ export function Summary({
                                         <TonscanAccountLink key="ton-address" address={leftAddress} />
                                     )}
                                     {leftNetwork?.type === 'evm' && (
-                                        <EtherscanAddressLink key="evm-address" address={leftAddress} />
+                                        <BlockScanAddressLink
+                                            key="evm-address"
+                                            address={leftAddress}
+                                            baseUrl={leftNetwork.explorerBaseUrl}
+                                        />
                                     )}
                                 </>
                             ) : (
@@ -77,13 +83,29 @@ export function Summary({
                                         <TonscanAccountLink key="ton-address" address={rightAddress} />
                                     )}
                                     {rightNetwork?.type === 'evm' && (
-                                        <EtherscanAddressLink key="evm-address" address={rightAddress} />
+                                        <BlockScanAddressLink
+                                            key="evm-address"
+                                            address={rightAddress}
+                                            baseUrl={rightNetwork.explorerBaseUrl}
+                                        />
                                     )}
                                 </>
                             ) : (
                                 <span>–</span>
                             )}
                         </li>
+                        {vaultBalance !== undefined && (
+                            <li key="vault-balance">
+                                <span className="text-muted">
+                                    {intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE',
+                                    }, {
+                                        symbol: token?.symbol,
+                                    })}
+                                </span>
+                                <span>{vaultBalance}</span>
+                            </li>
+                        )}
                         {token?.symbol !== undefined && (
                             <li key="bridge-fee">
                                 <span className="text-muted">

@@ -6,18 +6,24 @@ import { sliceAddress } from '@/utils'
 
 type Props = {
     address: string;
+    baseUrl: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
 }
 
 
-export function EtherscanAddressLink({ address, children, className }: Props): JSX.Element {
+export function BlockScanAddressLink({
+    address,
+    baseUrl,
+    children,
+    className,
+}: Props): JSX.Element {
     const intl = useIntl()
 
     return (
         <a
             className={className}
-            href={`https://etherscan.io/address/${address}`}
+            href={`${baseUrl}address/${address}`}
             title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
             target="_blank"
             rel="noopener noreferrer"
