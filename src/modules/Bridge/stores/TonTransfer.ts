@@ -276,14 +276,6 @@ export class TonTransfer {
                 return
             }
 
-            if (
-                this.evmWallet.isConnected
-                && this.evmWallet.chainId === this.rightNetwork?.chainId
-                && this.eventState.status === 'confirmed'
-            ) {
-                this.runReleaseUpdater()
-            }
-
             const { chainId } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
 
             await this.tokensCache.syncEvmToken(token.root, chainId)
@@ -327,6 +319,14 @@ export class TonTransfer {
 
             this.changeData('encodedEvent', encodedEvent)
             this.changeData('withdrawalId', withdrawalId)
+
+            if (
+                this.evmWallet.isConnected
+                && this.evmWallet.chainId === this.rightNetwork?.chainId
+                && this.eventState.status === 'confirmed'
+            ) {
+                this.runReleaseUpdater()
+            }
         })().finally(() => {
             if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
                 this.eventUpdater = setTimeout(() => {
@@ -417,8 +417,6 @@ export class TonTransfer {
                 && this.rightNetwork !== undefined
                 && this.evmWallet.chainId === this.rightNetwork.chainId
             ) {
-                this.changeState('releaseState', 'pending')
-
                 const vaultContract = this.tokensCache.getEthTokenVaultContract(
                     this.token.root,
                     this.rightNetwork.chainId,
