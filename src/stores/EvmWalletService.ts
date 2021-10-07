@@ -5,6 +5,7 @@ import Web3Modal from 'web3modal'
 
 import { UserData } from '@/models/UserData'
 import { error } from '@/utils'
+import { findNetwork } from '@/modules/Bridge/utils'
 
 
 export type WalletData = {
@@ -175,22 +176,41 @@ export class EvmWalletService {
             })
             await this.syncChainId()
         }
-        catch (switchError) {
-            // TODO add network configurations
+        catch (e: any) {
             // This error code indicates that the chain has not been added to MetaMask.
-            // @ts-ignore
-            if (switchError.code === 4902) {
-                // try {
-                //     await this.#provider.request({
-                //         method: 'wallet_addEthereumChain',
-                //         params: [{ chainId: '0xf00', rpcUrl: 'https://...' /* ... */ }],
-                //     })
-                // }
-                // catch (addError) {
-                //     // handle "add" error
-                // }
+            if (e.code === 4902) {
+                await this.addNetwork(chainId)
             }
-            // handle other "switch" errors
+            error('Switch network error', e)
+        }
+    }
+
+    public async addNetwork(chainId: string): Promise<void> {
+        try {
+            const network = findNetwork(chainId, 'evm')
+            if (network === undefined) {
+                (() => {
+                    throw new Error(`Cannot find EVM network with chainId ${chainId}.`)
+                })()
+            }
+
+            await this.#provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                    blockExplorerUrls: [network.explorerBaseUrl],
+                    chainId: `0x${parseInt(chainId, 10).toString(16)}`,
+                    chainName: network.name,
+                    nativeCurrency: {
+                        decimals: 18,
+                        name: network.currencySymbol,
+                        symbol: network.currencySymbol,
+                    },
+                    rpcUrls: [network.rpcUrl],
+                }],
+            })
+        }
+        catch (e) {
+            error('Add network error', e)
         }
     }
 

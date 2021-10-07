@@ -5,13 +5,7 @@ import { Transaction } from 'web3-core'
 
 import { TokenAbi } from '@/misc'
 import { TokenCache } from '@/stores/TokensCacheService'
-
-
-export type NetworkShape = {
-    chainId: string;
-    label: string;
-    type: string;
-}
+import { NetworkShape } from '@/bridge'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
 

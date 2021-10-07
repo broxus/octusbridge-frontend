@@ -2,7 +2,7 @@
 import * as React from 'react'
 
 export default {
-    OPEN_IN_EXPLORER: 'Open in TONscan',
+    OPEN_IN_EXPLORER: 'Open in TON Scan',
     OPEN_IN_ETHERSCAN: 'Open in Etherscan',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
@@ -18,7 +18,7 @@ export default {
     EVM_WALLET_WRONG_NETWORK_NOTE: 'Wrong blockchain selected in MetaMask. Open the wallet to select {networkName}.',
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
 
-    CROSSCHAIN_TRANSFER_HEADER_TITLE: 'Crosschain transfer',
+    CROSSCHAIN_TRANSFER_HEADER_TITLE: 'Cross-chain transfer',
     CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT: 'Connect wallet',
     CROSSCHAIN_TRANSFER_SUMMARY_TITLE: 'Summary',
     CROSSCHAIN_TRANSFER_STEP_1_HINT: 'Step 1',

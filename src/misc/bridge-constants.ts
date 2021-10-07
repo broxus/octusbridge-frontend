@@ -1,7 +1,10 @@
+import { TokenAssetsURI, TokenListURI } from '@/config'
+
+
 export class BridgeConstants {
 
-    static TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/test.json';
+    static TokenAssetsURI = TokenAssetsURI
 
-    static TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/test.json';
+    static TokenListURI = TokenListURI
 
 }

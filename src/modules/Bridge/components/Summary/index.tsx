@@ -2,10 +2,10 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { EtherscanAddressLink } from '@/components/common/EtherscanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
-import { NetworkShape } from '@/modules/Bridge/types'
 import { TokenCache } from '@/stores/TokensCacheService'
-import {EtherscanAddressLink} from "@/components/common/EtherscanAddressLink";
+import { NetworkShape } from '@/bridge'
 
 
 type Props = {
@@ -40,15 +40,15 @@ export function Summary({
                     <ul className="list crosschain-transfer__list">
                         <li>
                             <span className="text-muted">
-                                {leftNetwork?.label !== undefined ? intl.formatMessage({
+                                {leftNetwork?.name !== undefined ? intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK',
                                 }, {
-                                    network: leftNetwork.label,
+                                    network: leftNetwork.name,
                                 }) : intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
                                 })}
                             </span>
-                            {leftAddress !== undefined ? (
+                            {leftAddress ? (
                                 <>
                                     {leftNetwork?.type === 'ton' && (
                                         <TonscanAccountLink key="ton-address" address={leftAddress} />
@@ -63,15 +63,15 @@ export function Summary({
                         </li>
                         <li>
                             <span className="text-muted">
-                                {rightNetwork?.label !== undefined ? intl.formatMessage({
+                                {rightNetwork?.name !== undefined ? intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK',
                                 }, {
-                                    network: rightNetwork.label,
+                                    network: rightNetwork.name,
                                 }) : intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
                                 })}
                             </span>
-                            {rightAddress !== undefined ? (
+                            {rightAddress ? (
                                 <>
                                     {rightNetwork?.type === 'ton' && (
                                         <TonscanAccountLink key="ton-address" address={rightAddress} />

@@ -10,7 +10,6 @@ import ton, { Address, Contract } from 'ton-inpage-provider'
 import { TokenAbi } from '@/misc'
 import {
     EventStateStatus,
-    NetworkShape,
     TonTransferQueryParams,
     TonTransferStoreData,
     TonTransferStoreState,
@@ -19,6 +18,7 @@ import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { NetworkShape } from '@/bridge'
 import { error } from '@/utils'
 
 

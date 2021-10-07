@@ -2,14 +2,14 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { NetworkShape } from '@/bridge'
+import { networks } from '@/config'
 import { RouteForm } from '@/modules/Bridge/components/RouteForm'
-import { networks } from '@/modules/Bridge/constants'
 import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
 import {
     AddressesFields,
     CrosschainBridgeStep,
     NetworkFields,
-    NetworkShape,
 } from '@/modules/Bridge/types'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'

@@ -5,9 +5,9 @@ import classNames from 'classnames'
 
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { NetworkShape } from '@/modules/Bridge/types'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
+import { NetworkShape } from '@/bridge'
 import { isTonAddressValid } from '@/utils'
 import { isEvmAddressValid } from '@/utils/is-evm-address-valid'
 

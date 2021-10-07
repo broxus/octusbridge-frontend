@@ -14,13 +14,13 @@ import {
 import ton, { Address, Contract } from 'ton-inpage-provider'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
+import { NetworkShape } from '@/bridge'
 import { EthAbi, TokenAbi } from '@/misc'
 import {
     EventVoteData,
     EvmTransferQueryParams,
     EvmTransferStoreData,
     EvmTransferStoreState,
-    NetworkShape,
 } from '@/modules/Bridge/types'
 import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'

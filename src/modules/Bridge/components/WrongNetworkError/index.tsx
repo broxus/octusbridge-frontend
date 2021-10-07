@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { NetworkShape } from '@/modules/Bridge/types'
 import { useEvmWallet } from '@/stores/EvmWalletService'
+import { NetworkShape } from '@/bridge'
 
 
 type Props = {
@@ -24,7 +24,7 @@ export function WrongNetworkError({ network }: Props): JSX.Element {
                 {intl.formatMessage({
                     id: 'EVM_WALLET_WRONG_NETWORK_NOTE',
                 }, {
-                    networkName: network.label || '',
+                    networkName: network.name || '',
                 })}
             </span>
 

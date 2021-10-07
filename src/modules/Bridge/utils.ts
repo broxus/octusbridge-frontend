@@ -1,6 +1,8 @@
-import { networks } from '@/modules/Bridge/constants'
-import { NetworkShape } from '@/modules/Bridge/types'
+import { NetworkShape } from '@/bridge'
+import { networks } from '@/config'
 
+
+// todo: move to global utils
 export function findNetwork(chainId: string, type: string): NetworkShape | undefined {
     return networks.find(item => item.chainId === chainId && item.type === type)
 }
