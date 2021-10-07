@@ -49,6 +49,6 @@ export const networks: NetworkShape[] = [
     },
 ]
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/test.json'
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/test.json'
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'

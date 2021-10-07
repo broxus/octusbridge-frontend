@@ -1,4 +1,4 @@
-FROM gcr.io/broxus/ton/tonswap/builder:1.0 as builder
+FROM gcr.io/broxus/ton/tonbridge/builder:1.0 as builder
 
 COPY . .
 
