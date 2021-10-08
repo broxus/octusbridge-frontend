@@ -1,6 +1,6 @@
-.text-muted {
-    color: #ffffff;
-    opacity: 0.56;
+.text-muted,
+.text-muted a {
+    color: rgba(255, 255, 255, 0.56);
 }
 
 .text-lg {
@@ -13,4 +13,19 @@
 .text-sm {
     font-size: 12px;
     line-height: 18px;
+}
+
+.text-nowrap {
+    white-space: nowrap;
+}
+
+.truncate {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-padding-horizontal {
+    padding: 0 10px;
 }

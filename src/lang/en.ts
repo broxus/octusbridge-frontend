@@ -3,7 +3,7 @@ import * as React from 'react'
 
 export default {
     OPEN_IN_EXPLORER: 'Open in TON Scan',
-    OPEN_IN_ETHERSCAN: 'Open in Etherscan',
+    OPEN_IN_ETHERSCAN: 'Open in indexer',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
     NAV_LINK_TEXT_STAKING: 'Staking',
@@ -90,6 +90,7 @@ export default {
     CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK: 'From {network}',
     CROSSCHAIN_TRANSFER_SUMMARY_TO: 'To address',
     CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK: 'To {network}',
+    CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE: 'Vault balance, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT: 'Amount',
     CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN: 'Amount, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE: 'Bridge fee, {symbol}',

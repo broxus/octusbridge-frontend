@@ -2,22 +2,22 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
-import { Copy } from '@/components/common/Copy'
 import { sliceAddress } from '@/utils'
+import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
 
 
 type Props = {
-    address: string;
     baseUrl: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
+    hash: string;
 }
 
 
-export function BlockScanAddressLink({
-    address,
+export function BlockScanTxLink({
+    hash,
     baseUrl,
     children,
     className,
@@ -28,15 +28,15 @@ export function BlockScanAddressLink({
     return (
         <span className={classNames('explorer-link', className)}>
             <a
-                href={`${baseUrl}address/${address}`}
+                href={`${baseUrl}tx/${hash}`}
                 title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
                 target="_blank"
                 rel="noopener noreferrer"
             >
-                {children || sliceAddress(address)}
+                {children || sliceAddress(hash)}
             </a>
             {copy && (
-                <Copy text={address} id={`copy-${address}`}>
+                <Copy text={hash} id={`copy-${hash}`}>
                     <Icon icon="copy" />
                 </Copy>
             )}

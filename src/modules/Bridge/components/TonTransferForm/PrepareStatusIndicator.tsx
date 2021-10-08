@@ -3,6 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useTonTransferStore } from '@/modules/Bridge/providers/TonTransferStoreProvider'
@@ -11,7 +12,7 @@ import { isSameNetwork } from '@/modules/Bridge/utils'
 import { PrepareStateStatus } from '@/modules/Bridge/types'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
-import { isTonAddressValid } from '@/utils'
+import { isTonAddressValid, sliceAddress } from '@/utils'
 
 
 export function PrepareStatusIndicator(): JSX.Element {
@@ -97,11 +98,26 @@ export function PrepareStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
-                    {intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
-                    })}
-                </p>
+                <Observer>
+                    {() => (
+                        <p>
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
+                            })}
+                            {' '}
+                            {transfer.contractAddress !== undefined && (
+                                <TonscanAccountLink
+                                    key="contract-link"
+                                    address={transfer.contractAddress}
+                                    className="text-muted text-padding-horizontal"
+                                    copy
+                                >
+                                    {sliceAddress(transfer.contractAddress)}
+                                </TonscanAccountLink>
+                            )}
+                        </p>
+                    )}
+                </Observer>
 
                 <Observer>
                     {() => {

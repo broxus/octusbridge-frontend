@@ -6,6 +6,7 @@ import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { TokenCache } from '@/stores/TokensCacheService'
 import { NetworkShape } from '@/bridge'
+import { formatAmount, formatBalance } from '@/utils'
 
 
 type Props = {
@@ -15,7 +16,6 @@ type Props = {
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     token?: TokenCache;
-    vaultBalance?: string;
 }
 
 
@@ -26,9 +26,37 @@ export function Summary({
     rightAddress,
     rightNetwork,
     token,
-    vaultBalance,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const decimals = () => {
+        if (token?.root === undefined) {
+            return undefined
+        }
+
+        if (leftNetwork?.type === 'evm' && leftNetwork?.chainId !== undefined) {
+            return token.vaults?.find(vault => vault.chainId === leftNetwork?.chainId)?.decimals
+        }
+
+        if (rightNetwork?.type === 'evm' && rightNetwork.chainId !== undefined) {
+            return token.vaults?.find(vault => vault.chainId === rightNetwork?.chainId)?.decimals
+        }
+
+        return token.decimals
+    }
+
+    const vaultBalance = () => {
+        if (token?.root === undefined || rightNetwork?.chainId === undefined) {
+            return undefined
+        }
+
+        if (rightNetwork.type === 'evm') {
+            return token.vaults?.find(vault => vault.chainId === rightNetwork.chainId)?.vaultBalance
+        }
+
+        return undefined
+    }
+
 
     return (
         <div className="card card--ghost card--flat card--small">
@@ -60,6 +88,7 @@ export function Summary({
                                             key="evm-address"
                                             address={leftAddress}
                                             baseUrl={leftNetwork.explorerBaseUrl}
+                                            copy
                                         />
                                     )}
                                 </>
@@ -80,13 +109,18 @@ export function Summary({
                             {rightAddress ? (
                                 <>
                                     {rightNetwork?.type === 'ton' && (
-                                        <TonscanAccountLink key="ton-address" address={rightAddress} />
+                                        <TonscanAccountLink
+                                            key="ton-address"
+                                            address={rightAddress}
+                                            copy
+                                        />
                                     )}
                                     {rightNetwork?.type === 'evm' && (
                                         <BlockScanAddressLink
                                             key="evm-address"
                                             address={rightAddress}
                                             baseUrl={rightNetwork.explorerBaseUrl}
+                                            copy
                                         />
                                     )}
                                 </>
@@ -94,16 +128,16 @@ export function Summary({
                                 <span>–</span>
                             )}
                         </li>
-                        {vaultBalance !== undefined && (
+                        {vaultBalance() !== undefined && (
                             <li key="vault-balance">
-                                <span className="text-muted">
+                                <span className="text-muted text-nowrap">
                                     {intl.formatMessage({
                                         id: 'CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE',
                                     }, {
                                         symbol: token?.symbol,
                                     })}
                                 </span>
-                                <span>{vaultBalance}</span>
+                                <span className="truncate">{formatBalance(vaultBalance(), decimals())}</span>
                             </li>
                         )}
                         {token?.symbol !== undefined && (
@@ -120,7 +154,7 @@ export function Summary({
                         )}
                         <li className="divider" />
                         <li>
-                            <span className="text-muted">
+                            <span className="text-muted text-nowrap">
                                 {intl.formatMessage({
                                     id: token?.symbol !== undefined
                                         ? 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN'
@@ -129,8 +163,8 @@ export function Summary({
                                     symbol: token?.symbol,
                                 })}
                             </span>
-                            <span className="text-lg">
-                                <b>{amount || '–'}</b>
+                            <span className="text-lg truncate">
+                                <b>{amount ? formatAmount(amount, decimals()) : '–'}</b>
                             </span>
                         </li>
                     </ul>

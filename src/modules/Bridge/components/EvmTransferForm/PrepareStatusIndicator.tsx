@@ -3,10 +3,12 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { useEvmTransferStoreContext } from '@/modules/Bridge/providers/EvmTransferStoreProvider'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
+import { sliceAddress } from '@/utils'
 
 
 export function PrepareStatusIndicator(): JSX.Element {
@@ -58,11 +60,26 @@ export function PrepareStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
-                    {intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
-                    })}
-                </p>
+                <Observer>
+                    {() => (
+                        <p>
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
+                            })}
+                            {' '}
+                            {transfer.deriveEventAddress !== undefined && (
+                                <TonscanAccountLink
+                                    key="tx-link"
+                                    address={transfer.deriveEventAddress.toString()}
+                                    className="text-muted text-padding-horizontal"
+                                    copy
+                                >
+                                    {sliceAddress(transfer.deriveEventAddress.toString())}
+                                </TonscanAccountLink>
+                            )}
+                        </p>
+                    )}
+                </Observer>
 
                 <Observer>
                     {() => {

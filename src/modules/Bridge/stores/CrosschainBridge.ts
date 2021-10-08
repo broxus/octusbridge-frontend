@@ -4,7 +4,6 @@ import {
     IReactionDisposer,
     makeAutoObservable,
     reaction,
-    runInAction,
 } from 'mobx'
 import ton, { Address } from 'ton-inpage-provider'
 
@@ -163,15 +162,12 @@ export class CrosschainBridge {
         if (this.isEvmToTon) {
             await this.tokensCache.syncEvmToken(selectedToken, this.leftNetwork!.chainId)
             const vault = this.tokensCache.getTokenVault(selectedToken, this.leftNetwork!.chainId)
-            runInAction(() => {
-                this.data.balance = vault?.balance
-            })
+            this.changeData('balance', vault?.balance)
         }
         else {
             await this.tokensCache.syncTonToken(selectedToken)
-            runInAction(() => {
-                this.data.balance = this.token?.balance
-            })
+            this.changeData('balance', this.token?.balance)
+            await this.tokensCache.syncEvmToken(selectedToken, this.rightNetwork!.chainId)
         }
     }
 
@@ -186,7 +182,7 @@ export class CrosschainBridge {
             return
         }
 
-        const tokenContract = this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
+        const tokenContract = await this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
 
         if (tokenContract === undefined) {
             return
@@ -233,7 +229,7 @@ export class CrosschainBridge {
             return
         }
 
-        const tokenContract = this.tokensCache.getEthTokenContract(
+        const tokenContract = await this.tokensCache.getEthTokenContract(
             this.token.root,
             this.leftNetwork.chainId,
         )
@@ -393,10 +389,8 @@ export class CrosschainBridge {
 
             const eventAddress = await eventStream.first()
 
-            runInAction(() => {
-                // for redirect
-                this.data.txHash = eventAddress.toString()
-            })
+            // for redirect
+            this.changeData('txHash', eventAddress.toString())
         }
         catch (e) {
             reject?.()

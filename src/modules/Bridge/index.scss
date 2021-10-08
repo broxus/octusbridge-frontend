@@ -78,10 +78,10 @@
             display: flex;
             flex-direction: row;
             font-size: 14px;
+            gap: 24px;
             justify-content: space-between;
             letter-spacing: 0.5px;
             line-height: 20px;
-            row-gap: 16px;
 
             + li {
                 margin-top: 8px;
