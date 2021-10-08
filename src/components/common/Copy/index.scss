@@ -1,0 +1,9 @@
+.copy {
+    cursor: pointer;
+    display: flow-root;
+    flex: none;
+    line-height: 0;
+    &:hover {
+        color: #ffffff;
+    }
+}

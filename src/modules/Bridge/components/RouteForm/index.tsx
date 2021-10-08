@@ -78,16 +78,16 @@ export function RouteForm({
                                 {() => (
                                     <Select
                                         className="rc-select--lg"
-                                        fieldNames={{
-                                            value: 'chainId',
-                                        }}
                                         disabled={networkFieldDisabled}
+                                        fieldNames={{
+                                            value: 'id',
+                                        }}
                                         // @ts-ignore
                                         options={networks}
                                         placeholder={intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_ROUTE_SELECT_NETWORK_PLACEHOLDER',
                                         })}
-                                        value={network?.chainId}
+                                        value={network?.id}
                                         // @ts-ignore
                                         onChange={changeNetwork}
                                     />

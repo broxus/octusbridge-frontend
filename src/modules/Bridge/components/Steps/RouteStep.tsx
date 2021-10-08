@@ -90,7 +90,7 @@ export function RouteStep(): JSX.Element {
                         })}
                         network={bridge.rightNetwork}
                         networkFieldDisabled={!isTonMainNetwork(bridge.leftNetwork)}
-                        networks={networks.filter(({ chainId }) => chainId !== bridge.leftNetwork?.chainId)}
+                        networks={networks.filter(({ id }) => id !== bridge.leftNetwork?.id)}
                         shouldDisplayNetworkAlert={bridge.isTonToEvm
                             ? !isSameNetwork(bridge.rightNetwork?.chainId, evmWallet.chainId)
                             : false}

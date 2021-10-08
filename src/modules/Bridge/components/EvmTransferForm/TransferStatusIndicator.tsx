@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
+import { BlockScanTxLink } from '@/components/common/BlockScanTxLink'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
@@ -11,7 +12,7 @@ import { TransferStateStatus } from '@/modules/Bridge/types'
 import { isSameNetwork } from '@/modules/Bridge/utils'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
-import { isEvmTxHashValid } from '@/utils'
+import { isEvmTxHashValid, sliceAddress } from '@/utils'
 
 
 export function TransferStatusIndicator(): JSX.Element {
@@ -123,11 +124,27 @@ export function TransferStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
-                    {intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
-                    })}
-                </p>
+                <Observer>
+                    {() => (
+                        <p>
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
+                            })}
+                            {' '}
+                            {transfer.txHash !== undefined && (
+                                <BlockScanTxLink
+                                    key="tx-link"
+                                    baseUrl={transfer.leftNetwork!.explorerBaseUrl}
+                                    className="text-muted text-padding-horizontal"
+                                    copy
+                                    hash={transfer.txHash}
+                                >
+                                    {sliceAddress(transfer.txHash)}
+                                </BlockScanTxLink>
+                            )}
+                        </p>
+                    )}
+                </Observer>
 
                 <Observer>
                     {() => {

@@ -1,22 +1,24 @@
 import * as React from 'react'
-import classNames from 'classnames'
 import { useIntl } from 'react-intl'
+import classNames from 'classnames'
 
-import { sliceAddress } from '@/utils'
 import { Copy } from '@/components/common/Copy'
+import { sliceAddress } from '@/utils'
 import { Icon } from '@/components/common/Icon'
 
 
 type Props = {
     address: string;
+    baseUrl: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
 }
 
 
-export function TonscanAccountLink({
+export function BlockScanAddressLink({
     address,
+    baseUrl,
     children,
     className,
     copy,
@@ -26,8 +28,8 @@ export function TonscanAccountLink({
     return (
         <span className={classNames('explorer-link', className)}>
             <a
-                href={`https://tonscan.io/accounts/${address}`}
-                title={intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })}
+                href={`${baseUrl}address/${address}`}
+                title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
                 target="_blank"
                 rel="noopener noreferrer"
             >

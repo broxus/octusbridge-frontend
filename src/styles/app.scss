@@ -182,16 +182,10 @@
     animation: rotate 1s linear infinite;
 }
 
-.truncate {
-    &-name {
-        display: inline-block;
-        max-width: 120px;
-        overflow: hidden;
-        padding: 0 5px;
-        text-align: left;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
+.explorer-link {
+    align-items: center;
+    display: inline-flex;
+    gap: 10px;
 }
 
 .hide-824 {

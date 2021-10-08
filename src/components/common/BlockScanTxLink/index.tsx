@@ -1,6 +1,6 @@
 import * as React from 'react'
-import classNames from 'classnames'
 import { useIntl } from 'react-intl'
+import classNames from 'classnames'
 
 import { sliceAddress } from '@/utils'
 import { Copy } from '@/components/common/Copy'
@@ -8,15 +8,17 @@ import { Icon } from '@/components/common/Icon'
 
 
 type Props = {
-    address: string;
+    baseUrl: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
+    hash: string;
 }
 
 
-export function TonscanAccountLink({
-    address,
+export function BlockScanTxLink({
+    hash,
+    baseUrl,
     children,
     className,
     copy,
@@ -26,15 +28,15 @@ export function TonscanAccountLink({
     return (
         <span className={classNames('explorer-link', className)}>
             <a
-                href={`https://tonscan.io/accounts/${address}`}
-                title={intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })}
+                href={`${baseUrl}tx/${hash}`}
+                title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
                 target="_blank"
                 rel="noopener noreferrer"
             >
-                {children || sliceAddress(address)}
+                {children || sliceAddress(hash)}
             </a>
             {copy && (
-                <Copy text={address} id={`copy-${address}`}>
+                <Copy text={hash} id={`copy-${hash}`}>
                     <Icon icon="copy" />
                 </Copy>
             )}

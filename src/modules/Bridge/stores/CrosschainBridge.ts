@@ -4,7 +4,6 @@ import {
     IReactionDisposer,
     makeAutoObservable,
     reaction,
-    runInAction,
 } from 'mobx'
 import ton, { Address } from 'ton-inpage-provider'
 
@@ -18,7 +17,7 @@ import {
     CrosschainBridgeStoreState,
     NetworkFields,
 } from '@/modules/Bridge/types'
-import { findNetwork, getTonMainNetwork } from '@/modules/Bridge/utils'
+import { findNetwork, getTonMainNetwork, isTonMainNetwork } from '@/modules/Bridge/utils'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
@@ -109,12 +108,12 @@ export class CrosschainBridge {
         }
 
         if (key === 'leftNetwork') {
-            if (value.chainId === '1' && value.type === 'ton') {
+            if (isTonMainNetwork(value)) {
                 this.changeData('leftAddress', this.tonWallet.address || '')
                 this.changeData('rightAddress', this.evmWallet.address || '')
                 this.changeData('rightNetwork', this.leftNetwork)
             }
-            else {
+            else if (value.type === 'evm') {
                 this.changeData('leftAddress', this.evmWallet.address || '')
                 this.changeData('rightAddress', this.tonWallet.address || '')
                 this.changeData('rightNetwork', getTonMainNetwork())
@@ -122,15 +121,15 @@ export class CrosschainBridge {
         }
 
         if (key === 'rightNetwork') {
-            if (value.chainId !== '1' && value.type !== 'ton') {
-                this.changeData('leftAddress', this.tonWallet.address || '')
-                this.changeData('leftNetwork', getTonMainNetwork())
-                this.changeData('rightAddress', this.evmWallet.address || '')
-            }
-            else {
+            if (isTonMainNetwork(value)) {
                 this.changeData('leftAddress', this.evmWallet.address || '')
                 this.changeData('leftNetwork', this.rightNetwork)
                 this.changeData('rightAddress', this.tonWallet.address || '')
+            }
+            else if (value.type === 'evm') {
+                this.changeData('leftAddress', this.tonWallet.address || '')
+                this.changeData('leftNetwork', getTonMainNetwork())
+                this.changeData('rightAddress', this.evmWallet.address || '')
             }
         }
 
@@ -163,15 +162,12 @@ export class CrosschainBridge {
         if (this.isEvmToTon) {
             await this.tokensCache.syncEvmToken(selectedToken, this.leftNetwork!.chainId)
             const vault = this.tokensCache.getTokenVault(selectedToken, this.leftNetwork!.chainId)
-            runInAction(() => {
-                this.data.balance = vault?.balance
-            })
+            this.changeData('balance', vault?.balance)
         }
         else {
             await this.tokensCache.syncTonToken(selectedToken)
-            runInAction(() => {
-                this.data.balance = this.token?.balance
-            })
+            this.changeData('balance', this.token?.balance)
+            await this.tokensCache.syncEvmToken(selectedToken, this.rightNetwork!.chainId)
         }
     }
 
@@ -186,7 +182,7 @@ export class CrosschainBridge {
             return
         }
 
-        const tokenContract = this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
+        const tokenContract = await this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
 
         if (tokenContract === undefined) {
             return
@@ -233,7 +229,7 @@ export class CrosschainBridge {
             return
         }
 
-        const tokenContract = this.tokensCache.getEthTokenContract(
+        const tokenContract = await this.tokensCache.getEthTokenContract(
             this.token.root,
             this.leftNetwork.chainId,
         )
@@ -285,7 +281,7 @@ export class CrosschainBridge {
         try {
             await wrapperContract.methods.deposit(
                 [target[0], `0x${target[1]}`],
-                this.amountNumber.shiftedBy(vault.decimals),
+                this.amountNumber.shiftedBy(vault.decimals).toFixed(),
             ).send({
                 from: this.evmWallet.address,
             }).once('transactionHash', (transactionHash: string) => {
@@ -393,10 +389,8 @@ export class CrosschainBridge {
 
             const eventAddress = await eventStream.first()
 
-            runInAction(() => {
-                // for redirect
-                this.data.txHash = eventAddress.toString()
-            })
+            // for redirect
+            this.changeData('txHash', eventAddress.toString())
         }
         catch (e) {
             reject?.()
@@ -442,7 +436,7 @@ export class CrosschainBridge {
     }
 
     public get amountNumber(): BigNumber {
-        return new BigNumber(this.data.amount)
+        return new BigNumber(this.amount || 0)
     }
 
     public get decimals(): number | undefined {

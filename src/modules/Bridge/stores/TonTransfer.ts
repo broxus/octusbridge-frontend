@@ -448,9 +448,9 @@ export class TonTransfer {
     }
 
     public get amountNumber(): BigNumber {
-        return this.data.token === undefined
+        return this.token === undefined
             ? new BigNumber(0)
-            : new BigNumber(this.data.amount).shiftedBy(-this.data.token.decimals)
+            : new BigNumber(this.amount || 0).shiftedBy(-this.token.decimals)
     }
 
     public get leftAddress(): TonTransferStoreData['leftAddress'] {
