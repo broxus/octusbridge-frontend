@@ -265,6 +265,8 @@ export class CrosschainBridge {
             return
         }
 
+        await this.tokensCache.syncEvmToken(this.token.root, this.leftNetwork.chainId)
+
         const vault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
 
         if (vault?.decimals === undefined) {
@@ -283,7 +285,7 @@ export class CrosschainBridge {
         const target = this.rightAddress.split(':')
 
         try {
-            debug(this.amountNumber.shiftedBy(vault.decimals).toFixed(), vault.decimals)
+            console.log(this.amountNumber.shiftedBy(vault.decimals).toFixed(), vault.decimals)
             await wrapperContract.methods.deposit(
                 [target[0], `0x${target[1]}`],
                 this.amountNumber.shiftedBy(vault.decimals),
