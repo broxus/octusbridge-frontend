@@ -283,6 +283,7 @@ export class CrosschainBridge {
         const target = this.rightAddress.split(':')
 
         try {
+            debug(this.amountNumber.shiftedBy(vault.decimals).toFixed(), vault.decimals)
             await wrapperContract.methods.deposit(
                 [target[0], `0x${target[1]}`],
                 this.amountNumber.shiftedBy(vault.decimals),
@@ -442,7 +443,7 @@ export class CrosschainBridge {
     }
 
     public get amountNumber(): BigNumber {
-        return new BigNumber(this.data.amount)
+        return new BigNumber(this.amount || 0)
     }
 
     public get decimals(): number | undefined {
