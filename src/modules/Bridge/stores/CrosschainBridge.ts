@@ -17,7 +17,7 @@ import {
     CrosschainBridgeStoreState,
     NetworkFields,
 } from '@/modules/Bridge/types'
-import { findNetwork, getTonMainNetwork } from '@/modules/Bridge/utils'
+import { findNetwork, getTonMainNetwork, isTonMainNetwork } from '@/modules/Bridge/utils'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
@@ -108,12 +108,12 @@ export class CrosschainBridge {
         }
 
         if (key === 'leftNetwork') {
-            if (value.chainId === '1' && value.type === 'ton') {
+            if (isTonMainNetwork(value)) {
                 this.changeData('leftAddress', this.tonWallet.address || '')
                 this.changeData('rightAddress', this.evmWallet.address || '')
                 this.changeData('rightNetwork', this.leftNetwork)
             }
-            else {
+            else if (value.type === 'evm') {
                 this.changeData('leftAddress', this.evmWallet.address || '')
                 this.changeData('rightAddress', this.tonWallet.address || '')
                 this.changeData('rightNetwork', getTonMainNetwork())
@@ -121,15 +121,15 @@ export class CrosschainBridge {
         }
 
         if (key === 'rightNetwork') {
-            if (value.chainId !== '1' && value.type !== 'ton') {
-                this.changeData('leftAddress', this.tonWallet.address || '')
-                this.changeData('leftNetwork', getTonMainNetwork())
-                this.changeData('rightAddress', this.evmWallet.address || '')
-            }
-            else {
+            if (isTonMainNetwork(value)) {
                 this.changeData('leftAddress', this.evmWallet.address || '')
                 this.changeData('leftNetwork', this.rightNetwork)
                 this.changeData('rightAddress', this.tonWallet.address || '')
+            }
+            else if (value.type === 'evm') {
+                this.changeData('leftAddress', this.tonWallet.address || '')
+                this.changeData('leftNetwork', getTonMainNetwork())
+                this.changeData('rightAddress', this.evmWallet.address || '')
             }
         }
 

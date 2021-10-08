@@ -70,10 +70,10 @@ export function Summary({
                     <ul className="list crosschain-transfer__list">
                         <li>
                             <span className="text-muted">
-                                {leftNetwork?.name !== undefined ? intl.formatMessage({
+                                {leftNetwork?.label !== undefined ? intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK',
                                 }, {
-                                    network: leftNetwork.name,
+                                    network: leftNetwork.label,
                                 }) : intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
                                 })}
@@ -81,7 +81,11 @@ export function Summary({
                             {leftAddress ? (
                                 <>
                                     {leftNetwork?.type === 'ton' && (
-                                        <TonscanAccountLink key="ton-address" address={leftAddress} />
+                                        <TonscanAccountLink
+                                            key="ton-address"
+                                            address={leftAddress}
+                                            copy
+                                        />
                                     )}
                                     {leftNetwork?.type === 'evm' && (
                                         <BlockScanAddressLink
@@ -98,10 +102,10 @@ export function Summary({
                         </li>
                         <li>
                             <span className="text-muted">
-                                {rightNetwork?.name !== undefined ? intl.formatMessage({
+                                {rightNetwork?.label !== undefined ? intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK',
                                 }, {
-                                    network: rightNetwork.name,
+                                    network: rightNetwork.label,
                                 }) : intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
                                 })}
