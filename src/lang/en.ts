@@ -9,6 +9,7 @@ export default {
     NAV_LINK_TEXT_STAKING: 'Staking',
     NAV_LINK_TEXT_GOVERNANCE: 'Governance',
     NAV_LINK_TEXT_RELAYERS: 'Relayers',
+    NAV_LINK_SOON_HINT: 'Soon',
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',

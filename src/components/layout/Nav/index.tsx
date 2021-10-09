@@ -19,27 +19,43 @@ export function Nav(): JSX.Element {
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink
-                        to="/staking"
-                    >
+                    <span>
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_STAKING',
                         })}
-                    </NavLink>
+                        {' '}
+                        <sup>
+                            {intl.formatMessage({
+                                id: 'NAV_LINK_SOON_HINT',
+                            })}
+                        </sup>
+                    </span>
                 </li>
                 <li>
-                    <NavLink to="/governance">
+                    <span>
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_GOVERNANCE',
                         })}
-                    </NavLink>
+                        {' '}
+                        <sup>
+                            {intl.formatMessage({
+                                id: 'NAV_LINK_SOON_HINT',
+                            })}
+                        </sup>
+                    </span>
                 </li>
                 <li>
-                    <NavLink to="/relayers">
+                    <span>
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_RELAYERS',
                         })}
-                    </NavLink>
+                        {' '}
+                        <sup>
+                            {intl.formatMessage({
+                                id: 'NAV_LINK_SOON_HINT',
+                            })}
+                        </sup>
+                    </span>
                 </li>
             </ul>
         </nav>

@@ -15,7 +15,7 @@ export const networks: NetworkShape[] = [
     {
         chainId: '56',
         currencySymbol: 'BNB',
-        explorerBaseUrl: 'https://bcsscan.io/',
+        explorerBaseUrl: 'https://bscscan.com/',
         id: 'evm-56',
         label: 'Binance Smart Chain',
         name: 'BSC',
@@ -25,7 +25,7 @@ export const networks: NetworkShape[] = [
     {
         chainId: '250',
         currencySymbol: 'FTM',
-        explorerBaseUrl: 'https://ftmscan.io/',
+        explorerBaseUrl: 'https://ftmscan.com/',
         id: 'evm-250',
         label: 'Fantom Opera',
         name: 'Fantom Opera',
@@ -35,7 +35,7 @@ export const networks: NetworkShape[] = [
     {
         chainId: '137',
         currencySymbol: 'MATIC',
-        explorerBaseUrl: 'https://polygonscan.io/',
+        explorerBaseUrl: 'https://polygonscan.com/',
         id: 'evm-137',
         label: 'Polygon',
         name: 'Polygon',

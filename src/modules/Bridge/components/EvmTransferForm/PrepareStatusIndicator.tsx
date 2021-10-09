@@ -67,7 +67,7 @@ export function PrepareStatusIndicator(): JSX.Element {
                                 id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
                             })}
                             {' '}
-                            {transfer.deriveEventAddress !== undefined && (
+                            {(transfer.prepareState === 'confirmed' && transfer.deriveEventAddress !== undefined) && (
                                 <TonscanAccountLink
                                     key="tx-link"
                                     address={transfer.deriveEventAddress.toString()}
