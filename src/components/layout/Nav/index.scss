@@ -1,18 +1,24 @@
 .main-nav {
     ul {
-        display: flex;
         align-items: center;
+        display: flex;
         justify-content: flex-start;
 
         li {
             margin-right: 40px;
 
-            a {
-                color: #fff;
+            a,
+            span {
+                color: #ffffff;
+                cursor: default;
                 font-size: 16px;
-                letter-spacing: .25px;
-                opacity: .48;
                 font-weight: 500;
+                letter-spacing: 0.25px;
+                opacity: 0.48;
+            }
+
+            a {
+                cursor: pointer;
 
                 &:hover,
                 &.active {
