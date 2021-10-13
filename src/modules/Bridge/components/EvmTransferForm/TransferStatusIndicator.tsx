@@ -129,6 +129,8 @@ export function TransferStatusIndicator(): JSX.Element {
                         <p>
                             {intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
+                            }, {
+                                networkName: (isTransferPage ? transfer.leftNetwork?.name : bridge.leftNetwork?.name) || '',
                             })}
                             {' '}
                             {transfer.txHash !== undefined && (

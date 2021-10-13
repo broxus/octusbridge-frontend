@@ -11,25 +11,32 @@ import { useAmountField } from '@/hooks/useAmountField'
 type Props = {
     amount: string;
     balance?: string;
-    changeAmount: (value: string) => void;
-    changeToken: (value?: string) => void;
+    decimals?: number;
     isAmountValid?: boolean;
     token?: TokenCache;
     tokens: TokenCache[];
+    onChangeAmount: (value: string) => void;
+    onChangeToken: (value?: string) => void;
 }
 
 
 export function AssetForm({
     amount,
     balance,
-    changeAmount,
-    changeToken,
+    decimals,
+    onChangeAmount,
+    onChangeToken,
     isAmountValid,
     token,
     tokens,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const field = useAmountField({ value: amount, token, onChange: changeAmount })
+    const field = useAmountField({
+        decimals,
+        token,
+        value: amount,
+        onChange: onChangeAmount,
+    })
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
@@ -59,7 +66,7 @@ export function AssetForm({
                                             id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
                                         })}
                                         value={token?.root}
-                                        onChange={changeToken}
+                                        onChange={onChangeToken}
                                     />
                                 )}
                             </Observer>
@@ -90,6 +97,7 @@ export function AssetForm({
                                         })}
                                         type="text"
                                         value={amount}
+                                        onBlur={field.onBlur}
                                         onChange={field.onChange}
                                     />
                                 )}

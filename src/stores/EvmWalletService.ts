@@ -214,23 +214,6 @@ export class EvmWalletService {
         }
     }
 
-    public async syncChainId(): Promise<void> {
-        if (this.#web3 === undefined) {
-            return
-        }
-
-        try {
-            const chainId = await this.#web3.eth.getChainId()
-
-            runInAction(() => {
-                this.data.chainId = chainId.toString()
-            })
-        }
-        catch (e) {
-            error('Chain ID request error', e)
-        }
-    }
-
     public async fetchAccountData(): Promise<UserData | undefined> {
         if (this.#web3 !== undefined) {
             this.state.isConnecting = true
@@ -272,12 +255,33 @@ export class EvmWalletService {
         return undefined
     }
 
+    public async syncChainId(): Promise<void> {
+        if (this.#web3 === undefined) {
+            return
+        }
+
+        try {
+            const chainId = await this.#web3.eth.getChainId()
+
+            runInAction(() => {
+                this.data.chainId = chainId.toString()
+            })
+        }
+        catch (e) {
+            error('Chain ID request error', e)
+        }
+    }
+
     public get account(): UserData | undefined {
         return new UserData(this.data.address, this.data.balance, this.#provider, this.#web3)
     }
 
     public get address(): WalletData['address'] {
         return this.account?.address
+    }
+
+    public get balance(): UserData['balance'] {
+        return this.account?.balance
     }
 
     public get chainId(): string {

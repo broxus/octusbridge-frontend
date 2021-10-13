@@ -56,10 +56,7 @@ export function EvmWallet(): JSX.Element | null {
                                             {intl.formatMessage({
                                                 id: 'WALLET_BALANCE_HINT',
                                             }, {
-                                                value: amount(
-                                                    wallet.account?.balance,
-                                                    18,
-                                                ) || 0,
+                                                value: amount(wallet.balance, 18),
                                                 currency: network?.currencySymbol || '',
                                             })}
                                         </div>

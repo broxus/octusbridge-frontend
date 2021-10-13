@@ -2,15 +2,16 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { NetworkShape } from '@/bridge'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { TokenCache } from '@/stores/TokensCacheService'
-import { NetworkShape } from '@/bridge'
-import { formatAmount, formatBalance } from '@/utils'
+import { amount, formattedAmount } from '@/utils'
 
 
 type Props = {
     amount?: string;
+    decimals?: number;
     leftAddress?: string;
     leftNetwork?: NetworkShape;
     rightAddress?: string;
@@ -20,7 +21,8 @@ type Props = {
 
 
 export function Summary({
-    amount,
+    amount: _amount,
+    decimals,
     leftAddress,
     leftNetwork,
     rightAddress,
@@ -29,34 +31,13 @@ export function Summary({
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const decimals = () => {
-        if (token?.root === undefined) {
-            return undefined
-        }
-
-        if (leftNetwork?.type === 'evm' && leftNetwork?.chainId !== undefined) {
-            return token.vaults?.find(vault => vault.chainId === leftNetwork?.chainId)?.decimals
-        }
-
-        if (rightNetwork?.type === 'evm' && rightNetwork.chainId !== undefined) {
-            return token.vaults?.find(vault => vault.chainId === rightNetwork?.chainId)?.decimals
-        }
-
-        return token.decimals
-    }
-
     const vaultBalance = () => {
-        if (token?.root === undefined || rightNetwork?.chainId === undefined) {
-            return undefined
-        }
-
-        if (rightNetwork.type === 'evm') {
+        if (token?.root !== undefined && rightNetwork?.chainId !== undefined && rightNetwork.type === 'evm') {
             return token.vaults?.find(vault => vault.chainId === rightNetwork.chainId)?.vaultBalance
         }
 
         return undefined
     }
-
 
     return (
         <div className="card card--ghost card--flat card--small">
@@ -78,7 +59,7 @@ export function Summary({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
                                 })}
                             </span>
-                            {leftAddress ? (
+                            {(leftNetwork?.label !== undefined && leftAddress !== undefined) ? (
                                 <>
                                     {leftNetwork?.type === 'ton' && (
                                         <TonscanAccountLink
@@ -110,7 +91,7 @@ export function Summary({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
                                 })}
                             </span>
-                            {rightAddress ? (
+                            {(rightNetwork?.label !== undefined && rightAddress !== undefined) ? (
                                 <>
                                     {rightNetwork?.type === 'ton' && (
                                         <TonscanAccountLink
@@ -141,7 +122,7 @@ export function Summary({
                                         symbol: token?.symbol,
                                     })}
                                 </span>
-                                <span className="truncate">{formatBalance(vaultBalance(), decimals())}</span>
+                                <span className="truncate">{amount(vaultBalance(), decimals)}</span>
                             </li>
                         )}
                         {token?.symbol !== undefined && (
@@ -168,7 +149,7 @@ export function Summary({
                                 })}
                             </span>
                             <span className="text-lg truncate">
-                                <b>{amount ? formatAmount(amount, decimals()) : '–'}</b>
+                                <b>{_amount ? formattedAmount(_amount, decimals) : '–'}</b>
                             </span>
                         </li>
                     </ul>

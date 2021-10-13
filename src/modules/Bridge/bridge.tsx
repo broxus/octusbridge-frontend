@@ -78,6 +78,7 @@ export function Bridge(): JSX.Element {
                         {() => (
                             <Summary
                                 amount={bridge.amount}
+                                decimals={bridge.decimals}
                                 leftAddress={bridge.leftAddress}
                                 leftNetwork={bridge.leftNetwork}
                                 rightAddress={bridge.rightAddress}

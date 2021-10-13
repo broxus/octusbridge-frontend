@@ -7,7 +7,7 @@ import { AssetForm } from '@/modules/Bridge/components/AssetForm'
 import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 import { useTokensCache } from '@/stores/TokensCacheService'
-import { formatBalance } from '@/utils'
+import { amount } from '@/utils'
 
 
 export function AssetStep(): JSX.Element {
@@ -55,9 +55,7 @@ export function AssetStep(): JSX.Element {
                 {() => (
                     <AssetForm
                         amount={bridge.amount}
-                        balance={formatBalance(bridge.balance || '0', bridge.decimals)}
-                        changeAmount={changeAmount}
-                        changeToken={changeToken}
+                        balance={amount(bridge.balance, bridge.decimals)}
                         isAmountValid={useBalanceValidation(bridge.balance, bridge.amount, bridge.decimals)}
                         token={bridge.token}
                         tokens={(
@@ -71,6 +69,8 @@ export function AssetStep(): JSX.Element {
                                     ? tokensCache.filterTokensByChainId(bridge.rightNetwork.chainId)
                                     : []
                         )}
+                        onChangeAmount={changeAmount}
+                        onChangeToken={changeToken}
                     />
                 )}
             </Observer>
@@ -90,10 +90,12 @@ export function AssetStep(): JSX.Element {
                         <button
                             type="button"
                             className="btn btn-lg btn--primary crosschain-transfer__btn-next"
-                            disabled={(
-                                !bridge.isAssetValid
-                                || !useBalanceValidation(bridge.balance, bridge.amount, bridge.decimals)
+                            disabled={!(
+                                bridge.isAssetValid
+                                && useBalanceValidation(bridge.balance, bridge.amount, bridge.decimals)
                             )}
+                            data-balance={bridge.balance}
+                            data-decimals={bridge.decimals}
                             onClick={nextStep}
                         >
                             {intl.formatMessage({
