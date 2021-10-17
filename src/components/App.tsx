@@ -7,6 +7,7 @@ import {
     Switch,
 } from 'react-router-dom'
 
+import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
@@ -46,10 +47,11 @@ export function App(): JSX.Element {
                             </Route>
                         </Switch>
                     </div>
-                    <div className="wallets">
-                        <EvmWallet />
-                        <TonWallet />
-                    </div>
+                    <Footer key="footer" />
+                </div>
+                <div className="wallets">
+                    <EvmWallet />
+                    <TonWallet />
                 </div>
             </Router>
         </IntlProvider>

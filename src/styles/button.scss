@@ -160,8 +160,8 @@
 .btn--empty {
     @include btn-reset;
 
-    border: 1px solid rgba(255, 255, 255, 0.48);
-    color: #ffffff;
+    border: 1px solid rgba(197, 228, 243, 0.32);
+    color: #c5e4f3;
     font-size: 16px;
     font-weight: 700;
     line-height: 44px;
@@ -169,7 +169,7 @@
     padding: 0 16px;
 
     &:hover {
-        border-color: rgba(255, 255, 255, 0.78);
+        border-color: rgba(197, 228, 243, 0.56);
         color: #ffffff;
     }
 }
