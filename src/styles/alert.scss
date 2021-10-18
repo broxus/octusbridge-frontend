@@ -11,5 +11,9 @@
     &--danger {
         background: rgba(235, 67, 97, 0.48);
         border-left: 4px solid #eb4361;
+
+        .btn--empty {
+            color: #ffffff;
+        }
     }
 }

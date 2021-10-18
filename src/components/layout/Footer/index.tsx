@@ -22,6 +22,7 @@ export function Footer(): JSX.Element {
                     <Observer>
                         {() => (
                             <div className="toolbar">
+                                {/*
                                 <a
                                     href="#"
                                     className="btn btn--xl btn--secondary footer-tool"
@@ -30,6 +31,7 @@ export function Footer(): JSX.Element {
                                 >
                                     Bridge app
                                 </a>
+                                */}
                                 {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
                                     <a
                                         href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
@@ -46,47 +48,40 @@ export function Footer(): JSX.Element {
                 </div>
                 <nav className="footer-nav">
                     <div className="footer-nav__col">
-                        <Link to="/bridge" className="footer-nav__col-title">Bridge</Link>
+                        <div className="footer-nav__col-title">Bridge</div>
                         <ul className="footer-nav__list">
-                            <li><a href="#">ETH to TON</a></li>
-                            <li><a href="#">TON to ETH</a></li>
-                            <li><a href="#">Search</a></li>
+                            <li><Link to="/bridge">ETH to TON</Link></li>
+                            <li><Link to="/bridge">TON to ETH</Link></li>
+                            <li><a>Search</a></li>
                         </ul>
                     </div>
                     <div className="footer-nav__col">
-                        <a href="#" className="footer-nav__col-title">Staking</a>
+                        <div className="footer-nav__col-title">Staking</div>
                         <ul className="footer-nav__list">
-                            <li><a href="#">Stake / Redeem</a></li>
-                            <li><a href="#">My stake</a></li>
-                            <li><a href="#">Staking explorer</a></li>
+                            <li><a>Stake / Redeem</a></li>
+                            <li><a>My stake</a></li>
+                            <li><a>Staking explorer</a></li>
                         </ul>
                     </div>
                     <div className="footer-nav__col">
-                        <a href="#" className="footer-nav__col-title">Guides</a>
+                        <div className="footer-nav__col-title">Guides</div>
                         <ul className="footer-nav__list">
-                            <li><a href="#">Bridge</a></li>
-                            <li><a href="#">Staking</a></li>
-                            <li><a href="#">Governance</a></li>
+                            <li><a>Bridge</a></li>
+                            <li><a>Staking</a></li>
+                            <li><a>Governance</a></li>
                         </ul>
                     </div>
                     <div className="footer-nav__col">
-                        <a href="#" className="footer-nav__col-title">Governance</a>
+                        <div className="footer-nav__col-title">Governance</div>
                         <ul className="footer-nav__list">
-                            <li><a href="#">Overview</a></li>
-                            <li><a href="#">Proposals</a></li>
-                            <li><a href="#">Leaderboard</a></li>
-                            <li><a href="#">BRIDGE distribution</a></li>
+                            <li><a>Overview</a></li>
+                            <li><a>Proposals</a></li>
+                            <li><a>Leaderboard</a></li>
+                            <li><a>BRIDGE distribution</a></li>
                         </ul>
                     </div>
                     <div className="footer-nav__col">
-                        <a
-                            href="https://broxus.com/"
-                            className="footer-nav__col-title"
-                            target="_blank"
-                            rel="nofollow noopener noreferrer"
-                        >
-                            DeFi Products
-                        </a>
+                        <div className="footer-nav__col-title">DeFi Products</div>
                         <ul className="footer-nav__list">
                             <li>
                                 <a href="https://tonswap.io" target="_blank" rel="nofollow noopener noreferrer">

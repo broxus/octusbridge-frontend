@@ -96,11 +96,6 @@
             line-height: 20px;
             margin-bottom: 16px;
             text-decoration: none;
-
-            &:hover {
-                color: rgba(255, 255, 255, 0.56);
-                text-decoration: none;
-            }
         }
     }
     &__list {
@@ -115,8 +110,15 @@
                 line-height: 20px;
                 text-decoration: none;
                 transition-property: color;
-                &.active,
-                &:hover { color: #ffffff; }
+                &:not([href]) {
+                    color: rgba(255, 255, 255, 0.56);
+                }
+                &[href] {
+                    &.active,
+                    &:hover {
+                        color: #ffffff;
+                    }
+                }
             }
         }
     }
