@@ -131,6 +131,15 @@
             &:last-child { margin-right: 0; }
         }
     }
+
+    &--horizontal {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        margin: 40px 0;
+    }
+
     @media only screen and (max-width: 959px) {
         display: grid;
         grid-row-gap: 4px;

@@ -13,6 +13,15 @@ export default {
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
+    WALLET_INSTALLATION_LINK_TEXT: 'Install Crystal Wallet',
+
+    FOOTER_NAV_TON_SWAP_LINK_TEXT: 'TON Swap',
+    FOOTER_NAV_TON_SCAN_LINK_TEXT: 'TON Scan',
+    FOOTER_NAV_WTON_LINK_TEXT: 'WTON',
+    FOOTER_TERMS_OF_USE_LINK_TEXT: 'Terms of use',
+    FOOTER_PRIVACY_POLICY_LINK_TEXT: 'Privacy policy',
+    FOOTER_COOKIES_TERMS_LINK_TEXT: 'Cookies',
+    FOOTER_COPYRIGHTS: '&copy; <a href="https://broxus.com" target="_blank" rel="noopener noreferrer">Broxus</a>, {year}',
 
     CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect Crystal Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
@@ -10,6 +11,7 @@ import './index.scss'
 
 
 export function Footer(): JSX.Element {
+    const intl = useIntl()
     const tonWallet = useTonWallet()
 
     return (
@@ -19,33 +21,51 @@ export function Footer(): JSX.Element {
                     <Link to="/" className="footer-logo">
                         <Logo />
                     </Link>
-                    <Observer>
-                        {() => (
-                            <div className="toolbar">
-                                {/*
-                                <a
-                                    href="#"
-                                    className="btn btn--xl btn--secondary footer-tool"
-                                    target="_blank"
-                                    rel="nofollow noopener noreferrer"
-                                >
-                                    Bridge app
+                    <div>
+                        <ul className="footer-nav--horizontal">
+                            <li>
+                                <a href="https://tonswap.io" target="_blank" rel="noopener noreferrer">
+                                    {intl.formatMessage({
+                                        id: 'FOOTER_NAV_TON_SWAP_LINK_TEXT',
+                                    })}
                                 </a>
-                                */}
-                                {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
-                                    <a
-                                        href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
-                                        className="btn btn--xl btn--empty footer-tool"
-                                        target="_blank"
-                                        rel="nofollow noopener noreferrer"
-                                    >
-                                        Install Crystal Wallet
-                                    </a>
-                                )}
-                            </div>
-                        )}
-                    </Observer>
+                            </li>
+                            <li>
+                                <a href="https://tonscan.io" target="_blank" rel="noopener noreferrer">
+                                    {intl.formatMessage({
+                                        id: 'FOOTER_NAV_TON_SCAN_LINK_TEXT',
+                                    })}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://wton.io" target="_blank" rel="noopener noreferrer">
+                                    {intl.formatMessage({
+                                        id: 'FOOTER_NAV_WTON_LINK_TEXT',
+                                    })}
+                                </a>
+                            </li>
+                        </ul>
+                        <Observer>
+                            {() => (
+                                <div className="toolbar">
+                                    {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
+                                        <a
+                                            href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
+                                            className="btn btn--xl btn--empty footer-tool"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {intl.formatMessage({
+                                                id: 'WALLET_INSTALLATION_LINK_TEXT',
+                                            })}
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+                        </Observer>
+                    </div>
                 </div>
+                {/*
                 <nav className="footer-nav">
                     <div className="footer-nav__col">
                         <div className="footer-nav__col-title">Bridge</div>
@@ -110,6 +130,7 @@ export function Footer(): JSX.Element {
                         </ul>
                     </div>
                 </nav>
+                */}
                 <div className="footer__bottom">
                     <ul className="footer-soc">
                         <li>
@@ -160,36 +181,49 @@ export function Footer(): JSX.Element {
                                     <a
                                         href="https://broxus.com/wp-content/uploads/2021/08/terms_of_use.pdf"
                                         target="_blank"
-                                        rel="nofollow noopener noreferrer"
+                                        rel="noopener noreferrer"
                                     >
-                                        Terms of use
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_TERMS_OF_USE_LINK_TEXT',
+                                        })}
                                     </a>
                                 </li>
                                 <li>
                                     <a
                                         href="https://broxus.com/wp-content/uploads/2021/08/privacy_policy.pdf"
                                         target="_blank"
-                                        rel="nofollow noopener noreferrer"
+                                        rel="noopener noreferrer"
                                     >
-                                        Privacy policy
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_PRIVACY_POLICY_LINK_TEXT',
+                                        })}
                                     </a>
                                 </li>
                                 <li>
                                     <a
                                         href="https://broxus.com/wp-content/uploads/2021/08/cookie_policy.pdf"
                                         target="_blank"
-                                        rel="nofollow noopener noreferrer"
+                                        rel="noopener noreferrer"
                                     >
-                                        Cookies
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_COOKIES_TERMS_LINK_TEXT',
+                                        })}
                                     </a>
                                 </li>
                             </ul>
                         </nav>
-                        <p className="footer-copyright">
-                            &copy; Broxus,
-                            {' '}
-                            {new Date().getFullYear()}
-                        </p>
+                        <p
+                            className="footer-copyright"
+                            dangerouslySetInnerHTML={{
+                                __html: intl.formatMessage({
+                                    id: 'FOOTER_COPYRIGHTS',
+                                }, {
+                                    year: new Date().getFullYear(),
+                                }, {
+                                    ignoreTag: true,
+                                }),
+                            }}
+                        />
                     </div>
                 </div>
             </div>
