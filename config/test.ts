@@ -38,4 +38,4 @@ export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-a
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/test.json'
 
-export const StakingAccountAddress = '0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075'
+export const StakingAccountAddress = '0:6fdaa8f199d372c9f1ec8b3b20bc0e5ef72df412dd25f1d6ee8eb9db1e39fadc'
