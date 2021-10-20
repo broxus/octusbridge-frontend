@@ -7,6 +7,7 @@ import {
     Switch,
 } from 'react-router-dom'
 
+import { NativeScrollArea } from '@/components/common/NativeScrollArea'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
@@ -56,10 +57,12 @@ export function App(): JSX.Element {
                     </div>
                     <Footer key="footer" />
                 </div>
-                <div className="wallets">
-                    <EvmWallet />
-                    <TonWallet />
-                </div>
+                <NativeScrollArea className="wallets-scroll-area">
+                    <div className="wallets">
+                        <EvmWallet />
+                        <TonWallet />
+                    </div>
+                </NativeScrollArea>
             </Router>
         </IntlProvider>
     )

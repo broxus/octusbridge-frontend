@@ -8,4 +8,12 @@
         justify-content: space-between;
         padding: 18px 16px;
     }
+
+    @media (max-width: 1023px) {
+        align-items: flex-start;
+        flex-direction: column;
+        .main-nav {
+            margin-top: 24px;
+        }
+    }
 }

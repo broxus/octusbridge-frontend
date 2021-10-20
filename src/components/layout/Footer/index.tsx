@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
 import { Logo } from '@/components/layout/Logo'
@@ -9,128 +9,222 @@ import { useTonWallet } from '@/stores/TonWalletService'
 
 import './index.scss'
 
-
+/* eslint-disable jsx-a11y/anchor-is-valid */
 export function Footer(): JSX.Element {
     const intl = useIntl()
     const tonWallet = useTonWallet()
 
+    const toolbar = (
+        <Observer>
+            {() => (
+                <div className="toolbar">
+                    {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
+                        <a
+                            href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
+                            className="btn btn--xl btn--empty footer-tool"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {intl.formatMessage({
+                                id: 'WALLET_INSTALLATION_LINK_TEXT',
+                            })}
+                        </a>
+                    )}
+                </div>
+            )}
+        </Observer>
+    )
+
     return (
         <footer className="footer">
             <div className="container container--large">
-                <div className="footer__top">
-                    <Link to="/" className="footer-logo">
-                        <Logo />
-                    </Link>
-                    <div>
-                        <ul className="footer-nav--horizontal">
-                            <li>
-                                <a href="https://tonswap.io" target="_blank" rel="noopener noreferrer">
-                                    {intl.formatMessage({
-                                        id: 'FOOTER_NAV_TON_SWAP_LINK_TEXT',
-                                    })}
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://tonscan.io" target="_blank" rel="noopener noreferrer">
-                                    {intl.formatMessage({
-                                        id: 'FOOTER_NAV_TON_SCAN_LINK_TEXT',
-                                    })}
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://wton.io" target="_blank" rel="noopener noreferrer">
-                                    {intl.formatMessage({
-                                        id: 'FOOTER_NAV_WTON_LINK_TEXT',
-                                    })}
-                                </a>
-                            </li>
-                        </ul>
-                        <Observer>
-                            {() => (
-                                <div className="toolbar">
-                                    {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
-                                        <a
-                                            href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
-                                            className="btn btn--xl btn--empty footer-tool"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {intl.formatMessage({
-                                                id: 'WALLET_INSTALLATION_LINK_TEXT',
-                                            })}
-                                        </a>
-                                    )}
-                                </div>
-                            )}
-                        </Observer>
+                <div className="footer__wrapper">
+                    <div className="footer__left">
+                        <Link to="/" className="footer-logo">
+                            <Logo />
+                        </Link>
+                        {toolbar}
+                    </div>
+                    <nav className="footer-nav">
+                        <div className="footer-nav__col">
+                            <div className="footer-nav__col-title">
+                                {intl.formatMessage({
+                                    id: 'FOOTER_NAV_HEADER_BRIDGE',
+                                })}
+                            </div>
+                            <ul className="footer-nav__list">
+                                <li>
+                                    <NavLink to="/bridge">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_ETH_TO_TON_LINK_TEXT',
+                                        })}
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/bridge">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_TON_TO_ETH_LINK_TEXT',
+                                        })}
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_SEARCH_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="footer-nav__col">
+                            <div className="footer-nav__col-title">
+                                {intl.formatMessage({
+                                    id: 'FOOTER_NAV_HEADER_STAKING',
+                                })}
+                            </div>
+                            <ul className="footer-nav__list">
+                                <li>
+                                    <NavLink exact to="/staking">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_STAKE_LINK_TEXT',
+                                        })}
+                                    </NavLink>
+                                    {' / '}
+                                    <NavLink exact to="/staking/redeem">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_REDEEM_LINK_TEXT',
+                                        })}
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_MY_STAKE_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_STAKING_EXPLORER_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="footer-nav__col">
+                            <div className="footer-nav__col-title">
+                                {intl.formatMessage({
+                                    id: 'FOOTER_NAV_HEADER_GUIDES',
+                                })}
+                            </div>
+                            <ul className="footer-nav__list">
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_BRIDGE_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_STAKING_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_GOVERNANCE_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="footer-nav__col">
+                            <div className="footer-nav__col-title">
+                                {intl.formatMessage({
+                                    id: 'FOOTER_NAV_HEADER_GOVERNANCE',
+                                })}
+                            </div>
+                            <ul className="footer-nav__list">
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_OVERVIEW_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_PROPOSALS_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_LEADERBOARD_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_BRIDGE_DISTRIBUTION_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="footer-nav__col">
+                            <div className="footer-nav__col-title">
+                                {intl.formatMessage({
+                                    id: 'FOOTER_NAV_HEADER_DEFI_PRODUCTS',
+                                })}
+                            </div>
+                            <ul className="footer-nav__list">
+                                <li>
+                                    <a href="https://tonswap.io" target="_blank" rel="nofollow noopener noreferrer">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_TON_SWAP_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://tonscan.io" target="_blank" rel="nofollow noopener noreferrer">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_TON_SCAN_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://wton.io" target="_blank" rel="nofollow noopener noreferrer">
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_WTON_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                    >
+                                        {intl.formatMessage({
+                                            id: 'FOOTER_NAV_CRYSTAL_WALLET_LINK_TEXT',
+                                        })}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div className="footer__right">
+                        {toolbar}
                     </div>
                 </div>
-                {/*
-                <nav className="footer-nav">
-                    <div className="footer-nav__col">
-                        <div className="footer-nav__col-title">Bridge</div>
-                        <ul className="footer-nav__list">
-                            <li><Link to="/bridge">ETH to TON</Link></li>
-                            <li><Link to="/bridge">TON to ETH</Link></li>
-                            <li><a>Search</a></li>
-                        </ul>
-                    </div>
-                    <div className="footer-nav__col">
-                        <div className="footer-nav__col-title">Staking</div>
-                        <ul className="footer-nav__list">
-                            <li><a>Stake / Redeem</a></li>
-                            <li><a>My stake</a></li>
-                            <li><a>Staking explorer</a></li>
-                        </ul>
-                    </div>
-                    <div className="footer-nav__col">
-                        <div className="footer-nav__col-title">Guides</div>
-                        <ul className="footer-nav__list">
-                            <li><a>Bridge</a></li>
-                            <li><a>Staking</a></li>
-                            <li><a>Governance</a></li>
-                        </ul>
-                    </div>
-                    <div className="footer-nav__col">
-                        <div className="footer-nav__col-title">Governance</div>
-                        <ul className="footer-nav__list">
-                            <li><a>Overview</a></li>
-                            <li><a>Proposals</a></li>
-                            <li><a>Leaderboard</a></li>
-                            <li><a>BRIDGE distribution</a></li>
-                        </ul>
-                    </div>
-                    <div className="footer-nav__col">
-                        <div className="footer-nav__col-title">DeFi Products</div>
-                        <ul className="footer-nav__list">
-                            <li>
-                                <a href="https://tonswap.io" target="_blank" rel="nofollow noopener noreferrer">
-                                    TON Swap
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://tonscan.io" target="_blank" rel="nofollow noopener noreferrer">
-                                    TON Scan
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://wton.io" target="_blank" rel="nofollow noopener noreferrer">
-                                    WTON
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
-                                    target="_blank"
-                                    rel="nofollow noopener noreferrer"
-                                >
-                                    Crystal Wallet
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-                */}
                 <div className="footer__bottom">
                     <ul className="footer-soc">
                         <li>
@@ -175,6 +269,18 @@ export function Footer(): JSX.Element {
                         </li>
                     </ul>
                     <div className="footer__sub">
+                        <p
+                            className="footer-copyright"
+                            dangerouslySetInnerHTML={{
+                                __html: intl.formatMessage({
+                                    id: 'FOOTER_COPYRIGHTS',
+                                }, {
+                                    year: new Date().getFullYear(),
+                                }, {
+                                    ignoreTag: true,
+                                }),
+                            }}
+                        />
                         <nav className="footer-subnav">
                             <ul>
                                 <li>
@@ -212,18 +318,6 @@ export function Footer(): JSX.Element {
                                 </li>
                             </ul>
                         </nav>
-                        <p
-                            className="footer-copyright"
-                            dangerouslySetInnerHTML={{
-                                __html: intl.formatMessage({
-                                    id: 'FOOTER_COPYRIGHTS',
-                                }, {
-                                    year: new Date().getFullYear(),
-                                }, {
-                                    ignoreTag: true,
-                                }),
-                            }}
-                        />
                     </div>
                 </div>
             </div>
