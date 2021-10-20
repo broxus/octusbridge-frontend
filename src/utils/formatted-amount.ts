@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import { isGoodBignumber } from '@/utils/is-good-bignumber'
 
 
-export function formattedAmount(value: string, decimals?: number): string | undefined {
+export function formattedAmount(value: string, decimals?: number): string {
     const result = new BigNumber(value || 0)
 
     if (!isGoodBignumber(result)) {

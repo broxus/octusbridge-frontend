@@ -104,4 +104,20 @@ export default {
     CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT: 'Amount',
     CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN: 'Amount, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE: 'Bridge fee, {symbol}',
+
+    STAKING_ACCOUNT_FORM_TITLE: 'Account',
+    STAKING_ACCOUNT_FORM_TAB_STAKE: 'Stake',
+    STAKING_ACCOUNT_FORM_TAB_REDEEM: 'Redeem',
+    STAKING_ACCOUNT_FORM_LABEL_FROM: 'From',
+    STAKING_ACCOUNT_FORM_LABEL_STAKE: 'Amount to stake',
+    STAKING_ACCOUNT_FORM_LABEL_REDEEM: 'Amount to redeem',
+    STAKING_ACCOUNT_FORM_WALLET_BALANCE_SHORT: 'Balance:',
+    STAKING_ACCOUNT_FORM_WALLET_BALANCE: 'Wallet balance:',
+    STAKING_ACCOUNT_FORM_AVAILABLE_BALANCE: 'Available balance:',
+    STAKING_ACCOUNT_FORM_STATS_FEE: 'Gas fee',
+    STAKING_ACCOUNT_FORM_HINT: 'If the staking contract uses a smaller amount than fee, it will return the change to your wallet.',
+    STAKING_ACCOUNT_FORM_SUBMIT: 'Submit',
+    STAKING_ACCOUNT_FORM_CONNECT: 'Connect wallet',
+
+    AMOUNT: '{value} {symbol}'
 }

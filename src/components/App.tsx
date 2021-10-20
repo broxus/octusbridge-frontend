@@ -14,6 +14,7 @@ import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
 import EvmTransferStatus from '@/pages/bridge/evm-transfer-status'
 import TonTransferStatus from '@/pages/bridge/ton-transfer-status'
+import StakingAccount from '@/pages/staking/account'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -44,6 +45,12 @@ export function App(): JSX.Element {
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />
+                            </Route>
+                            <Route exact path="/staking">
+                                <StakingAccount />
+                            </Route>
+                            <Route exact path="/staking/redeem">
+                                <StakingAccount />
                             </Route>
                         </Switch>
                     </div>
