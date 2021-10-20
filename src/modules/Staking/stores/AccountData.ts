@@ -1,8 +1,13 @@
 import { action, makeAutoObservable } from 'mobx'
 import { Address, Contract } from 'ton-inpage-provider'
 
-import { AccountDataStoreData, AccountDataStoreState } from '@/modules/Staking/types'
-import { ACCOUNT_DATA_STORE_DEFAULT_DATA, ACCOUNT_DATA_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
+import {
+    AccountDataStoreData, AccountDataStoreState, StackingDetails,
+    UserDetails,
+} from '@/modules/Staking/types'
+import {
+    ACCOUNT_DATA_STORE_DEFAULT_DATA, ACCOUNT_DATA_STORE_DEFAULT_STATE,
+} from '@/modules/Staking/constants'
 import { getStackingContract } from '@/modules/Staking/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
@@ -15,6 +20,8 @@ export class AccountDataStore {
 
     protected data: AccountDataStoreData = ACCOUNT_DATA_STORE_DEFAULT_DATA
 
+    protected stackingContract = getStackingContract()
+
     constructor(
         public readonly tokensCache: TokensCacheService,
         public readonly tonWallet: TonWalletService,
@@ -24,21 +31,27 @@ export class AccountDataStore {
         })
     }
 
-    public async sync(): Promise<void> {
-        this.setIsLoading(true)
+    protected async fetchStackingDetails(): Promise<StackingDetails | undefined> {
+        try {
+            const { value0: stackingDetails } = await this.stackingContract.methods.getDetails({
+                answerId: 0,
+            }).call()
 
+            return stackingDetails
+        }
+        catch (e) {
+            error(e)
+            return undefined
+        }
+    }
+
+    protected async fetchUserDetails(): Promise<UserDetails | undefined> {
         try {
             if (!this.tonWallet.address) {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = getStackingContract()
-
-            const { value0: stackingDetails } = await stackingContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            const { value0: userDataAddress } = await stackingContract.methods.getUserDataAddress({
+            const { value0: userDataAddress } = await this.stackingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: new Address(this.tonWallet.address),
             }).call()
@@ -49,7 +62,24 @@ export class AccountDataStore {
                 answerId: 0,
             }).call()
 
-            await this.tokensCache.syncTonToken(stackingDetails.tokenRoot.toString())
+            return userDetails
+        }
+        catch (e) {
+            error(e)
+            return undefined
+        }
+    }
+
+    public async sync(): Promise<void> {
+        this.setIsLoading(true)
+
+        try {
+            const stackingDetails = await this.fetchStackingDetails()
+            const userDetails = await this.fetchUserDetails()
+
+            if (stackingDetails) {
+                await this.tokensCache.syncTonToken(stackingDetails.tokenRoot.toString())
+            }
 
             this.setData({ stackingDetails, userDetails })
         }
