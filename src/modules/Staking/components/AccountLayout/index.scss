@@ -1,0 +1,46 @@
+.staking-account {
+    &.card {
+        max-width: 520px;
+    }
+
+    &__title {
+        font-size: 28px;
+        letter-spacing: 0.25px;
+        line-height: 36px;
+        margin: 0 0 16px;
+    }
+
+    &__tabs {
+        display: flex;
+        margin: 0 0 32px;
+
+        a {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+            cursor: pointer;
+            flex: 1 1 auto;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            line-height: 24px;
+            padding: 16px 0;
+            position: relative;
+            text-align: center;
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            &.active {
+                &::after {
+                    background: #ffffff;
+                    bottom: -1px;
+                    content: '';
+                    height: 3px;
+                    left: 0;
+                    position: absolute;
+                    right: 0;
+                }
+            }
+        }
+    }
+}

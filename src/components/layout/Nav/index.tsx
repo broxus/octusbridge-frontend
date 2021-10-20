@@ -19,17 +19,11 @@ export function Nav(): JSX.Element {
                     </NavLink>
                 </li>
                 <li>
-                    <span>
+                    <NavLink to="/staking">
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_STAKING',
                         })}
-                        {' '}
-                        <sup>
-                            {intl.formatMessage({
-                                id: 'NAV_LINK_SOON_HINT',
-                            })}
-                        </sup>
-                    </span>
+                    </NavLink>
                 </li>
                 <li>
                     <span>
