@@ -118,6 +118,7 @@ function RelayerStatusInner(): JSX.Element {
                                     disabled={(
                                         relayerBroadcast.tonPubkeyStatus !== 'confirmed'
                                         || relayerBroadcast.ethAddressStatus !== 'confirmed'
+                                        || relayerBroadcast.broadcastStatus === 'pending'
                                         || relayerBroadcast.isLoading
                                     )}
                                     onClick={relayerBroadcast.broadcast}
