@@ -30,10 +30,14 @@ function RelayerFormInner(): JSX.Element {
 
     return (
         <>
-            {(relayerLink.isLinked || relayerLink.isSubmitted) && (
+            {(relayerLink.isLinked || relayerLink.isConfirming) && (
                 <CreateRelayerConfirmation
+                    isValid={relayerLink.isValid}
+                    isSubmitted={relayerLink.isSubmitted}
                     isLoading={relayerLink.isLoading}
+                    requiredStake={stakingData.minRelayDeposit}
                     stakingBalance={stakingData.stakingBalance}
+                    stakingBalanceIsValid={relayerLink.stakingBalanceIsValid}
                     stakingTokenSymbol={stakingData.stakingTokenSymbol}
                     stakingTokenDecimals={stakingData.stakingTokenDecimals}
                     tonWalletBalance={stakingData.tonWalletBalance}
@@ -69,7 +73,7 @@ function RelayerFormInner(): JSX.Element {
                     <CreateRelayerFormLayout
                         submitVisible
                         submitEnabled={relayerLink.isValid}
-                        onSubmit={relayerLink.submit}
+                        onSubmit={relayerLink.confirming}
                         onConnect={stakingData.connectTonWallet}
                         isLoading={isLoading}
                         isConnected={stakingData.isConnected}
@@ -122,6 +126,11 @@ function RelayerFormInner(): JSX.Element {
                             <Observer>
                                 {() => (
                                     <CreateRelayerBalance
+                                        isSubmitted={relayerLink.isSubmitted}
+                                        tonWalletBalanceIsValid={relayerLink.tonWalletBalanceIsValid}
+                                        contractFee={stakingData.relayInitialTonDeposit}
+                                        tonTokenSymbol={stakingData.tonTokenSymbol}
+                                        tonTokenDecimals={stakingData.tonTokenDecimals}
                                         stakingBalance={stakingData.stakingBalance}
                                         requiredStake={stakingData.minRelayDeposit}
                                         stakingTokenDecimals={stakingData.stakingTokenDecimals}

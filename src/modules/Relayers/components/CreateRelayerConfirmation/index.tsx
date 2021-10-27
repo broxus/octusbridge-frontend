@@ -1,13 +1,18 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { Icon } from '@/components/common/Icon'
 import { Warning } from '@/components/common/Warning'
 import { CreateRelayerPopupLayout } from '@/modules/Relayers/components/CreateRelayerPopupLayout'
 import { amount } from '@/utils'
 
 type Props = {
+    isValid?: boolean;
+    isSubmitted?: boolean;
     isLoading?: boolean;
+    requiredStake?: string;
     stakingBalance?: string;
+    stakingBalanceIsValid?: boolean;
     stakingTokenSymbol?: string;
     stakingTokenDecimals?: number;
     tonWalletBalance?: string;
@@ -20,8 +25,12 @@ type Props = {
 }
 
 export function CreateRelayerConfirmation({
+    isValid,
+    isSubmitted,
     isLoading,
+    requiredStake,
     stakingBalance,
+    stakingBalanceIsValid,
     stakingTokenSymbol,
     stakingTokenDecimals,
     tonWalletBalance,
@@ -103,20 +112,42 @@ export function CreateRelayerConfirmation({
             </ul>
 
             {
-                !tonWalletBalanceIsValid
+                !stakingBalanceIsValid
+                && stakingTokenSymbol
+                && stakingBalance
+                && requiredStake
+                && stakingTokenDecimals !== undefined
+                && (
+                    <div className="create-relayer-popup-warning">
+                        <Warning
+                            text={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
+                            }, {
+                                symbol: stakingTokenSymbol,
+                                amount: amount(requiredStake, stakingTokenDecimals),
+                            })}
+                        />
+                    </div>
+                )
+            }
+
+            {
+                !isSubmitted
+                && !tonWalletBalanceIsValid
                 && contractFee
                 && tonTokenSymbol
                 && tonTokenDecimals !== undefined
                 && (
-                    <Warning
-                        theme="warning"
-                        text={intl.formatMessage({
-                            id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
-                        }, {
-                            amount: amount(contractFee, tonTokenDecimals),
-                            symbol: tonTokenSymbol,
-                        })}
-                    />
+                    <div className="create-relayer-popup-warning">
+                        <Warning
+                            text={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
+                            }, {
+                                amount: amount(contractFee, tonTokenDecimals),
+                                symbol: tonTokenSymbol,
+                            })}
+                        />
+                    </div>
                 )
             }
 
@@ -136,9 +167,11 @@ export function CreateRelayerConfirmation({
                     type="button"
                     className="btn btn--primary btn-block"
                     onClick={onSubmit}
-                    disabled={!tonWalletBalanceIsValid || isLoading}
+                    disabled={!isValid || isLoading}
                 >
-                    {intl.formatMessage({
+                    {isLoading ? (
+                        <Icon icon="loader" ratio={0.9} className="spin" />
+                    ) : intl.formatMessage({
                         id: 'RELAYERS_CREATE_CONFIRMATION_SUBMIT',
                     })}
                 </button>

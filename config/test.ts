@@ -43,3 +43,5 @@ export const StakingAccountAddress = '0:6fdaa8f199d372c9f1ec8b3b20bc0e5ef72df412
 export const Web3Url = 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
 export const GazToStaking = '55000000000'
+
+export const RelayEvmNetworkChainId = '5'

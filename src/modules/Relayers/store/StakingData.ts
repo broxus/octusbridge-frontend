@@ -14,7 +14,9 @@ import { error, throwException } from '@/utils'
 import {
     EventVoteData, RelayConfig, StackingDetails, UserDetails,
 } from '@/misc/types'
-import { EthAbi, TokenAbi, UserDataAbi } from '@/misc'
+import {
+    EthAbi, EventConfigDetails, TokenAbi, UserDataAbi,
+} from '@/misc'
 import { Web3Url } from '@/config'
 
 export class StakingDataStore {
@@ -96,10 +98,9 @@ export class StakingDataStore {
         }
     }
 
-    protected async getEventVoteData(
+    static async getEventConfigDetails(
         stackingDetails: StackingDetails,
-        userDetails: UserDetails,
-    ): Promise<EventVoteData | undefined> {
+    ): Promise<EventConfigDetails | undefined> {
         try {
             const eventConfigContract = new Contract(
                 TokenAbi.EthEventConfig,
@@ -108,6 +109,21 @@ export class StakingDataStore {
             const eventConfigDetails = await eventConfigContract.methods.getDetails({
                 answerId: 0,
             }).call()
+
+            return eventConfigDetails
+        }
+        catch (e) {
+            error(e)
+
+            return undefined
+        }
+    }
+
+    protected async getEventVoteData(
+        userDetails: UserDetails,
+        eventConfigDetails: EventConfigDetails,
+    ): Promise<EventVoteData | undefined> {
+        try {
             const eventEmitterBN = new BigNumber(eventConfigDetails._networkConfiguration.eventEmitter)
             const eventEmitterAddress = `0x${eventEmitterBN.toString(16).padStart(40, '0')}`
             const topic = this.web3.utils.keccak256('RelayAddressVerified(uint160,int8,uint256)')
@@ -189,11 +205,18 @@ export class StakingDataStore {
 
     protected async syncData(): Promise<void> {
         try {
-            const relayConfig = await this.getRelayConfig()
-            const stackingDetails = await this.getStackingDetails()
-            const userDetails = await this.getUserDetails()
-            const eventVoteData = stackingDetails && userDetails
-                ? await this.getEventVoteData(stackingDetails, userDetails)
+            const [
+                relayConfig, stackingDetails, userDetails,
+            ] = await Promise.all([
+                this.getRelayConfig(),
+                this.getStackingDetails(),
+                this.getUserDetails(),
+            ])
+            const eventConfigDetails = stackingDetails
+                ? await StakingDataStore.getEventConfigDetails(stackingDetails)
+                : undefined
+            const eventVoteData = userDetails && eventConfigDetails
+                ? await this.getEventVoteData(userDetails, eventConfigDetails)
                 : undefined
             const eventState = stackingDetails && eventVoteData
                 ? await StakingDataStore.getEventState(stackingDetails, eventVoteData)
@@ -209,6 +232,7 @@ export class StakingDataStore {
                 userDetails,
                 eventVoteData,
                 eventState,
+                eventConfigDetails,
             })
         }
         catch (e) {
@@ -216,17 +240,43 @@ export class StakingDataStore {
         }
     }
 
-    public startSync(): void {
-        this.stopSync()
+    public startUpdater(): void {
+        this.stopUpdater()
 
         this.syncTimeoutId = window.setTimeout(async () => {
-            await this.syncData()
-            this.startSync()
+            try {
+                await this.syncData()
+            }
+            catch (e) {
+                error(e)
+            }
+            this.startUpdater()
         }, 5000)
     }
 
-    public stopSync(): void {
+    public stopUpdater(): void {
         clearTimeout(this.syncTimeoutId)
+
+        this.syncTimeoutId = undefined
+    }
+
+    public async forceUpdate(): Promise<void> {
+        const hasUpdater = Boolean(this.syncTimeoutId)
+
+        if (hasUpdater) {
+            this.stopUpdater()
+        }
+
+        try {
+            await this.syncData()
+
+            if (hasUpdater) {
+                this.startUpdater()
+            }
+        }
+        catch (e) {
+            error(e)
+        }
     }
 
     public async fetchData(): Promise<void> {
@@ -343,6 +393,16 @@ export class StakingDataStore {
         }
 
         return new BigNumber(this.data.relayConfig.relayInitialTonDeposit)
+            .plus('500000000')
+            .toFixed()
+    }
+
+    public get eventInitialBalance(): string | undefined {
+        if (!this.data.eventConfigDetails) {
+            return undefined
+        }
+
+        return new BigNumber(this.data.eventConfigDetails._basicConfiguration.eventInitialBalance)
             .plus('500000000')
             .toFixed()
     }

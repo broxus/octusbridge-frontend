@@ -184,13 +184,15 @@ export default {
     RELAYERS_CREATE_CONFIRMATION_CANCEL: 'Cancel',
     RELAYERS_CREATE_CONFIRMATION_SUBMIT: 'Confirm',
     RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING: 'Your current wallet balance is insufficient. Please increase your wallet balance to at least {amount} {symbol} tokens.',
+    RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING_TITLE: 'Insufficient balance',
 
     RELAYERS_CREATE_SUCCESS_TITLE: 'Relayer has been created',
     RELAYERS_CREATE_SUCCESS_TEXT: '<p>Congratulations!</p><p>You have finished the registration process.</p><p>Once all checks are completed and a new round begins, you will be able to participate in the auction. You can track your status on the relayer page.</p>',
     RELAYERS_CREATE_SUCCESS_BTN: 'Open relayer page',
 
     RELAYERS_CREATE_INDICATOR_DISABLED: 'Awaiting',
-    RELAYERS_CREATE_INDICATOR_PENDING: 'Confirming',
+    RELAYERS_CREATE_INDICATOR_PENDING: 'Pending',
+    RELAYERS_CREATE_INDICATOR_CHECKING: 'Confirming',
     RELAYERS_CREATE_INDICATOR_CONFIRMED: 'Confirmed',
 
     RELAYERS_CONNECT: 'Connect wallet',

@@ -63,3 +63,5 @@ export const StakingAccountAddress = '0:7727ca13859ee381892ee6a0435165d360531889
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
 export const GazToStaking = '11500000000'
+
+export const RelayEvmNetworkChainId = '1'

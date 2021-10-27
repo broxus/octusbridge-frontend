@@ -6,6 +6,7 @@ import {
 export const INDICATOR_LABEL_INTL_ID_BY_STATUS = {
     disabled: 'RELAYERS_CREATE_INDICATOR_DISABLED',
     pending: 'RELAYERS_CREATE_INDICATOR_PENDING',
+    checking: 'RELAYERS_CREATE_INDICATOR_CHECKING',
     confirmed: 'RELAYERS_CREATE_INDICATOR_CONFIRMED',
 }
 
@@ -27,8 +28,9 @@ export const RELAYER_BROADCAST_STORE_DATA: RelayerBroadcastStoreData = {
 
 export const RELAYER_LINK_STORE_STATE: RelayerLinkStoreState = {
     isLoading: false,
-    isSubmitted: false,
+    isConfirming: false,
     isLinked: false,
+    isSubmitted: false,
 }
 
 export const RELAYER_LINK_STORE_DATA: RelayerLinkStoreData = {
