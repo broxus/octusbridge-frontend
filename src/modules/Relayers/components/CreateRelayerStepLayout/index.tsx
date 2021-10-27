@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { ContentLoader } from '@/components/common/ContentLoader'
+import { CreateRelayerConnect } from '@/modules/Relayers/components/CreateRelayerConnect'
 import './index.scss'
 
 type Props = {
@@ -9,7 +10,9 @@ type Props = {
     title: string;
     hint: string;
     isLoading?: boolean;
+    isConnected?: boolean;
     children: React.ReactNode;
+    onConnect?: () => void;
 }
 
 export function CreateRelayerStepLayout({
@@ -17,7 +20,9 @@ export function CreateRelayerStepLayout({
     title,
     hint,
     isLoading,
+    isConnected,
     children,
+    onConnect,
 }: Props): JSX.Element {
     const intl = useIntl()
 
@@ -29,23 +34,32 @@ export function CreateRelayerStepLayout({
                 </div>
             ) : (
                 <>
-                    <div className="create-relayer-step-layout__header">
-                        <h2 className="section-title">
-                            <div className="small">
-                                {intl.formatMessage({
-                                    id: 'RELAYERS_CREATE_STEP',
-                                }, {
-                                    value: step,
-                                })}
+                    {isConnected === false ? (
+                        <CreateRelayerConnect
+                            onConnect={onConnect}
+                            isLoading={isLoading}
+                        />
+                    ) : (
+                        <>
+                            <div className="create-relayer-step-layout__header">
+                                <h2 className="section-title">
+                                    <div className="small">
+                                        {intl.formatMessage({
+                                            id: 'RELAYERS_CREATE_STEP',
+                                        }, {
+                                            value: step,
+                                        })}
+                                    </div>
+
+                                    {title}
+                                </h2>
+
+                                <p>{hint}</p>
                             </div>
 
-                            {title}
-                        </h2>
-
-                        <p>{hint}</p>
-                    </div>
-
-                    {children}
+                            {children}
+                        </>
+                    )}
                 </>
             )}
         </div>

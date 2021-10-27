@@ -226,14 +226,16 @@ export class StakingDataStore {
                 await this.tokensCache.syncTonToken(stackingDetails.tokenRoot.toString())
             }
 
-            this.setData({
-                relayConfig,
-                stackingDetails,
-                userDetails,
-                eventVoteData,
-                eventState,
-                eventConfigDetails,
-            })
+            if (this.isConnected) {
+                this.setData({
+                    relayConfig,
+                    stackingDetails,
+                    userDetails,
+                    eventVoteData,
+                    eventState,
+                    eventConfigDetails,
+                })
+            }
         }
         catch (e) {
             error(e)
@@ -425,7 +427,8 @@ export class StakingDataStore {
 
     public get isNeedToCreateKeys(): boolean {
         if (
-            this.state.isLoaded
+            this.isConnected
+            && this.state.isLoaded
             && !this.relayEthAddress
             && !this.relayTonPubkey
         ) {

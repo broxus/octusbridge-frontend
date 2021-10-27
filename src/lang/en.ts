@@ -196,6 +196,7 @@ export default {
     RELAYERS_CREATE_INDICATOR_CONFIRMED: 'Confirmed',
 
     RELAYERS_CONNECT: 'Connect wallet',
+    RELAYERS_CONNECT_TEXT: 'To add a new relayer to the Bridge, you need to connect the wallet.',
 
     NO_VALUE: '–',
     AMOUNT: '{value} {symbol}'
