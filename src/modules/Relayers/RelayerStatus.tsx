@@ -53,6 +53,8 @@ function RelayerStatusInner(): JSX.Element {
                 <CreateRelayerStepLayout
                     step="2"
                     isLoading={isLoading}
+                    isConnected={stakingData.isConnected}
+                    onConnect={stakingData.connectTonWallet}
                     title={intl.formatMessage({
                         id: 'RELAYERS_CREATE_TITLE',
                     })}
