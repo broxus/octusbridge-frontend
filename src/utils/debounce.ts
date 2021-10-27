@@ -1,8 +1,8 @@
-export function debounce(
-    fn: (...args: any[]) => unknown,
+export function debounce<T>(
+    fn: (...args: any[]) => T,
     wait: number,
     immediate?: boolean,
-): () => void {
+): (...args: any[]) => void {
     let timeout: ReturnType<typeof setTimeout>
 
     return (...args: any[]) => {

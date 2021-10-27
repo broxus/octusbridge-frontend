@@ -66,6 +66,12 @@ button.popup-close {
     &:hover {
         opacity: 1;
     }
+
+    &:disabled {
+        background-color: transparent !important;
+        cursor: not-allowed !important;
+        opacity: 0.2 !important;
+    }
 }
 
 .popup-title {

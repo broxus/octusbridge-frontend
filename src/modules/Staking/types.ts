@@ -1,17 +1,9 @@
-import { Contract, DecodedAbiFunctionOutputs } from 'ton-inpage-provider'
-
-import { StackingAbi, UserDataAbi } from '@/misc'
+import { StackingDetails, UserDetails } from '@/misc/types'
 
 export enum ActionType {
     Stake,
     Redeem,
 }
-
-export type StackingContract = Contract<typeof StackingAbi.Root>
-
-export type StackingDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getDetails'>['value0']
-
-export type UserDetails = DecodedAbiFunctionOutputs<typeof UserDataAbi.Root, 'getDetails'>['value0']
 
 export type AccountDataStoreState = {
     isLoading: boolean;

@@ -16,6 +16,8 @@ import Bridge from '@/pages/bridge'
 import EvmTransferStatus from '@/pages/bridge/evm-transfer-status'
 import TonTransferStatus from '@/pages/bridge/ton-transfer-status'
 import StakingAccount from '@/pages/staking/account'
+import RelayersStatus from '@/pages/relayers/create'
+import RelayersKeys from '@/pages/relayers/create/keys'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -52,6 +54,12 @@ export function App(): JSX.Element {
                             </Route>
                             <Route exact path="/staking/redeem">
                                 <StakingAccount />
+                            </Route>
+                            <Route exact path="/relayers/create">
+                                <RelayersStatus />
+                            </Route>
+                            <Route exact path="/relayers/create/keys">
+                                <RelayersKeys />
                             </Route>
                         </Switch>
                     </div>

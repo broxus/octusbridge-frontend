@@ -1,0 +1,22 @@
+.create-relayer-step-layout {
+    height: 100%;
+    padding: 16px 0 0;
+
+    &__header {
+        margin: 0 0 16px;
+
+        p {
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            line-height: 20px;
+            margin: 4px 0 0;
+        }
+    }
+
+    &__loader {
+        align-self: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+    }
+}

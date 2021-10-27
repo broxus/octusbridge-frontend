@@ -5,7 +5,6 @@ import {
 
 export const STAKING_LOCATION = '/staking'
 export const STAKING_REDEEM_LOCATION = '/staking/redeem'
-export const GAZ_TO_STAKING = '11500000000'
 export const STAKING_PAYLOAD = 'te6ccgEBAQEAAwAAAgA='
 
 export const ACCOUNT_DATA_STORE_DEFAULT_STATE: AccountDataStoreState = {

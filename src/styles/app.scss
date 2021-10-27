@@ -199,3 +199,31 @@
         display: none;
     }
 }
+
+ul.summary {
+    font-size: 14px;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    line-height: 20px;
+    margin: 16px 0;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    li {
+        align-items: baseline;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 16px;
+        row-gap: 16px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
