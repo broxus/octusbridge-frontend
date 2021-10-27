@@ -4,7 +4,7 @@ import ton, { Address, Subscriber } from 'ton-inpage-provider'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import {
-    GAZ_TO_STAKING, STAKING_FORM_STORE_DEFAULT_DATA, STAKING_FORM_STORE_DEFAULT_STATE,
+    STAKING_FORM_STORE_DEFAULT_DATA, STAKING_FORM_STORE_DEFAULT_STATE,
     STAKING_PAYLOAD,
 } from '@/modules/Staking/constants'
 import { getStackingContract } from '@/modules/Staking/utils'
@@ -12,8 +12,11 @@ import { StakingFormStoreData, StakingFormStoreState } from '@/modules/Staking/t
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
+import { GazToStaking } from '@/config'
 
 export class StakingFormStore {
+
+    public readonly tonDepositAmount = GazToStaking
 
     protected state: StakingFormStoreState = STAKING_FORM_STORE_DEFAULT_STATE
 
@@ -96,7 +99,7 @@ export class StakingFormStore {
             })
                 .send({
                     from: ownerAddress,
-                    amount: GAZ_TO_STAKING,
+                    amount: this.tonDepositAmount,
                     bounce: false,
                 })
 
@@ -144,7 +147,7 @@ export class StakingFormStore {
     }
 
     public get isValid(): boolean {
-        if (new BigNumber(this.tonWallet.balance).lt(GAZ_TO_STAKING)) {
+        if (new BigNumber(this.tonWallet.balance).lt(this.tonDepositAmount)) {
             return false
         }
 

@@ -54,7 +54,11 @@ function StakingAccountInner(): JSX.Element {
                     )}
                 </Observer>
 
-                <AccountFee />
+                <AccountFee
+                    feeAmount={currentForm.tonDepositAmount}
+                    tokenSymbol={accountData.tonTokenSymbol}
+                    tokenDecimals={accountData.tonTokenDecimals}
+                />
 
                 <Observer>
                     {() => (

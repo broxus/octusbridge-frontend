@@ -1,17 +1,14 @@
 import { action, makeAutoObservable } from 'mobx'
 import { Address, Contract } from 'ton-inpage-provider'
 
-import {
-    AccountDataStoreData, AccountDataStoreState, StackingDetails,
-    UserDetails,
-} from '@/modules/Staking/types'
+import { AccountDataStoreData, AccountDataStoreState } from '@/modules/Staking/types'
 import {
     ACCOUNT_DATA_STORE_DEFAULT_DATA, ACCOUNT_DATA_STORE_DEFAULT_STATE,
 } from '@/modules/Staking/constants'
 import { getStackingContract } from '@/modules/Staking/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { UserDataAbi } from '@/misc'
+import { StackingDetails, UserDataAbi, UserDetails } from '@/misc'
 import { error, throwException } from '@/utils'
 
 export class AccountDataStore {
@@ -153,6 +150,14 @@ export class AccountDataStore {
 
     public get stakingTokenWallet(): Address | undefined {
         return this.data.stackingDetails?.tokenWallet
+    }
+
+    public get tonTokenSymbol(): string {
+        return this.tonWallet.tokenSymbol
+    }
+
+    public get tonTokenDecimals(): number {
+        return this.tonWallet.tokenDecimals
     }
 
 }

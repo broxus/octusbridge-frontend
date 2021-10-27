@@ -1,18 +1,26 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { amount } from '@/utils'
+
 import './index.scss'
 
 type Props = {
     feeAmount?: string;
-    feeSymbol?: string;
+    tokenSymbol?: string;
+    tokenDecimals?: number;
 }
 
 export function AccountFee({
-    feeAmount = '12.50',
-    feeSymbol = 'TON',
+    feeAmount,
+    tokenSymbol,
+    tokenDecimals,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const nullMessage = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
 
     return (
         <div className="staking-account-fee">
@@ -23,12 +31,16 @@ export function AccountFee({
                     })}
                 </span>
                 <span>
-                    {intl.formatMessage({
-                        id: 'AMOUNT',
-                    }, {
-                        value: feeAmount,
-                        symbol: feeSymbol,
-                    })}
+                    {
+                        tokenDecimals !== undefined && tokenSymbol && feeAmount
+                            ? intl.formatMessage({
+                                id: 'AMOUNT',
+                            }, {
+                                value: amount(feeAmount, tokenDecimals),
+                                symbol: tokenSymbol,
+                            })
+                            : nullMessage
+                    }
                 </span>
             </div>
 

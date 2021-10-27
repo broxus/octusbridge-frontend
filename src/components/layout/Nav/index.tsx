@@ -39,17 +39,11 @@ export function Nav(): JSX.Element {
                     </span>
                 </li>
                 <li>
-                    <span>
+                    <NavLink to="/relayers/create">
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_RELAYERS',
                         })}
-                        {' '}
-                        <sup>
-                            {intl.formatMessage({
-                                id: 'NAV_LINK_SOON_HINT',
-                            })}
-                        </sup>
-                    </span>
+                    </NavLink>
                 </li>
             </ul>
         </nav>
