@@ -6,6 +6,11 @@ import { Warning } from '@/components/common/Warning'
 import { amount } from '@/utils'
 
 type Props = {
+    isSubmitted?: boolean;
+    tonWalletBalanceIsValid?: boolean;
+    contractFee?: string;
+    tonTokenSymbol?: string;
+    tonTokenDecimals?: number;
     stakingBalance?: string;
     requiredStake?: string;
     stakingTokenSymbol?: string;
@@ -13,6 +18,11 @@ type Props = {
 }
 
 export function CreateRelayerBalance({
+    isSubmitted,
+    tonWalletBalanceIsValid,
+    contractFee,
+    tonTokenSymbol,
+    tonTokenDecimals,
     stakingBalance,
     requiredStake,
     stakingTokenSymbol,
@@ -88,21 +98,46 @@ export function CreateRelayerBalance({
                 && stakingTokenDecimals !== undefined
                 && new BigNumber(stakingBalance).lt(requiredStake)
                 && (
-                    <Warning
-                        title={intl.formatMessage({
-                            id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TITLE',
-                        })}
-                        text={intl.formatMessage({
-                            id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
-                        }, {
-                            symbol: stakingTokenSymbol,
-                            amount: amount(requiredStake, stakingTokenDecimals),
-                        })}
-                        actionLabel={intl.formatMessage({
-                            id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_ACTION',
-                        })}
-                        actionLink="/staking"
-                    />
+                    <p>
+                        <Warning
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TITLE',
+                            })}
+                            text={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
+                            }, {
+                                symbol: stakingTokenSymbol,
+                                amount: amount(requiredStake, stakingTokenDecimals),
+                            })}
+                            actionLabel={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_ACTION',
+                            })}
+                            actionLink="/staking"
+                        />
+                    </p>
+                )
+            }
+
+            {
+                !isSubmitted
+                && !tonWalletBalanceIsValid
+                && contractFee
+                && tonTokenSymbol
+                && tonTokenDecimals !== undefined
+                && (
+                    <p>
+                        <Warning
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING_TITLE',
+                            })}
+                            text={intl.formatMessage({
+                                id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
+                            }, {
+                                amount: amount(contractFee, tonTokenDecimals),
+                                symbol: tonTokenSymbol,
+                            })}
+                        />
+                    </p>
                 )
             }
         </>

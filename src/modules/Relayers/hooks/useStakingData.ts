@@ -15,15 +15,15 @@ export function useStakingData(
     React.useEffect(() => {
         if (stakingData.isConnected) {
             stakingData.fetchData()
-            stakingData.startSync()
+            stakingData.startUpdater()
         }
         else {
             stakingData.dispose()
-            stakingData.stopSync()
+            stakingData.stopUpdater()
         }
 
         return () => {
-            stakingData.stopSync()
+            stakingData.stopUpdater()
         }
     }, [stakingData.isConnected])
 

@@ -27,7 +27,7 @@ export class RelayerLinkStore {
     ) {
         makeAutoObservable(this, {
             linkAccounts: action.bound,
-            submit: action.bound,
+            confirming: action.bound,
             cancel: action.bound,
             setTonPublicKey: action.bound,
             setEthAddress: action.bound,
@@ -35,9 +35,11 @@ export class RelayerLinkStore {
     }
 
     public async linkAccounts(): Promise<void> {
-        this.setLoading(true)
+        this.setIsLoading(true)
 
         try {
+            await this.stakingData.forceUpdate()
+
             if (!this.isValid) {
                 throwException('Create relayer form is invalid')
             }
@@ -63,6 +65,8 @@ export class RelayerLinkStore {
                     bounce: true,
                 })
 
+            this.setIsSubmitted(true)
+
             await new Promise<void>(resolve => {
                 const intervalId = window.setInterval(() => {
                     if (
@@ -81,19 +85,23 @@ export class RelayerLinkStore {
             error(e)
         }
         finally {
-            this.setLoading(false)
+            this.setIsLoading(false)
         }
     }
 
-    public submit(): void {
-        this.state.isSubmitted = true
+    public confirming(): void {
+        this.state.isConfirming = true
     }
 
     public cancel(): void {
-        this.state.isSubmitted = false
+        this.state.isConfirming = false
     }
 
-    protected setLoading(value: boolean): void {
+    protected setIsSubmitted(value: boolean): void {
+        this.state.isSubmitted = value
+    }
+
+    protected setIsLoading(value: boolean): void {
         this.state.isLoading = value
     }
 
@@ -113,12 +121,16 @@ export class RelayerLinkStore {
         return this.state.isLoading
     }
 
-    public get isSubmitted(): boolean {
-        return this.state.isSubmitted
+    public get isConfirming(): boolean {
+        return this.state.isConfirming
     }
 
     public get isLinked(): boolean {
         return this.state.isLinked
+    }
+
+    public get isSubmitted(): boolean {
+        return this.state.isSubmitted
     }
 
     public get tonPublicKey(): string {
@@ -129,18 +141,19 @@ export class RelayerLinkStore {
         return this.data.ethAddress
     }
 
+    public get isValid(): boolean {
+        return this.isTonPublicKeyValid
+            && this.isEthAddressValid
+            && this.stakingBalanceIsValid
+            && this.tonWalletBalanceIsValid
+    }
+
     public get isTonPublicKeyValid(): boolean {
         return TON_PUBLIC_KEY_REGEXP.test(this.tonPublicKey)
     }
 
     public get isEthAddressValid(): boolean {
         return ETH_ADDRESS_REGEXP.test(this.ethAddress)
-    }
-
-    public get isValid(): boolean {
-        return this.isTonPublicKeyValid
-            && this.isEthAddressValid
-            && this.stakingBalanceIsValid
     }
 
     public get tonWalletBalanceIsValid(): boolean {

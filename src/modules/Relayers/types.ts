@@ -1,10 +1,10 @@
 import { FullContractState } from 'ton-inpage-provider'
 
 import {
-    EventVoteData, RelayConfig, StackingDetails, UserDetails,
+    EventConfigDetails, EventVoteData, RelayConfig, StackingDetails, UserDetails,
 } from '@/misc/types'
 
-export type ConfirmationStatus = 'pending' | 'confirmed' | 'disabled'
+export type ConfirmationStatus = 'pending' | 'checking' | 'confirmed' | 'disabled'
 
 export type StakingDataStoreState = {
     isLoading: boolean;
@@ -17,6 +17,7 @@ export type StakingDataStoreData = {
     relayConfig?: RelayConfig;
     eventVoteData?: EventVoteData;
     eventState?: FullContractState;
+    eventConfigDetails?: EventConfigDetails;
 }
 
 export type RelayerBroadcastStoreState = {
@@ -29,8 +30,9 @@ export type RelayerBroadcastStoreData = {
 
 export type RelayerLinkStoreState = {
     isLoading: boolean;
-    isSubmitted: boolean;
+    isConfirming: boolean;
     isLinked: boolean;
+    isSubmitted: boolean;
 }
 
 export type RelayerLinkStoreData = {

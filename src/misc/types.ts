@@ -10,4 +10,6 @@ export type RelayConfig = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'ge
 
 export type EventVoteData = DecodedAbiFunctionInputs<typeof TokenAbi.EthEventConfig, 'deployEvent'>['eventVoteData']
 
+export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof TokenAbi.EthEventConfig, 'getDetails'>
+
 export type StackingContract = Contract<typeof StackingAbi.Root>

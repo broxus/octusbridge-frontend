@@ -1,11 +1,19 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { Status, StatusIndicator } from '@/components/common/StatusIndicator'
 import { INDICATOR_LABEL_INTL_ID_BY_STATUS } from '@/modules/Relayers/constants'
+import { ConfirmationStatus } from '@/modules/Relayers/types'
 
 type Props = {
-    status: | 'pending' | 'confirmed' | 'disabled';
+    status: ConfirmationStatus;
+}
+
+const relayerStatusMap: Record<string, Status> = {
+    confirmed: 'confirmed',
+    pending: 'pending',
+    checking: 'pending',
+    disabled: 'disabled',
 }
 
 export function CreateRelayerStatusIndicator({
@@ -14,7 +22,7 @@ export function CreateRelayerStatusIndicator({
     const intl = useIntl()
 
     return (
-        <StatusIndicator status={status}>
+        <StatusIndicator status={relayerStatusMap[status]}>
             {intl.formatMessage({
                 id: INDICATOR_LABEL_INTL_ID_BY_STATUS[status],
             })}

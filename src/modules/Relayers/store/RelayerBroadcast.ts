@@ -31,6 +31,12 @@ export class RelayerBroadcastStore {
         this.setIsLoading(true)
 
         try {
+            await this.stakingData.forceUpdate()
+
+            if (!this.tonWalletBalanceIsValid) {
+                throwException('Ton wallet balance is invalid')
+            }
+
             if (!this.tonWallet.account?.address) {
                 throwException('Wallet must be connected')
             }
@@ -43,22 +49,20 @@ export class RelayerBroadcastStore {
                 throwException('eventVoteData must be defined in staking data')
             }
 
+            if (!this.stakingData.eventInitialBalance) {
+                throwException('eventInitialBalance must be defined in staking data')
+            }
+
             const eventConfigContract = new Contract(
                 TokenAbi.EthEventConfig,
                 this.stakingData.bridgeEventConfigEthTon,
             )
 
-            const eventConfigDetails = await eventConfigContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
             await eventConfigContract.methods.deployEvent({
                 eventVoteData: this.stakingData.eventVoteData,
             }).send({
                 bounce: true,
-                amount: new BigNumber(eventConfigDetails._basicConfiguration.eventInitialBalance)
-                    .plus('500000000')
-                    .toFixed(),
+                amount: this.stakingData.eventInitialBalance,
                 from: this.tonWallet.account.address,
             })
 
@@ -66,7 +70,6 @@ export class RelayerBroadcastStore {
         }
         catch (e) {
             error(e)
-            this.setIsLoading(false)
         }
     }
 
@@ -92,7 +95,7 @@ export class RelayerBroadcastStore {
         }
 
         if (this.stakingData.relayTonPubkey) {
-            return 'pending'
+            return 'checking'
         }
 
         return 'disabled'
@@ -104,7 +107,7 @@ export class RelayerBroadcastStore {
         }
 
         if (this.stakingData.relayEthAddress) {
-            return 'pending'
+            return 'checking'
         }
 
         return 'disabled'
@@ -116,10 +119,26 @@ export class RelayerBroadcastStore {
         }
 
         if (this.stakingData.eventStateIsDeployed) {
+            return 'checking'
+        }
+
+        if (this.isLoading) {
             return 'pending'
         }
 
         return 'disabled'
+    }
+
+    public get tonWalletBalanceIsValid(): boolean {
+        if (
+            !this.stakingData.tonWalletBalance
+            || !this.stakingData.eventInitialBalance
+        ) {
+            return false
+        }
+
+        return new BigNumber(this.stakingData.tonWalletBalance)
+            .gte(this.stakingData.eventInitialBalance)
     }
 
 }

@@ -3,7 +3,9 @@ import { useIntl } from 'react-intl'
 
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
-import { amount, getNetworkByCurrency, sliceAddress } from '@/utils'
+import { findNetwork } from '@/modules/Bridge/utils'
+import { amount, sliceAddress } from '@/utils'
+import { RelayEvmNetworkChainId } from '@/config'
 
 type Props = {
     tonTokenSymbol?: string;
@@ -16,7 +18,7 @@ type Props = {
     stakingBalance?: string;
 }
 
-const ethNetwork = getNetworkByCurrency('ETH')
+const ethNetwork = findNetwork(RelayEvmNetworkChainId, 'evm')
 
 export function CreateRelayerSummary({
     tonTokenSymbol,
@@ -51,7 +53,7 @@ export function CreateRelayerSummary({
                     </span>
 
                     <div className="explorer-link">
-                        {tonPublicKey ? sliceAddress(tonPublicKey) : nullMessage}
+                        {tonPublicKey ? sliceAddress(tonPublicKey.slice(2)) : nullMessage}
                         {tonPublicKey && (
                             <Copy text={tonPublicKey} id={`copy-${tonPublicKey}`}>
                                 <Icon icon="copy" />

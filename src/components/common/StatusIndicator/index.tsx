@@ -3,10 +3,11 @@ import classNames from 'classnames'
 
 import './index.scss'
 
+export type Status = 'confirmed' | 'pending' | 'disabled' | 'rejected';
 
 type Props = {
     children: React.ReactNode;
-    status: 'confirmed' | 'pending' | 'disabled' | 'rejected';
+    status: Status;
 }
 
 
