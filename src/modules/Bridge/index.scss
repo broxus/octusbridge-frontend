@@ -29,15 +29,27 @@
 
     &__controls {
         display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
+        flex-direction: column;
+        flex-wrap: wrap;
         gap: 16px;
         justify-content: space-between;
+        @media only screen and (min-width: 768px) {
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
     }
 
     &__controls + &__controls,
     &__controls + .alert {
         margin-top: 16px;
+    }
+    &__controls + .alert {
+        align-items: flex-start;
+        flex-direction: column;
+        @media only screen and (min-width: 768px) {
+            align-items: center;
+            flex-direction: row;
+        }
     }
 
     &__control {
@@ -45,7 +57,10 @@
     }
 
     &__wallet {
-        min-width: 140px
+        min-width: 140px;
+        > * {
+            width: 100%;
+        }
     }
 
     &__control-hint {

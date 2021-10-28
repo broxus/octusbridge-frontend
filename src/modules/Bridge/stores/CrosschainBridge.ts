@@ -159,15 +159,15 @@ export class CrosschainBridge {
             return
         }
 
-        if (this.isEvmToTon) {
-            await this.tokensCache.syncEvmToken(selectedToken, this.leftNetwork!.chainId)
-            const vault = this.tokensCache.getTokenVault(selectedToken, this.leftNetwork!.chainId)
-            this.changeData('balance', vault?.balance)
-        }
-        else {
+        if (this.isTonToEvm) {
             await this.tokensCache.syncTonToken(selectedToken)
             this.changeData('balance', this.token?.balance)
             await this.tokensCache.syncEvmToken(selectedToken, this.rightNetwork!.chainId)
+        }
+        else {
+            await this.tokensCache.syncEvmToken(selectedToken, this.leftNetwork!.chainId)
+            const vault = this.tokensCache.getTokenVault(selectedToken, this.leftNetwork!.chainId)
+            this.changeData('balance', vault?.balance)
         }
     }
 
@@ -440,12 +440,12 @@ export class CrosschainBridge {
     }
 
     public get decimals(): number | undefined {
-        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
-            return undefined
+        if (this.isTonToEvm) {
+            return this.token?.decimals
         }
 
-        if (this.isTonToEvm) {
-            return this.token.decimals
+        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
+            return undefined
         }
 
         return this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)?.decimals

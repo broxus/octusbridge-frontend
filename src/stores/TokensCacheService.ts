@@ -179,6 +179,10 @@ export class TokensCacheService {
         return this.data.tokens
     }
 
+    public get isInitialized(): boolean {
+        return this.tokens.length > 0
+    }
+
     /**
      * Returns token by the given token root address.
      * @param {string} root
@@ -559,7 +563,9 @@ export class TokensCacheService {
             return
         }
 
-        const token = this.get(root)
+        let token: TokenCache | undefined
+
+        token = this.get(root)
 
         if (token === undefined) {
             return
@@ -577,7 +583,9 @@ export class TokensCacheService {
             }
         }
 
-        if (token.wallet !== undefined) {
+        token = this.get(root)
+
+        if (token && token.wallet !== undefined) {
             try {
                 await this.syncTonTokenBalance(root)
             }

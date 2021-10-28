@@ -1,0 +1,32 @@
+.create-relayer-popup-layout {
+    &.popup__wrap {
+        max-width: 360px;
+        padding: 20px;
+    }
+
+    &__title {
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 0.15px;
+        line-height: 24px;
+        margin: 0 0 20px;
+    }
+
+    p {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+        margin: 0.8em 0;
+    }
+}
+
+.create-relayer-popup-actions {
+    align-items: center;
+    column-gap: 8px;
+    display: flex;
+    margin: 40px 0 0;
+}
+
+.create-relayer-popup-warning {
+    margin: 0 0 16px;
+}

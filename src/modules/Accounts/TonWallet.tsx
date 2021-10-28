@@ -51,10 +51,7 @@ export function TonWallet(): JSX.Element | null {
                                         {intl.formatMessage({
                                             id: 'WALLET_BALANCE_HINT',
                                         }, {
-                                            value: amount(
-                                                wallet.balance,
-                                                9,
-                                            ) || 0,
+                                            value: amount(wallet.balance, 9),
                                             currency: 'TON',
                                         })}
                                     </div>

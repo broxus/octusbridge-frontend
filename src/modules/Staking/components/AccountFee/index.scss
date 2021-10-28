@@ -1,0 +1,24 @@
+.staking-account-fee {
+    margin: 0 0 32px;
+
+    &__stats {
+        align-items: center;
+        color: rgba(255, 255, 255, 0.64);
+        display: flex;
+        font-size: 14px;
+        justify-content: space-between;
+        letter-spacing: 0.75px;
+        line-height: 20px;
+        margin: 0 0 16px;
+        padding: 0 16px;
+    }
+
+    &__hint {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        font-size: 12px;
+        letter-spacing: 0.4px;
+        line-height: 16px;
+        padding: 10px 16px;
+    }
+}

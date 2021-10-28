@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { TokenCache } from '@/stores/TokensCacheService'
-import { formatAmount } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 
 type FieldShape = {
@@ -10,19 +10,20 @@ type FieldShape = {
 }
 
 type Props = {
+    decimals?: number;
     token?: TokenCache;
     value?: string;
     onChange?: (value: string) => void;
 }
 
 
-export function useAmountField({ token, ...props }: Props): FieldShape {
+export function useAmountField({ token, decimals = token?.decimals, ...props }: Props): FieldShape {
     const onBlur: React.FocusEventHandler<HTMLInputElement> = event => {
         const { value } = event.target
         if (value.length === 0) {
             return
         }
-        const validatedAmount = formatAmount(value, token?.decimals)
+        const validatedAmount = formattedAmount(value, decimals)
         if (props.value !== validatedAmount && validatedAmount != null) {
             props.onChange?.(validatedAmount)
         }

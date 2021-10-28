@@ -21,6 +21,7 @@ export function TonStatus(): JSX.Element {
                         {() => (
                             <Summary
                                 amount={transfer.amountNumber.toFixed()}
+                                decimals={transfer.token?.decimals}
                                 leftAddress={transfer.leftAddress}
                                 leftNetwork={transfer.leftNetwork}
                                 rightAddress={transfer.rightAddress}

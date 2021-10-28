@@ -1,0 +1,47 @@
+.warning {
+    align-items: center;
+    border-left: 4px solid transparent;
+    color: #ffffff;
+    column-gap: 12px;
+    display: flex;
+    padding: 12px;
+
+    &__title {
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 0.75px;
+        line-height: 16px;
+        margin: 0 0 4px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__text {
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        line-height: 16px;
+        margin: 0;
+
+        p {
+            margin: 0 0 0.5em;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &_theme {
+        &_danger {
+            background: rgba(235, 67, 97, 0.48);
+            border-left-color: #eb4361;
+        }
+
+        &_warning {
+            background: rgba(230, 172, 0, 0.48);
+            border-left-color: #e6ac00;
+        }
+    }
+}

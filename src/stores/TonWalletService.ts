@@ -47,6 +47,9 @@ const DEFAULT_WALLET_STATE: WalletState = {
     isInitializing: false,
 }
 
+const TOKEN_SYMBOL = 'TON'
+
+const TOKEN_DECIMALS = 9
 
 export async function connectToWallet(): Promise<void> {
     const hasProvider = await hasTonProvider()
@@ -61,6 +64,10 @@ export async function connectToWallet(): Promise<void> {
 
 
 export class TonWalletService {
+
+    public readonly tokenSymbol = TOKEN_SYMBOL
+
+    public readonly tokenDecimals = TOKEN_DECIMALS
 
     /**
      * Current data of the wallet

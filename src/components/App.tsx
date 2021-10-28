@@ -7,12 +7,17 @@ import {
     Switch,
 } from 'react-router-dom'
 
+import { NativeScrollArea } from '@/components/common/NativeScrollArea'
+import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
 import EvmTransferStatus from '@/pages/bridge/evm-transfer-status'
 import TonTransferStatus from '@/pages/bridge/ton-transfer-status'
+import StakingAccount from '@/pages/staking/account'
+import RelayersStatus from '@/pages/relayers/create'
+import RelayersKeys from '@/pages/relayers/create/keys'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -44,13 +49,28 @@ export function App(): JSX.Element {
                             <Route path="/bridge">
                                 <Bridge />
                             </Route>
+                            <Route exact path="/staking">
+                                <StakingAccount />
+                            </Route>
+                            <Route exact path="/staking/redeem">
+                                <StakingAccount />
+                            </Route>
+                            <Route exact path="/relayers/create">
+                                <RelayersStatus />
+                            </Route>
+                            <Route exact path="/relayers/create/keys">
+                                <RelayersKeys />
+                            </Route>
                         </Switch>
                     </div>
+                    <Footer key="footer" />
+                </div>
+                <NativeScrollArea className="wallets-scroll-area">
                     <div className="wallets">
                         <EvmWallet />
                         <TonWallet />
                     </div>
-                </div>
+                </NativeScrollArea>
             </Router>
         </IntlProvider>
     )

@@ -1,0 +1,18 @@
+import BigNumber from 'bignumber.js'
+
+import { isGoodBignumber } from '@/utils/is-good-bignumber'
+
+
+export function formattedAmount(value: string, decimals?: number): string {
+    const result = new BigNumber(value || 0)
+
+    if (!isGoodBignumber(result)) {
+        return value
+    }
+
+    if (decimals !== undefined && result.decimalPlaces() > decimals) {
+        return result.dp(decimals, BigNumber.ROUND_DOWN).toFixed()
+    }
+
+    return result.toFixed()
+}
