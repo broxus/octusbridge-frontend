@@ -377,7 +377,8 @@ export class StakingDataStore {
             return undefined
         }
 
-        const tonPubkey = new BigNumber(tonPubkeyNum).toString(16).padStart(40, '0')
+
+        const tonPubkey = new BigNumber(tonPubkeyNum).toString(16).padStart(64, '0')
 
         return normalizeTonPubKey(tonPubkey)
     }
