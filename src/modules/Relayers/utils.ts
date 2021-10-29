@@ -1,13 +1,14 @@
 import { ETH_ADDRESS_REGEXP, TON_PUBLIC_KEY_REGEXP } from '@/modules/Relayers/constants'
 
 function normalizeKey(pattern: RegExp, value: string): string {
-    const result = value.match(pattern)
+    const result = value.toLowerCase()
+    const match = value.match(pattern)
 
-    if (!result) {
-        return value
+    if (!match) {
+        return result
     }
 
-    return result[1] ? value : `0x${value}`
+    return match[1] ? result : `0x${result}`
 }
 
 export function normalizeTonPubKey(value: string): string {
