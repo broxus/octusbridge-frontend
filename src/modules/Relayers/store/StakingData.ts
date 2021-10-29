@@ -9,6 +9,7 @@ import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { StakingDataStoreData, StakingDataStoreState } from '@/modules/Relayers/types'
 import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
+import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
 import { getStackingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import {
@@ -370,23 +371,27 @@ export class StakingDataStore {
     }
 
     public get relayTonPubkey(): string | undefined {
-        const tonPubkey = this.data.userDetails?.relay_ton_pubkey
+        const tonPubkeyNum = this.data.userDetails?.relay_ton_pubkey
 
-        if (!tonPubkey || tonPubkey === '0') {
+        if (!tonPubkeyNum || tonPubkeyNum === '0') {
             return undefined
         }
 
-        return `0x${new BigNumber(tonPubkey).toString(16).padStart(40, '0')}`
+        const tonPubkey = new BigNumber(tonPubkeyNum).toString(16).padStart(40, '0')
+
+        return normalizeTonPubKey(tonPubkey)
     }
 
     public get relayEthAddress(): string | undefined {
-        const ethAddress = this.data.userDetails?.relay_eth_address
+        const ethAddressNum = this.data.userDetails?.relay_eth_address
 
-        if (!ethAddress || ethAddress === '0') {
+        if (!ethAddressNum || ethAddressNum === '0') {
             return undefined
         }
 
-        return `0x${new BigNumber(ethAddress).toString(16).padStart(40, '0')}`
+        const ethAddress = new BigNumber(ethAddressNum).toString(16).padStart(40, '0')
+
+        return normalizeEthAddress(ethAddress)
     }
 
     public get relayInitialTonDeposit(): string | undefined {
