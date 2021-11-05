@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { amount } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -36,7 +36,7 @@ export function AccountFee({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: amount(feeAmount, tokenDecimals),
+                                value: formattedAmount(feeAmount, tokenDecimals),
                                 symbol: tokenSymbol,
                             })
                             : nullMessage

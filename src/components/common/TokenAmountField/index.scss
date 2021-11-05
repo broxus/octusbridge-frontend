@@ -1,0 +1,11 @@
+.token-amount-field {
+    padding-right: 12px;
+
+    .amount-field-suffix {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        min-width: fit-content;
+    }
+}

@@ -1,21 +1,3 @@
-@keyframes checking {
-    from {
-        border: 1px solid rgba(255, 255, 255, 0.16);
-    }
-    to {
-        border: 1px solid rgba(116, 166, 255, 0.76);
-    }
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .container {
     display: flex;
     flex-direction: column;
@@ -105,7 +87,7 @@
         flex-wrap: wrap;
         gap: 24px;
 
-        @media only screen and (min-width: 768px) {
+        @media only screen and (min-width: 960px) {
             flex-direction: row;
             flex-wrap: nowrap;
             justify-content: space-between;
@@ -125,49 +107,12 @@
     max-width: 100%;
     width: 100%;
 
-    @media only screen and (min-width: 768px) {
+    @media only screen and (min-width: 960px) {
         width: 320px;
     }
 
-    @media only screen and (min-width: 960px) {
+    @media only screen and (min-width: 1200px) {
         width: 360px;
-    }
-}
-
-.switcher {
-    display: block;
-
-    input { display: none; }
-
-    &__handle {
-        background-color: rgba(255, 255, 255, 0.4);
-        border-radius: 8px;
-        cursor: pointer;
-        display: block;
-        height: 16px;
-        position: relative;
-        transition: background-color 0.25s;
-        width: 32px;
-
-        &::after {
-            background-color: #ffffff;
-            border-radius: 50%;
-            content: '';
-            display: block;
-            height: 18px;
-            left: 0;
-            position: absolute;
-            top: -1px;
-            transition: left 0.25s, width 0.15s;
-            width: 18px;
-        }
-
-    }
-
-    input:checked + .switcher__handle {
-        background-color: #e6ac00;
-
-        &::after { left: 14px; }
     }
 }
 
@@ -186,18 +131,6 @@
     align-items: center;
     display: inline-flex;
     gap: 10px;
-}
-
-.hide-824 {
-    @media only screen and (max-width: 824px) {
-        display: none;
-    }
-}
-
-.hide-540 {
-    @media only screen and (max-width: 540px) {
-        display: none;
-    }
 }
 
 ul.summary {
@@ -225,5 +158,23 @@ ul.summary {
         &:last-child {
             margin-bottom: 0;
         }
+    }
+}
+
+@keyframes checking {
+    from {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+    to {
+        border: 1px solid rgba(116, 166, 255, 0.76);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }

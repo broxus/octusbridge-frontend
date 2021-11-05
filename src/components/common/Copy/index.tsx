@@ -29,21 +29,27 @@ export function Copy({
         ReactTooltip.rebuild()
     }, [isCopied])
 
+    const onCopy = () => {
+        ReactTooltip.rebuild()
+        setCopied(true)
+    }
+
+    const onMouseLeave = () => {
+        ReactTooltip.rebuild()
+        setCopied(false)
+    }
+
     return (
         <>
             <CopyToClipboard
                 text={text}
-                onCopy={() => {
-                    setCopied(true)
-                }}
+                onCopy={onCopy}
             >
                 <span
                     className={classNames('copy', className)}
                     data-tip=""
                     data-for={id}
-                    onMouseLeave={() => {
-                        setCopied(false)
-                    }}
+                    onMouseLeave={onMouseLeave}
                 >
                     {children || text}
                 </span>

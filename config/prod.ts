@@ -1,4 +1,6 @@
-import { NetworkShape } from '@/bridge'
+import { AddressLiteral } from 'ton-inpage-provider'
+
+import { NetworkShape } from '@/types'
 
 
 export const networks: NetworkShape[] = [
@@ -54,14 +56,26 @@ export const networks: NetworkShape[] = [
     },
 ]
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+export const CreditBody = '5000000000'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
+export const EmptyWalletMinTonsAmount = '5000000000'
 
-export const StakingAccountAddress = '0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075'
+export const CreditFactoryAddress = new AddressLiteral('0:92190de9b79fe5640b9449aff336cf33e6270075b26fdce9f3d9be520043608a')
 
-export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+export const DepositToFactoryAddress = '0x92190de9b79fe5640b9449aff336cf33e6270075b26fdce9f3d9be520043608a'
+
+export const DepositToFactoryMaxSlippage = 10
+
+export const DepositToFactoryMinSlippage = 0.5
 
 export const GazToStaking = '11500000000'
 
 export const RelayEvmNetworkChainId = '1'
+
+export const StakingAccountAddress = '0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075'
+
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
+
+export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'

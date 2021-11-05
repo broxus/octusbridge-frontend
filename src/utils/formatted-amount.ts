@@ -3,16 +3,28 @@ import BigNumber from 'bignumber.js'
 import { isGoodBignumber } from '@/utils/is-good-bignumber'
 
 
-export function formattedAmount(value: string, decimals?: number): string {
-    const result = new BigNumber(value || 0)
+export function splitAmount(value?: string | number, decimals?: number): string[] {
+    let val = new BigNumber(value || 0)
 
-    if (!isGoodBignumber(result)) {
-        return value
+    if (decimals !== undefined) {
+        val = val.shiftedBy(-decimals)
     }
 
-    if (decimals !== undefined && result.decimalPlaces() > decimals) {
-        return result.dp(decimals, BigNumber.ROUND_DOWN).toFixed()
+    if (!isGoodBignumber(val)) {
+        return ['0']
     }
 
-    return result.toFixed()
+    return val.toFixed().split('.')
+}
+
+export function formatDigits(value?: string): string {
+    if (!value) {
+        return ''
+    }
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
+
+export function formattedAmount(value?: string | number, decimals?: number): string {
+    const parts = splitAmount(value, decimals)
+    return [formatDigits(parts[0]), parts[1]].filter(e => e).join('.')
 }

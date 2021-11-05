@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
+import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 
 import './index.scss'
@@ -25,14 +26,14 @@ export function CreateRelayerPopupLayout({
                 onClick={dismissEnabled ? onDismiss : undefined}
             />
             <div className="popup__wrap create-relayer-popup-layout">
-                <button
-                    type="button"
-                    className="btn btn-icon popup-close"
-                    onClick={onDismiss}
+                <Button
+                    className="popup-close"
                     disabled={!dismissEnabled}
+                    type="icon"
+                    onClick={onDismiss}
                 >
                     <Icon icon="close" />
-                </button>
+                </Button>
 
                 <h2 className="create-relayer-popup-layout__title">{title}</h2>
 

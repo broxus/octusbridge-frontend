@@ -1,28 +1,27 @@
 import * as React from 'react'
-import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { BlockScanTxLink } from '@/components/common/BlockScanTxLink'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
-import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useEvmTransferStoreContext } from '@/modules/Bridge/providers/EvmTransferStoreProvider'
+import { useBridge, useEvmTransfer } from '@/modules/Bridge/providers'
 import { TransferStateStatus } from '@/modules/Bridge/types'
 import { isSameNetwork } from '@/modules/Bridge/utils'
-import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { isEvmTxHashValid, sliceAddress } from '@/utils'
 
 
 export function TransferStatusIndicator(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
-    const transfer = useEvmTransferStoreContext()
-    const evmWallet = useEvmWallet()
-    const tonWallet = useTonWallet()
+    const transfer = useEvmTransfer()
 
     const isTransferPage = transfer.txHash !== undefined && isEvmTxHashValid(transfer.txHash)
+
+    const evmWallet = isTransferPage ? transfer.useEvmWallet : bridge.useEvmWallet
+    const tonWallet = isTransferPage ? transfer.useTonWallet : bridge.useTonWallet
 
     const [transferState, setTransferState] = React.useState<TransferStateStatus>((
         isTransferPage ? (transfer.transferState?.status || 'pending') : 'disabled'
@@ -124,29 +123,34 @@ export function TransferStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <Observer>
-                    {() => (
-                        <p>
-                            {intl.formatMessage({
-                                id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
-                            }, {
-                                networkName: (isTransferPage ? transfer.leftNetwork?.name : bridge.leftNetwork?.name) || '',
-                            })}
-                            {' '}
-                            {transfer.txHash !== undefined && (
-                                <BlockScanTxLink
-                                    key="tx-link"
-                                    baseUrl={transfer.leftNetwork!.explorerBaseUrl}
-                                    className="text-muted text-padding-horizontal"
-                                    copy
-                                    hash={transfer.txHash}
-                                >
-                                    {sliceAddress(transfer.txHash)}
-                                </BlockScanTxLink>
-                            )}
-                        </p>
-                    )}
-                </Observer>
+                <div className="crosschain-transfer__status-note">
+                    <Observer>
+                        {() => (
+                            <>
+                                <span>
+                                    {intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
+                                    }, {
+                                        networkName: (
+                                            isTransferPage ? transfer.leftNetwork?.name : bridge.leftNetwork?.name
+                                        ) || '',
+                                    })}
+                                </span>
+                                {(transfer.txHash !== undefined && transfer.leftNetwork) && (
+                                    <BlockScanTxLink
+                                        key="tx-link"
+                                        baseUrl={transfer.leftNetwork.explorerBaseUrl}
+                                        className="text-muted"
+                                        copy
+                                        hash={transfer.txHash}
+                                    >
+                                        {sliceAddress(transfer.txHash)}
+                                    </BlockScanTxLink>
+                                )}
+                            </>
+                        )}
+                    </Observer>
+                </div>
 
                 <Observer>
                     {() => {
@@ -177,16 +181,15 @@ export function TransferStatusIndicator(): JSX.Element {
 
                         return ((evmWallet.isConnected && tonWallet.isConnected) || ['confirmed', 'rejected'].includes(state))
                             ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-s btn--primary"
+                                <Button
                                     disabled={disabled}
+                                    type="primary"
                                     onClick={onTransfer}
                                 >
                                     {intl.formatMessage({
                                         id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_BTN_TEXT',
                                     })}
-                                </button>
+                                </Button>
                             ) : <WalletsConnectors />
                     }}
                 </Observer>

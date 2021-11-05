@@ -3,6 +3,10 @@
     color: rgba(255, 255, 255, 0.56);
 }
 
+.text-danger {
+    color: rgba(235, 67, 97, 0.85);
+}
+
 .text-lg {
     font-size: 18px;
     font-weight: 400;
@@ -19,13 +23,17 @@
     white-space: nowrap;
 }
 
-.truncate {
+.text-truncate {
     display: inline-block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.text-padding-horizontal {
-    padding: 0 10px;
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
 }

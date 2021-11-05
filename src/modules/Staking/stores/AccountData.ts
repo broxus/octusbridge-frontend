@@ -152,12 +152,4 @@ export class AccountDataStore {
         return this.data.stackingDetails?.tokenWallet
     }
 
-    public get tonTokenSymbol(): string {
-        return this.tonWallet.tokenSymbol
-    }
-
-    public get tonTokenDecimals(): number {
-        return this.tonWallet.tokenDecimals
-    }
-
 }

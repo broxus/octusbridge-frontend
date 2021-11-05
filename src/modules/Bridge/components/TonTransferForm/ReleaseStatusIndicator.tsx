@@ -2,9 +2,10 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useTonTransferStore } from '@/modules/Bridge/providers/TonTransferStoreProvider'
+import { useTonTransfer } from '@/modules/Bridge/providers/TonTransferStoreProvider'
 import { ReleaseStateStatus } from '@/modules/Bridge/types'
 import { isSameNetwork } from '@/modules/Bridge/utils'
 import { useEvmWallet } from '@/stores/EvmWalletService'
@@ -14,13 +15,13 @@ import { useTonWallet } from '@/stores/TonWalletService'
 
 export function ReleaseStatusIndicator(): JSX.Element {
     const intl = useIntl()
-    const transfer = useTonTransferStore()
+    const transfer = useTonTransfer()
     const evmWallet = useEvmWallet()
     const tonWallet = useTonWallet()
 
     const isTransferPage = (
         transfer.contractAddress !== undefined
-        && isTonAddressValid(transfer.contractAddress)
+        && isTonAddressValid(transfer.contractAddress.toString())
     )
 
     const [releaseState, setReleaseState] = React.useState<ReleaseStateStatus>(
@@ -82,11 +83,11 @@ export function ReleaseStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
+                <div className="crosschain-transfer__status-note">
                     {intl.formatMessage({
                         id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_ETH_NOTE',
                     })}
-                </p>
+                </div>
 
                 <Observer>
                     {() => {
@@ -116,21 +117,19 @@ export function ReleaseStatusIndicator(): JSX.Element {
                             && ['confirmed', 'pending', 'rejected'].includes(state)
                         )
                             ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-s btn--primary"
+                                <Button
                                     disabled={evmWallet.isInitializing || evmWallet.isConnecting}
+                                    size="sm"
+                                    type="primary"
                                     onClick={evmWallet.connect}
                                 >
                                     {intl.formatMessage({
                                         id: 'EVM_WALLET_CONNECT_BTN_TEXT',
                                     })}
-                                </button>
+                                </Button>
                             )
                             : (
-                                <button
-                                    type="button"
-                                    className="btn btn-s btn--primary"
+                                <Button
                                     disabled={(
                                         evmWallet.isInitializing
                                         || evmWallet.isConnecting
@@ -138,12 +137,13 @@ export function ReleaseStatusIndicator(): JSX.Element {
                                         || transfer.eventState?.status !== 'confirmed'
                                         || ['confirmed', 'pending', 'rejected'].includes(state)
                                     )}
+                                    type="primary"
                                     onClick={onRelease}
                                 >
                                     {intl.formatMessage({
                                         id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',
                                     })}
-                                </button>
+                                </Button>
                             )
                     }}
                 </Observer>

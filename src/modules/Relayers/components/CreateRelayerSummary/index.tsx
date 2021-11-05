@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
 import { findNetwork } from '@/modules/Bridge/utils'
-import { amount, sliceAddress } from '@/utils'
+import { formattedAmount, sliceAddress } from '@/utils'
 import { RelayEvmNetworkChainId } from '@/config'
 
 type Props = {
@@ -105,7 +105,7 @@ export function CreateRelayerSummary({
                     <span>
                         {
                             stakingBalance !== undefined && stakingTokenDecimals !== undefined
-                                ? amount(stakingBalance, stakingTokenDecimals)
+                                ? formattedAmount(stakingBalance, stakingTokenDecimals)
                                 : nullMessage
                         }
                     </span>
@@ -121,7 +121,7 @@ export function CreateRelayerSummary({
                     </span>
                     {
                         contractFee !== undefined && tonTokenDecimals !== undefined
-                            ? amount(contractFee, tonTokenDecimals)
+                            ? formattedAmount(contractFee, tonTokenDecimals)
                             : nullMessage
                     }
                 </li>

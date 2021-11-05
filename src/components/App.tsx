@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Observer } from 'mobx-react-lite'
 import { IntlProvider } from 'react-intl'
 import {
     Redirect,
@@ -13,17 +14,21 @@ import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
-import EvmTransferStatus from '@/pages/bridge/evm-transfer-status'
-import TonTransferStatus from '@/pages/bridge/ton-transfer-status'
+import TransferStatus from '@/pages/transfer'
 import StakingAccount from '@/pages/staking/account'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
+import { useEvmWallet } from '@/stores/EvmWalletService'
+import { useTonWallet } from '@/stores/TonWalletService'
 import { noop } from '@/utils'
 
 import './App.scss'
 
 
 export function App(): JSX.Element {
+    const evmWallet = useEvmWallet()
+    const tonWallet = useTonWallet()
+
     return (
         <IntlProvider
             key="intl"
@@ -40,11 +45,14 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})">
-                                <EvmTransferStatus />
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/credit">
+                                <TransferStatus direction="evm-ton" depositType="credit" />
+                            </Route>
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/:depositType?">
+                                <TransferStatus direction="evm-ton" depositType="default" />
                             </Route>
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Da-f0-9]{64})">
-                                <TonTransferStatus />
+                                <TransferStatus direction="ton-evm" />
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />
@@ -65,12 +73,20 @@ export function App(): JSX.Element {
                     </div>
                     <Footer key="footer" />
                 </div>
-                <NativeScrollArea className="wallets-scroll-area">
-                    <div className="wallets">
-                        <EvmWallet />
-                        <TonWallet />
-                    </div>
-                </NativeScrollArea>
+                <Observer>
+                    {() => (
+                        <>
+                            {(evmWallet.hasProvider || tonWallet.hasProvider) && (
+                                <NativeScrollArea className="wallets-scroll-area">
+                                    <div className="wallets">
+                                        <EvmWallet />
+                                        <TonWallet />
+                                    </div>
+                                </NativeScrollArea>
+                            )}
+                        </>
+                    )}
+                </Observer>
             </Router>
         </IntlProvider>
     )

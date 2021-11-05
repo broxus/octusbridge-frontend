@@ -1,9 +1,10 @@
-import BigNumber from 'bignumber.js'
 import * as React from 'react'
+import BigNumber from 'bignumber.js'
 import { useIntl } from 'react-intl'
+import { Link } from 'react-router-dom'
 
-import { Warning } from '@/components/common/Warning'
-import { amount } from '@/utils'
+import { Alert } from '@/components/common/Alert'
+import { formattedAmount } from '@/utils'
 
 type Props = {
     isSubmitted?: boolean;
@@ -48,7 +49,7 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {stakingBalance && stakingTokenDecimals !== undefined ? (
-                        amount(stakingBalance, stakingTokenDecimals)
+                        formattedAmount(stakingBalance, stakingTokenDecimals)
                     ) : nullMessage}
                 </li>
 
@@ -63,7 +64,7 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {requiredStake && stakingTokenDecimals !== undefined ? (
-                        amount(requiredStake, stakingTokenDecimals)
+                        formattedAmount(requiredStake, stakingTokenDecimals)
                     ) : nullMessage}
                 </li>
 
@@ -82,7 +83,7 @@ export function CreateRelayerBalance({
                                     symbol: stakingTokenSymbol,
                                 })}
                             </span>
-                            {amount(
+                            {formattedAmount(
                                 new BigNumber(requiredStake).minus(stakingBalance).toFixed(),
                                 stakingTokenDecimals,
                             )}
@@ -98,23 +99,26 @@ export function CreateRelayerBalance({
                 && stakingTokenDecimals !== undefined
                 && new BigNumber(stakingBalance).lt(requiredStake)
                 && (
-                    <p>
-                        <Warning
-                            title={intl.formatMessage({
-                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TITLE',
-                            })}
-                            text={intl.formatMessage({
-                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
-                            }, {
-                                symbol: stakingTokenSymbol,
-                                amount: amount(requiredStake, stakingTokenDecimals),
-                            })}
-                            actionLabel={intl.formatMessage({
-                                id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_ACTION',
-                            })}
-                            actionLink="/staking"
-                        />
-                    </p>
+                    <Alert
+                        key="insufficient"
+                        actions={(
+                            <Link to="/staking" className="btn btn--md btn--tertiary">
+                                {intl.formatMessage({
+                                    id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_ACTION',
+                                })}
+                            </Link>
+                        )}
+                        title={intl.formatMessage({
+                            id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TITLE',
+                        })}
+                        text={intl.formatMessage({
+                            id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
+                        }, {
+                            symbol: stakingTokenSymbol,
+                            amount: formattedAmount(requiredStake, stakingTokenDecimals),
+                        })}
+                        type="danger"
+                    />
                 )
             }
 
@@ -125,19 +129,19 @@ export function CreateRelayerBalance({
                 && tonTokenSymbol
                 && tonTokenDecimals !== undefined
                 && (
-                    <p>
-                        <Warning
-                            title={intl.formatMessage({
-                                id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING_TITLE',
-                            })}
-                            text={intl.formatMessage({
-                                id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
-                            }, {
-                                amount: amount(contractFee, tonTokenDecimals),
-                                symbol: tonTokenSymbol,
-                            })}
-                        />
-                    </p>
+                    <Alert
+                        key="balance"
+                        title={intl.formatMessage({
+                            id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING_TITLE',
+                        })}
+                        text={intl.formatMessage({
+                            id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
+                        }, {
+                            amount: formattedAmount(contractFee, tonTokenDecimals),
+                            symbol: tonTokenSymbol,
+                        })}
+                        type="danger"
+                    />
                 )
             }
         </>

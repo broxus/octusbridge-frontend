@@ -22,7 +22,7 @@
     font-size: 16px;
     font-weight: normal;
     line-height: 30px;
-    padding: 5px 20px;
+    padding: 8px 12px;
     position: relative;
 }
 
@@ -44,7 +44,7 @@
     &-selector {
         border: 1px solid rgba(255, 255, 255, 0.24);
         flex-wrap: wrap;
-        padding: 0 40px 0 16px;
+        padding: 0 40px 0 12px;
         position: relative;
         width: 100%;
 
@@ -155,7 +155,7 @@
     &-clear {
         color: #ffffff;
         cursor: pointer;
-        padding: 0 16px;
+        padding: 0 12px;
         transition: color 0.3s ease-in-out;
 
         @include flex;
@@ -188,7 +188,7 @@
         left: -9999px;
         outline: none;
         overflow: hidden;
-        padding: 5px 0;
+        padding: 5px;
         position: absolute;
         top: -9999px;
         z-index: 5;
@@ -199,10 +199,6 @@
             color: #ffffff;
             display: none;
         }
-
-        .rc-virtual-list-scrollbar {
-            display: none !important;
-        }
     }
 
     &-item-empty {
@@ -210,10 +206,6 @@
 
         color: #ffffff;
         text-align: center;
-
-        .uk-empty {
-            margin: 15px 0;
-        }
     }
 
     &-item {
@@ -294,6 +286,11 @@
         animation-name: rcSlideDownOut;
         animation-play-state: running;
     }
+}
+
+.rc-virtual-list-scrollbar-thumb {
+    background-color: rgba(7, 10, 38, 50%) !important;
+    transition: all 0.15s ease-in-out;
 }
 
 @keyframes rcSlideUpIn {

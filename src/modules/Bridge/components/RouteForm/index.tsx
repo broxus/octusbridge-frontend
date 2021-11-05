@@ -1,15 +1,15 @@
 import * as React from 'react'
+import classNames from 'classnames'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import classNames from 'classnames'
 
+import { Button } from '@/components/common/Button'
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { NetworkShape } from '@/bridge'
-import { isTonAddressValid } from '@/utils'
-import { isEvmAddressValid } from '@/utils/is-evm-address-valid'
+import { NetworkShape } from '@/types'
+import { isEvmAddressValid, isTonAddressValid } from '@/utils'
 
 
 type Props = {
@@ -17,11 +17,14 @@ type Props = {
     addressFieldDisabled?: boolean;
     addressFieldLabel: string;
     changeAddress: (value: string) => void;
-    changeNetwork: (value: string, option: NetworkShape) => void;
+    changeNetwork: (value: string, option: any) => void;
     label: React.ReactNode;
     network?: NetworkShape;
     networkFieldDisabled?: boolean;
-    networks: NetworkShape[];
+    networks: {
+        label: string;
+        value: string;
+    }[];
     shouldDisplayNetworkAlert?: boolean;
     wallet?: TonWalletService | EvmWalletService;
 }
@@ -74,43 +77,36 @@ export function RouteForm({
                     </legend>
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
-                            <Observer>
-                                {() => (
-                                    <Select
-                                        className="rc-select--lg"
-                                        disabled={networkFieldDisabled}
-                                        fieldNames={{
-                                            value: 'id',
-                                        }}
-                                        // @ts-ignore
-                                        options={networks}
-                                        placeholder={intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_ROUTE_SELECT_NETWORK_PLACEHOLDER',
-                                        })}
-                                        value={network?.id}
-                                        // @ts-ignore
-                                        onChange={changeNetwork}
-                                    />
-                                )}
-                            </Observer>
+                            <Select
+                                className="rc-select--lg"
+                                disabled={networkFieldDisabled}
+                                options={networks}
+                                placeholder={intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_ROUTE_SELECT_NETWORK_PLACEHOLDER',
+                                })}
+                                value={network?.id}
+                                onChange={changeNetwork}
+                            />
                         </div>
 
                         <Observer>
                             {() => (
-                                <div className="crosschain-transfer__wallet">
+                                <>
                                     {(wallet !== undefined && !wallet.isConnected) && (
-                                        <button
-                                            type="button"
-                                            className="btn btn--primary"
-                                            disabled={wallet.isConnecting}
-                                            onClick={wallet.connect}
-                                        >
-                                            {intl.formatMessage({
-                                                id: 'CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT',
-                                            })}
-                                        </button>
+                                        <div className="crosschain-transfer__wallet">
+                                            <Button
+                                                disabled={wallet.isConnecting}
+                                                size="md"
+                                                type="primary"
+                                                onClick={wallet.connect}
+                                            >
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT',
+                                                })}
+                                            </Button>
+                                        </div>
                                     )}
-                                </div>
+                                </>
                             )}
                         </Observer>
                     </div>
@@ -152,7 +148,6 @@ export function RouteForm({
                                 )}
                             </Observer>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                 </fieldset>
             </form>

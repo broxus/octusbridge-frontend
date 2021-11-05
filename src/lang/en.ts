@@ -1,9 +1,6 @@
-/* eslint-disable */
-import * as React from 'react'
-
 export default {
     OPEN_IN_EXPLORER: 'Open in TON Scan',
-    OPEN_IN_ETHERSCAN: 'Open in indexer',
+    OPEN_IN_ETHERSCAN: 'Open in Etherscan',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
     NAV_LINK_TEXT_STAKING: 'Staking',
@@ -60,6 +57,7 @@ export default {
     CROSSCHAIN_TRANSFER_ROUTE_SELECT_NETWORK_PLACEHOLDER: 'Select a blockchain',
     CROSSCHAIN_TRANSFER_ROUTE_SENDER_ADDRESS_LABEL: 'Sender address',
     CROSSCHAIN_TRANSFER_ROUTE_RECEIVER_ADDRESS_LABEL: 'Receiver address',
+
     CROSSCHAIN_TRANSFER_STEP_2_HINT: 'Step 2',
     CROSSCHAIN_TRANSFER_STEP_2_TITLE: 'Select token and amount',
     CROSSCHAIN_TRANSFER_ASSET_ASSET_LABEL: 'Asset',
@@ -68,10 +66,22 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_LABEL: 'Amount',
     CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_PLACEHOLDER: 'Enter an amount',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_BALANCE_HINT: 'Wallet balance: {value} {symbol}',
+    CROSSCHAIN_TRANSFER_ASSET_VAULT_BALANCE_HINT: 'Bridge vault balance: {value} {symbol}',
+
+    CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing TONs to pay gas fees?',
+    CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',
+    CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE: 'We recommend using the auto exchange if your wallet balance is insufficient to pay gas fees for the transaction.',
+    CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into TON Crystals, pay for your transfer and send the change to the target address.',
+    CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT: 'Minimum receive: {value} {symbol}',
+    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your Crystal Wallet address is not deployed',
+    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in TON Crystals.</p><p>Your balance is sufficient, but cannot be used until the wallet is deployed. Would you please go to TON Crystal Wallet and click the “Deploy” button to proceed?</p><p>If you don’t want to deploy your wallet, you can still pay the gas by converting part of your tokens into TONs with the form below.</p>',
+    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TITLE: 'Insufficient TON balance to perform transfer',
+    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in TON Crystals.</p><p>Top up your wallet for at least {minTons} TON or convert part of your tokens into TON using the form below.</p>',
 
     CROSSCHAIN_TRANSFER_STEP_3_HINT: 'Step 3',
     CROSSCHAIN_TRANSFER_STEP_3_TITLE: 'Approve the amount to spend from your wallet',
     CROSSCHAIN_TRANSFER_STEP_3_SUBTITLE: 'The Bridge requires your permission to spend funds from your wallet. Blockchain fees may apply.',
+    CROSSCHAIN_TRANSFER_APPROVE_AMOUNT_LABEL: 'Amount',
     CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_LABEL: 'The infinite amount',
     CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_NOTE: '<p>Approve the infinite amount if you don’t want to pay the approval fee again next time.</p><p>The Bridge will spend only the amount of transfer you have requested.</p>',
     CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL: '{amount} {symbol}',
@@ -79,6 +89,7 @@ export default {
 
     CROSSCHAIN_TRANSFER_STEP_4_HINT: 'Step 4',
     CROSSCHAIN_TRANSFER_STEP_4_TITLE: 'Transfer status',
+
     CROSSCHAIN_TRANSFER_STATUS_TRANSFER_DISABLED: 'Awaiting',
     CROSSCHAIN_TRANSFER_STATUS_TRANSFER_PENDING: 'Pending',
     CROSSCHAIN_TRANSFER_STATUS_TRANSFER_CONFIRMED: 'Confirmed',
@@ -88,15 +99,17 @@ export default {
     CROSSCHAIN_TRANSFER_STATUS_TRANSFER_BTN_TEXT: 'Transfer',
 
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_DISABLED: 'Awaiting',
-    CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING: 'Pending',
-    CROSSCHAIN_TRANSFER_STATUS_PREPARE_CONFIRMED: 'Confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING: 'Preparing',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_CONFIRMED: 'Deployed',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_REJECTED: 'Canceled',
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE: 'Prepare transfer in Free TON',
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_BTN_TEXT: 'Prepare',
+    CROSSCHAIN_TRANSFER_STATUS_BROADCAST_BTN_TEXT: 'Broadcast by self',
 
     CROSSCHAIN_TRANSFER_STATUS_EVENT_DISABLED: 'Awaiting',
     CROSSCHAIN_TRANSFER_STATUS_EVENT_PENDING: 'Pending',
     CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMED: 'Confirmed',
-    CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMATION: 'Confirmation {confirmed}/{confirmations}',
+    CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMATION: 'Checking {confirmed}/{confirmations}',
     CROSSCHAIN_TRANSFER_STATUS_EVENT_REJECTED: 'Failed',
     CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE: 'Transfer checked by relayers',
 
@@ -107,6 +120,32 @@ export default {
     CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE: 'Release transfer in Free TON',
     CROSSCHAIN_TRANSFER_STATUS_RELEASE_ETH_NOTE: 'Release transfer in Ethereum',
     CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT: 'Release',
+
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_PENDING: 'Pending',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_EXCHANGING: 'Exchanging',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_CONFIRMED: 'Exchanged',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_REJECTED: 'Failed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_EVENT_NOT_DEPLOYED: 'Not deployed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_EVENT_DEPLOY_IN_PROGRESS: 'Deploy in progress',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_EVENT_CONFIRMED: 'Event confirmed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_EVENT_REJECTED: 'Event rejected',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_CHECKING_AMOUNT: 'Checking amount',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_CALCULATE_SWAP: 'Calculate',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_SWAP_IN_PROGRESS: 'Swap in progress',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_SWAP_FAILED: 'Swap failed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_SWAP_UNKNOWN: 'Swap unknown',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_UNWRAP_IN_PROGRESS: 'Unwrap in progress',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_UNWRAP_FAILED: 'Unwrap failed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_PROCESS_REQUIRES_GAS: 'Requires gas',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_PROCESSED: 'Processed',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_CANCELLED: 'Cancelled',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_NOTE: 'Exchange tokens for gas',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_CANCEL_BTN_TEXT: 'Cancel',
+
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_TOKENS_BTN_TEXT: 'Withdraw {symbol}',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_TONS_BTN_TEXT: 'Withdraw TON',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_WTON_BTN_TEXT: 'Withdraw WTON',
 
     CROSSCHAIN_TRANSFER_STATUS_WAITING_NETWORK: 'Waiting network',
     CROSSCHAIN_TRANSFER_STATUS_WAITING_WALLET: 'Waiting wallet',
@@ -199,5 +238,5 @@ export default {
     RELAYERS_CONNECT_TEXT: 'To add a new relayer to the Bridge, you need to connect the wallet.',
 
     NO_VALUE: '–',
-    AMOUNT: '{value} {symbol}'
+    AMOUNT: '{value} {symbol}',
 }

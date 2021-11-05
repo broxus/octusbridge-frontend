@@ -354,14 +354,6 @@ export class StakingDataStore {
         return this.tonWallet.balance
     }
 
-    public get tonTokenSymbol(): string {
-        return this.tonWallet.tokenSymbol
-    }
-
-    public get tonTokenDecimals(): number {
-        return this.tonWallet.tokenDecimals
-    }
-
     public get tonPubkeyConfirmed(): boolean | undefined {
         return this.data.userDetails?.ton_pubkey_confirmed
     }

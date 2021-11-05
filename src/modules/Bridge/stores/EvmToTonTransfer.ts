@@ -9,7 +9,6 @@ import { IReactionDisposer, makeAutoObservable, reaction } from 'mobx'
 import ton, { Address, Contract } from 'ton-inpage-provider'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
-import { NetworkShape } from '@/bridge'
 import { EthAbi, TokenAbi } from '@/misc'
 import {
     EventVoteData,
@@ -21,10 +20,11 @@ import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { debug, error } from '@/utils'
+import { NetworkShape } from '@/types'
+import { error } from '@/utils'
 
 
-export class EvmTransfer {
+export class EvmToTonTransfer {
 
     protected data: EvmTransferStoreData = {
         amount: '',
@@ -36,6 +36,10 @@ export class EvmTransfer {
         prepareState: undefined,
         eventState: undefined,
     }
+
+    protected txTransferUpdater: ReturnType<typeof setTimeout> | undefined
+
+    protected txPrepareUpdater: ReturnType<typeof setTimeout> | undefined
 
     constructor(
         protected readonly evmWallet: EvmWalletService,
@@ -144,27 +148,18 @@ export class EvmTransfer {
         try {
             const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
 
-            if (tx == null) {
+            if (tx == null || tx.to == null) {
                 return
             }
 
-            const wrapperAddress = tx.to
+            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tx.to)
 
-            if (wrapperAddress == null) {
-                return
-            }
-
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, wrapperAddress)
-
-            const vaultAddress = await wrapper.methods.vault().call()
-
+            const vaultAddress: string = await wrapper.methods.vault().call()
             const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
+            const vaultWrapperAddress: string = await vaultContract.methods.wrapper().call()
+            const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
 
-            const vaultWrapperAddress = await vaultContract.methods.wrapper().call()
-
-            const token = this.tokensCache.findByVaultAddress(vaultAddress, this.leftNetwork.chainId)
-
-            if (vaultWrapperAddress !== wrapperAddress || token === undefined) {
+            if (vaultWrapperAddress !== tx.to || token === undefined) {
                 return
             }
 
@@ -179,32 +174,36 @@ export class EvmTransfer {
                 return
             }
 
-            const ethConfigAddress = token.vaults.find(
-                value => (
-                    value.vault.toLowerCase() === vaultAddress.toLowerCase()
-                    && value.chainId === this.leftNetwork?.chainId
+            const ethereumConfiguration = token.vaults.find(
+                vault => (
+                    vault.vault.toLowerCase() === vaultAddress.toLowerCase()
+                    && vault.chainId === this.leftNetwork?.chainId
+                    && vault.depositType === 'default'
                 ),
             )?.ethereumConfiguration
 
-            if (ethConfigAddress === undefined) {
+            if (ethereumConfiguration === undefined) {
                 return
             }
 
-            const amount = methodCall.params[1].value
-            const targetWid = methodCall.params[0].value[0]
-            const targetAddress = methodCall.params[0].value[1]
-            const target = `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`
-            const ethConfig = new Contract(TokenAbi.EthEventConfig, new Address(ethConfigAddress))
+            const ethConfigAddress = new Address(ethereumConfiguration)
 
+            this.changeData('ethConfigAddress', ethConfigAddress)
+
+            const ethConfig = new Contract(TokenAbi.EthEventConfig, ethConfigAddress)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
-
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
-            this.changeData('amount', amount)
-            this.changeData('ethConfigAddress', ethConfigAddress)
+            this.changeData('amount', methodCall.params[1].value)
             this.changeData('leftAddress', tx.from)
-            this.changeData('rightAddress', target)
-            this.changeData('tx', tx)
+
+            const targetWid = methodCall.params[0].value[0]
+            const targetAddress = methodCall.params[0].value[1]
+            this.changeData(
+                'rightAddress',
+                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`,
+            )
+
             this.changeState('transferState', {
                 confirmedBlocksCount: 0,
                 eventBlocksToConfirm: parseInt(eventBlocksToConfirm, 10),
@@ -231,14 +230,10 @@ export class EvmTransfer {
                 return
             }
 
-            const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
-
-            const txBlockNumber = tx.blockNumber
-
+            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
             const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
 
-            if (txBlockNumber == null || networkBlockNumber == null) {
-                this.changeData('tx', tx)
+            if (txReceipt.blockNumber == null || networkBlockNumber == null) {
                 this.changeState('transferState', {
                     confirmedBlocksCount: 0,
                     eventBlocksToConfirm: this.transferState?.eventBlocksToConfirm || 0,
@@ -248,15 +243,13 @@ export class EvmTransfer {
             }
 
             const transferState: EvmTransferStoreState['transferState'] = {
-                confirmedBlocksCount: networkBlockNumber - txBlockNumber,
+                confirmedBlocksCount: networkBlockNumber - txReceipt.blockNumber,
                 eventBlocksToConfirm: this.transferState?.eventBlocksToConfirm || 0,
                 status: this.transferState?.status || 'pending',
             }
 
             if (transferState.confirmedBlocksCount >= transferState.eventBlocksToConfirm) {
                 transferState.status = 'confirmed'
-
-                const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
 
                 if (!txReceipt.status) {
                     transferState.status = 'rejected'
@@ -268,58 +261,58 @@ export class EvmTransfer {
                 addABI(EthAbi.Vault)
 
                 const decodedLogs = decodeLogs(txReceipt?.logs || [])
-                const log = txReceipt.logs[decodedLogs.findIndex(l => l !== undefined && l.name === 'Deposit')]
+                const log = txReceipt.logs[decodedLogs.findIndex(
+                    l => l !== undefined && l.name === 'Deposit',
+                )]
 
-                if (log?.data == null) {
+                if (log?.data == null || this.data.ethConfigAddress === undefined) {
                     return
                 }
 
-                const ethConfig = new Contract(TokenAbi.EthEventConfig, new Address(this.data.ethConfigAddress!))
+                const ethConfig = new Contract(
+                    TokenAbi.EthEventConfig,
+                    this.data.ethConfigAddress,
+                )
 
                 const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
 
                 const eventData = mapEthBytesIntoTonCell(
-                    atob(ethConfigDetails._basicConfiguration.eventABI),
+                    Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                     log.data,
                 )
 
                 const eventVoteData: EventVoteData = {
-                    eventBlock: tx.blockHash as string,
-                    eventBlockNumber: tx.blockNumber!.toString(),
-                    eventIndex: log!.logIndex!.toString(),
-                    eventTransaction: tx.hash as string,
+                    eventBlock: txReceipt.blockHash,
+                    eventBlockNumber: txReceipt.blockNumber.toString(),
                     eventData,
+                    eventIndex: log.logIndex.toString(),
+                    eventTransaction: txReceipt.transactionHash,
                 }
 
-                const eventAddress = await ethConfig.methods.deriveEventAddress({
+                this.changeData('eventVoteData', eventVoteData)
+
+                const eventAddress = (await ethConfig.methods.deriveEventAddress({
                     answerId: 0,
                     eventVoteData,
-                }).call()
+                }).call()).eventContract
 
-                debug({
-                    tx,
-                    txReceipt,
-                    decodedLogs,
-                    ethConfig,
-                    eventData,
-                    eventVoteData,
-                    eventAddress,
-                })
-
-                this.changeData('deriveEventAddress', eventAddress.eventContract)
-                this.changeData('eventVoteData', eventVoteData)
+                this.changeData('deriveEventAddress', eventAddress)
                 this.changeState('transferState', transferState)
 
                 this.runPrepareUpdater()
             }
             else {
-                transferState.status = 'pending'
-
-                this.changeState('transferState', transferState)
+                this.changeState('transferState', {
+                    ...transferState,
+                    status: 'pending',
+                })
             }
         })().finally(() => {
-            if (this.state.transferState?.status !== 'confirmed' && this.state.transferState?.status !== 'rejected') {
-                this.transactionTransferUpdater = setTimeout(() => {
+            if (
+                this.state.transferState?.status !== 'confirmed'
+                && this.state.transferState?.status !== 'rejected'
+            ) {
+                this.txTransferUpdater = setTimeout(() => {
                     this.runTransferUpdater()
                 }, 5000)
             }
@@ -327,20 +320,25 @@ export class EvmTransfer {
     }
 
     protected stopTransferUpdater(): void {
-        if (this.transactionTransferUpdater !== undefined) {
-            clearTimeout(this.transactionTransferUpdater)
-            this.transactionTransferUpdater = undefined
+        if (this.txTransferUpdater !== undefined) {
+            clearTimeout(this.txTransferUpdater)
+            this.txTransferUpdater = undefined
         }
     }
 
     public async prepare(): Promise<void> {
-        if (this.tonWallet.account?.address === undefined) {
+        if (this.tonWallet.account?.address === undefined || this.data.ethConfigAddress === undefined) {
             return
         }
 
-        const ethConfig = new Contract(TokenAbi.EthEventConfig, new Address(this.data.ethConfigAddress!))
+        const ethConfig = new Contract(
+            TokenAbi.EthEventConfig,
+            this.data.ethConfigAddress,
+        )
 
-        this.changeState('prepareState', 'pending')
+        this.changeState('prepareState', {
+            status: 'pending',
+        })
 
         try {
             await ethConfig.methods.deployEvent({
@@ -351,9 +349,11 @@ export class EvmTransfer {
                 from: this.tonWallet.account.address,
             })
         }
-        catch (e) {
+        catch (e: any) {
             error('Prepare error', e)
-            this.changeState('prepareState', 'disabled')
+            this.changeState('prepareState', {
+                status: 'disabled',
+            })
         }
     }
 
@@ -362,50 +362,57 @@ export class EvmTransfer {
 
         (async () => {
             if (this.data.deriveEventAddress === undefined) {
-                if (this.prepareState !== 'pending') {
+                if (this.prepareState?.status !== 'pending') {
                     this.changeState('prepareState', this.prepareState)
                 }
+                return
             }
-            else {
-                const cachedState = (await ton.getFullContractState({ address: this.data.deriveEventAddress })).state
-                if (cachedState === undefined || !cachedState?.isDeployed) {
-                    if (this.prepareState !== 'pending') {
-                        this.changeState('prepareState', this.prepareState)
-                    }
+
+            const cachedState = (await ton.getFullContractState({
+                address: this.data.deriveEventAddress,
+            })).state
+
+            if (cachedState === undefined || !cachedState?.isDeployed) {
+                if (this.prepareState?.status !== 'pending') {
+                    this.changeState('prepareState', this.prepareState)
                 }
-                else {
-                    this.changeState('prepareState', 'confirmed')
-
-                    const eventContract = new Contract(TokenAbi.TokenTransferEthEvent, this.data.deriveEventAddress)
-
-                    const eventDetails = await eventContract.methods.getDetails({
-                        answerId: 0,
-                    }).call({
-                        cachedState,
-                    })
-
-                    const eventState: EvmTransferStoreState['eventState'] = {
-                        confirmations: eventDetails._confirms.length,
-                        requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
-                        status: 'pending',
-                    }
-
-                    if (eventDetails._status === '2') {
-                        eventState.status = 'confirmed'
-                    }
-                    else if (eventDetails._status === '3') {
-                        eventState.status = 'rejected'
-                    }
-
-                    this.changeState('eventState', eventState)
-                }
+                return
             }
+
+            const eventContract = new Contract(
+                TokenAbi.TokenTransferEthEvent,
+                this.data.deriveEventAddress,
+            )
+            const eventDetails = await eventContract.methods.getDetails({
+                answerId: 0,
+            }).call({
+                cachedState,
+            })
+            const eventState: EvmTransferStoreState['eventState'] = {
+                confirmations: eventDetails._confirms.length,
+                requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
+                status: 'pending',
+            }
+
+            if (eventDetails._status === '2') {
+                eventState.status = 'confirmed'
+            }
+            else if (eventDetails._status === '3') {
+                eventState.status = 'rejected'
+            }
+
+            if (this.prepareState?.status !== 'confirmed') {
+                this.changeState('prepareState', {
+                    status: 'confirmed',
+                })
+            }
+            this.changeState('eventState', eventState)
         })().finally(() => {
             if (
                 this.eventState?.status !== 'confirmed'
                 && this.eventState?.status !== 'rejected'
             ) {
-                this.transactionPrepareUpdater = setTimeout(() => {
+                this.txPrepareUpdater = setTimeout(() => {
                     this.runPrepareUpdater()
                 }, 5000)
             }
@@ -413,9 +420,9 @@ export class EvmTransfer {
     }
 
     protected stopPrepareUpdater(): void {
-        if (this.transactionPrepareUpdater !== undefined) {
-            clearTimeout(this.transactionPrepareUpdater)
-            this.transactionPrepareUpdater = undefined
+        if (this.txPrepareUpdater !== undefined) {
+            clearTimeout(this.txPrepareUpdater)
+            this.txPrepareUpdater = undefined
         }
     }
 
@@ -456,13 +463,17 @@ export class EvmTransfer {
             return new BigNumber(0)
         }
 
-        const vault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
+        const tokenVault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
 
-        if (vault?.decimals === undefined) {
+        if (tokenVault?.decimals === undefined) {
             return new BigNumber(0)
         }
 
-        return new BigNumber(this.amount || 0).shiftedBy(-vault.decimals)
+        return new BigNumber(this.amount || 0).shiftedBy(-tokenVault.decimals)
+    }
+
+    public get depositType(): string {
+        return this.params?.depositType || 'default'
     }
 
     public get leftNetwork(): NetworkShape | undefined {
@@ -483,9 +494,17 @@ export class EvmTransfer {
         return this.params?.txHash
     }
 
-    protected transactionTransferUpdater: ReturnType<typeof setTimeout> | undefined
+    public get useEvmWallet(): EvmWalletService {
+        return this.evmWallet
+    }
 
-    protected transactionPrepareUpdater: ReturnType<typeof setTimeout> | undefined
+    public get useTonWallet(): TonWalletService {
+        return this.tonWallet
+    }
+
+    public get useTokensCache(): TokensCacheService {
+        return this.tokensCache
+    }
 
     #chainIdDisposer: IReactionDisposer | undefined
 

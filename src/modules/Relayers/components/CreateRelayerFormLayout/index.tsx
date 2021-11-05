@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { ContentLoader } from '@/components/common/ContentLoader'
 
 import './index.scss'
@@ -26,16 +27,25 @@ export function CreateRelayerFormLayout({
     submitLink,
     isLoading,
     isConnected,
-    onSubmit,
+    onSubmit: onSubmitCallback,
     onConnect,
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const submit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const onSubmitForm = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
 
         if (isConnected) {
-            onSubmit?.()
+            onSubmitCallback?.()
+        }
+        else {
+            onConnect?.()
+        }
+    }
+
+    const onSubmit = () => {
+        if (isConnected) {
+            onSubmitCallback?.()
         }
         else {
             onConnect?.()
@@ -44,7 +54,7 @@ export function CreateRelayerFormLayout({
 
     return (
         <form
-            onSubmit={submit}
+            onSubmit={onSubmitForm}
             className="create-relayer-form-layout"
         >
             <div className="card card--flat card--small create-relayer-form-layout__content">
@@ -58,32 +68,34 @@ export function CreateRelayerFormLayout({
                             {submitLink ? (
                                 <Link
                                     to={submitLink}
-                                    className="btn btn-lg btn--primary"
+                                    className="btn btn--primary btn--lg"
                                 >
                                     {submitLabel}
                                 </Link>
                             ) : (
-                                <button
-                                    type="submit"
-                                    className="btn btn-lg btn--primary"
+                                <Button
                                     disabled={!submitEnabled}
+                                    size="lg"
+                                    type="primary"
+                                    onClick={onSubmit}
                                 >
                                     {
                                         isLoading
                                             ? <ContentLoader slim />
                                             : submitLabel
                                     }
-                                </button>
+                                </Button>
                             )}
                         </div>
                     )}
                 </>
             ) : (
                 <div className="create-relayer-form-layout__action">
-                    <button
-                        type="submit"
-                        className="btn btn-lg btn--primary"
+                    <Button
                         disabled={isLoading}
+                        size="lg"
+                        type="primary"
+                        onClick={onSubmit}
                     >
                         {
                             isLoading
@@ -92,7 +104,7 @@ export function CreateRelayerFormLayout({
                                     id: 'RELAYERS_CONNECT',
                                 })
                         }
-                    </button>
+                    </Button>
                 </div>
             )}
         </form>
