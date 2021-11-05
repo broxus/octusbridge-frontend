@@ -2,10 +2,12 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
+import { DexConstants } from '@/misc'
 import { useTonWallet } from '@/stores/TonWalletService'
-import { amount, sliceAddress } from '@/utils'
+import { formattedAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
@@ -19,10 +21,9 @@ export function TonWallet(): JSX.Element | null {
             {() => (wallet.isInitialized ? (
                 <div key="ton-wallet" className="wallet">
                     {!wallet.isConnected ? (
-                        <button
-                            key="guest"
-                            type="button"
-                            className="btn btn--secondary"
+                        <Button
+                            size="md"
+                            type="secondary"
                             disabled={wallet.isConnecting}
                             aria-disabled={wallet.isConnecting}
                             onClick={wallet.connect}
@@ -30,7 +31,7 @@ export function TonWallet(): JSX.Element | null {
                             {intl.formatMessage({
                                 id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
                             })}
-                        </button>
+                        </Button>
                     ) : (
                         <div key="wrapper" className="wallet__wrapper">
                             <div className="wallet__user-avatar">
@@ -51,21 +52,22 @@ export function TonWallet(): JSX.Element | null {
                                         {intl.formatMessage({
                                             id: 'WALLET_BALANCE_HINT',
                                         }, {
-                                            value: amount(wallet.balance, 9),
-                                            currency: 'TON',
+                                            value: formattedAmount(
+                                                wallet.balance,
+                                                DexConstants.TONDecimals,
+                                            ),
+                                            currency: DexConstants.TONSymbol,
                                         })}
                                     </div>
                                 )}
                             </div>
 
-                            <button
-                                key="logout"
-                                type="button"
-                                className="btn btn-logout"
+                            <Button
+                                className="btn-logout"
                                 onClick={wallet.disconnect}
                             >
                                 <Icon icon="logout" />
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

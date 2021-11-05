@@ -1,42 +1,61 @@
 import * as React from 'react'
-import { useIntl } from 'react-intl'
+import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
-import classNames from 'classnames'
+import { useIntl } from 'react-intl'
 
+import { AmountField } from '@/components/common/AmountField'
 import { Select } from '@/components/common/Select'
-import { TokenCache } from '@/stores/TokensCacheService'
-import { useAmountField } from '@/hooks/useAmountField'
+import { useBridge } from '@/modules/Bridge/providers'
+import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
+import { debounce, formattedAmount, isGoodBignumber } from '@/utils'
+import { TokenIcon } from '@/components/common/TokenIcon'
 
 
-type Props = {
-    amount: string;
-    balance?: string;
-    decimals?: number;
-    isAmountValid?: boolean;
-    token?: TokenCache;
-    tokens: TokenCache[];
-    onChangeAmount: (value: string) => void;
-    onChangeToken: (value?: string) => void;
-}
-
-
-export function AssetForm({
-    amount,
-    balance,
-    decimals,
-    onChangeAmount,
-    onChangeToken,
-    isAmountValid,
-    token,
-    tokens,
-}: Props): JSX.Element {
+export function AssetForm(): JSX.Element {
     const intl = useIntl()
-    const field = useAmountField({
-        decimals,
-        token,
-        value: amount,
-        onChange: onChangeAmount,
-    })
+    const bridge = useBridge()
+    const summary = useSummary()
+    const tokensCache = bridge.useTokensCache
+
+    const tokens = React.useMemo(() => {
+        if (bridge.isEvmToTon && bridge.leftNetwork?.chainId !== undefined) {
+            return tokensCache.filterTokensByChainId(bridge.leftNetwork.chainId)
+        }
+
+        if (bridge.isTonToEvm && bridge.rightNetwork?.chainId !== undefined) {
+            return tokensCache.filterTokensByChainId(bridge.rightNetwork.chainId)
+        }
+
+        return []
+    }, [bridge.leftNetwork?.chainId, bridge.rightNetwork?.chainId])
+
+    const changeAmountRecalculate = debounce(() => {
+        (async () => {
+            await bridge.onChangeAmount()
+        })()
+    }, 400)
+
+    const onChangeAmount = (value: string) => {
+        bridge.changeData('amount', value)
+        if (bridge.isSwapEnabled) {
+            changeAmountRecalculate()
+        }
+    }
+
+    const onChangeToken = (value?: string) => {
+        bridge.changeData('selectedToken', value)
+    }
+
+    const onClickMax = () => {
+        let formattedBalance = new BigNumber(bridge.balance || 0)
+        if (!isGoodBignumber(formattedBalance)) {
+            return
+        }
+        if (bridge.decimals !== undefined) {
+            formattedBalance = formattedBalance.shiftedBy(-bridge.decimals)
+        }
+        onChangeAmount(formattedBalance.toFixed())
+    }
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
@@ -54,24 +73,63 @@ export function AssetForm({
                     </legend>
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
-                            <Observer>
-                                {() => (
-                                    <Select
-                                        className="rc-select--lg"
-                                        options={tokens.map(({ symbol, root }) => ({
-                                            label: symbol,
-                                            value: root,
-                                        }))}
-                                        placeholder={intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
-                                        })}
-                                        value={token?.root}
-                                        onChange={onChangeToken}
-                                    />
-                                )}
-                            </Observer>
+                            <Select
+                                className="rc-select--lg"
+                                optionLabelProp="displayLabel"
+                                options={tokens.map(({ icon, root, symbol }) => ({
+                                    label: (
+                                        <div className="token-select-label">
+                                            <TokenIcon
+                                                address={root}
+                                                uri={icon}
+                                                size="xsmall"
+                                            />
+                                            <div>{symbol}</div>
+                                        </div>
+                                    ),
+                                    value: root,
+                                    displayLabel: (
+                                        <div className="token-select-label">
+                                            <TokenIcon
+                                                address={root}
+                                                uri={icon}
+                                                size="xsmall"
+                                            />
+                                            <div>{symbol}</div>
+                                            <div className="token-select-label__badge">
+                                                <span>
+                                                    {bridge.isEvmToTon ? 'ERC20' : 'TIP3'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ),
+                                }))}
+                                placeholder={intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
+                                })}
+                                value={bridge.token?.root}
+                                onChange={onChangeToken}
+                            />
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {summary.vaultBalance !== undefined
+                                                ? intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_VAULT_BALANCE_HINT',
+                                                }, {
+                                                    symbol: summary.token?.symbol,
+                                                    value: formattedAmount(
+                                                        summary.vaultBalance || 0,
+                                                        summary.vaultDecimals,
+                                                    ),
+                                                })
+                                                : <>&nbsp;</>}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                 </fieldset>
 
@@ -82,40 +140,44 @@ export function AssetForm({
                         })}
                     </legend>
                     <div className="crosschain-transfer__controls">
-                        <div className="crosschain-transfer__control">
-                            <Observer>
-                                {() => (
-                                    <input
-                                        className={classNames([
-                                            'form-input',
-                                            'form-input--lg',
-                                        ], {
-                                            invalid: !isAmountValid,
-                                        })}
+                        <Observer>
+                            {() => (
+                                <div className="crosschain-transfer__control">
+                                    <AmountField
+                                        decimals={bridge.decimals}
+                                        disabled={bridge.token === undefined}
+                                        displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
+                                        isValid={bridge.isAmountValid}
+                                        maxValue={bridge.balance}
                                         placeholder={intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_PLACEHOLDER',
                                         })}
-                                        type="text"
-                                        value={amount}
-                                        onBlur={field.onBlur}
-                                        onChange={field.onChange}
+                                        value={bridge.amount}
+                                        onClickMax={onClickMax}
+                                        onChange={onChangeAmount}
                                     />
-                                )}
-                            </Observer>
-                            <Observer>
-                                {() => (token !== undefined ? (
                                     <div className="crosschain-transfer__control-hint">
-                                        {intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_BALANCE_HINT',
-                                        }, {
-                                            symbol: token?.symbol,
-                                            value: balance || 0,
-                                        })}
+                                        <Observer>
+                                            {() => (
+                                                <>
+                                                    {bridge.token !== undefined
+                                                        ? intl.formatMessage({
+                                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_BALANCE_HINT',
+                                                        }, {
+                                                            symbol: bridge.token?.symbol,
+                                                            value: formattedAmount(
+                                                                bridge.balance || 0,
+                                                                bridge.decimals,
+                                                            ),
+                                                        })
+                                                        : <>&nbsp;</>}
+                                                </>
+                                            )}
+                                        </Observer>
                                     </div>
-                                ) : null)}
-                            </Observer>
-                        </div>
-                        <div className="crosschain-transfer__wallet" />
+                                </div>
+                            )}
+                        </Observer>
                     </div>
                 </fieldset>
             </form>

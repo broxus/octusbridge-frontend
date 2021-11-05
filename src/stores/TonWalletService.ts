@@ -47,9 +47,6 @@ const DEFAULT_WALLET_STATE: WalletState = {
     isInitializing: false,
 }
 
-const TOKEN_SYMBOL = 'TON'
-
-const TOKEN_DECIMALS = 9
 
 export async function connectToWallet(): Promise<void> {
     const hasProvider = await hasTonProvider()
@@ -64,10 +61,6 @@ export async function connectToWallet(): Promise<void> {
 
 
 export class TonWalletService {
-
-    public readonly tokenSymbol = TOKEN_SYMBOL
-
-    public readonly tokenDecimals = TOKEN_DECIMALS
 
     /**
      * Current data of the wallet
@@ -120,6 +113,140 @@ export class TonWalletService {
                 this.state.isConnecting = false
             })
         })
+    }
+
+    /**
+     * Manually connect to the wallet
+     * @returns {Promise<void>}
+     */
+    public async connect(): Promise<void> {
+        if (this.isConnecting) {
+            return
+        }
+
+        const hasProvider = await hasTonProvider()
+
+        runInAction(() => {
+            this.state.hasProvider = hasProvider
+            this.state.isConnecting = true
+        })
+
+        try {
+            await connectToWallet()
+            runInAction(() => {
+                this.state.isConnecting = false
+            })
+        }
+        catch (e) {
+            error('Wallet connect error', e)
+            runInAction(() => {
+                this.state.isConnecting = false
+            })
+        }
+    }
+
+    /**
+     * Manually disconnect from the wallet
+     * @returns {Promise<void>}
+     */
+    public async disconnect(): Promise<void> {
+        if (this.isConnecting) {
+            return
+        }
+
+        this.state.isConnecting = true
+
+        try {
+            await ton.disconnect()
+            this.reset()
+        }
+        catch (e) {
+            error('Wallet disconnect error', e)
+            runInAction(() => {
+                this.state.isConnecting = false
+            })
+        }
+    }
+
+    /**
+     * Returns computed wallet address value
+     * @returns {string | undefined}
+     */
+    public get address(): string | undefined {
+        return this.account?.address.toString()
+    }
+
+    /**
+     * Returns computed wallet balance value
+     * @returns {string | undefined}
+     */
+    public get balance(): WalletData['balance'] {
+        return this.data.balance
+    }
+
+    /**
+     * Returns `true` if provider is available.
+     * That means extension is installed and activated, else `false`
+     * @returns {boolean}
+     */
+    public get hasProvider(): WalletState['hasProvider'] {
+        return this.state.hasProvider
+    }
+
+    /**
+     * Returns `true` if wallet is connected
+     * @returns {boolean}
+     */
+    public get isConnected(): boolean {
+        return this.address !== undefined
+    }
+
+    /**
+     * Returns `true` if wallet is connecting
+     * @returns {boolean}
+     */
+    public get isConnecting(): WalletState['isConnecting'] {
+        return this.state.isConnecting
+    }
+
+    /**
+     * Returns `true` if wallet is initialized
+     * @returns {boolean}
+     */
+    public get isInitialized(): WalletState['isInitialized'] {
+        return this.state.isInitialized
+    }
+
+    /**
+     * Returns `true` if wallet is initializing
+     * @returns {boolean}
+     */
+    public get isInitializing(): WalletState['isInitializing'] {
+        return this.state.isInitializing
+    }
+
+    /**
+     * Returns computed account
+     * @returns {WalletData['account']}
+     */
+    public get account(): WalletData['account'] {
+        return this.data.account
+    }
+
+    /**
+     * Returns computed wallet contract state
+     * @returns {WalletData['contract']}
+     */
+    public get contract(): WalletData['contract'] {
+        return this.data.contract
+    }
+
+    /**
+     * Returns computed last successful transaction data
+     * @returns {WalletData['transaction']}
+     */
+    public get transaction(): WalletData['transaction'] {
+        return this.data.transaction
     }
 
     /**
@@ -177,59 +304,6 @@ export class TonWalletService {
         runInAction(() => {
             this.state.isConnecting = false
         })
-    }
-
-    /**
-     * Manually connect to the wallet
-     * @returns {Promise<void>}
-     */
-    public async connect(): Promise<void> {
-        if (this.isConnecting) {
-            return
-        }
-
-        const hasProvider = await hasTonProvider()
-
-        runInAction(() => {
-            this.state.hasProvider = hasProvider
-            this.state.isConnecting = true
-        })
-
-        try {
-            await connectToWallet()
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
-        }
-        catch (e) {
-            error('Wallet connect error', e)
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
-        }
-    }
-
-    /**
-     * Manually disconnect from the wallet
-     * @returns {Promise<void>}
-     */
-    public async disconnect(): Promise<void> {
-        if (this.isConnecting) {
-            return
-        }
-
-        this.state.isConnecting = true
-
-        try {
-            await ton.disconnect()
-            this.reset()
-        }
-        catch (e) {
-            error('Wallet disconnect error', e)
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
-        }
     }
 
     /**
@@ -302,85 +376,6 @@ export class TonWalletService {
             error(e)
             this.#contractSubscriber = undefined
         }
-    }
-
-    /**
-     * Returns computed account
-     * @returns {WalletData['account']}
-     */
-    public get account(): WalletData['account'] {
-        return this.data.account
-    }
-
-    /**
-     * Returns computed wallet address value
-     * @returns {string | undefined}
-     */
-    public get address(): string | undefined {
-        return this.data.account?.address.toString()
-    }
-
-    /**
-     * Returns computed wallet balance value
-     * @returns {WalletData['balance']}
-     */
-    public get balance(): WalletData['balance'] {
-        return this.data.balance
-    }
-
-    /**
-     * Returns computed wallet contract state
-     * @returns {WalletData['contract']}
-     */
-    public get contract(): WalletData['contract'] {
-        return this.data.contract
-    }
-
-    /**
-     * Returns computed last successful transaction data
-     * @returns {WalletData['transaction']}
-     */
-    public get transaction(): WalletData['transaction'] {
-        return this.data.transaction
-    }
-
-    /**
-     * Returns `true` if provider is available.
-     * That means extension is installed in activated, else `false`
-     * @returns {WalletState['hasProvider']}
-     */
-    public get hasProvider(): WalletState['hasProvider'] {
-        return this.state.hasProvider
-    }
-
-    /**
-     * Returns computed connecting state value
-     * @returns {WalletState['isConnecting']}
-     */
-    public get isConnecting(): WalletState['isConnecting'] {
-        return this.state.isConnecting
-    }
-
-    /**
-     * Returns computed initialized state value
-     * @returns {WalletState['isInitialized']}
-     */
-    public get isInitialized(): WalletState['isInitialized'] {
-        return this.state.isInitialized
-    }
-
-    /**
-     *
-     */
-    public get isInitializing(): WalletState['isInitializing'] {
-        return this.state.isInitializing
-    }
-
-    /**
-     *
-     */
-    public get isConnected(): boolean {
-        return this.address !== undefined
     }
 
     /**

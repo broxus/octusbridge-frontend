@@ -4,14 +4,14 @@ import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useTonTransferStore } from '@/modules/Bridge/providers/TonTransferStoreProvider'
+import { useTonTransfer } from '@/modules/Bridge/providers/TonTransferStoreProvider'
 import { isSameNetwork } from '@/modules/Bridge/utils'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 
 
 export function EventStatusIndicator(): JSX.Element {
     const intl = useIntl()
-    const transfer = useTonTransferStore()
+    const transfer = useTonTransfer()
     const evmWallet = useEvmWallet()
 
     return (
@@ -61,11 +61,11 @@ export function EventStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
+                <div className="crosschain-transfer__status-note">
                     {intl.formatMessage({
                         id: 'CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE',
                     })}
-                </p>
+                </div>
 
                 <Observer>
                     {() => (

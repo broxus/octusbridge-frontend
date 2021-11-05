@@ -3,12 +3,12 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
-import { useEvmTransferStoreContext } from '@/modules/Bridge/providers'
+import { useEvmTransfer } from '@/modules/Bridge/providers'
 
 
 export function EventStatusIndicator(): JSX.Element {
     const intl = useIntl()
-    const transfer = useEvmTransferStoreContext()
+    const transfer = useEvmTransfer()
 
     return (
         <div className="crosschain-transfer__status">
@@ -57,11 +57,11 @@ export function EventStatusIndicator(): JSX.Element {
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">
-                <p>
+                <div className="crosschain-transfer__status-note">
                     {intl.formatMessage({
                         id: 'CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE',
                     })}
-                </p>
+                </div>
             </div>
         </div>
     )

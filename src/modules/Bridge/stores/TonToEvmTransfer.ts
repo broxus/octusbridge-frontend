@@ -18,11 +18,11 @@ import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
-import { NetworkShape } from '@/bridge'
+import { NetworkShape } from '@/types'
 import { error } from '@/utils'
 
 
-export class TonTransfer {
+export class TonToEvmTransfer {
 
     protected data: TonTransferStoreData = {
         amount: '',
@@ -36,6 +36,10 @@ export class TonTransfer {
         prepareState: undefined,
         releaseState: undefined,
     }
+
+    protected eventUpdater: ReturnType<typeof setTimeout> | undefined
+
+    protected releaseUpdater: ReturnType<typeof setTimeout> | undefined
 
     constructor(
         protected readonly tonWallet: TonWalletService,
@@ -148,23 +152,25 @@ export class TonTransfer {
 
     public checkContract(): void {
         const check = async () => {
-            if (this.contractAddress !== undefined) {
-                this.changeState('prepareState', this.state.prepareState || 'pending')
+            if (this.contractAddress === undefined) {
+                return
+            }
 
-                try {
-                    await ton.ensureInitialized()
+            this.changeState('prepareState', this.state.prepareState || 'pending')
 
-                    const { state } = await ton.getFullContractState({
-                        address: new Address(this.contractAddress),
-                    })
+            try {
+                await ton.ensureInitialized()
 
-                    if (state?.isDeployed) {
-                        this.changeState('isContractDeployed', true)
-                    }
+                const { state } = await ton.getFullContractState({
+                    address: this.contractAddress,
+                })
+
+                if (state?.isDeployed) {
+                    this.changeState('isContractDeployed', true)
                 }
-                catch (e) {
-                    error('Check contract error', e)
-                }
+            }
+            catch (e) {
+                error('Check contract error', e)
             }
         }
 
@@ -186,10 +192,12 @@ export class TonTransfer {
             return
         }
 
-        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, new Address(this.contractAddress))
+        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
 
-        const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
-        const eventData = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
+        const [eventDetails, eventData] = await Promise.all([
+            await eventContract.methods.getDetails({ answerId: 0 }).call(),
+            await eventContract.methods.getDecodedData({ answerId: 0 }).call(),
+        ])
 
         const proxyAddress = eventDetails._initializer
         const proxyContract = new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
@@ -243,7 +251,7 @@ export class TonTransfer {
                 return
             }
 
-            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, new Address(this.contractAddress))
+            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             let status: EventStateStatus = 'pending'
@@ -261,8 +269,12 @@ export class TonTransfer {
                 status,
             })
 
-            if (this.eventState?.status !== 'confirmed') {
+            if (status !== 'confirmed') {
                 return
+            }
+
+            if (this.data.withdrawalId === undefined || this.data.encodedEvent === undefined) {
+                this.changeState('releaseState', 'pending')
             }
 
             const proxyAddress = eventDetails._initializer
@@ -283,12 +295,9 @@ export class TonTransfer {
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
             const eventConfig = new Contract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
-
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
-
-            const eventAbi = atob(eventConfigDetails._basicConfiguration.eventABI)
             const eventDataEncoded = mapTonCellIntoEthBytes(
-                eventAbi,
+                Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                 eventDetails._eventInitData.voteData.eventData,
             )
 
@@ -310,8 +319,8 @@ export class TonTransfer {
                 eventData: eventDataEncoded,
                 configurationWid: proxyDetails.value0.tonConfiguration.toString().split(':')[0],
                 configurationAddress: `0x${proxyDetails.value0.tonConfiguration.toString().split(':')[1]}`,
-                eventContractWid: this.contractAddress.split(':')[0],
-                eventContractAddress: `0x${this.contractAddress.split(':')[1]}`,
+                eventContractWid: this.contractAddress.toString().split(':')[0],
+                eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                 proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
                 round: (await eventContract.methods.round_number({}).call()).round_number,
             }])
@@ -323,7 +332,7 @@ export class TonTransfer {
             if (
                 this.evmWallet.isConnected
                 && this.evmWallet.chainId === this.rightNetwork?.chainId
-                && this.eventState.status === 'confirmed'
+                && this.eventState?.status === 'confirmed'
             ) {
                 this.runReleaseUpdater()
             }
@@ -354,7 +363,7 @@ export class TonTransfer {
             return
         }
 
-        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, new Address(this.contractAddress))
+        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
         const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
         const signatures = eventDetails._signatures.map(sign => {
@@ -479,8 +488,10 @@ export class TonTransfer {
         return this.data.token
     }
 
-    public get contractAddress(): TonTransferQueryParams['contractAddress'] | undefined {
-        return this.params?.contractAddress
+    public get contractAddress(): Address | undefined {
+        return this.params?.contractAddress !== undefined
+            ? new Address(this.params.contractAddress)
+            : undefined
     }
 
     public get prepareState(): TonTransferStoreState['prepareState'] {
@@ -495,9 +506,17 @@ export class TonTransfer {
         return this.state.releaseState
     }
 
-    protected eventUpdater: ReturnType<typeof setTimeout> | undefined
+    public get useEvmWallet(): EvmWalletService {
+        return this.evmWallet
+    }
 
-    protected releaseUpdater: ReturnType<typeof setTimeout> | undefined
+    public get useTonWallet(): TonWalletService {
+        return this.tonWallet
+    }
+
+    public get useTokensCache(): TokensCacheService {
+        return this.tokensCache
+    }
 
     #chainIdDisposer: IReactionDisposer | undefined
 

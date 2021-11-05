@@ -2,6 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 
 import { UserAvatar } from '@/components/common/UserAvatar'
+import { isTonAddressValid } from '@/utils'
 
 import './index.scss'
 
@@ -22,19 +23,19 @@ export function TokenIcon({
     size,
     uri,
 }: TokenIconProps): JSX.Element | null {
-    if (uri !== undefined) {
+    if (uri) {
         return (
             <img
                 alt={name}
                 className={classNames('token-icon', {
-                    [`token-icon_size_${size}`]: Boolean(size),
+                    [`token-icon__size-${size}`]: Boolean(size),
                 }, className)}
                 src={uri}
             />
         )
     }
 
-    return address !== undefined ? (
+    return (address && isTonAddressValid(address)) ? (
         <UserAvatar address={address} size={size} />
     ) : null
 }

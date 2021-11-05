@@ -1,0 +1,29 @@
+.amount-field {
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    display: flex;
+    padding-right: 8px;
+
+    &.disabled {
+        background-color: rgba(0, 0, 0, 0.08);
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    &.caution {
+        border-color: #e6ac00;
+        box-shadow: 0 0 2px 0 #e6ac00;
+    }
+
+    &.invalid {
+        border-color: #eb4361;
+        box-shadow: 0 0 2px 0 #eb4361;
+    }
+
+    .form-input {
+        border: 0 !important;
+    }
+
+    .btn {
+
+    }
+}

@@ -1,0 +1,227 @@
+.btn {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    height: 36px;
+    line-height: 34px;
+    outline: 0 none !important;
+    padding: 0 16px;
+    text-align: center;
+    text-decoration: none;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+        color: initial;
+        text-decoration: none;
+    }
+
+    &[disabled],
+    &:disabled {
+        cursor: not-allowed;
+        transition: none;
+    }
+
+    &.btn--sm {
+        font-size: 14px;
+        height: 28px;
+        letter-spacing: 0.6px;
+        line-height: 26px;
+        padding: 0 10px;
+    }
+
+    &.btn--md {
+        font-size: 16px;
+        height: 44px;
+        letter-spacing: 0.25px;
+        line-height: 42px;
+        padding: 0 18px;
+    }
+
+    &.btn--lg {
+        font-size: 20px;
+        height: 56px;
+        letter-spacing: 0.15px;
+        line-height: 54px;
+        padding: 0 22px;
+    }
+
+    &.btn--block {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+}
+
+.btn-group {
+    align-items: center;
+    display: flex;
+    > *:not(:last-child) {
+        margin-right: 10px;
+    }
+}
+
+.btn--primary {
+    background-color: #c5e4f3;
+    color: #050a2e;
+
+    &:hover,
+    &:focus {
+        background-color: #b2cedf;
+        color: #050a2e;
+    }
+
+    &:active {
+        background-color: #9fb9cc;
+        color: #050a2e;
+    }
+
+    &[disabled],
+    &:disabled {
+        background-color: rgba(197, 228, 243, 0.32);
+        color: #050a2e;
+    }
+}
+
+.btn--secondary {
+    background-color: rgba(197, 228, 243, 0.16);
+    color: #c5e4f3;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(197, 228, 243, 0.32);
+        color: #c5e4f3;
+    }
+
+    &:active {
+        background-color: rgba(197, 228, 243, 0.08);
+        color: #c5e4f3;
+    }
+
+    &[disabled],
+    &:disabled {
+        background-color: rgba(197, 228, 243, 0.12);
+        color: rgba(197, 228, 243, 0.56);
+    }
+}
+
+.btn--tertiary {
+    background-color: transparent;
+    border: 1px solid rgba(197, 228, 243, 0.32);
+    color: #c5e4f3;
+
+    &:hover,
+    &:focus {
+        border-color: rgba(197, 228, 243, 0.56);
+        color: #c5e4f3;
+    }
+
+    &:active {
+        border-color: rgba(197, 228, 243, 0.16);
+        color: #c5e4f3;
+    }
+
+    &[disabled],
+    &:disabled {
+        border-color: rgba(197, 228, 243, 0.24);
+        color: rgba(197, 228, 243, 0.56);
+    }
+}
+
+.btn--ghost {
+    background-color: transparent;
+    color: #c5e4f3;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(197, 228, 243, 0.16);
+        color: #c5e4f3;
+    }
+
+    &:active {
+        background-color: rgba(197, 228, 243, 0.08);
+        color: #c5e4f3;
+    }
+
+    &[disabled],
+    &:disabled {
+        background-color: transparent;
+        color: rgba(197, 228, 243, 0.56);
+    }
+}
+
+.btn--danger {
+    background-color: #eb4361;
+    color: #ffffff;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(235, 67, 97, 0.8);
+        color: #ffffff;
+    }
+
+    &:active {
+        background-color: rgba(235, 67, 97, 0.64);
+        color: #ffffff;
+    }
+
+    &[disabled],
+    &:disabled {
+        background-color: rgba(235, 67, 97, 0.48);
+        color: rgba(255, 255, 255, 0.48);
+    }
+}
+
+.btn--link {
+    background-color: transparent;
+    color: #c5e4f3;
+
+    &:hover {
+        color: darken(#ffffff, 10%);
+    }
+}
+
+.btn--icon {
+    align-items: center;
+    border: none 0;
+    color: #ffffff;
+    display: inline-flex;
+    height: auto;
+    justify-content: center;
+    line-height: normal;
+    opacity: 0.5;
+    padding: 0;
+    transition: opacity 0.15s ease-in-out;
+    vertical-align: middle;
+    width: auto;
+
+    &:hover,
+    &.active {
+        color: #ffffff;
+        opacity: 1;
+    }
+
+    &.btn--md {
+        padding: 0 24px;
+
+        &.btn-square {
+            width: 48px;
+        }
+    }
+}

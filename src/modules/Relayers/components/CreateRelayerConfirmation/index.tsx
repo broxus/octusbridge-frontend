@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { Alert } from '@/components/common/Alert'
 import { Icon } from '@/components/common/Icon'
-import { Warning } from '@/components/common/Warning'
+import { Button } from '@/components/common/Button'
 import { CreateRelayerPopupLayout } from '@/modules/Relayers/components/CreateRelayerPopupLayout'
-import { amount } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 type Props = {
     isValid?: boolean;
@@ -67,7 +68,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: amount(stakingBalance, stakingTokenDecimals),
+                                value: formattedAmount(stakingBalance, stakingTokenDecimals),
                                 symbol: stakingTokenSymbol,
                             })
                             : nullMessage
@@ -85,7 +86,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: amount(tonWalletBalance, tonTokenDecimals),
+                                value: formattedAmount(tonWalletBalance, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
                             : nullMessage
@@ -103,7 +104,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: amount(contractFee, tonTokenDecimals),
+                                value: formattedAmount(contractFee, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
                             : nullMessage
@@ -119,13 +120,14 @@ export function CreateRelayerConfirmation({
                 && stakingTokenDecimals !== undefined
                 && (
                     <div className="create-relayer-popup-warning">
-                        <Warning
+                        <Alert
                             text={intl.formatMessage({
                                 id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
                             }, {
                                 symbol: stakingTokenSymbol,
-                                amount: amount(requiredStake, stakingTokenDecimals),
+                                amount: formattedAmount(requiredStake, stakingTokenDecimals),
                             })}
+                            type="danger"
                         />
                     </div>
                 )
@@ -139,42 +141,43 @@ export function CreateRelayerConfirmation({
                 && tonTokenDecimals !== undefined
                 && (
                     <div className="create-relayer-popup-warning">
-                        <Warning
+                        <Alert
                             text={intl.formatMessage({
                                 id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
                             }, {
-                                amount: amount(contractFee, tonTokenDecimals),
+                                amount: formattedAmount(contractFee, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })}
+                            type="danger"
                         />
                     </div>
                 )
             }
 
             <div className="create-relayer-popup-actions">
-                <button
-                    type="button"
-                    className="btn btn--tertiary btn-block"
-                    onClick={onDismiss}
+                <Button
+                    block
                     disabled={isLoading}
+                    type="tertiary"
+                    onClick={onDismiss}
                 >
                     {intl.formatMessage({
                         id: 'RELAYERS_CREATE_CONFIRMATION_CANCEL',
                     })}
-                </button>
+                </Button>
 
-                <button
-                    type="button"
-                    className="btn btn--primary btn-block"
-                    onClick={onSubmit}
+                <Button
+                    block
                     disabled={!isValid || isLoading}
+                    type="primary"
+                    onClick={onSubmit}
                 >
                     {isLoading ? (
                         <Icon icon="loader" ratio={0.9} className="spin" />
                     ) : intl.formatMessage({
                         id: 'RELAYERS_CREATE_CONFIRMATION_SUBMIT',
                     })}
-                </button>
+                </Button>
             </div>
         </CreateRelayerPopupLayout>
     )

@@ -1,45 +1,23 @@
 import * as React from 'react'
-import { reaction } from 'mobx'
 import { Observer } from 'mobx-react-lite'
-import { useHistory } from 'react-router-dom'
 
 import {
     ApproveStep,
     AssetStep,
+    EvmSwapTransferStep,
     EvmTransferStep,
     RouteStep,
     Summary,
     TonTransferStep,
 } from '@/modules/Bridge/components'
-import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
+import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 
 import './index.scss'
 
 
 export function Bridge(): JSX.Element {
-    const history = useHistory()
     const bridge = useBridge()
-
-    React.useEffect(() => {
-        bridge.init()
-
-        const redirectDisposer = reaction(() => bridge.txHash, value => {
-            if (value === undefined) {
-                return
-            }
-
-            const leftNetwork = `${bridge.leftNetwork?.type}-${bridge.leftNetwork?.chainId}`
-            const rightNetwork = `${bridge.rightNetwork?.type}-${bridge.rightNetwork?.chainId}`
-
-            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}`)
-        })
-
-        return () => {
-            redirectDisposer()
-            bridge.dispose()
-        }
-    }, [])
 
     return (
         <section className="section">
@@ -57,7 +35,9 @@ export function Bridge(): JSX.Element {
 
                                 case CrosschainBridgeStep.TRANSFER:
                                     if (bridge.isEvmToTon) {
-                                        return <EvmTransferStep key="evm-transfer" />
+                                        return bridge.isSwapEnabled
+                                            ? <EvmSwapTransferStep key="evm-swap-transfer" />
+                                            : <EvmTransferStep key="evm-transfer" />
                                     }
 
                                     if (bridge.isTonToEvm) {
@@ -74,19 +54,7 @@ export function Bridge(): JSX.Element {
                 </main>
 
                 <aside className="sidebar">
-                    <Observer>
-                        {() => (
-                            <Summary
-                                amount={bridge.amount}
-                                decimals={bridge.decimals}
-                                leftAddress={bridge.leftAddress}
-                                leftNetwork={bridge.leftNetwork}
-                                rightAddress={bridge.rightAddress}
-                                rightNetwork={bridge.rightNetwork}
-                                token={bridge.token}
-                            />
-                        )}
-                    </Observer>
+                    <Summary />
                 </aside>
             </div>
         </section>
