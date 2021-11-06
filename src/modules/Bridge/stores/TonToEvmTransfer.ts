@@ -273,9 +273,10 @@ export class TonToEvmTransfer {
                 return
             }
 
-            if (this.data.withdrawalId === undefined || this.data.encodedEvent === undefined) {
-                this.changeState('releaseState', 'pending')
-            }
+            // FIXME: Temporary fix for ton to evm transfers, no release pending on page refresh, remove this block
+            // if (this.data.withdrawalId === undefined || this.data.encodedEvent === undefined) {
+            //     this.changeState('releaseState', 'pending')
+            // }
 
             const proxyAddress = eventDetails._initializer
             const proxyContract = new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
