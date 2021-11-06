@@ -406,6 +406,7 @@ export class TonToEvmTransfer {
                 0,
             ).send({
                 from: this.evmWallet.address,
+                type: '0x00',
             })
         }
         catch (e: any) {
