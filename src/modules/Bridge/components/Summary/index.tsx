@@ -108,7 +108,6 @@ export function Summary(): JSX.Element {
                         )}
                     </Observer>
                 </li>
-                {/*
                 <Observer>
                     {() => (
                         <>
@@ -130,7 +129,6 @@ export function Summary(): JSX.Element {
                         </>
                     )}
                 </Observer>
-                */}
                 <Observer>
                     {() => (
                         <>

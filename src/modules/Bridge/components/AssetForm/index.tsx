@@ -6,7 +6,6 @@ import { useIntl } from 'react-intl'
 import { AmountField } from '@/components/common/AmountField'
 import { Select } from '@/components/common/Select'
 import { useBridge } from '@/modules/Bridge/providers'
-import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
 import { debounce, formattedAmount, isGoodBignumber } from '@/utils'
 import { TokenIcon } from '@/components/common/TokenIcon'
 
@@ -14,7 +13,6 @@ import { TokenIcon } from '@/components/common/TokenIcon'
 export function AssetForm(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
-    const summary = useSummary()
     const tokensCache = bridge.useTokensCache
 
     const tokens = React.useMemo(() => {
@@ -96,11 +94,6 @@ export function AssetForm(): JSX.Element {
                                                 size="xsmall"
                                             />
                                             <div>{symbol}</div>
-                                            <div className="token-select-label__badge">
-                                                <span>
-                                                    {bridge.isEvmToTon ? 'ERC20' : 'TIP3'}
-                                                </span>
-                                            </div>
                                         </div>
                                     ),
                                 }))}
@@ -110,25 +103,6 @@ export function AssetForm(): JSX.Element {
                                 value={bridge.token?.root}
                                 onChange={onChangeToken}
                             />
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
-                                            {summary.vaultBalance !== undefined
-                                                ? intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_VAULT_BALANCE_HINT',
-                                                }, {
-                                                    symbol: summary.token?.symbol,
-                                                    value: formattedAmount(
-                                                        summary.vaultBalance || 0,
-                                                        summary.vaultDecimals,
-                                                    ),
-                                                })
-                                                : <>&nbsp;</>}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
                         </div>
                     </div>
                 </fieldset>
