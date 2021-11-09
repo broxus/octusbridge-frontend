@@ -16,6 +16,10 @@ export class TransferSummary {
         return this.data.amount
     }
 
+    public get decimals(): TransferSummaryData['decimals'] {
+        return this.data.decimals
+    }
+
     public get leftAddress(): TransferSummaryData['leftAddress'] {
         return this.data.leftAddress
     }

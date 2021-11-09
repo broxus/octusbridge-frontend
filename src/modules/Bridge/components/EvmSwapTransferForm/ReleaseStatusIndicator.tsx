@@ -12,7 +12,7 @@ export function ReleaseStatusIndicator(): JSX.Element {
 
     return (
         <div className="crosschain-transfer__status">
-            <div className="crosschain-transfer__status-label">
+            <div className="crosschain-transfer__status-indicator">
                 <Observer>
                     {() => (
                         <StatusIndicator

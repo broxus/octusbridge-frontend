@@ -128,25 +128,22 @@
         flex-wrap: nowrap;
         gap: 24px;
 
-        &-label {
-            min-width: 160px;
-        }
-
-        &-note {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 12px;
+        &-indicator {
+            min-width: 170px;
         }
 
         &-control {
             padding: 8px 0;
         }
 
-        &-control-actions {
-            align-items: center;
+        &-note {
             display: flex;
+            flex-wrap: wrap;
             gap: 12px;
+            line-height: 20px;
+            &:not(:last-child) {
+                margin-bottom: 12px;
+            }
         }
 
         p {

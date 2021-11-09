@@ -58,7 +58,7 @@ export const networks: NetworkShape[] = [
 
 export const CreditBody = '5000000000'
 
-export const EmptyWalletMinTonsAmount = '5000000000'
+export const EmptyWalletMinTonsAmount = '10000000000'
 
 export const CreditFactoryAddress = new AddressLiteral('0:92190de9b79fe5640b9449aff336cf33e6270075b26fdce9f3d9be520043608a')
 
@@ -66,7 +66,9 @@ export const DepositToFactoryAddress = '0x92190de9b79fe5640b9449aff336cf33e62700
 
 export const DepositToFactoryMaxSlippage = 10
 
-export const DepositToFactoryMinSlippage = 0.5
+export const DepositToFactoryMinSlippageNumerator = '1'
+
+export const DepositToFactoryMinSlippageDenominator = '100'
 
 export const GazToStaking = '11500000000'
 

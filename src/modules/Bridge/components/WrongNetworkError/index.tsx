@@ -3,18 +3,18 @@ import { useIntl } from 'react-intl'
 
 import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
-import { useEvmWallet } from '@/stores/EvmWalletService'
+import { EvmWalletService } from '@/stores/EvmWalletService'
 import { NetworkShape } from '@/types'
 
 
 type Props = {
     network: NetworkShape;
+    wallet: EvmWalletService;
 }
 
 
-export function WrongNetworkError({ network }: Props): JSX.Element {
+export function WrongNetworkError({ network, wallet }: Props): JSX.Element {
     const intl = useIntl()
-    const wallet = useEvmWallet()
 
     const onChangeNetwork = async () => {
         await wallet.changeNetwork?.(network.chainId)

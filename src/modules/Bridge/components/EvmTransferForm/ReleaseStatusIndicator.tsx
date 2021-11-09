@@ -9,40 +9,68 @@ import { useEvmTransfer } from '@/modules/Bridge/providers'
 export function ReleaseStatusIndicator(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmTransfer()
+    const tonWallet = transfer.useTonWallet
 
     return (
         <div className="crosschain-transfer__status">
-            <div className="crosschain-transfer__status-label">
+            <div className="crosschain-transfer__status-indicator">
                 <Observer>
-                    {() => (
-                        <StatusIndicator
-                            status={transfer.eventState?.status || 'disabled'}
-                        >
-                            {(() => {
-                                switch (transfer.eventState?.status) {
-                                    case 'confirmed':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED',
-                                        })
+                    {() => {
+                        const isTonWalletReady = (
+                            !tonWallet.isInitializing
+                            && !tonWallet.isConnecting
+                            && tonWallet.isInitialized
+                            && tonWallet.isConnected
+                        )
+                        const isTransferConfirmed = transfer.transferState?.status === 'confirmed'
+                        const isPrepareConfirmed = transfer.prepareState?.status === 'confirmed'
+                        const status = transfer.eventState?.status || 'disabled'
+                        const isConfirmed = status === 'confirmed'
+                        const waitingWallet = (
+                            !isTonWalletReady
+                            && isTransferConfirmed
+                            && isPrepareConfirmed
+                            && !isConfirmed
+                        )
 
-                                    case 'pending':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
-                                        })
+                        if (waitingWallet) {
+                            return (
+                                <StatusIndicator status="pending">
+                                    {intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_STATUS_WAITING_WALLET',
+                                    })}
+                                </StatusIndicator>
+                            )
+                        }
 
-                                    case 'rejected':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED',
-                                        })
+                        return (
+                            <StatusIndicator status={status}>
+                                {(() => {
+                                    switch (status) {
+                                        case 'confirmed':
+                                            return intl.formatMessage({
+                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED',
+                                            })
 
-                                    default:
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED',
-                                        })
-                                }
-                            })()}
-                        </StatusIndicator>
-                    )}
+                                        case 'pending':
+                                            return intl.formatMessage({
+                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
+                                            })
+
+                                        case 'rejected':
+                                            return intl.formatMessage({
+                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED',
+                                            })
+
+                                        default:
+                                            return intl.formatMessage({
+                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED',
+                                            })
+                                    }
+                                })()}
+                            </StatusIndicator>
+                        )
+                    }}
                 </Observer>
             </div>
             <div className="crosschain-transfer__status-control">

@@ -22,11 +22,11 @@ export function RouteStep(): JSX.Element {
     const evmWallet = bridge.useEvmWallet
     const tonWallet = bridge.useTonWallet
 
-    const changeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
+    const onChangeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
         bridge.changeData(key, value)
     }
 
-    const changeNetwork = <K extends keyof NetworkFields>(key: K) => (value: string) => {
+    const onChangeNetwork = <K extends keyof NetworkFields>(key: K) => (value: string) => {
         const network = networks.find(({ id }) => id === value)
         bridge.changeNetwork(key, network)
     }
@@ -70,8 +70,8 @@ export function RouteStep(): JSX.Element {
                             addressFieldLabel={intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_SENDER_ADDRESS_LABEL',
                             })}
-                            changeAddress={changeAddress('leftAddress')}
-                            changeNetwork={changeNetwork('leftNetwork')}
+                            changeAddress={onChangeAddress('leftAddress')}
+                            changeNetwork={onChangeNetwork('leftNetwork')}
                             label={intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_FROM_LABEL',
                             })}
@@ -106,8 +106,8 @@ export function RouteStep(): JSX.Element {
                             addressFieldLabel={intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_RECEIVER_ADDRESS_LABEL',
                             })}
-                            changeAddress={changeAddress('rightAddress')}
-                            changeNetwork={changeNetwork('rightNetwork')}
+                            changeAddress={onChangeAddress('rightAddress')}
+                            changeNetwork={onChangeNetwork('rightNetwork')}
                             label={intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_TO_LABEL',
                             })}

@@ -3,12 +3,12 @@ import { Redirect, useParams } from 'react-router-dom'
 import { reaction } from 'mobx'
 
 import { EvmToTonSwapTransfer } from '@/modules/Bridge/stores/EvmToTonSwapTransfer'
+import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { isEvmTxHashValid } from '@/utils'
-import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
 
 
 export const EvmSwapTransferContext = React.createContext<EvmToTonSwapTransfer>(
@@ -59,6 +59,7 @@ export function EvmSwapTransferStoreProvider({ children, ...props }: Props): JSX
         const summaryDisposer = reaction(
             () => ({
                 amount: transfer.amountNumber.toFixed(),
+                decimals: transfer.decimals,
                 leftAddress: transfer.leftAddress,
                 leftNetwork: transfer.leftNetwork,
                 rightAddress: transfer.rightAddress,

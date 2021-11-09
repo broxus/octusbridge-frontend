@@ -4,44 +4,50 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
-import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { EvmWalletService } from '@/stores/EvmWalletService'
+import { TonWalletService } from '@/stores/TonWalletService'
 
 import './index.scss'
 
 
 type Props = {
     className?: string;
+    evmWallet: EvmWalletService;
+    tonWallet: TonWalletService;
 }
 
 
-export function WalletsConnectors({ className }: Props): JSX.Element {
+export function WalletsConnectors({ className, evmWallet, tonWallet }: Props): JSX.Element {
     const intl = useIntl()
-    const evmWallet = useEvmWallet()
-    const tonWallet = useTonWallet()
 
     return (
         <Observer>
             {() => (
                 <div className={classNames('wallets-connectors', className)}>
-                    <Button
-                        disabled={evmWallet.isInitializing || evmWallet.isConnecting || evmWallet.isConnected}
-                        type="primary"
-                        onClick={evmWallet.connect}
-                    >
-                        {intl.formatMessage({
-                            id: 'EVM_WALLET_CONNECT_BTN_TEXT',
-                        })}
-                    </Button>
-                    <Button
-                        disabled={tonWallet.isInitializing || tonWallet.isConnecting || tonWallet.isConnected}
-                        type="primary"
-                        onClick={tonWallet.connect}
-                    >
-                        {intl.formatMessage({
-                            id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
-                        })}
-                    </Button>
+                    {!evmWallet.isConnected && (
+                        <Button
+                            key="evm"
+                            disabled={evmWallet.isInitializing || evmWallet.isConnecting}
+                            type="secondary"
+                            onClick={evmWallet.connect}
+                        >
+                            {intl.formatMessage({
+                                id: 'EVM_WALLET_CONNECT_BTN_TEXT',
+                            })}
+                        </Button>
+                    )}
+                    {!tonWallet.isConnected && (
+                        <Button
+                            key="ton"
+                            disabled={tonWallet.isInitializing || tonWallet.isConnecting}
+                            type="secondary"
+                            onClick={tonWallet.connect}
+                        >
+                            {intl.formatMessage({
+                                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
+                            })}
+                        </Button>
+                    )}
                 </div>
             )}
         </Observer>

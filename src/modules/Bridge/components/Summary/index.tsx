@@ -4,8 +4,8 @@ import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
-import { formattedAmount } from '@/utils'
 import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
+import { formattedAmount } from '@/utils'
 
 
 export function Summary(): JSX.Element {
@@ -167,7 +167,11 @@ export function Summary(): JSX.Element {
                     <span className="text-lg text-truncate">
                         <Observer>
                             {() => (
-                                <b>{summary.amount ? formattedAmount(summary.amount) : '–'}</b>
+                                <b>
+                                    {summary.amount
+                                        ? formattedAmount(summary.amount, undefined, false)
+                                        : '–'}
+                                </b>
                             )}
                         </Observer>
                     </span>

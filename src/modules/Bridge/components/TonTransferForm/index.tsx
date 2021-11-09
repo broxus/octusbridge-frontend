@@ -10,9 +10,7 @@ export function TonTransferForm(): JSX.Element {
         <div className="card card--flat card--small crosschain-transfer">
             <div className="crosschain-transfer__statuses">
                 <PrepareStatusIndicator />
-
                 <EventStatusIndicator />
-
                 <ReleaseStatusIndicator />
             </div>
         </div>

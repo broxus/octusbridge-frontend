@@ -123,6 +123,7 @@ export function RouteForm({
                                     <WrongNetworkError
                                         key="alert"
                                         network={network}
+                                        wallet={wallet as EvmWalletService}
                                     />
                                 )}
                             </>

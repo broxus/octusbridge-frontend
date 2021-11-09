@@ -55,6 +55,7 @@ export function TonWallet(): JSX.Element | null {
                                             value: formattedAmount(
                                                 wallet.balance,
                                                 DexConstants.TONDecimals,
+                                                false,
                                             ),
                                             currency: DexConstants.TONSymbol,
                                         })}

@@ -1,17 +1,28 @@
 import {
-    addABI, decodeLogs, decodeMethod, keepNonDecodedLogs,
+    addABI,
+    decodeLogs,
+    decodeMethod,
+    keepNonDecodedLogs,
 } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 import {
-    action, IReactionDisposer, makeAutoObservable, reaction, toJS,
+    action,
+    IReactionDisposer,
+    makeAutoObservable,
+    reaction,
+    toJS,
 } from 'mobx'
 import ton, { Address, Contract } from 'ton-inpage-provider'
 
 import {
-    BridgeConstants, EthAbi, TokenAbi, TokenWallet,
+    BridgeConstants, DexConstants,
+    EthAbi,
+    TokenAbi,
+    TokenWallet,
 } from '@/misc'
 import {
+    CreditProcessorState,
     EventVoteData,
     EvmSwapTransferStoreState,
     EvmTransferQueryParams,
@@ -21,9 +32,12 @@ import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { CreditProcessorState, NetworkShape } from '@/types'
+import { NetworkShape } from '@/types'
 import {
-    debug, error, isGoodBignumber, throwException,
+    debug,
+    error,
+    isGoodBignumber,
+    throwException,
 } from '@/utils'
 
 
@@ -55,6 +69,7 @@ export class EvmToTonSwapTransfer {
     ) {
         makeAutoObservable(this, {
             broadcast: action.bound,
+            process: action.bound,
             cancel: action.bound,
             withdrawTokens: action.bound,
             withdrawWtons: action.bound,
@@ -275,9 +290,48 @@ export class EvmToTonSwapTransfer {
         }
     }
 
+    public async process(): Promise<void> {
+        if (
+            this.swapState?.isCanceling === true
+            || this.swapState?.isProcessing === true
+            || this.creditProcessorContract === undefined
+            || this.tonWallet.account?.address === undefined
+        ) {
+            return
+        }
+
+        this.changeState('swapState', {
+            ...this.swapState,
+            isProcessing: true,
+        } as EvmSwapTransferStoreState['swapState'])
+
+        try {
+            await this.creditProcessorContract.methods.process({}).send({
+                amount: '10000000',
+                bounce: false,
+                from: this.tonWallet.account.address,
+            })
+
+            this.changeState('swapState', {
+                ...this.swapState,
+                isStuck: false,
+            }as EvmSwapTransferStoreState['swapState'])
+        }
+        catch (e) {
+            error('Process error', e)
+        }
+        finally {
+            this.changeState('swapState', {
+                ...this.swapState,
+                isProcessing: false,
+            } as EvmSwapTransferStoreState['swapState'])
+        }
+    }
+
     public async cancel(): Promise<void> {
         if (
             this.swapState?.isCanceling === true
+            || this.swapState?.isProcessing === true
             || this.creditProcessorContract === undefined
             || this.tonWallet.account?.address === undefined
         ) {
@@ -296,15 +350,13 @@ export class EvmToTonSwapTransfer {
 
             await this.checkWithdrawBalances()
 
-            const balance = this.swapState?.tonBalance
-
-            const gasValue = BigNumber.max(
-                new BigNumber(creditProcessorDetails.debt).minus(balance || 0).plus('300000000'),
+            const gasAmount = BigNumber.max(
+                new BigNumber(creditProcessorDetails.debt).minus(this.swapState?.tonBalance || 0).plus('300000000'),
                 new BigNumber('100000000'),
             )
 
             await this.creditProcessorContract.methods.cancel({}).send({
-                amount: gasValue.toFixed(),
+                amount: gasAmount.toFixed(),
                 bounce: false,
                 from: this.tonWallet.account.address,
             })
@@ -355,30 +407,31 @@ export class EvmToTonSwapTransfer {
 
         const isDeployed = this.token.balance !== undefined
         const deployGrams = !isDeployed ? '100000000' : '0'
-        const gasValue = !isDeployed ? '600000000' : '500000000'
-        const amount = new BigNumber(this.swapState.tokenBalance || 0).minus('100000000').gt(gasValue)
-            ? new BigNumber('10000000')
-            : new BigNumber(gasValue || 0).minus(this.swapState.tokenBalance || 0).plus('100000000')
+        const proxyGasValue = !isDeployed ? '600000000' : '500000000'
+        const gasAmount = BigNumber.max(
+            new BigNumber(proxyGasValue || 0).plus('150000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('50000000'),
+        )
 
         try {
-            if (!isGoodBignumber(amount)) {
-                throwException(`Invalid amount: ${amount.toFixed()}`)
+            if (!isGoodBignumber(new BigNumber(this.swapState.tokenBalance || 0))) {
+                throwException(`Invalid amount: ${gasAmount.toFixed()}`)
                 return
             }
 
             this.runWithdrawTokenUpdater()
 
             await this.creditProcessorContract.methods.proxyTransferToRecipient({
-                amount_: this.swapState.tokenBalance,
+                amount_: this.swapState.tokenBalance || 0,
                 deployGrams,
                 gasBackAddress: this.tonWallet.account.address,
-                gasValue,
+                gasValue: proxyGasValue,
                 notifyReceiver: false,
                 recipient: this.tonWallet.account.address,
                 payload: '',
                 tokenWallet_: this.swapState.tokenWallet,
             }).send({
-                amount: amount.toFixed(),
+                amount: gasAmount.toFixed(),
                 bounce: false,
                 from: this.tonWallet.account.address,
             })
@@ -409,9 +462,11 @@ export class EvmToTonSwapTransfer {
             isWithdrawing: true,
         })
 
-        await this.tokensCache.syncTonToken(this.token.root)
+        await this.tokensCache.syncTonToken(DexConstants.WTONRootAddress.toString())
 
-        if (this.token.wallet === undefined) {
+        const wtonToken = this.tokensCache.get(DexConstants.WTONRootAddress.toString())
+
+        if (wtonToken?.wallet === undefined) {
             this.changeState('swapState', {
                 ...this.swapState,
                 isWithdrawing: false,
@@ -420,32 +475,34 @@ export class EvmToTonSwapTransfer {
             return
         }
 
-        const isDeployed = this.token.balance !== undefined
+        const isDeployed = wtonToken.balance !== undefined
+
         const deployGrams = !isDeployed ? '100000000' : '0'
-        const gasValue = !isDeployed ? '600000000' : '500000000'
-        const amount = new BigNumber(this.swapState.wtonBalance || 0).minus('100000000').gt(gasValue)
-            ? new BigNumber('10000000')
-            : new BigNumber(gasValue || 0).minus(this.swapState.wtonBalance || 0).plus('100000000')
+        const proxyGasValue = !isDeployed ? '600000000' : '500000000'
+        const gasAmount = BigNumber.max(
+            new BigNumber(proxyGasValue || 0).plus('150000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('50000000'),
+        )
 
         try {
-            if (!isGoodBignumber(amount)) {
-                throwException(`Invalid amount: ${amount.toFixed()}`)
+            if (!isGoodBignumber(new BigNumber(this.swapState.wtonBalance || 0))) {
+                throwException(`Invalid amount: ${this.swapState.wtonBalance}`)
                 return
             }
 
             this.runWithdrawWtonUpdater()
 
             await this.creditProcessorContract.methods.proxyTransferToRecipient({
-                amount_: this.swapState.tokenBalance,
+                amount_: this.swapState.wtonBalance || 0,
                 deployGrams,
                 gasBackAddress: this.tonWallet.account.address,
-                gasValue,
+                gasValue: proxyGasValue,
                 notifyReceiver: false,
                 recipient: this.tonWallet.account.address,
                 payload: '',
                 tokenWallet_: this.swapState.tokenWallet,
             }).send({
-                amount: amount.toFixed(),
+                amount: gasAmount.toFixed(),
                 bounce: false,
                 from: this.tonWallet.account.address,
             })
@@ -497,7 +554,7 @@ export class EvmToTonSwapTransfer {
     }
 
     protected runTransferUpdater(): void {
-        debug('runTransferUpdater', toJS(this.state))
+        debug('runTransferUpdater', toJS(this.data), toJS(this.state))
 
         this.stopTransferUpdater();
 
@@ -626,7 +683,7 @@ export class EvmToTonSwapTransfer {
     }
 
     protected runCreditProcessorUpdater(): void {
-        debug('runCreditProcessorUpdater', toJS(this.state))
+        debug('runCreditProcessorUpdater', toJS(this.data), toJS(this.state))
 
         this.stopCreditProcessorUpdater();
 
@@ -700,6 +757,7 @@ export class EvmToTonSwapTransfer {
 
                 this.changeState('swapState', {
                     ...this.swapState,
+                    isStuck: false,
                     status: isCancelled ? 'disabled' : 'pending',
                 })
 
@@ -764,9 +822,13 @@ export class EvmToTonSwapTransfer {
             }
 
             const tx = (await ton.getTransactions({ address: this.deriveEventAddress })).transactions[0]
+            this.changeState('swapState', {
+                ...this.swapState,
+                deployer: creditProcessorDetails.deployer,
+            } as EvmSwapTransferStoreState['swapState'])
             const isStuck = (
                 ((Date.now() / 1000) - tx.createdAt) >= 600
-                || creditProcessorDetails.deployer.toString().toLowerCase() === this.tonWallet.address?.toLowerCase()
+                || this.isDeployer
             ) && !isCancelled && !isProcessed
 
             if ([
@@ -783,6 +845,12 @@ export class EvmToTonSwapTransfer {
                 })
                 return
             }
+
+            this.changeState('swapState', {
+                ...this.swapState,
+                isStuck: false,
+            } as EvmSwapTransferStoreState['swapState'])
+
 
             if (this.eventState?.status === 'confirmed') {
                 this.changeState('swapState', {
@@ -1015,6 +1083,25 @@ export class EvmToTonSwapTransfer {
         }
 
         return new BigNumber(this.amount || 0).shiftedBy(-tokenVault.decimals)
+    }
+
+    public get decimals(): number | undefined {
+        if (
+            this.token === undefined
+            || this.leftNetwork?.chainId === undefined
+        ) {
+            return undefined
+        }
+
+        return this.tokensCache.getTokenVault(
+            this.token.root,
+            this.leftNetwork.chainId,
+            'credit',
+        )?.decimals
+    }
+
+    public get isDeployer(): boolean {
+        return this.swapState?.deployer?.toString().toLowerCase() === this.tonWallet.address?.toLowerCase()
     }
 
     public get isOwner(): boolean {
