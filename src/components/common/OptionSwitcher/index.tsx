@@ -1,9 +1,9 @@
 import * as React from 'react'
+import classNames from 'classnames'
 
 import { Switcher } from '@/components/common/Switcher'
 
 import './index.scss'
-import classNames from 'classnames'
 
 
 type Props = {

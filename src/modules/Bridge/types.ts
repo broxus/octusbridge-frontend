@@ -1,10 +1,9 @@
-import BigNumber from 'bignumber.js'
 import { Address, DecodedAbiFunctionInputs } from 'ton-inpage-provider'
 import { LogItem } from 'abi-decoder'
 
 import { TokenAbi } from '@/misc'
 import { TokenCache } from '@/stores/TokensCacheService'
-import { CreditProcessorState, NetworkShape } from '@/types'
+import { NetworkShape } from '@/types'
 
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
@@ -18,8 +17,6 @@ export enum CrosschainBridgeStep {
 
 export type CrosschainBridgeStoreData = {
     amount: string;
-    approvalDelta?: BigNumber;
-    balance?: string;
     depositType: 'default' | 'credit';
     leftAddress: string;
     leftNetwork?: NetworkShape;
@@ -42,6 +39,7 @@ export type CrosschainBridgeStoreState = {
     approvalStrategy: ApprovalStrategies;
     isPendingAllowance: boolean;
     isPendingApproval: boolean;
+    isProcessing: boolean;
     isSwapEnabled: boolean;
     step: CrosschainBridgeStep;
 }
@@ -92,8 +90,8 @@ export type EvmTransferStoreState = {
     };
     prepareState?: {
         errorMessage?: string;
-        isBroadcasting?: boolean;
-        isOutdated?: boolean;
+        isDeployed?: boolean;
+        isDeploying?: boolean;
         status: PrepareStateStatus;
     };
     transferState?: {
@@ -101,14 +99,24 @@ export type EvmTransferStoreState = {
         errorMessage?: string;
         eventBlocksToConfirm: number;
         status: TransferStateStatus;
-    },
+    };
 }
 
 export type EvmSwapTransferStoreState = {
     creditProcessorState?: CreditProcessorState;
+    eventState?: EvmTransferStoreState['eventState'];
+    prepareState?: {
+        errorMessage?: string;
+        isBroadcasting?: boolean;
+        isOutdated?: boolean;
+        status: PrepareStateStatus;
+    };
+    transferState?: EvmTransferStoreState['transferState'];
     swapState?: {
+        deployer?: Address;
         errorMessage?: string;
         isCanceling?: boolean;
+        isProcessing?: boolean;
         isStuck?: boolean;
         isWithdrawing?: boolean;
         owner?: Address;
@@ -118,8 +126,8 @@ export type EvmSwapTransferStoreState = {
         tonBalance?: string;
         wtonBalance?: string;
         wtonWallet?: Address;
-    }
-} & EvmTransferStoreState
+    };
+}
 
 export type TonTransferQueryParams = {
     contractAddress: string;
@@ -142,21 +150,48 @@ export type TonTransferStoreData = {
 export type TonTransferStoreState = {
     isContractDeployed: boolean;
     eventState?: {
-        status: EventStateStatus;
         confirmations: number;
+        errorMessage?: string;
         requiredConfirmations: number;
+        status: EventStateStatus;
     };
-    prepareState?: PrepareStateStatus;
-    releaseState?: ReleaseStateStatus;
+    prepareState?: {
+        errorMessage?: string;
+        status: PrepareStateStatus;
+    };
+    releaseState?: {
+        errorMessage?: string;
+        isReleased?: boolean;
+        status: ReleaseStateStatus;
+    };
 }
 
 export type TransferSummaryData = {
     amount?: string;
+    decimals?: number;
     leftAddress?: string;
     leftNetwork?: NetworkShape;
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     token?: TokenCache;
+}
+
+export enum CreditProcessorState {
+    Created,
+    EventNotDeployed,
+    EventDeployInProgress,
+    EventConfirmed,
+    EventRejected,
+    CheckingAmount,
+    CalculateSwap,
+    SwapInProgress,
+    SwapFailed,
+    SwapUnknown,
+    UnwrapInProgress,
+    UnwrapFailed,
+    ProcessRequiresGas,
+    Processed,
+    Cancelled,
 }
 
 

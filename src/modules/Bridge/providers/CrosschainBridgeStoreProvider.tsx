@@ -58,6 +58,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
         const summaryDisposer = reaction(
             () => ({
                 amount: bridge.amount,
+                decimals: bridge.decimals,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
                 rightAddress: bridge.rightAddress,

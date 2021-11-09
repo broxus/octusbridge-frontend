@@ -6,23 +6,6 @@ export type NetworkShape = {
     label: string;
     name: string;
     rpcUrl: string;
+    tokenType?: string;
     type: string;
-}
-
-export enum CreditProcessorState {
-    Created,
-    EventNotDeployed,
-    EventDeployInProgress,
-    EventConfirmed,
-    EventRejected,
-    CheckingAmount,
-    CalculateSwap,
-    SwapInProgress,
-    SwapFailed,
-    SwapUnknown,
-    UnwrapInProgress,
-    UnwrapFailed,
-    ProcessRequiresGas,
-    Processed,
-    Cancelled,
 }

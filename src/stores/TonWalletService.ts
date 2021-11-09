@@ -30,6 +30,7 @@ export type WalletState = {
     isConnecting: boolean;
     isInitialized: boolean;
     isInitializing: boolean;
+    isUpdatingContract: boolean;
 }
 
 
@@ -45,6 +46,7 @@ const DEFAULT_WALLET_STATE: WalletState = {
     isConnecting: false,
     isInitialized: false,
     isInitializing: false,
+    isUpdatingContract: false,
 }
 
 
@@ -226,6 +228,14 @@ export class TonWalletService {
     }
 
     /**
+     * Returns `true` if wallet contract is updating
+     * @returns {boolean}
+     */
+    public get isUpdatingContract(): WalletState['isUpdatingContract'] {
+        return this.state.isUpdatingContract
+    }
+
+    /**
      * Returns computed account
      * @returns {WalletData['account']}
      */
@@ -340,6 +350,10 @@ export class TonWalletService {
             return
         }
 
+        runInAction(() => {
+            this.state.isUpdatingContract = true
+        })
+
         try {
             const { state } = await ton.getFullContractState({
                 address: account.address,
@@ -350,7 +364,12 @@ export class TonWalletService {
             })
         }
         catch (e) {
-            error(e)
+            error('Get account full contract state error', e)
+        }
+        finally {
+            runInAction(() => {
+                this.state.isUpdatingContract = false
+            })
         }
 
         try {

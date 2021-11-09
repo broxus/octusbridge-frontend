@@ -1,15 +1,20 @@
+import BigNumber from 'bignumber.js'
+
 import {
     CreditBody,
     CreditFactoryAddress,
     DepositToFactoryAddress,
     DepositToFactoryMaxSlippage,
-    DepositToFactoryMinSlippage, EmptyWalletMinTonsAmount,
+    DepositToFactoryMinSlippageDenominator,
+    DepositToFactoryMinSlippageNumerator,
+    EmptyWalletMinTonsAmount,
     StakingAccountAddress,
     TokenAssetsURI,
     TokenListURI,
 } from '@/config'
 
 export class BridgeConstants {
+
     static CreditBody = CreditBody
 
     static EmptyWalletMinTonsAmount = EmptyWalletMinTonsAmount
@@ -18,9 +23,14 @@ export class BridgeConstants {
 
     static DepositToFactoryAddress = DepositToFactoryAddress
 
+    static DepositToFactoryMinSlippageNumerator = DepositToFactoryMinSlippageNumerator
+
+    static DepositToFactoryMinSlippageDenominator = DepositToFactoryMinSlippageDenominator
+
     static DepositToFactoryMaxSlippage = DepositToFactoryMaxSlippage
 
-    static DepositToFactoryMinSlippage = DepositToFactoryMinSlippage
+    // eslint-disable-next-line max-len
+    static DepositToFactoryMinSlippage = new BigNumber(DepositToFactoryMinSlippageNumerator).div(DepositToFactoryMinSlippageDenominator).toFixed()
 
     static StakingAccountAddress = StakingAccountAddress
 

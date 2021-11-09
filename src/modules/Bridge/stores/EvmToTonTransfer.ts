@@ -5,7 +5,9 @@ import {
     keepNonDecodedLogs,
 } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
-import { IReactionDisposer, makeAutoObservable, reaction } from 'mobx'
+import {
+    IReactionDisposer, makeAutoObservable, reaction, toJS,
+} from 'mobx'
 import ton, { Address, Contract } from 'ton-inpage-provider'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
@@ -18,10 +20,10 @@ import {
 } from '@/modules/Bridge/types'
 import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TokensCacheService } from '@/stores/TokensCacheService'
+import { TokenAssetVault, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { NetworkShape } from '@/types'
-import { error } from '@/utils'
+import { debug, error } from '@/utils'
 
 
 export class EvmToTonTransfer {
@@ -55,59 +57,25 @@ export class EvmToTonTransfer {
             return
         }
 
-        this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async value => {
-            if (
-                this.evmWallet.isConnected
-                && this.tonWallet.isConnected
-                && value === this.leftNetwork?.chainId
-            ) {
-                await this.resolve()
-            }
-        })
-
         this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
-            if (
-                isConnected
-                && this.tonWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
-                await this.resolve()
-            }
-        })
-
-        this.#tonWalletDisposer = reaction(() => this.tonWallet.isConnected, async isConnected => {
-            if (
-                isConnected
-                && this.evmWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
+            if (isConnected) {
                 await this.resolve()
             }
         })
 
         this.#tokensDisposer = reaction(() => this.tokensCache.tokens, async () => {
-            if (
-                this.evmWallet.isConnected
-                && this.tonWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
+            if (this.evmWallet.isConnected) {
                 await this.resolve()
             }
         })
 
-        if (
-            this.evmWallet.isConnected
-            && this.tonWallet.isConnected
-            && this.evmWallet.chainId === this.leftNetwork?.chainId
-        ) {
+        if (this.evmWallet.isConnected) {
             await this.resolve()
         }
     }
 
     public dispose(): void {
-        this.#chainIdDisposer?.()
         this.#evmWalletDisposer?.()
-        this.#tonWalletDisposer?.()
         this.#tokensDisposer?.()
         this.stopTransferUpdater()
         this.stopPrepareUpdater()
@@ -139,11 +107,11 @@ export class EvmToTonTransfer {
             return
         }
 
-        this.state.transferState = {
-            confirmedBlocksCount: this.state.transferState?.confirmedBlocksCount || 0,
-            eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
+        this.changeState('transferState', {
+            confirmedBlocksCount: this.transferState?.confirmedBlocksCount || 0,
+            eventBlocksToConfirm: this.transferState?.eventBlocksToConfirm || 0,
             status: 'pending',
-        }
+        })
 
         try {
             const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
@@ -222,7 +190,49 @@ export class EvmToTonTransfer {
         }
     }
 
+    public async prepare(): Promise<void> {
+        if (this.tonWallet.account?.address === undefined || this.data.ethConfigAddress === undefined) {
+            return
+        }
+
+        const ethConfigContract = new Contract(
+            TokenAbi.EthEventConfig,
+            this.data.ethConfigAddress,
+        )
+
+        this.changeState('prepareState', {
+            ...this.prepareState,
+            isDeploying: true,
+            status: 'pending',
+        })
+
+        try {
+            await ethConfigContract.methods.deployEvent({
+                eventVoteData: this.data.eventVoteData!,
+            }).send({
+                amount: '6000000000',
+                bounce: true,
+                from: this.tonWallet.account.address,
+            })
+        }
+        catch (e: any) {
+            error('Prepare error', e)
+            this.changeState('prepareState', {
+                ...this.prepareState,
+                status: 'disabled',
+            })
+        }
+        finally {
+            this.changeState('prepareState', {
+                ...this.prepareState,
+                isDeploying: false,
+            } as EvmTransferStoreState['prepareState'])
+        }
+    }
+
     protected runTransferUpdater(): void {
+        debug('runTransferUpdater', toJS(this.data), toJS(this.state))
+
         this.stopTransferUpdater();
 
         (async () => {
@@ -233,7 +243,7 @@ export class EvmToTonTransfer {
             const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
             const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
 
-            if (txReceipt.blockNumber == null || networkBlockNumber == null) {
+            if (txReceipt?.blockNumber == null || networkBlockNumber == null) {
                 this.changeState('transferState', {
                     confirmedBlocksCount: 0,
                     eventBlocksToConfirm: this.transferState?.eventBlocksToConfirm || 0,
@@ -326,53 +336,44 @@ export class EvmToTonTransfer {
         }
     }
 
-    public async prepare(): Promise<void> {
-        if (this.tonWallet.account?.address === undefined || this.data.ethConfigAddress === undefined) {
-            return
-        }
-
-        const ethConfig = new Contract(
-            TokenAbi.EthEventConfig,
-            this.data.ethConfigAddress,
-        )
-
-        this.changeState('prepareState', {
-            status: 'pending',
-        })
-
-        try {
-            await ethConfig.methods.deployEvent({
-                eventVoteData: this.data.eventVoteData!,
-            }).send({
-                amount: '6000000000',
-                bounce: true,
-                from: this.tonWallet.account.address,
-            })
-        }
-        catch (e: any) {
-            error('Prepare error', e)
-            this.changeState('prepareState', {
-                status: 'disabled',
-            })
-        }
-    }
-
     protected runPrepareUpdater(): void {
+        debug('runPrepareUpdater', toJS(this.data), toJS(this.state))
+
         this.stopPrepareUpdater();
 
         (async () => {
-            if (this.data.deriveEventAddress === undefined) {
+            if (this.prepareState?.isDeploying === true) {
+                return
+            }
+
+            if (this.deriveEventAddress === undefined) {
                 if (this.prepareState?.status !== 'pending') {
                     this.changeState('prepareState', this.prepareState)
                 }
                 return
             }
 
+            const isFirstIteration = this.prepareState?.isDeployed === undefined
+
+            if (isFirstIteration) {
+                this.changeState('prepareState', {
+                    ...this.prepareState,
+                    status: 'pending',
+                })
+            }
+
             const cachedState = (await ton.getFullContractState({
-                address: this.data.deriveEventAddress,
+                address: this.deriveEventAddress,
             })).state
 
             if (cachedState === undefined || !cachedState?.isDeployed) {
+                if (isFirstIteration) {
+                    this.changeState('prepareState', {
+                        ...this.prepareState,
+                        isDeployed: false,
+                        status: 'disabled',
+                    })
+                }
                 if (this.prepareState?.status !== 'pending') {
                     this.changeState('prepareState', this.prepareState)
                 }
@@ -381,7 +382,7 @@ export class EvmToTonTransfer {
 
             const eventContract = new Contract(
                 TokenAbi.TokenTransferEthEvent,
-                this.data.deriveEventAddress,
+                this.deriveEventAddress,
             )
             const eventDetails = await eventContract.methods.getDetails({
                 answerId: 0,
@@ -403,9 +404,12 @@ export class EvmToTonTransfer {
 
             if (this.prepareState?.status !== 'confirmed') {
                 this.changeState('prepareState', {
+                    ...this.prepareState,
+                    isDeployed: true,
                     status: 'confirmed',
                 })
             }
+
             this.changeState('eventState', eventState)
         })().finally(() => {
             if (
@@ -446,16 +450,16 @@ export class EvmToTonTransfer {
         return this.data.token
     }
 
-    public get transferState(): EvmTransferStoreState['transferState'] {
-        return this.state.transferState
+    public get eventState(): EvmTransferStoreState['eventState'] {
+        return this.state.eventState
     }
 
     public get prepareState(): EvmTransferStoreState['prepareState'] {
         return this.state.prepareState
     }
 
-    public get eventState(): EvmTransferStoreState['eventState'] {
-        return this.state.eventState
+    public get transferState(): EvmTransferStoreState['transferState'] {
+        return this.state.transferState
     }
 
     public get amountNumber(): BigNumber {
@@ -463,17 +467,15 @@ export class EvmToTonTransfer {
             return new BigNumber(0)
         }
 
-        const tokenVault = this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
-
-        if (tokenVault?.decimals === undefined) {
+        if (this.tokenVault?.decimals === undefined) {
             return new BigNumber(0)
         }
 
-        return new BigNumber(this.amount || 0).shiftedBy(-tokenVault.decimals)
+        return new BigNumber(this.amount || 0).shiftedBy(-this.tokenVault.decimals)
     }
 
-    public get depositType(): string {
-        return this.params?.depositType || 'default'
+    public get decimals(): number | undefined {
+        return this.tokenVault?.decimals
     }
 
     public get leftNetwork(): NetworkShape | undefined {
@@ -494,6 +496,13 @@ export class EvmToTonTransfer {
         return this.params?.txHash
     }
 
+    protected get tokenVault(): TokenAssetVault | undefined {
+        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
+    }
+
     public get useEvmWallet(): EvmWalletService {
         return this.evmWallet
     }
@@ -506,11 +515,7 @@ export class EvmToTonTransfer {
         return this.tokensCache
     }
 
-    #chainIdDisposer: IReactionDisposer | undefined
-
     #evmWalletDisposer: IReactionDisposer | undefined
-
-    #tonWalletDisposer: IReactionDisposer | undefined
 
     #tokensDisposer: IReactionDisposer | undefined
 

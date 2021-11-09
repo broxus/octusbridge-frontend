@@ -146,7 +146,7 @@ export class TokensCacheService {
                 root: token.address,
                 symbol: token.symbol,
                 updatedAt: -1,
-                vaults: vaults || [],
+                vaults: vaults?.map(vault => ({ balance: undefined, ...vault })) || [],
             }
         })
     }

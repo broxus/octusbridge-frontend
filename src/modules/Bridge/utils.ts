@@ -5,7 +5,7 @@ import { DexConstants } from '@/misc'
 import { NetworkShape } from '@/types'
 
 
-export function amountWithSlippage(amount: BigNumber, slippage: number): string {
+export function amountWithSlippage(amount: BigNumber, slippage: number | string): string {
     return amount.times(100)
         .div(new BigNumber(100).minus(slippage))
         .shiftedBy(DexConstants.TONDecimals)

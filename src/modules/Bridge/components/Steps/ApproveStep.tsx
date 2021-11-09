@@ -3,10 +3,10 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
+import { Icon } from '@/components/common/Icon'
 import { ApproveForm } from '@/modules/Bridge/components/ApproveForm'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
-import { Icon } from '@/components/common/Icon'
 
 
 export function ApproveStep(): JSX.Element {
@@ -14,7 +14,7 @@ export function ApproveStep(): JSX.Element {
     const bridge = useBridge()
 
     const nextStep = async () => {
-        await bridge.approve()
+        await bridge.approveAmount()
     }
 
     const prevStep = () => {

@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl'
 import { SimpleRadio } from '@/components/common/SimpleRadio'
 import { useBridge } from '@/modules/Bridge/providers'
 import { ApprovalStrategies } from '@/modules/Bridge/types'
+import { formattedAmount } from '@/utils'
 
 
 export function ApproveForm(): JSX.Element {
@@ -43,7 +44,6 @@ export function ApproveForm(): JSX.Element {
                                 )}
                             </Observer>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
@@ -58,7 +58,7 @@ export function ApproveForm(): JSX.Element {
                                         label={intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL',
                                         }, {
-                                            amount: bridge.amount,
+                                            amount: formattedAmount(bridge.amount, undefined, false),
                                             symbol: bridge.token?.symbol || '',
                                         })}
                                         name="fixed"
@@ -67,7 +67,6 @@ export function ApproveForm(): JSX.Element {
                                 )}
                             </Observer>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                 </fieldset>
             </form>

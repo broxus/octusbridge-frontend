@@ -3,12 +3,12 @@ import { Redirect, useParams } from 'react-router-dom'
 import { reaction } from 'mobx'
 
 import { TonToEvmTransfer } from '@/modules/Bridge/stores/TonToEvmTransfer'
+import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
 import { TonTransferQueryParams } from '@/modules/Bridge/types'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 import { isTonAddressValid } from '@/utils/is-ton-address-valid'
-import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
 
 
 export const TonTransferContext = React.createContext<TonToEvmTransfer>(
@@ -59,6 +59,7 @@ export function TonTransferStoreProvider({ children, ...props }: Props): JSX.Ele
         const summaryDisposer = reaction(
             () => ({
                 amount: transfer.amountNumber.toFixed(),
+                decimals: transfer.token?.decimals,
                 leftAddress: transfer.leftAddress,
                 leftNetwork: transfer.leftNetwork,
                 rightAddress: transfer.rightAddress,
