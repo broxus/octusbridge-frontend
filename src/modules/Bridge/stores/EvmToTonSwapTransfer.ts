@@ -992,13 +992,13 @@ export class EvmToTonSwapTransfer {
                 { state: creditState },
                 wtonBalance,
             ] = await Promise.all([
-                await TokenWallet.balance({
+                TokenWallet.balance({
                     wallet: creditProcessorDetails.tokenWallet,
                 }),
-                await ton.getFullContractState({
+                ton.getFullContractState({
                     address: this.creditProcessorAddress,
                 }),
-                await TokenWallet.balance({
+                TokenWallet.balance({
                     wallet: creditProcessorDetails.wtonWallet,
                 }),
             ])

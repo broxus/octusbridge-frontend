@@ -425,9 +425,6 @@ export class TokensCacheService {
                 this.syncEvmTokenVaultBalance(root, chainId),
                 this.syncEvmTokenVaultWrapper(root, chainId),
             ])
-            // await this.syncEvmTokenDecimals(root, chainId)
-            // await this.syncEvmTokenBalance(root, chainId)
-            // await this.syncEvmTokenVaultWrapper(root, chainId)
         }
         catch (e) {
             error(e)

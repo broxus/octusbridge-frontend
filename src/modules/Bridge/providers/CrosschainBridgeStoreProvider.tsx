@@ -59,6 +59,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
             () => ({
                 amount: bridge.amount,
                 decimals: bridge.decimals,
+                fee: bridge.fee,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
                 rightAddress: bridge.rightAddress,

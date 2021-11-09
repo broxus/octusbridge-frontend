@@ -199,8 +199,8 @@ export class TonToEvmTransfer {
         const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
 
         const [eventDetails, eventData] = await Promise.all([
-            await eventContract.methods.getDetails({ answerId: 0 }).call(),
-            await eventContract.methods.getDecodedData({ answerId: 0 }).call(),
+            eventContract.methods.getDetails({ answerId: 0 }).call(),
+            eventContract.methods.getDecodedData({ answerId: 0 }).call(),
         ])
 
         const proxyAddress = eventDetails._initializer

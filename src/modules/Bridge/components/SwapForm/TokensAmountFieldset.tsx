@@ -4,7 +4,13 @@ import { useIntl } from 'react-intl'
 
 import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { useBridge } from '@/modules/Bridge/providers'
-import { debounce, formattedAmount } from '@/utils'
+import {
+    debounce,
+    formattedAmount,
+    isGoodBignumber,
+    validateMaxValue,
+    validateMinValue,
+} from '@/utils'
 
 
 export function TokensAmountFieldset(): JSX.Element {
@@ -45,21 +51,67 @@ export function TokensAmountFieldset(): JSX.Element {
                     </Observer>
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
-                            {() => (
-                                <>
-                                    {bridge.minReceiveTokens !== undefined
-                                        ? intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT',
-                                        }, {
-                                            symbol: bridge.token?.symbol || '',
-                                            value: formattedAmount(
-                                                bridge.minReceiveTokens || 0,
-                                                bridge.token?.decimals,
-                                            ),
-                                        })
-                                        : <>&nbsp;</>}
-                                </>
-                            )}
+                            {() => {
+                                const isMinValueValid = (
+                                    bridge.tokensAmount
+                                    && isGoodBignumber(bridge.tokensAmountNumber, false)
+                                )
+                                    ? validateMinValue('0', bridge.tokensAmount, bridge.decimals)
+                                    : isGoodBignumber(bridge.tokensAmountNumber, false)
+
+                                const isMaxValueValid = validateMaxValue(
+                                    bridge.maxTokensAmount,
+                                    bridge.tokensAmount,
+                                    bridge.decimals,
+                                )
+
+                                switch (true) {
+                                    case !isMinValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TOKENS_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol,
+                                                    value: formattedAmount(0, bridge.decimals),
+                                                })}
+                                            </span>
+                                        )
+
+                                    case !isMaxValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TOKENS_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.maxTokensAmount || 0,
+                                                        bridge.decimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
+
+                                    case bridge.minReceiveTokens !== undefined:
+                                        return (
+                                            <>
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol || '',
+                                                    value: formattedAmount(
+                                                        bridge.minReceiveTokens || 0,
+                                                        bridge.token?.decimals,
+                                                    ),
+                                                })}
+                                            </>
+                                        )
+
+                                    default:
+                                        return <>&nbsp;</>
+                                }
+                            }}
                         </Observer>
                     </div>
                 </div>

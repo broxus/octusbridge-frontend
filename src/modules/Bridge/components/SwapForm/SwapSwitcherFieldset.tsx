@@ -15,11 +15,12 @@ export function SwapSwitcherFieldset(): JSX.Element {
     const bridge = useBridge()
     const tonWallet = bridge.useTonWallet
 
-    const onSwitch = () => {
+    const onSwitch = async () => {
         if (bridge.isInsufficientTonBalance) {
             return
         }
         bridge.changeState('isSwapEnabled', !bridge.isSwapEnabled)
+        await bridge.onSwapToggle()
     }
 
     return (

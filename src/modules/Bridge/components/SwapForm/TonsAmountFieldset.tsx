@@ -6,7 +6,13 @@ import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { Icon } from '@/components/common/Icon'
 import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
-import { debounce } from '@/utils'
+import {
+    debounce,
+    formattedAmount,
+    isGoodBignumber,
+    validateMaxValue,
+    validateMinValue,
+} from '@/utils'
 
 
 export function TonsAmountFieldset(): JSX.Element {
@@ -51,6 +57,69 @@ export function TonsAmountFieldset(): JSX.Element {
                             />
                         )}
                     </Observer>
+                    <div className="crosschain-transfer__control-hint">
+                        <Observer>
+                            {() => {
+                                let isMinValueValid = isGoodBignumber(bridge.tokensAmountNumber, false)
+
+                                if (bridge.isInsufficientTonBalance) {
+                                    isMinValueValid = validateMinValue(
+                                        bridge.minTonsAmount,
+                                        bridge.tonsAmount,
+                                        DexConstants.TONDecimals,
+                                    )
+                                }
+                                else if (bridge.tonsAmount && isGoodBignumber(bridge.tonsAmountNumber, false)) {
+                                    isMinValueValid = validateMinValue(
+                                        '0',
+                                        bridge.tonsAmount,
+                                        DexConstants.TONDecimals,
+                                    )
+                                }
+
+                                const isMaxValueValid = validateMaxValue(
+                                    bridge.maxTonsAmount,
+                                    bridge.tonsAmount,
+                                    DexConstants.TONDecimals,
+                                )
+
+                                switch (true) {
+                                    case !isMinValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: DexConstants.TONSymbol,
+                                                    value: formattedAmount(
+                                                        bridge.minTonsAmount || 0,
+                                                        DexConstants.TONDecimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
+
+                                    case !isMaxValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: DexConstants.TONSymbol,
+                                                    value: formattedAmount(
+                                                        bridge.maxTonsAmount || 0,
+                                                        DexConstants.TONDecimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
+
+                                    default:
+                                        return <>&nbsp;</>
+                                }
+                            }}
+                        </Observer>
+                    </div>
                 </div>
             </div>
         </fieldset>

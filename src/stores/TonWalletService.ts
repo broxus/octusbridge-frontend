@@ -87,9 +87,9 @@ export class TonWalletService {
         })
 
         reaction(
-            () => this.data.contract,
-            contract => {
-                this.data.balance = contract?.balance || '0'
+            () => this.data.contract?.balance,
+            balance => {
+                this.data.balance = balance || '0'
             },
         )
 
@@ -361,6 +361,7 @@ export class TonWalletService {
 
             runInAction(() => {
                 this.data.contract = state
+                this.state.isUpdatingContract = false
             })
         }
         catch (e) {

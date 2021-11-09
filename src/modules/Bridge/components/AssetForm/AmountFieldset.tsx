@@ -70,61 +70,58 @@ export function AmountFieldset(): JSX.Element {
                     </Observer>
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
-                            {() => (
-                                <>
-                                    {(() => {
-                                        let isMinValueValid = true
-                                        if (
-                                            bridge.isSwapEnabled
-                                                    && isGoodBignumber(bridge.amountNumber)
-                                        ) {
-                                            isMinValueValid = validateMinValue(
-                                                bridge.minAmount,
-                                                bridge.amount,
-                                                bridge.decimals,
-                                            )
-                                        }
-                                        const isMaxValueValid = bridge.amount.length > 0
-                                            ? validateMaxValue(
-                                                bridge.balance || '0',
-                                                bridge.amount,
-                                                bridge.decimals,
-                                            )
-                                            : true
+                            {() => {
+                                let isMinValueValid = true
+                                if (bridge.isSwapEnabled && isGoodBignumber(bridge.amountNumber)) {
+                                    isMinValueValid = validateMinValue(
+                                        bridge.minAmount,
+                                        bridge.amount,
+                                        bridge.decimals,
+                                    )
+                                }
+                                const isMaxValueValid = bridge.amount.length > 0
+                                    ? validateMaxValue(
+                                        bridge.balance || '0',
+                                        bridge.amount,
+                                        bridge.decimals,
+                                    )
+                                    : true
 
-                                        switch (true) {
-                                            case !isMinValueValid:
-                                                return (
-                                                    <span className="text-danger">
-                                                        {intl.formatMessage({
-                                                            id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_AMOUNT_HINT',
-                                                        }, {
-                                                            symbol: bridge.token?.symbol,
-                                                            value: formattedAmount(
-                                                                bridge.minAmount || 0,
-                                                                bridge.decimals,
-                                                            ),
-                                                        })}
-                                                    </span>
-                                                )
+                                switch (true) {
+                                    case !isMinValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.minAmount || 0,
+                                                        bridge.decimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
 
-                                            case !isMaxValueValid:
-                                                return (
-                                                    <span className="text-danger">
-                                                        {intl.formatMessage({
-                                                            id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT',
-                                                        }, {
-                                                            symbol: bridge.token?.symbol,
-                                                            value: formattedAmount(
-                                                                bridge.balance || 0,
-                                                                bridge.decimals,
-                                                            ),
-                                                        })}
-                                                    </span>
-                                                )
+                                    case !isMaxValueValid:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.balance || 0,
+                                                        bridge.decimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
 
-                                            case bridge.token !== undefined:
-                                                return intl.formatMessage({
+                                    case bridge.token !== undefined:
+                                        return (
+                                            <>
+                                                {intl.formatMessage({
                                                     id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_BALANCE_HINT',
                                                 }, {
                                                     symbol: bridge.token?.symbol,
@@ -132,14 +129,14 @@ export function AmountFieldset(): JSX.Element {
                                                         bridge.balance || 0,
                                                         bridge.decimals,
                                                     ),
-                                                })
+                                                })}
+                                            </>
+                                        )
 
-                                            default:
-                                                return <>&nbsp;</>
-                                        }
-                                    })()}
-                                </>
-                            )}
+                                    default:
+                                        return <>&nbsp;</>
+                                }
+                            }}
                         </Observer>
                     </div>
                 </div>

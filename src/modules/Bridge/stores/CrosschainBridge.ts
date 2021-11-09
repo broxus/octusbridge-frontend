@@ -34,6 +34,7 @@ import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokenAssetVault, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import {
+    debug,
     error,
     isGoodBignumber,
     throwException,
@@ -67,13 +68,11 @@ export class CrosschainBridge {
             CrosschainBridge,
             | 'handleChangeToken'
             | 'handleEvmWalletConnection'
-            | 'handleSwapToggle'
             | 'handleTonWalletConnection'
             | 'handleTonWalletBalance'
         >(this, {
             handleChangeToken: action.bound,
             handleEvmWalletConnection: action.bound,
-            handleSwapToggle: action.bound,
             handleTonWalletConnection: action.bound,
             handleTonWalletBalance: action.bound,
         })
@@ -156,7 +155,6 @@ export class CrosschainBridge {
      */
     public init(): void {
         this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, this.handleEvmWalletConnection)
-        this.#swapDisposer = reaction(() => this.state.isSwapEnabled, this.handleSwapToggle)
         this.#tokenDisposer = reaction(() => this.data.selectedToken, this.handleChangeToken)
         this.#tonWalletDisposer = reaction(() => this.tonWallet.isConnected, this.handleTonWalletConnection)
         this.#tonWalletBalanceDisposer = reaction(() => this.tonWallet.balance, this.handleTonWalletBalance)
@@ -167,7 +165,6 @@ export class CrosschainBridge {
      * Reset all data to their defaults.
      */
     public dispose(): void {
-        this.#swapDisposer?.()
         this.#evmWalletDisposer?.()
         this.#tonWalletDisposer?.()
         this.#tonWalletBalanceDisposer?.()
@@ -472,61 +469,37 @@ export class CrosschainBridge {
     }
 
     /**
-     *
+     * Recalculate
      */
     public async onChangeAmount(): Promise<void> {
         if (
             !this.isSwapEnabled
             || this.pairContract === undefined
             || this.token === undefined
-            // || !this.isAmountValid
         ) {
             return
         }
 
-        await this.syncMaxTonsAmount()
-        await this.syncMaxTokensAmount()
-
-        if (this.tokensAmount && new BigNumber(this.tokensAmount).isZero()) {
-            await this.onChangeTokensAmount()
-            return
-        }
-
         try {
-            if (!this.amount) {
+            await this.syncMaxTonsAmount()
+
+            if (!this.amount || this.amountNumber.isZero()) {
                 this.changeData('minReceiveTokens', '')
                 this.changeData('maxTokensAmount', '')
                 this.changeData('tokensAmount', '')
-                this.changeData('tonsAmount', this.isInsufficientTonBalance ? emptyWalletMinTonsAmount.toFixed() : '')
+                this.changeData(
+                    'tonsAmount',
+                    this.isInsufficientTonBalance
+                        ? emptyWalletMinTonsAmount.toFixed()
+                        : this.tonsAmount,
+                )
                 return
             }
 
-            const shiftedAmount = this.amountNumber.shiftedBy(this.token.decimals)
-
-            const [r1, r2] = await Promise.all([
-                this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
-                    receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), maxSlippage),
-                    receive_token_root: DexConstants.WTONRootAddress,
-                }).call(),
-                this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
-                    receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), minSlippage),
-                    receive_token_root: DexConstants.WTONRootAddress,
-                }).call(),
+            await Promise.all([
+                this.syncMinReceiveTokens(),
+                this.syncTokensAmount(),
             ])
-
-            const minTokensAmountBN = shiftedAmount.minus(r1.expected_amount || 0)
-
-            if (isGoodBignumber(minTokensAmountBN)) {
-                this.changeData('minReceiveTokens', minTokensAmountBN.toFixed())
-            }
-
-            const tokensAmountBN = shiftedAmount.minus(r2.expected_amount || 0)
-
-            if (isGoodBignumber(tokensAmountBN)) {
-                this.changeData('tokensAmount', tokensAmountBN.shiftedBy(-this.token.decimals).toFixed())
-            }
         }
         catch (e) {
             error('Change amount recalculate error', e)
@@ -541,7 +514,6 @@ export class CrosschainBridge {
             !this.isSwapEnabled
             || this.pairContract === undefined
             || this.token === undefined
-            // || !this.isTokensAmountValid
         ) {
             return
         }
@@ -551,9 +523,7 @@ export class CrosschainBridge {
                 expected_amount: maxTotalTonsAmount,
             } = await this.pairContract.methods.expectedExchange({
                 _answer_id: 0,
-                amount: this.amountNumber
-                    .shiftedBy(this.token.decimals)
-                    .toFixed(),
+                amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                 spent_token_root: new Address(this.token.root),
             }).call()
 
@@ -649,7 +619,6 @@ export class CrosschainBridge {
             !this.isSwapEnabled
             || this.pairContract === undefined
             || this.token === undefined
-            // || !this.isTonsAmountValid
         ) {
             return
         }
@@ -707,6 +676,30 @@ export class CrosschainBridge {
 
     /**
      *
+     * @protected
+     */
+    public async onSwapToggle(): Promise<void> {
+        if (!this.isSwapEnabled) {
+            this.changeData('depositType', 'default')
+            this.changeData('tokensAmount', '')
+            this.changeData('tonsAmount', '')
+            return
+        }
+
+        this.changeData('depositType', 'credit')
+
+        this.checkSwapCredit()
+        this.checkMinTons()
+
+        await this.syncToken()
+
+        if (isGoodBignumber(this.amountNumber)) {
+            await this.onChangeAmount()
+        }
+    }
+
+    /**
+     *
      */
     public resetAsset(): void {
         this.data = {
@@ -738,6 +731,8 @@ export class CrosschainBridge {
      * @protected
      */
     protected async handleChangeToken(selectedToken?: string): Promise<void> {
+        debug('handleChangeToken')
+
         if (selectedToken === undefined) {
             return
         }
@@ -760,35 +755,12 @@ export class CrosschainBridge {
 
     /**
      *
-     * @param enabled
-     * @protected
-     */
-    protected async handleSwapToggle(enabled?: boolean): Promise<void> {
-        if (!enabled) {
-            this.changeData('depositType', 'default')
-            this.changeData('tokensAmount', '')
-            this.changeData('tonsAmount', '')
-            return
-        }
-
-        this.changeData('depositType', 'credit')
-
-        this.checkSwapCredit()
-        this.checkMinTons()
-
-        await this.syncToken()
-
-        if (isGoodBignumber(this.amountNumber)) {
-            await this.onChangeAmount()
-        }
-    }
-
-    /**
-     *
      * @param connected
      * @protected
      */
     protected handleEvmWalletConnection(connected?: boolean): void {
+        debug('handleEvmWalletConnection')
+
         if (this.state.isProcessing) {
             return
         }
@@ -801,17 +773,17 @@ export class CrosschainBridge {
                 this.changeData('rightAddress', this.evmWallet.address || '')
             }
         }
-        // else if (this.leftNetwork?.type === 'evm') {
-        //     this.changeData('amount', '')
-        //     this.changeData('leftAddress', '')
-        //     this.changeData('leftNetwork', undefined)
-        //     this.changeData('selectedToken', undefined)
-        //     this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
-        // }
-        // else if (this.rightNetwork?.type === 'evm') {
-        //     this.changeData('rightAddress', '')
-        //     this.changeData('rightNetwork', undefined)
-        // }
+        else if (this.leftNetwork?.type === 'evm') {
+            this.changeData('amount', '')
+            this.changeData('leftAddress', '')
+            this.changeData('leftNetwork', undefined)
+            this.changeData('selectedToken', undefined)
+            this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        }
+        else if (this.rightNetwork?.type === 'evm') {
+            this.changeData('rightAddress', '')
+            this.changeData('rightNetwork', undefined)
+        }
     }
 
     /**
@@ -819,7 +791,10 @@ export class CrosschainBridge {
      * @protected
      */
     protected handleTonWalletBalance(): void {
+        debug('handleTonWalletBalance')
+
         if (this.isEvmToTon) {
+            debug('handleTonWalletBalance#isEvmToTon')
             this.checkSwapCredit()
             this.checkMinTons()
         }
@@ -831,6 +806,8 @@ export class CrosschainBridge {
      * @protected
      */
     protected async handleTonWalletConnection(connected?: boolean): Promise<void> {
+        debug('handleTonWalletConnection')
+
         if (this.state.isProcessing) {
             return
         }
@@ -856,18 +833,20 @@ export class CrosschainBridge {
         }
         else {
             this.changeState('isSwapEnabled', false)
+            this.changeData('tonsAmount', '')
+            this.changeData('minTonsAmount', '')
 
-            // if (this.rightNetwork?.type === 'ton') {
-            //     this.changeData('rightAddress', '')
-            //     this.changeData('rightNetwork', undefined)
-            // }
-            // else if (this.leftNetwork?.type === 'ton') {
-            //     this.changeData('amount', '')
-            //     this.changeData('leftAddress', '')
-            //     this.changeData('leftNetwork', undefined)
-            //     this.changeData('selectedToken', undefined)
-            //     this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
-            // }
+            if (this.rightNetwork?.type === 'ton') {
+                this.changeData('rightAddress', '')
+                this.changeData('rightNetwork', undefined)
+            }
+            else if (this.leftNetwork?.type === 'ton') {
+                this.changeData('amount', '')
+                this.changeData('leftAddress', '')
+                this.changeData('leftNetwork', undefined)
+                this.changeData('selectedToken', undefined)
+                this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
+            }
         }
     }
 
@@ -882,7 +861,7 @@ export class CrosschainBridge {
      * @protected
      */
     protected checkMinTons(): void {
-        if (this.isInsufficientTonBalance && this.isSwapEnabled) {
+        if (this.isInsufficientTonBalance && this.isSwapEnabled && !this.tonWallet.isUpdatingContract) {
             const isEnoughTonsAmount = this.tonsAmountNumber
                 .shiftedBy(DexConstants.TONDecimals)
                 .gte(this.minTonsAmount || 0)
@@ -903,7 +882,7 @@ export class CrosschainBridge {
      * @protected
      */
     protected checkSwapCredit(): void {
-        if (this.tonWallet.isConnected && this.isInsufficientTonBalance) {
+        if (this.tonWallet.isConnected && this.isInsufficientTonBalance && !this.tonWallet.isUpdatingContract) {
             if (this.step === CrosschainBridgeStep.SELECT_ASSET) {
                 this.changeData('minTonsAmount', BridgeConstants.EmptyWalletMinTonsAmount)
                 this.changeState('isSwapEnabled', this.isCreditAvailable)
@@ -918,34 +897,55 @@ export class CrosschainBridge {
      *
      * @protected
      */
-    protected async syncMaxTokensAmount(): Promise<void> {
-        if (
-            !this.isSwapEnabled
-            || this.pairContract === undefined
-            || this.token === undefined
-        ) {
+    protected async syncMinReceiveTokens(): Promise<void> {
+        if (this.pairContract === undefined || this.token === undefined) {
             return
         }
 
         try {
-
-            const { expected_amount: minSpentTokens } = await this.pairContract.methods.expectedSpendAmount({
+            const result = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: amountWithSlippage(
-                    debt.plus(this.isInsufficientTonBalance ? this.tonsAmountNumber : 0),
-                    minSlippage,
-                ),
+                receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), maxSlippage),
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
-            const maxTokensAmount = this.amountNumber.shiftedBy(this.token.decimals).minus(minSpentTokens || 0)
+            const minReceiveTokens = this.amountNumber.shiftedBy(this.token.decimals).minus(result.expected_amount || 0)
 
-            if (isGoodBignumber(maxTokensAmount)) {
-                this.changeData('maxTokensAmount', maxTokensAmount.toFixed())
+            if (isGoodBignumber(minReceiveTokens)) {
+                this.changeData('minReceiveTokens', minReceiveTokens.toFixed())
+            }
+
+        }
+        catch (e) {
+            error('Sync min receive tokens amount error', e)
+        }
+    }
+
+    /**
+     *
+     * @protected
+     */
+    protected async syncTokensAmount(): Promise<void> {
+        if (this.pairContract === undefined || this.token === undefined) {
+            return
+        }
+
+        try {
+            const result = await this.pairContract.methods.expectedSpendAmount({
+                _answer_id: 0,
+                receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), minSlippage),
+                receive_token_root: DexConstants.WTONRootAddress,
+            }).call()
+
+            const tokensAmount = this.amountNumber.shiftedBy(this.token.decimals).minus(result.expected_amount || 0)
+
+            if (isGoodBignumber(tokensAmount)) {
+                this.changeData('maxTokensAmount', tokensAmount.toFixed())
+                this.changeData('tokensAmount', tokensAmount.shiftedBy(-this.token.decimals).toFixed())
             }
         }
         catch (e) {
-            error('Sync Tokens max amount error', e)
+            error('Sync tokens amount error', e)
         }
     }
 
@@ -954,31 +954,27 @@ export class CrosschainBridge {
      * @protected
      */
     protected async syncMaxTonsAmount(): Promise<void> {
-        if (
-            !this.isSwapEnabled
-            || this.pairContract === undefined
-            || this.token === undefined
-        ) {
+        if (this.pairContract === undefined || this.token === undefined) {
             return
         }
 
         try {
-            const {
-                expected_amount: expectedAmount,
-            } = await this.pairContract.methods.expectedExchange({
+            const result = await this.pairContract.methods.expectedExchange({
                 _answer_id: 0,
                 amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                 spent_token_root: new Address(this.token.root),
             }).call()
 
-            const tonsAmountBN = new BigNumber(expectedAmount || 0)
+            const tonsAmountBN = new BigNumber(result.expected_amount || 0)
                 .times(new BigNumber(100).minus(maxSlippage))
                 .div(100)
                 .dp(0, BigNumber.ROUND_DOWN)
-                .minus(new BigNumber(debt).shiftedBy(DexConstants.TONDecimals))
+                .minus(debt.shiftedBy(DexConstants.TONDecimals))
                 .dp(DexConstants.TONDecimals, BigNumber.ROUND_DOWN)
 
-            this.changeData('maxTonsAmount', tonsAmountBN.toFixed())
+            if (isGoodBignumber(tonsAmountBN)) {
+                this.changeData('maxTonsAmount', tonsAmountBN.toFixed())
+            }
         }
         catch (e) {
             error('Sync TONs max amount error', e)
@@ -1003,25 +999,25 @@ export class CrosschainBridge {
                 TokenAbi.CreditFactory,
                 BridgeConstants.CreditFactoryAddress,
             )
-            const { value0 } = await creditFactory.methods.getDetails({
+            const details = (await creditFactory.methods.getDetails({
                 answerId: 0,
-            }).call()
+            }).call()).value0
 
-            const {
-                expected_amount: minAmount,
-            } = await this.pairContract.methods.expectedSpendAmount({
+            this.changeData('fee', details.fee)
+
+            const result = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
                 receive_amount: new BigNumber(BridgeConstants.CreditBody)
-                    .plus(new BigNumber(value0.fee || 0))
+                    .plus(this.fee || 0)
                     .plus(this.minTonsAmount || 0)
                     .times(100)
-                    .div(new BigNumber(100).minus(minSlippage))
+                    .div(new BigNumber(100).minus(maxSlippage))
                     .dp(0, BigNumber.ROUND_UP)
                     .toFixed(),
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
-            const minAmountBN = new BigNumber(minAmount || 0)
+            const minAmountBN = new BigNumber(result.expected_amount || 0)
 
             if (isGoodBignumber(minAmountBN)) {
                 this.changeData('minAmount', minAmountBN.toFixed())
@@ -1100,6 +1096,14 @@ export class CrosschainBridge {
 
     public get amount(): CrosschainBridgeStoreData['amount'] {
         return this.data.amount
+    }
+
+    public get fee(): CrosschainBridgeStoreData['fee'] {
+        return this.data.fee
+    }
+
+    public get maxTokensAmount(): CrosschainBridgeStoreData['maxTokensAmount'] {
+        return this.data.maxTokensAmount
     }
 
     public get maxTonsAmount(): CrosschainBridgeStoreData['maxTonsAmount'] {
@@ -1245,10 +1249,10 @@ export class CrosschainBridge {
         if (this.tokensAmount && isGoodBignumber(this.tokensAmountNumber, false)) {
             return (
                 validateMinValue('0', this.tokensAmount, this.decimals)
-                && validateMaxValue(this.data.maxTokensAmount, this.tokensAmount, this.decimals)
+                && validateMaxValue(this.maxTokensAmount, this.tokensAmount, this.decimals)
             )
         }
-        return !this.tokensAmount ? true : isGoodBignumber(this.tokensAmountNumber)
+        return isGoodBignumber(this.tokensAmountNumber, false)
     }
 
     public get isTonsAmountValid(): boolean {
@@ -1264,7 +1268,7 @@ export class CrosschainBridge {
                 && validateMaxValue(this.maxTonsAmount, this.tonsAmount, DexConstants.TONDecimals)
             )
         }
-        return !this.tonsAmount ? true : isGoodBignumber(this.tonsAmountNumber)
+        return isGoodBignumber(this.tonsAmountNumber, false)
     }
 
     public get isAssetValid(): boolean {
@@ -1363,8 +1367,6 @@ export class CrosschainBridge {
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
     }
-
-    #swapDisposer: IReactionDisposer | undefined
 
     #evmWalletDisposer: IReactionDisposer | undefined
 

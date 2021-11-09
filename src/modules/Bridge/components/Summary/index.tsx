@@ -141,7 +141,8 @@ export function Summary(): JSX.Element {
                                             symbol: summary.token.symbol || '',
                                         })}
                                     </span>
-                                    <span>–</span>
+                                    <span>-</span>
+                                    {/* <span>{formattedAmount(summary.fee, DexConstants.TONDecimals)}</span> */}
                                 </li>
                             )}
                         </>
