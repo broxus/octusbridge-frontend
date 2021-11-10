@@ -12,6 +12,7 @@ export const networks: NetworkShape[] = [
         label: 'Ethereum',
         name: 'Ethereum Mainnet',
         rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161/',
+        transactionType: '0x02',
         type: 'evm',
     },
     {
@@ -22,6 +23,7 @@ export const networks: NetworkShape[] = [
         label: 'Binance Smart Chain',
         name: 'BSC',
         rpcUrl: 'https://bsc-dataseed.binance.org/',
+        transactionType: '0x00',
         type: 'evm',
     },
     {
@@ -32,6 +34,7 @@ export const networks: NetworkShape[] = [
         label: 'Fantom Opera',
         name: 'Fantom Opera',
         rpcUrl: 'https://rpc.ftm.tools/',
+        transactionType: '0x00',
         type: 'evm',
     },
     {
@@ -42,13 +45,14 @@ export const networks: NetworkShape[] = [
         label: 'Polygon',
         name: 'Polygon',
         rpcUrl: 'https://matic-mainnet.chainstacklabs.com/',
+        transactionType: '0x00',
         type: 'evm',
     },
     {
         chainId: '1',
         currencySymbol: 'TON',
         explorerBaseUrl: 'https://tonscan.io/',
-        id: 'evm-5',
+        id: 'ton-1',
         label: 'Free TON',
         name: 'Free TON',
         rpcUrl: '',

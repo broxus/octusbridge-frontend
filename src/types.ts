@@ -7,5 +7,6 @@ export type NetworkShape = {
     name: string;
     rpcUrl: string;
     tokenType?: string;
+    transactionType?: string;
     type: string;
 }

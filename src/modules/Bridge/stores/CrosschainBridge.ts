@@ -201,7 +201,7 @@ export class CrosschainBridge {
                     '340282366920938463426481119284349108225',
                 ).send({
                     from: this.evmWallet.address,
-                    type: '0x00',
+                    type: this.leftNetwork.transactionType,
                 })
             }
             else {
@@ -210,7 +210,7 @@ export class CrosschainBridge {
                     this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
                 ).send({
                     from: this.evmWallet.address,
-                    type: '0x00',
+                    type: this.leftNetwork.transactionType,
                 })
             }
 
@@ -298,7 +298,7 @@ export class CrosschainBridge {
                 this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
             ).send({
                 from: this.evmWallet.address,
-                type: '0x00',
+                type: this.leftNetwork.transactionType,
             }).once('transactionHash', (transactionHash: string) => {
                 this.changeData('txHash', transactionHash)
             })
@@ -343,7 +343,7 @@ export class CrosschainBridge {
                 `0x${Buffer.from('te6ccgEBAQEAAgAAAA==', 'base64').toString('hex')}`,
             ).send({
                 from: this.evmWallet.address,
-                type: '0x00',
+                type: this.leftNetwork.transactionType,
             }).once('transactionHash', (transactionHash: string) => {
                 this.changeData('txHash', transactionHash)
             })

@@ -309,7 +309,7 @@ export class TonToEvmTransfer {
                 0,
             ).send({
                 from: this.evmWallet.address,
-                type: '0x00',
+                type: this.rightNetwork.transactionType,
             })
         }
         catch (e: any) {
