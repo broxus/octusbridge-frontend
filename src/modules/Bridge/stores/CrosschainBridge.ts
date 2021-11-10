@@ -178,50 +178,66 @@ export class CrosschainBridge {
      * - `fixed` - only for current transaction.
      */
     public async approveAmount(): Promise<void> {
-        if (
-            this.token === undefined
-            || this.leftNetwork === undefined
-            || this.tokenVault?.decimals === undefined
-        ) {
-            return
-        }
+        let tries = 0
 
-        const tokenContract = await this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
-
-        if (tokenContract === undefined) {
-            return
-        }
-
-        this.changeState('isPendingApproval', true)
-
-        try {
-            if (this.approvalStrategy === 'infinity') {
-                await tokenContract.methods.approve(
-                    this.tokenVault.vault,
-                    '340282366920938463426481119284349108225',
-                ).send({
-                    from: this.evmWallet.address,
-                    type: this.leftNetwork.transactionType,
-                })
-            }
-            else {
-                await tokenContract.methods.approve(
-                    this.tokenVault.vault,
-                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
-                ).send({
-                    from: this.evmWallet.address,
-                    type: this.leftNetwork.transactionType,
-                })
+        const send = async (transactionType?: string) => {
+            if (
+                tries >= 2
+                || this.token === undefined
+                || this.leftNetwork === undefined
+                || this.tokenVault?.decimals === undefined
+            ) {
+                return
             }
 
-            this.changeState('step', CrosschainBridgeStep.TRANSFER)
+            this.changeState('isPendingApproval', true)
+
+            const tokenContract = await this.tokensCache.getEthTokenContract(this.token.root, this.leftNetwork.chainId)
+
+            if (tokenContract === undefined) {
+                this.changeState('isPendingApproval', false)
+                return
+            }
+
+            try {
+                tries += 1
+
+                if (this.approvalStrategy === 'infinity') {
+                    await tokenContract.methods.approve(
+                        this.tokenVault.vault,
+                        '340282366920938463426481119284349108225',
+                    ).send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                }
+                else {
+                    await tokenContract.methods.approve(
+                        this.tokenVault.vault,
+                        this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                    ).send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                }
+
+                this.changeState('step', CrosschainBridgeStep.TRANSFER)
+            }
+            catch (e: any) {
+                if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
+                    error('Approve error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    error('Approve error', e)
+                }
+            }
+            finally {
+                this.changeState('isPendingApproval', false)
+            }
         }
-        catch (e) {
-            error('Approve error', e)
-        }
-        finally {
-            this.changeState('isPendingApproval', false)
-        }
+
+        await send(this.leftNetwork?.transactionType)
     }
 
     /**
@@ -279,35 +295,52 @@ export class CrosschainBridge {
      * @param {() => void} reject
      */
     public async transfer(reject?: () => void): Promise<void> {
-        if (
-            this.token === undefined
-            || this.leftNetwork === undefined
-            || this.tokenVault?.decimals === undefined
-            || this.wrapperContract === undefined
-        ) {
-            return
+        let tries = 0
+
+        const send = async (transactionType?: string) => {
+            if (
+                tries >= 2
+                || this.token === undefined
+                || this.leftNetwork === undefined
+                || this.tokenVault?.decimals === undefined
+                || this.wrapperContract === undefined
+            ) {
+                return
+            }
+
+            const target = this.rightAddress.split(':')
+
+            this.changeState('isProcessing', true)
+
+            try {
+                tries += 1
+
+                await this.wrapperContract.methods.deposit(
+                    [target[0], `0x${target[1]}`],
+                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                ).send({
+                    from: this.evmWallet.address,
+                    type: transactionType,
+                }).once('transactionHash', (transactionHash: string) => {
+                    this.changeData('txHash', transactionHash)
+                })
+            }
+            catch (e: any) {
+                if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
+                    error('Transfer deposit error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.()
+                    error('Transfer deposit error', e)
+                }
+            }
+            finally {
+                this.changeState('isProcessing', false)
+            }
         }
 
-        const target = this.rightAddress.split(':')
-
-        this.changeState('isProcessing', true)
-
-        try {
-            await this.wrapperContract.methods.deposit(
-                [target[0], `0x${target[1]}`],
-                this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
-            ).send({
-                from: this.evmWallet.address,
-                type: this.leftNetwork.transactionType,
-            }).once('transactionHash', (transactionHash: string) => {
-                this.changeData('txHash', transactionHash)
-            })
-        }
-        catch (e) {
-            reject?.()
-            this.changeState('isProcessing', false)
-            error('Transfer deposit error', e)
-        }
+        await send(this.leftNetwork?.transactionType)
     }
 
     /**
@@ -315,44 +348,61 @@ export class CrosschainBridge {
      * @param {() => void} reject
      */
     public async transferWithSwap(reject?: () => void): Promise<void> {
-        if (
-            this.token === undefined
-            || this.leftNetwork === undefined
-            || this.tokenVault?.decimals === undefined
-            || this.wrapperContract === undefined
-        ) {
-            return
+        let tries = 0
+
+        const send = async (transactionType?: string) => {
+            if (
+                tries >= 2
+                || this.token === undefined
+                || this.leftNetwork === undefined
+                || this.tokenVault?.decimals === undefined
+                || this.wrapperContract === undefined
+            ) {
+                return
+            }
+
+            const target = this.rightAddress.split(':')
+
+            this.changeState('isProcessing', true)
+
+            try {
+                tries += 1
+
+                await this.wrapperContract.methods.depositToFactory(
+                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                    '0',
+                    `0x${target[1]}`,
+                    BridgeConstants.DepositToFactoryAddress,
+                    `0x${target[1]}`,
+                    this.minReceiveTokensNumber.toFixed(),
+                    this.tonsAmountNumber.shiftedBy(DexConstants.TONDecimals).toFixed(),
+                    this.data.swapType,
+                    BridgeConstants.DepositToFactoryMinSlippageNumerator,
+                    BridgeConstants.DepositToFactoryMinSlippageDenominator,
+                    `0x${Buffer.from('te6ccgEBAQEAAgAAAA==', 'base64').toString('hex')}`,
+                ).send({
+                    from: this.evmWallet.address,
+                    type: transactionType,
+                }).once('transactionHash', (transactionHash: string) => {
+                    this.changeData('txHash', transactionHash)
+                })
+            }
+            catch (e: any) {
+                if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
+                    error('Transfer deposit to factory error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.()
+                    error('Transfer deposit to factory error', e)
+                }
+            }
+            finally {
+                this.changeState('isProcessing', false)
+            }
         }
 
-        const target = this.rightAddress.split(':')
-
-        this.changeState('isProcessing', true)
-
-        try {
-            await this.wrapperContract.methods.depositToFactory(
-                this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
-                '0',
-                `0x${target[1]}`,
-                BridgeConstants.DepositToFactoryAddress,
-                `0x${target[1]}`,
-                this.minReceiveTokensNumber.toFixed(),
-                this.tonsAmountNumber.shiftedBy(DexConstants.TONDecimals).toFixed(),
-                this.data.swapType,
-                BridgeConstants.DepositToFactoryMinSlippageNumerator,
-                BridgeConstants.DepositToFactoryMinSlippageDenominator,
-                `0x${Buffer.from('te6ccgEBAQEAAgAAAA==', 'base64').toString('hex')}`,
-            ).send({
-                from: this.evmWallet.address,
-                type: this.leftNetwork.transactionType,
-            }).once('transactionHash', (transactionHash: string) => {
-                this.changeData('txHash', transactionHash)
-            })
-        }
-        catch (e) {
-            reject?.()
-            this.changeState('isProcessing', false)
-            error('Transfer deposit error', e)
-        }
+        await send(this.leftNetwork?.transactionType)
     }
 
     /**
@@ -886,9 +936,11 @@ export class CrosschainBridge {
             if (this.step === CrosschainBridgeStep.SELECT_ASSET) {
                 this.changeData('minTonsAmount', BridgeConstants.EmptyWalletMinTonsAmount)
                 this.changeState('isSwapEnabled', this.isCreditAvailable)
+                this.changeData('depositType', 'credit')
             }
         }
         else {
+            this.changeData('depositType', 'default')
             this.changeData('minTonsAmount', '0')
         }
     }

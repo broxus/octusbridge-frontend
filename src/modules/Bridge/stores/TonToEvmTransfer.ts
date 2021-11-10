@@ -246,79 +246,92 @@ export class TonToEvmTransfer {
     }
 
     public async release(): Promise<void> {
-        if (
-            this.evmWallet.web3 === undefined
-            || this.rightNetwork === undefined
-            || this.contractAddress === undefined
-            || this.token === undefined
-            || this.data.encodedEvent === undefined
-        ) {
-            return
-        }
+        let tries = 0
 
-        this.changeState('releaseState', {
-            ...this.releaseState,
-            status: 'pending',
-        })
+        const send = async (transactionType?: string) => {
+            if (
+                this.evmWallet.web3 === undefined
+                || this.rightNetwork === undefined
+                || this.contractAddress === undefined
+                || this.token === undefined
+                || this.data.encodedEvent === undefined
+            ) {
+                return
+            }
 
-        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
-        const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
+            this.changeState('releaseState', {
+                ...this.releaseState,
+                status: 'pending',
+            })
 
-        const signatures = eventDetails._signatures.map(sign => {
-            const signature = `0x${Buffer.from(sign, 'base64').toString('hex')}`
-            const address = this.evmWallet.web3!.eth.accounts.recover(
-                this.evmWallet.web3!.utils.sha3(this.data.encodedEvent!)!,
-                signature,
+            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
+
+            const signatures = eventDetails._signatures.map(sign => {
+                const signature = `0x${Buffer.from(sign, 'base64').toString('hex')}`
+                const address = this.evmWallet.web3!.eth.accounts.recover(
+                    this.evmWallet.web3!.utils.sha3(this.data.encodedEvent!)!,
+                    signature,
+                )
+                return {
+                    address,
+                    order: new BigNumber(address.slice(2).toUpperCase(), 16),
+                    signature,
+                }
+            })
+            signatures.sort((a, b) => {
+                if (a.order.eq(b.order)) {
+                    return 0
+                }
+
+                if (a.order.gt(b.order)) {
+                    return 1
+                }
+
+                return -1
+            })
+
+            const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
+                this.token.root,
+                this.rightNetwork.chainId,
             )
-            return {
-                address,
-                order: new BigNumber(address.slice(2).toUpperCase(), 16),
-                signature,
-            }
-        })
-        signatures.sort((a, b) => {
-            if (a.order.eq(b.order)) {
-                return 0
+
+            if (wrapperContract === undefined) {
+                this.changeState('releaseState', {
+                    ...this.releaseState,
+                    status: 'disabled',
+                })
+                return
             }
 
-            if (a.order.gt(b.order)) {
-                return 1
+            try {
+                tries += 1
+
+                await wrapperContract.methods.saveWithdraw(
+                    this.data.encodedEvent,
+                    signatures.map(({ signature }) => signature),
+                    0,
+                ).send({
+                    from: this.evmWallet.address,
+                    type: transactionType,
+                })
             }
-
-            return -1
-        })
-
-        const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
-            this.token.root,
-            this.rightNetwork.chainId,
-        )
-
-        if (wrapperContract === undefined) {
-            this.changeState('releaseState', {
-                ...this.releaseState,
-                status: 'disabled',
-            })
-
-            return
+            catch (e: any) {
+                if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
+                    error('Release tokens error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    this.changeState('releaseState', {
+                        ...this.releaseState,
+                        status: 'disabled',
+                    })
+                    error('Release tokens error', e)
+                }
+            }
         }
 
-        try {
-            await wrapperContract.methods.saveWithdraw(
-                this.data.encodedEvent,
-                signatures.map(({ signature }) => signature),
-                0,
-            ).send({
-                from: this.evmWallet.address,
-                type: this.rightNetwork.transactionType,
-            })
-        }
-        catch (e: any) {
-            this.changeState('releaseState', {
-                ...this.releaseState,
-                status: 'disabled',
-            })
-            error('Release tokens error', e)
-        }
+        await send(this.rightNetwork?.transactionType)
     }
 
     protected runEventUpdater(): void {
