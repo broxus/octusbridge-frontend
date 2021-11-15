@@ -66,7 +66,7 @@ export const EmptyWalletMinTonsAmount = '10000000000'
 
 export const CreditFactoryAddress = new AddressLiteral('0:48b1daf7ff5c10ec590628e65702dcd01d947b36660a6348e5360f92c8b7bae5')
 
-export const DepositToFactoryAddress = '0x92190de9b79fe5640b9449aff336cf33e6270075b26fdce9f3d9be520043608a'
+export const DepositToFactoryAddress = '0x48b1daf7ff5c10ec590628e65702dcd01d947b36660a6348e5360f92c8b7bae5'
 
 export const DepositToFactoryMaxSlippage = 10
 
