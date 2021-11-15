@@ -51,8 +51,9 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
             const leftNetwork = `${bridge.leftNetwork?.type}-${bridge.leftNetwork?.chainId}`
             const rightNetwork = `${bridge.rightNetwork?.type}-${bridge.rightNetwork?.chainId}`
+            const depositType = bridge.isTonToEvm ? '' : `/${bridge.depositType || 'default'}`
 
-            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}/${bridge.depositType || 'default'}`)
+            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}${depositType}`)
         })
 
         const summaryDisposer = reaction(

@@ -940,7 +940,6 @@ export class CrosschainBridge {
             }
         }
         else {
-            this.changeData('depositType', 'default')
             this.changeData('minTonsAmount', '0')
         }
     }
