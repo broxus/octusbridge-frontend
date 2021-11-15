@@ -42,7 +42,7 @@ export function TonsAmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <TokenAmountField
-                                decimals={bridge.decimals}
+                                decimals={DexConstants.TONDecimals}
                                 isValid={bridge.isTonsAmountValid}
                                 placeholder="0"
                                 suffix={(
