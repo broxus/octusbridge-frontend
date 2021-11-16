@@ -52,7 +52,7 @@ export function AssetStep(): JSX.Element {
             <Observer>
                 {() => (
                     <>
-                        {(bridge.isEvmToTon && bridge.isCreditAvailable) && (
+                        {(bridge.isFromEvm && bridge.isCreditAvailable) && (
                             <SwapForm />
                         )}
                     </>

@@ -66,8 +66,6 @@ export const EmptyWalletMinTonsAmount = '10000000000'
 
 export const CreditFactoryAddress = new AddressLiteral('0:48b1daf7ff5c10ec590628e65702dcd01d947b36660a6348e5360f92c8b7bae5')
 
-export const DepositToFactoryAddress = '0x48b1daf7ff5c10ec590628e65702dcd01d947b36660a6348e5360f92c8b7bae5'
-
 export const DepositToFactoryMaxSlippage = 10
 
 export const DepositToFactoryMinSlippageNumerator = '1'
@@ -123,8 +121,6 @@ export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa44
 // export const CreditBody = '5000000000'
 //
 // export const CreditFactoryAddress = new AddressLiteral('0:d51a53b4e50e4c0cd8c56554274f7367dcc3aa901e9b351881f2729b3b726d93')
-//
-// export const DepositToFactoryAddress = '0xd51a53b4e50e4c0cd8c56554274f7367dcc3aa901e9b351881f2729b3b726d93'
 //
 // export const DepositToFactoryMaxSlippage = 10
 //

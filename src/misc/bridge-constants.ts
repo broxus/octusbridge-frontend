@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js'
 import {
     CreditBody,
     CreditFactoryAddress,
-    DepositToFactoryAddress,
     DepositToFactoryMaxSlippage,
     DepositToFactoryMinSlippageDenominator,
     DepositToFactoryMinSlippageNumerator,
@@ -20,8 +19,6 @@ export class BridgeConstants {
     static EmptyWalletMinTonsAmount = EmptyWalletMinTonsAmount
 
     static CreditFactoryAddress = CreditFactoryAddress
-
-    static DepositToFactoryAddress = DepositToFactoryAddress
 
     static DepositToFactoryMinSlippageNumerator = DepositToFactoryMinSlippageNumerator
 

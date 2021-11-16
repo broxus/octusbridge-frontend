@@ -9,19 +9,6 @@ import { useBridge } from '@/modules/Bridge/providers'
 export function TokensAssetsFieldset(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
-    const tokensCache = bridge.useTokensCache
-
-    const tokens = React.useMemo(() => {
-        if (bridge.isEvmToTon && bridge.leftNetwork?.chainId !== undefined) {
-            return tokensCache.filterTokensByChainId(bridge.leftNetwork.chainId)
-        }
-
-        if (bridge.isTonToEvm && bridge.rightNetwork?.chainId !== undefined) {
-            return tokensCache.filterTokensByChainId(bridge.rightNetwork.chainId)
-        }
-
-        return []
-    }, [bridge.leftNetwork?.chainId, bridge.rightNetwork?.chainId])
 
     const onChangeToken = (value?: string) => {
         bridge.changeData('selectedToken', value)
@@ -38,7 +25,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                 <div className="crosschain-transfer__control">
                     <Select
                         className="rc-select--lg"
-                        options={tokens.map(({ icon, root, symbol }) => ({
+                        options={bridge.tokens.map(({ icon, root, symbol }) => ({
                             label: (
                                 <div className="token-select-label">
                                     <TokenIcon

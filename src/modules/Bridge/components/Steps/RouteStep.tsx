@@ -77,7 +77,7 @@ export function RouteStep(): JSX.Element {
                             })}
                             network={bridge.leftNetwork}
                             networks={networks.map(network => ({ label: network.label, value: network.id }))}
-                            shouldDisplayNetworkAlert={bridge.isEvmToTon
+                            shouldDisplayNetworkAlert={bridge.isFromEvm
                                 ? !isSameNetwork(bridge.leftNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}
