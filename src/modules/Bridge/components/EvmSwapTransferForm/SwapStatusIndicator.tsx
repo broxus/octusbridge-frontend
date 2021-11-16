@@ -120,7 +120,16 @@ export function SwapStatusIndicator(): JSX.Element {
                                                                 ? 'CROSSCHAIN_TRANSFER_STATUS_SWAP_EXCHANGING'
                                                                 : cpMessages[transfer.creditProcessorState]
 
-                                                            if (isCancelled) {
+                                                            if (transfer.swapState?.isCanceling) {
+                                                                descriptor = 'CROSSCHAIN_TRANSFER_STATUS_SWAP_CANCELING'
+                                                            }
+                                                            else if (transfer.swapState?.isProcessing) {
+                                                                descriptor = 'CROSSCHAIN_TRANSFER_STATUS_SWAP_PROCESSING'
+                                                            }
+                                                            else if (transfer.swapState?.isWithdrawing) {
+                                                                descriptor = 'CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAWING'
+                                                            }
+                                                            else if (isCancelled) {
                                                                 descriptor = 'CROSSCHAIN_TRANSFER_STATUS_SWAP_PENDING'
                                                             }
 
@@ -180,7 +189,10 @@ export function SwapStatusIndicator(): JSX.Element {
                                         }
 
                                         switch (true) {
-                                            case transfer.swapState?.isStuck && transfer.isOwner:
+                                            case (
+                                                (transfer.swapState?.isStuck && transfer.isOwner)
+                                                || transfer.isDeployer
+                                            ):
                                                 return (
                                                     <div className="btn-group">
                                                         {(transfer.isDeployer && isProcessorEventConfirmed) && (

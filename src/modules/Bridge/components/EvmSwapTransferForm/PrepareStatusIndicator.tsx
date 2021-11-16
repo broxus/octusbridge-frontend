@@ -86,7 +86,9 @@ export function PrepareStatusIndicator(): JSX.Element {
 
                                                         case 'pending':
                                                             return intl.formatMessage({
-                                                                id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING',
+                                                                id: transfer.prepareState?.isBroadcasting
+                                                                    ? 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_BROADCASTING'
+                                                                    : 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_PREPARING',
                                                             })
 
                                                         case 'rejected':
