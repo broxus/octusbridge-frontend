@@ -63,6 +63,13 @@ export function SwapStatusIndicator(): JSX.Element {
                     const isProcessorEventConfirmed = (
                         transfer.creditProcessorState === CreditProcessorState.EventConfirmed
                     )
+                    const isProcessorStuckEvent = transfer.creditProcessorState !== undefined ? [
+                        CreditProcessorState.EventConfirmed,
+                        CreditProcessorState.SwapFailed,
+                        CreditProcessorState.SwapUnknown,
+                        CreditProcessorState.UnwrapFailed,
+                        CreditProcessorState.ProcessRequiresGas,
+                    ].includes(transfer.creditProcessorState) : false
                     const waitingWallet = (
                         (!isEvmWalletReady || !isTonWalletReady)
                         && isTransferConfirmed
@@ -81,6 +88,7 @@ export function SwapStatusIndicator(): JSX.Element {
                         && !isConfirmed
                         && !isCancelled
                     )
+
                     return (
                         <>
                             <div className="crosschain-transfer__status-indicator">
@@ -188,14 +196,20 @@ export function SwapStatusIndicator(): JSX.Element {
                                             )
                                         }
 
+                                        const displayProcessBtn = (
+                                            transfer.isDeployer
+                                            && isProcessorEventConfirmed
+                                        )
+                                        const displayCancelBtn = isProcessorStuckEvent && ((
+                                            transfer.swapState?.isStuck
+                                            && transfer.isOwner
+                                        ) || transfer.isDeployer)
+
                                         switch (true) {
-                                            case (
-                                                (transfer.swapState?.isStuck && transfer.isOwner)
-                                                || transfer.isDeployer
-                                            ):
+                                            case displayProcessBtn || displayCancelBtn:
                                                 return (
                                                     <div className="btn-group">
-                                                        {(transfer.isDeployer && isProcessorEventConfirmed) && (
+                                                        {displayProcessBtn && (
                                                             <Button
                                                                 key="process"
                                                                 disabled={(
@@ -210,19 +224,21 @@ export function SwapStatusIndicator(): JSX.Element {
                                                                 })}
                                                             </Button>
                                                         )}
-                                                        <Button
-                                                            key="cancel"
-                                                            disabled={(
-                                                                transfer.swapState?.isCanceling
-                                                                || transfer.swapState?.isProcessing
-                                                            )}
-                                                            type="tertiary"
-                                                            onClick={transfer.cancel}
-                                                        >
-                                                            {intl.formatMessage({
-                                                                id: 'CROSSCHAIN_TRANSFER_STATUS_SWAP_CANCEL_BTN_TEXT',
-                                                            })}
-                                                        </Button>
+                                                        {displayCancelBtn && (
+                                                            <Button
+                                                                key="cancel"
+                                                                disabled={(
+                                                                    transfer.swapState?.isCanceling
+                                                                    || transfer.swapState?.isProcessing
+                                                                )}
+                                                                type="tertiary"
+                                                                onClick={transfer.cancel}
+                                                            >
+                                                                {intl.formatMessage({
+                                                                    id: 'CROSSCHAIN_TRANSFER_STATUS_SWAP_CANCEL_BTN_TEXT',
+                                                                })}
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 )
 

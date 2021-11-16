@@ -318,13 +318,11 @@ export class EvmToTonSwapTransfer {
             }as EvmSwapTransferStoreState['swapState'])
         }
         catch (e) {
-            error('Process error', e)
-        }
-        finally {
             this.changeState('swapState', {
                 ...this.swapState,
                 isProcessing: false,
             } as EvmSwapTransferStoreState['swapState'])
+            error('Process error', e)
         }
     }
 
@@ -367,13 +365,11 @@ export class EvmToTonSwapTransfer {
             }as EvmSwapTransferStoreState['swapState'])
         }
         catch (e) {
-            error('Cancel error', e)
-        }
-        finally {
             this.changeState('swapState', {
                 ...this.swapState,
                 isCanceling: false,
             } as EvmSwapTransferStoreState['swapState'])
+            error('Cancel error', e)
         }
     }
 
@@ -746,6 +742,9 @@ export class EvmToTonSwapTransfer {
                             (await this.evmWallet.web3.eth.getBlock(blockNumber)).timestamp.toString(),
                             10,
                         )
+
+                        debug('Outdated ts', (Date.now() / 1000) - ts)
+
                         this.changeState('prepareState', {
                             ...this.prepareState,
                             isOutdated: ((Date.now() / 1000) - ts) >= 600,
@@ -772,6 +771,14 @@ export class EvmToTonSwapTransfer {
             const state = parseInt(creditProcessorDetails.state, 10)
             const isCancelled = state === CreditProcessorState.Cancelled
             const isProcessed = state === CreditProcessorState.Processed
+
+            if (this.creditProcessorState !== state) {
+                this.changeState('swapState', {
+                    ...this.swapState,
+                    isCanceling: false,
+                    isProcessing: false,
+                } as EvmSwapTransferStoreState['swapState'])
+            }
 
             this.changeState('creditProcessorState', state)
 
@@ -858,7 +865,7 @@ export class EvmToTonSwapTransfer {
             } as EvmSwapTransferStoreState['swapState'])
             const isStuck = ((Date.now() / 1000) - tx.createdAt) >= 600 && !isCancelled && !isProcessed
 
-            debug((Date.now() / 1000) - tx.createdAt)
+            debug('Stuck ts', (Date.now() / 1000) - tx.createdAt)
 
             const isStuckNow = this.swapState?.isStuck
 
@@ -886,7 +893,7 @@ export class EvmToTonSwapTransfer {
             if (this.eventState?.status === 'confirmed') {
                 this.changeState('swapState', {
                     ...this.swapState,
-                    status: this.isOwner ? 'pending' : 'rejected',
+                    status: 'pending',
                 })
             }
             else {
@@ -913,18 +920,20 @@ export class EvmToTonSwapTransfer {
     }
 
     protected runWithdrawTokenUpdater(): void {
-        debug('runWithdrawTokenUpdater', toJS(this.state.swapState))
-
         const status = this.swapState?.status
 
         const runWithdrawTokenUpdater = () => {
+            debug('runWithdrawTokenUpdater', toJS(this.state.swapState))
+
             this.stopWithdrawUpdater();
 
             (async () => {
                 await this.checkWithdrawBalances()
+                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.tokenBalance || 0))
                 this.changeState('swapState', {
                     ...this.swapState,
-                    isWithdrawing: isGoodBignumber(new BigNumber(this.swapState?.tokenBalance || 0)),
+                    isWithdrawing,
+                    status: isWithdrawing ? 'pending' : status,
                 } as EvmSwapTransferStoreState['swapState'])
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
@@ -948,18 +957,20 @@ export class EvmToTonSwapTransfer {
     }
 
     protected runWithdrawWtonUpdater(): void {
-        debug('runWithdrawWtonUpdater', toJS(this.state.swapState))
-
         const status = this.swapState?.status
 
         const runWithdrawWtonUpdater = () => {
+            debug('runWithdrawWtonUpdater', toJS(this.state.swapState))
+
             this.stopWithdrawUpdater();
 
             (async () => {
                 await this.checkWithdrawBalances()
+                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.wtonBalance || 0))
                 this.changeState('swapState', {
                     ...this.swapState,
-                    isWithdrawing: isGoodBignumber(new BigNumber(this.swapState?.wtonBalance || 0)),
+                    isWithdrawing,
+                    status: isWithdrawing ? 'pending' : status,
                 } as EvmSwapTransferStoreState['swapState'])
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
@@ -983,18 +994,20 @@ export class EvmToTonSwapTransfer {
     }
 
     protected runWithdrawTonUpdater(): void {
-        debug('runWithdrawTonUpdater', toJS(this.state.swapState))
-
         const status = this.swapState?.status
 
         const runWithdrawTonUpdater = () => {
+            debug('runWithdrawTonUpdater', toJS(this.state.swapState))
+
             this.stopWithdrawUpdater();
 
             (async () => {
                 await this.checkWithdrawBalances()
+                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.tonBalance || 0))
                 this.changeState('swapState', {
                     ...this.swapState,
-                    isWithdrawing: isGoodBignumber(new BigNumber(this.swapState?.tonBalance || 0)),
+                    isWithdrawing,
+                    status: isWithdrawing ? 'pending' : status,
                 } as EvmSwapTransferStoreState['swapState'])
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
