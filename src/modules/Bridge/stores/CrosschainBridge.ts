@@ -1055,6 +1055,9 @@ export class CrosschainBridge {
             if (isGoodBignumber(tonsAmountBN)) {
                 this.changeData('maxTonsAmount', tonsAmountBN.toFixed())
             }
+            else {
+                this.changeData('maxTonsAmount', '')
+            }
         }
         catch (e) {
             error('Sync TONs max amount error', e)
@@ -1097,10 +1100,13 @@ export class CrosschainBridge {
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
-            const minAmountBN = new BigNumber(result.expected_amount || 0)
+            const minAmountBN = new BigNumber(result.expected_amount || 0).plus(1)
 
             if (isGoodBignumber(minAmountBN)) {
                 this.changeData('minAmount', minAmountBN.toFixed())
+            }
+            else {
+                this.changeData('minAmount', '')
             }
         }
         catch (e) {

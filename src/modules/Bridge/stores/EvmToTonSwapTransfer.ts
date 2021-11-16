@@ -409,7 +409,7 @@ export class EvmToTonSwapTransfer {
         const deployGrams = !isDeployed ? '100000000' : '0'
         const proxyGasValue = !isDeployed ? '600000000' : '500000000'
         const gasAmount = BigNumber.max(
-            new BigNumber(proxyGasValue || 0).plus('150000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('750000000').minus(this.swapState?.tonBalance || 0),
             new BigNumber('50000000'),
         )
 
@@ -480,7 +480,7 @@ export class EvmToTonSwapTransfer {
         const deployGrams = !isDeployed ? '100000000' : '0'
         const proxyGasValue = !isDeployed ? '600000000' : '500000000'
         const gasAmount = BigNumber.max(
-            new BigNumber(proxyGasValue || 0).plus('150000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('750000000').minus(this.swapState?.tonBalance || 0),
             new BigNumber('50000000'),
         )
 
