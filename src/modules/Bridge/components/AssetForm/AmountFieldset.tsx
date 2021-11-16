@@ -139,6 +139,21 @@ export function AmountFieldset(): JSX.Element {
                             }}
                         </Observer>
                     </div>
+                    {/*
+                    {process.env.NODE_ENV !== 'production' && (
+                        <div className="crosschain-transfer__control-hint">
+                            <Observer>
+                                {() => (
+                                    <>
+                                        Min value:
+                                        {' '}
+                                        {formattedAmount(bridge.minAmount || 0, bridge.decimals)}
+                                    </>
+                                )}
+                            </Observer>
+                        </div>
+                    )}
+                    */}
                 </div>
             </div>
         </fieldset>

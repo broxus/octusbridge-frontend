@@ -155,8 +155,14 @@ export class CrosschainBridge {
      */
     public init(): void {
         this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, this.handleEvmWalletConnection)
-        this.#swapDisposer = reaction(() => this.isSwapEnabled, isEnabled => {
+        this.#swapDisposer = reaction(() => this.isSwapEnabled, async isEnabled => {
             this.changeData('depositType', isEnabled ? 'credit' : 'default')
+            if (isEnabled) {
+                await this.syncMinAmount()
+            }
+            else {
+                this.changeData('minAmount', '')
+            }
         })
         this.#tokenDisposer = reaction(() => this.data.selectedToken, this.handleChangeToken)
         this.#tonWalletDisposer = reaction(() => this.tonWallet.isConnected, this.handleTonWalletConnection)
@@ -697,6 +703,18 @@ export class CrosschainBridge {
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
+            const minTokensAmountBN = this.amountNumber.shiftedBy(this.token.decimals).minus(maxSpendTokens || 0)
+
+            if (isGoodBignumber(minTokensAmountBN)) {
+                this.changeData('swapType', '0')
+                this.changeData('minReceiveTokens', minTokensAmountBN.toFixed())
+            }
+            else {
+                this.changeData('minReceiveTokens', '')
+                this.changeData('tokensAmount', '')
+                return
+            }
+
             const {
                 expected_amount: minSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
@@ -710,13 +728,6 @@ export class CrosschainBridge {
                     .toFixed(),
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
-
-            const minTokensAmountBN = this.amountNumber.shiftedBy(this.token.decimals).minus(maxSpendTokens || 0)
-
-            if (isGoodBignumber(minTokensAmountBN)) {
-                this.changeData('swapType', '0')
-                this.changeData('minReceiveTokens', minTokensAmountBN.toFixed())
-            }
 
             const tokensAmountBN = this.amountNumber
                 .shiftedBy(this.token.decimals)
@@ -741,6 +752,7 @@ export class CrosschainBridge {
         if (!this.isSwapEnabled) {
             this.changeData('tokensAmount', '')
             this.changeData('tonsAmount', '')
+            this.changeData('minAmount', '')
             return
         }
 
@@ -885,7 +897,9 @@ export class CrosschainBridge {
                 this.checkSwapCredit()
                 this.checkMinTons()
                 await this.syncPair()
-                await this.syncMinAmount()
+                if (this.isSwapEnabled) {
+                    await this.syncMinAmount()
+                }
                 await this.onChangeAmount()
             }
         }

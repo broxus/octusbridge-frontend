@@ -120,6 +120,34 @@ export function TonsAmountFieldset(): JSX.Element {
                             }}
                         </Observer>
                     </div>
+                    {/*
+                    {process.env.NODE_ENV !== 'production' && (
+                        <React.Fragment key="amounts">
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            Min value:
+                                            {' '}
+                                            {formattedAmount(bridge.minTonsAmount || 0, DexConstants.TONDecimals)}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            Max value:
+                                            {' '}
+                                            {formattedAmount(bridge.maxTonsAmount || 0, DexConstants.TONDecimals)}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                        </React.Fragment>
+                    )}
+                    */}
                 </div>
             </div>
         </fieldset>
