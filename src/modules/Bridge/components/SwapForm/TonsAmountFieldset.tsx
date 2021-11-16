@@ -1,4 +1,5 @@
 import * as React from 'react'
+import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
@@ -77,11 +78,13 @@ export function TonsAmountFieldset(): JSX.Element {
                                     )
                                 }
 
-                                const isMaxValueValid = validateMaxValue(
-                                    bridge.maxTonsAmount,
-                                    bridge.tonsAmount,
-                                    DexConstants.TONDecimals,
-                                )
+                                const isMaxValueValid = isGoodBignumber(new BigNumber(bridge.maxTonsAmount || 0))
+                                    ? validateMaxValue(
+                                        bridge.maxTonsAmount,
+                                        bridge.tonsAmount,
+                                        DexConstants.TONDecimals,
+                                    )
+                                    : true
 
                                 switch (true) {
                                     case !isMinValueValid:

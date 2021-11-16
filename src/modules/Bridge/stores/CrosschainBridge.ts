@@ -1056,7 +1056,7 @@ export class CrosschainBridge {
                 this.changeData('maxTonsAmount', tonsAmountBN.toFixed())
             }
             else {
-                this.changeData('maxTonsAmount', '')
+                this.changeData('maxTonsAmount', '0')
             }
         }
         catch (e) {
@@ -1360,7 +1360,7 @@ export class CrosschainBridge {
                 && validateMaxValue(this.maxTonsAmount, this.tonsAmount, DexConstants.TONDecimals)
             )
         }
-        if (this.tonsAmount && isGoodBignumber(this.tonsAmountNumber, false)) {
+        if (this.tonsAmount && isGoodBignumber(this.tonsAmountNumber)) {
             return (
                 validateMinValue('0', this.tonsAmount, DexConstants.TONDecimals)
                 && validateMaxValue(this.maxTonsAmount, this.tonsAmount, DexConstants.TONDecimals)
