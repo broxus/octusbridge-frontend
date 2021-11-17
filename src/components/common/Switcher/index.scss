@@ -1,0 +1,45 @@
+.switcher {
+    display: block;
+
+    &__handle {
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 10px;
+        cursor: pointer;
+        display: block;
+        height: 18px;
+        position: relative;
+        transition: background-color 0.25s;
+        width: 36px;
+
+        &::after {
+            background-color: #ffffff;
+            border-radius: 50%;
+            content: '';
+            display: block;
+            height: 12px;
+            left: 3px;
+            position: absolute;
+            top: 3px;
+            transition: left 0.25s, width 0.15s;
+            width: 12px;
+        }
+    }
+
+    &.disabled {
+        opacity: 0.6;
+    }
+
+    &.disabled &__handle {
+        cursor: not-allowed;
+    }
+
+    input { display: none; }
+
+    input:checked + .switcher__handle {
+        background-color: #4ab44a;
+
+        &::after {
+            left: 20px;
+        }
+    }
+}

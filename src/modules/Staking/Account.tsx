@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Observer, observer } from 'mobx-react-lite'
 import { useRouteMatch } from 'react-router-dom'
 
+import { DexConstants } from '@/misc'
 import { AccountLayout } from '@/modules/Staking/components/AccountLayout'
 import { AccountField } from '@/modules/Staking/components/AccountField'
 import { AccountFee } from '@/modules/Staking/components/AccountFee'
@@ -17,9 +18,13 @@ function StakingAccountInner(): JSX.Element {
     const actionType = useRouteMatch(STAKING_LOCATION)?.isExact ? ActionType.Stake : ActionType.Redeem
     const currentForm = actionType === ActionType.Redeem ? redeemForm : stakingForm
 
-    const submit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        currentForm.submit()
+    const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        await currentForm.submit()
+    }
+
+    const onSubmit = async () => {
+        await currentForm.submit()
     }
 
     const init = async () => {
@@ -37,7 +42,7 @@ function StakingAccountInner(): JSX.Element {
 
     return (
         <AccountLayout>
-            <form onSubmit={submit}>
+            <form onSubmit={onSubmitForm}>
                 <Observer>
                     {() => (
                         <AccountField
@@ -56,8 +61,8 @@ function StakingAccountInner(): JSX.Element {
 
                 <AccountFee
                     feeAmount={currentForm.tonDepositAmount}
-                    tokenSymbol={accountData.tonTokenSymbol}
-                    tokenDecimals={accountData.tonTokenDecimals}
+                    tokenSymbol={DexConstants.TONSymbol}
+                    tokenDecimals={DexConstants.TONDecimals}
                 />
 
                 <Observer>
@@ -67,6 +72,7 @@ function StakingAccountInner(): JSX.Element {
                             isLoading={accountData.isLoading || currentForm.isLoading}
                             amountIsValid={currentForm.isValid}
                             onClickConnect={accountData.connectToTonWallet}
+                            onSubmit={onSubmit}
                         />
                     )}
                 </Observer>

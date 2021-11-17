@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
 import { Logo } from '@/components/layout/Logo'
@@ -18,10 +18,10 @@ export function Footer(): JSX.Element {
         <Observer>
             {() => (
                 <div className="toolbar">
-                    {(!tonWallet.isInitialized && !tonWallet.isInitializing) && (
+                    {!tonWallet.hasProvider && (
                         <a
                             href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
-                            className="btn btn--xl btn--empty footer-tool"
+                            className="btn btn--tertiary btn--md footer-tool"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -54,18 +54,18 @@ export function Footer(): JSX.Element {
                             </div>
                             <ul className="footer-nav__list">
                                 <li>
-                                    <NavLink to="/bridge">
+                                    <Link to="/bridge">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_ETH_TO_TON_LINK_TEXT',
                                         })}
-                                    </NavLink>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <NavLink to="/bridge">
+                                    <Link to="/bridge">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_TON_TO_ETH_LINK_TEXT',
                                         })}
-                                    </NavLink>
+                                    </Link>
                                 </li>
                                 <li>
                                     <a>
@@ -84,17 +84,17 @@ export function Footer(): JSX.Element {
                             </div>
                             <ul className="footer-nav__list">
                                 <li>
-                                    <NavLink exact to="/staking">
+                                    <Link to="/staking">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_STAKE_LINK_TEXT',
                                         })}
-                                    </NavLink>
+                                    </Link>
                                     {' / '}
-                                    <NavLink exact to="/staking/redeem">
+                                    <Link to="/staking/redeem">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_REDEEM_LINK_TEXT',
                                         })}
-                                    </NavLink>
+                                    </Link>
                                 </li>
                                 <li>
                                     <a>

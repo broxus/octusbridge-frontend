@@ -1,9 +1,13 @@
 import * as React from 'react'
-import { useIntl } from 'react-intl'
 import { observer, Observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
 import { useHistory } from 'react-router-dom'
 
-import { Warning } from '@/components/common/Warning'
+import { Alert } from '@/components/common/Alert'
+import { Button } from '@/components/common/Button'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useMounted } from '@/hooks/useMounted'
+import { DexConstants } from '@/misc'
 import { CreateRelayerLayout } from '@/modules/Relayers/components/CreateRelayerLayout'
 import { CreateRelayerFormLayout } from '@/modules/Relayers/components/CreateRelayerFormLayout'
 import { CreateRelayerStepLayout } from '@/modules/Relayers/components/CreateRelayerStepLayout'
@@ -11,9 +15,7 @@ import { CreateRelayerStatusIndicator } from '@/modules/Relayers/components/Crea
 import { CreateRelayerSuccess } from '@/modules/Relayers/components/CreateRelayerSuccess'
 import { useStakingData } from '@/modules/Relayers/hooks/useStakingData'
 import { useRelayerBroadcast } from '@/modules/Relayers/hooks/useRelayerBroadcast'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useMounted } from '@/hooks/useMounted'
-import { amount } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 function RelayerStatusInner(): JSX.Element {
     const intl = useIntl()
@@ -41,8 +43,8 @@ function RelayerStatusInner(): JSX.Element {
             }
 
             <CreateRelayerLayout
-                tonTokenSymbol={stakingData.tonTokenSymbol}
-                tonTokenDecimals={stakingData.tonTokenDecimals}
+                tonTokenSymbol={DexConstants.TONSymbol}
+                tonTokenDecimals={DexConstants.TONDecimals}
                 relayInitialTonDeposit={stakingData.relayInitialTonDeposit}
                 stakingBalance={stakingData.stakingBalance}
                 stakingTokenDecimals={stakingData.stakingTokenDecimals}
@@ -120,19 +122,17 @@ function RelayerStatusInner(): JSX.Element {
                                 && !relayerBroadcast.tonWalletBalanceIsValid
                                 && relayerBroadcast.broadcastStatus !== 'confirmed'
                                 && stakingData.eventInitialBalance
-                                && stakingData.tonTokenDecimals
-                                && stakingData.tonTokenSymbol
                                 && (
                                     <p>
-                                        <Warning
+                                        <Alert
                                             text={intl.formatMessage({
                                                 id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
                                             }, {
-                                                amount: amount(
+                                                amount: formattedAmount(
                                                     stakingData.eventInitialBalance,
-                                                    stakingData.tonTokenDecimals,
+                                                    DexConstants.TONDecimals,
                                                 ),
-                                                symbol: stakingData.tonTokenSymbol,
+                                                symbol: DexConstants.TONSymbol,
                                             })}
                                         />
                                     </p>
@@ -140,9 +140,7 @@ function RelayerStatusInner(): JSX.Element {
                             }
 
                             {relayerBroadcast.broadcastStatus !== 'confirmed' && (
-                                <button
-                                    type="button"
-                                    className="btn btn--primary"
+                                <Button
                                     disabled={(
                                         !relayerBroadcast.tonWalletBalanceIsValid
                                         || relayerBroadcast.tonPubkeyStatus !== 'confirmed'
@@ -150,12 +148,13 @@ function RelayerStatusInner(): JSX.Element {
                                         || relayerBroadcast.broadcastStatus === 'pending'
                                         || relayerBroadcast.broadcastStatus === 'checking'
                                     )}
+                                    type="primary"
                                     onClick={relayerBroadcast.broadcast}
                                 >
                                     {intl.formatMessage({
                                         id: 'RELAYERS_CREATE_FORM_BROADCAST_BTN',
                                     })}
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </CreateRelayerFormLayout>

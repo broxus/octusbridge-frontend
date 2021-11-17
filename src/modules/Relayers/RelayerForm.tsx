@@ -1,8 +1,11 @@
 import * as React from 'react'
-import { useIntl } from 'react-intl'
 import { observer, Observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
 import { useHistory } from 'react-router-dom'
 
+import { useDebounce } from '@/hooks/useDebounce'
+import { useMounted } from '@/hooks/useMounted'
+import { DexConstants } from '@/misc'
 import { CreateRelayerLayout } from '@/modules/Relayers/components/CreateRelayerLayout'
 import { CreateRelayerFormLayout } from '@/modules/Relayers/components/CreateRelayerFormLayout'
 import { CreateRelayerStepLayout } from '@/modules/Relayers/components/CreateRelayerStepLayout'
@@ -11,8 +14,7 @@ import { CreateRelayerTextField } from '@/modules/Relayers/components/CreateRela
 import { CreateRelayerBalance } from '@/modules/Relayers/components/CreateRelayerBalance'
 import { useStakingData } from '@/modules/Relayers/hooks/useStakingData'
 import { useRelayerLink } from '@/modules/Relayers/hooks/useRelayerLink'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useMounted } from '@/hooks/useMounted'
+
 
 function RelayerFormInner(): JSX.Element {
     const intl = useIntl()
@@ -42,8 +44,8 @@ function RelayerFormInner(): JSX.Element {
                     stakingTokenDecimals={stakingData.stakingTokenDecimals}
                     tonWalletBalance={stakingData.tonWalletBalance}
                     tonWalletBalanceIsValid={relayerLink.tonWalletBalanceIsValid}
-                    tonTokenSymbol={stakingData.tonTokenSymbol}
-                    tonTokenDecimals={stakingData.tonTokenDecimals}
+                    tonTokenSymbol={DexConstants.TONSymbol}
+                    tonTokenDecimals={DexConstants.TONDecimals}
                     contractFee={stakingData.relayInitialTonDeposit}
                     onDismiss={relayerLink.cancel}
                     onSubmit={relayerLink.linkAccounts}
@@ -51,8 +53,8 @@ function RelayerFormInner(): JSX.Element {
             )}
 
             <CreateRelayerLayout
-                tonTokenSymbol={stakingData.tonTokenSymbol}
-                tonTokenDecimals={stakingData.tonTokenDecimals}
+                tonTokenSymbol={DexConstants.TONSymbol}
+                tonTokenDecimals={DexConstants.TONDecimals}
                 relayInitialTonDeposit={stakingData.relayInitialTonDeposit}
                 stakingBalance={stakingData.stakingBalance}
                 stakingTokenDecimals={stakingData.stakingTokenDecimals}
@@ -129,8 +131,8 @@ function RelayerFormInner(): JSX.Element {
                                         isSubmitted={relayerLink.isSubmitted}
                                         tonWalletBalanceIsValid={relayerLink.tonWalletBalanceIsValid}
                                         contractFee={stakingData.relayInitialTonDeposit}
-                                        tonTokenSymbol={stakingData.tonTokenSymbol}
-                                        tonTokenDecimals={stakingData.tonTokenDecimals}
+                                        tonTokenSymbol={DexConstants.TONSymbol}
+                                        tonTokenDecimals={DexConstants.TONDecimals}
                                         stakingBalance={stakingData.stakingBalance}
                                         requiredStake={stakingData.minRelayDeposit}
                                         stakingTokenDecimals={stakingData.stakingTokenDecimals}

@@ -144,7 +144,7 @@ export function UserAvatar({ address, size, className }: Props): JSX.Element {
             xmlns="http://www.w3.org/2000/svg"
             className={className}
         >
-            <g clipPath="url(#clip000)">
+            <g clipPath={`url(#clip000_001${address})`}>
                 {circles.map(({ fill, ...circle }) => (
                     <circle
                         key={`${Object.values(circle).join()}${fill}`}
@@ -154,7 +154,7 @@ export function UserAvatar({ address, size, className }: Props): JSX.Element {
                 ))}
             </g>
             <defs>
-                <clipPath id="clip000">
+                <clipPath id={`clip000_001${address}`}>
                     <rect
                         width={36}
                         height={36}

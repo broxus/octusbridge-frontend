@@ -11,11 +11,8 @@ export function EvmTransferForm(): JSX.Element {
         <div className="card card--flat card--small crosschain-transfer">
             <div className="crosschain-transfer__statuses">
                 <TransferStatusIndicator />
-
                 <PrepareStatusIndicator />
-
                 <EventStatusIndicator />
-
                 <ReleaseStatusIndicator />
             </div>
         </div>

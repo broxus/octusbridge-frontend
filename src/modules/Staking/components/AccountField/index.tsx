@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { ActionType } from '@/modules/Staking/types'
-import { amount as formatAmount } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -67,7 +67,7 @@ export function AccountField({
                         })}
                     </span>
                     &nbsp;
-                    <strong>{formatAmount(balance, tokenDecimals)}</strong>
+                    <strong>{formattedAmount(balance, tokenDecimals)}</strong>
                 </div>
             </div>
 

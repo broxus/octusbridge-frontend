@@ -1,74 +1,72 @@
 import * as React from 'react'
+import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { SimpleRadio } from '@/components/common/SimpleRadio'
+import { useBridge } from '@/modules/Bridge/providers'
 import { ApprovalStrategies } from '@/modules/Bridge/types'
-import { TokenCache } from '@/stores/TokensCacheService'
+import { formattedAmount } from '@/utils'
 
 
-type Props = {
-    amount: string;
-    disabled?: boolean;
-    strategy: ApprovalStrategies;
-    token?: TokenCache;
-    onChange: (value: ApprovalStrategies) => void;
-}
-
-
-export function ApproveForm({
-    amount,
-    disabled,
-    strategy,
-    token,
-    onChange,
-}: Props): JSX.Element {
+export function ApproveForm(): JSX.Element {
     const intl = useIntl()
+    const bridge = useBridge()
+
+    const onChangeStrategy = (value: ApprovalStrategies) => {
+        bridge.changeState('approvalStrategy', value)
+    }
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
             <div className="crosschain-transfer__label">
                 {intl.formatMessage({
-                    id: 'CROSSCHAIN_TRANSFER_ASSET_ASSET_LABEL',
+                    id: 'CROSSCHAIN_TRANSFER_APPROVE_AMOUNT_LABEL',
                 })}
             </div>
             <form className="form crosschain-transfer__form">
                 <fieldset className="form-fieldset">
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
-                            <SimpleRadio
-                                annotation={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_NOTE',
-                                })}
-                                checked={strategy === 'infinity'}
-                                disabled={disabled}
-                                label={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_LABEL',
-                                })}
-                                name="infinity"
-                                onChange={onChange}
-                            />
+                            <Observer>
+                                {() => (
+                                    <SimpleRadio
+                                        annotation={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_NOTE',
+                                        })}
+                                        checked={bridge.approvalStrategy === 'infinity'}
+                                        disabled={bridge.isPendingApproval}
+                                        label={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_APPROVE_INFINITY_CHECKBOX_LABEL',
+                                        })}
+                                        name="infinity"
+                                        onChange={onChangeStrategy}
+                                    />
+                                )}
+                            </Observer>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
-                            <SimpleRadio
-                                annotation={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_NOTE',
-                                })}
-                                checked={strategy === 'fixed'}
-                                disabled={disabled}
-                                label={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL',
-                                }, {
-                                    amount,
-                                    symbol: token?.symbol || '',
-                                })}
-                                name="fixed"
-                                onChange={onChange}
-                            />
+                            <Observer>
+                                {() => (
+                                    <SimpleRadio
+                                        annotation={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_NOTE',
+                                        })}
+                                        checked={bridge.approvalStrategy === 'fixed'}
+                                        disabled={bridge.isPendingApproval}
+                                        label={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL',
+                                        }, {
+                                            amount: formattedAmount(bridge.amount, undefined, false),
+                                            symbol: bridge.token?.symbol || '',
+                                        })}
+                                        name="fixed"
+                                        onChange={onChangeStrategy}
+                                    />
+                                )}
+                            </Observer>
                         </div>
-                        <div className="crosschain-transfer__wallet" />
                     </div>
                 </fieldset>
             </form>

@@ -2,152 +2,191 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useTonTransferStore } from '@/modules/Bridge/providers/TonTransferStoreProvider'
-import { ReleaseStateStatus } from '@/modules/Bridge/types'
+import { useTonTransfer } from '@/modules/Bridge/providers/TonTransferStoreProvider'
 import { isSameNetwork } from '@/modules/Bridge/utils'
-import { useEvmWallet } from '@/stores/EvmWalletService'
 import { isTonAddressValid } from '@/utils'
-import { useTonWallet } from '@/stores/TonWalletService'
 
 
 export function ReleaseStatusIndicator(): JSX.Element {
     const intl = useIntl()
-    const transfer = useTonTransferStore()
-    const evmWallet = useEvmWallet()
-    const tonWallet = useTonWallet()
+    const transfer = useTonTransfer()
 
     const isTransferPage = (
         transfer.contractAddress !== undefined
-        && isTonAddressValid(transfer.contractAddress)
-    )
-
-    const [releaseState, setReleaseState] = React.useState<ReleaseStateStatus>(
-        isTransferPage ? (transfer.releaseState || 'disabled') : 'disabled',
+        && isTonAddressValid(transfer.contractAddress.toString())
     )
 
     const onRelease = async () => {
         if (
-            transfer.releaseState !== undefined
-            && ['confirmed', 'pending'].includes(transfer.releaseState)
+            !isTransferPage
+            || (
+                transfer.releaseState !== undefined
+                && ['confirmed', 'pending'].includes(transfer.releaseState.status)
+            )
         ) {
             return
         }
 
-        try {
-            setReleaseState('pending')
-            await transfer.release(() => {
-                setReleaseState('disabled')
-            })
-        }
-        catch (e) {
-            setReleaseState('disabled')
-        }
+        await transfer.release()
     }
 
     return (
         <div className="crosschain-transfer__status">
-            <div className="crosschain-transfer__status-label">
-                <Observer>
-                    {() => (
-                        <StatusIndicator
-                            status={transfer.releaseState || releaseState}
-                        >
-                            {(() => {
-                                switch (transfer.releaseState || releaseState) {
-                                    case 'confirmed':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED',
-                                        })
+            <Observer>
+                {() => {
+                    const evmWallet = transfer.useEvmWallet
+                    const tonWallet = transfer.useTonWallet
+                    const isEvmWalletReady = (
+                        !evmWallet.isInitializing
+                        && !evmWallet.isConnecting
+                        && evmWallet.isInitialized
+                        && evmWallet.isConnected
+                    )
+                    const isTonWalletReady = (
+                        !tonWallet.isInitializing
+                        && !tonWallet.isConnecting
+                        && tonWallet.isInitialized
+                        && tonWallet.isConnected
+                    )
+                    const isPrepareConfirmed = transfer.prepareState?.status === 'confirmed'
+                    const isEventConfirmed = transfer.eventState?.status === 'confirmed'
+                    const status = transfer.releaseState?.status || 'disabled'
+                    const isDisabled = status === undefined || status === 'disabled'
+                    const isConfirmed = status === 'confirmed'
+                    const isPending = status === 'pending'
+                    const waitingWallet = (
+                        (!isEvmWalletReady || !isTonWalletReady)
+                        && isPrepareConfirmed
+                        && isEventConfirmed
+                        && !isConfirmed
+                    )
+                    const wrongNetwork = (
+                        isEvmWalletReady
+                        && transfer.rightNetwork !== undefined
+                        && !isSameNetwork(transfer.rightNetwork.chainId, evmWallet.chainId)
+                        && isPrepareConfirmed
+                        && isEventConfirmed
+                        && !isConfirmed
+                    )
 
-                                    case 'pending':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
-                                        })
+                    return (
+                        <>
+                            <div className="crosschain-transfer__status-indicator">
+                                <Observer>
+                                    {() => {
+                                        if (waitingWallet) {
+                                            return (
+                                                <StatusIndicator status="pending">
+                                                    {intl.formatMessage({
+                                                        id: 'CROSSCHAIN_TRANSFER_STATUS_WAITING_WALLET',
+                                                    })}
+                                                </StatusIndicator>
+                                            )
+                                        }
 
-                                    case 'rejected':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED',
-                                        })
+                                        if (wrongNetwork) {
+                                            return (
+                                                <StatusIndicator status="pending">
+                                                    {intl.formatMessage({
+                                                        id: 'CROSSCHAIN_TRANSFER_STATUS_WAITING_NETWORK',
+                                                    })}
+                                                </StatusIndicator>
+                                            )
+                                        }
 
-                                    default:
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED',
-                                        })
-                                }
-                            })()}
-                        </StatusIndicator>
-                    )}
-                </Observer>
-            </div>
-            <div className="crosschain-transfer__status-control">
-                <p>
-                    {intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_ETH_NOTE',
-                    })}
-                </p>
+                                        return (
+                                            <StatusIndicator status={status}>
+                                                {(() => {
+                                                    switch (status) {
+                                                        case 'confirmed':
+                                                            return intl.formatMessage({
+                                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED',
+                                                            })
 
-                <Observer>
-                    {() => {
-                        if (evmWallet.isInitializing || tonWallet.isInitializing) {
-                            return null
-                        }
+                                                        case 'pending':
+                                                            return intl.formatMessage({
+                                                                id: transfer.releaseState?.isReleased === undefined && status === 'pending'
+                                                                    ? 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CHECKING'
+                                                                    : 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
+                                                            })
 
-                        const state = transfer.releaseState || releaseState
-                        const wrongNetwork = (
-                            evmWallet.isConnected
-                            && tonWallet.isConnected
-                            && !isSameNetwork(transfer.rightNetwork?.chainId, evmWallet.chainId)
-                            && transfer.rightNetwork !== undefined
-                            && transfer.prepareState === 'confirmed'
-                            && transfer.eventState?.status === 'confirmed'
-                            && transfer.releaseState !== 'confirmed'
-                        )
+                                                        case 'rejected':
+                                                            return intl.formatMessage({
+                                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED',
+                                                            })
 
-                        if (wrongNetwork) {
-                            return <WrongNetworkError network={transfer.rightNetwork} />
-                        }
-
-                        return (
-                            !evmWallet.isConnected
-                            && transfer.prepareState === 'confirmed'
-                            && transfer.eventState?.status === 'confirmed'
-                            && ['confirmed', 'pending', 'rejected'].includes(state)
-                        )
-                            ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-s btn--primary"
-                                    disabled={evmWallet.isInitializing || evmWallet.isConnecting}
-                                    onClick={evmWallet.connect}
-                                >
+                                                        default:
+                                                            return intl.formatMessage({
+                                                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED',
+                                                            })
+                                                    }
+                                                })()}
+                                            </StatusIndicator>
+                                        )
+                                    }}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__status-control">
+                                <div className="crosschain-transfer__status-note">
                                     {intl.formatMessage({
-                                        id: 'EVM_WALLET_CONNECT_BTN_TEXT',
+                                        id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_EVM_NOTE',
+                                    }, {
+                                        networkName: transfer.rightNetwork?.label || 'Ethereum',
                                     })}
-                                </button>
-                            )
-                            : (
-                                <button
-                                    type="button"
-                                    className="btn btn-s btn--primary"
-                                    disabled={(
-                                        evmWallet.isInitializing
-                                        || evmWallet.isConnecting
-                                        || transfer.prepareState !== 'confirmed'
-                                        || transfer.eventState?.status !== 'confirmed'
-                                        || ['confirmed', 'pending', 'rejected'].includes(state)
-                                    )}
-                                    onClick={onRelease}
-                                >
-                                    {intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',
-                                    })}
-                                </button>
-                            )
-                    }}
-                </Observer>
-            </div>
+                                </div>
+
+                                <Observer>
+                                    {() => {
+                                        if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                                            return null
+                                        }
+
+                                        if (waitingWallet) {
+                                            return (
+                                                <WalletsConnectors
+                                                    evmWallet={evmWallet}
+                                                    tonWallet={tonWallet}
+                                                />
+                                            )
+                                        }
+
+                                        if (wrongNetwork) {
+                                            return (
+                                                <WrongNetworkError
+                                                    network={transfer.rightNetwork}
+                                                    wallet={evmWallet}
+                                                />
+                                            )
+                                        }
+
+                                        return (
+                                            <Button
+                                                disabled={(!isTransferPage || (
+                                                    !isPrepareConfirmed
+                                                    || !isEventConfirmed
+                                                    || !isDisabled
+                                                    || isConfirmed
+                                                    || isPending
+                                                ))}
+                                                type="primary"
+                                                onClick={isTransferPage ? onRelease : undefined}
+                                            >
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',
+                                                })}
+                                            </Button>
+                                        )
+                                    }}
+                                </Observer>
+                            </div>
+                        </>
+                    )
+                }}
+            </Observer>
         </div>
     )
 }

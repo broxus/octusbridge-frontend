@@ -2,11 +2,12 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { findNetwork } from '@/modules/Bridge/utils'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { amount, sliceAddress } from '@/utils'
+import { formattedAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
@@ -20,12 +21,11 @@ export function EvmWallet(): JSX.Element | null {
             {() => {
                 const network = findNetwork(wallet.chainId, 'evm')
                 return (
-                    <div key="crystal-wallet" className="wallet">
+                    <div className="wallet">
                         {!wallet.isConnected ? (
-                            <button
-                                key="guest"
-                                type="button"
-                                className="btn btn--secondary"
+                            <Button
+                                size="md"
+                                type="secondary"
                                 disabled={wallet.isConnecting}
                                 aria-disabled={wallet.isConnecting}
                                 onClick={wallet.connect}
@@ -33,13 +33,13 @@ export function EvmWallet(): JSX.Element | null {
                                 {intl.formatMessage({
                                     id: 'EVM_WALLET_CONNECT_BTN_TEXT',
                                 })}
-                            </button>
+                            </Button>
                         ) : (
                             <div key="wrapper" className="wallet__wrapper">
                                 <div className="wallet__user-avatar">
-                                    {wallet.account?.address !== undefined && (
+                                    {wallet.address !== undefined && (
                                         <UserAvatar
-                                            address={wallet.account?.address}
+                                            address={wallet.address}
                                             size="small"
                                         />
                                     )}
@@ -48,30 +48,32 @@ export function EvmWallet(): JSX.Element | null {
                                     </div>
                                 </div>
                                 <div className="wallet__info">
-                                    <div className="wallet__address" data-address={wallet.account?.address}>
-                                        {sliceAddress(wallet.account?.address)}
+                                    <div className="wallet__address" data-address={wallet.address}>
+                                        {sliceAddress(wallet.address)}
                                     </div>
-                                    {wallet.account?.balance !== undefined && (
+                                    {wallet.balance !== undefined && (
                                         <div key="balance" className="wallet__balance">
                                             {intl.formatMessage({
                                                 id: 'WALLET_BALANCE_HINT',
                                             }, {
-                                                value: amount(wallet.balance, 18),
-                                                currency: network?.currencySymbol || '',
+                                                value: formattedAmount(
+                                                    wallet.balance,
+                                                    18,
+                                                    false,
+                                                ),
+                                                currency: network?.currencySymbol || 'ETH',
                                             })}
                                         </div>
                                     )}
                                 </div>
 
                                 {!wallet.isMetaMask && (
-                                    <button
-                                        key="logout"
-                                        type="button"
-                                        className="btn btn-logout"
+                                    <Button
+                                        className="btn-logout"
                                         onClick={wallet.disconnect}
                                     >
                                         <Icon icon="logout" />
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         )}

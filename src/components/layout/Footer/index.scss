@@ -226,10 +226,15 @@
         &:last-child { margin-right: 0; }
         a {
             align-items: center;
+            color: rgba(255, 255, 255, 0.56);
             display: flex;
             height: 40px;
             justify-content: center;
             width: 40px;
+            &:hover,
+            &:focus {
+                color: #ffffff;
+            }
         }
     }
 

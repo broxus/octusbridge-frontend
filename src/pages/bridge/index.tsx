@@ -1,7 +1,10 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Bridge } from '@/modules/Bridge'
+import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
+import { useEvmWallet } from '@/stores/EvmWalletService'
+import { useTonWallet } from '@/stores/TonWalletService'
+import { useTokensCache } from '@/stores/TokensCacheService'
 
 
 export default function Page(): JSX.Element {
@@ -17,7 +20,13 @@ export default function Page(): JSX.Element {
                 </h1>
             </header>
 
-            <Bridge />
+            <CrosschainBridgeStoreProvider
+                evmWallet={useEvmWallet()}
+                tonWallet={useTonWallet()}
+                tokensCache={useTokensCache()}
+            >
+                <Bridge />
+            </CrosschainBridgeStoreProvider>
         </div>
     )
 }

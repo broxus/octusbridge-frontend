@@ -2,42 +2,15 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { NetworkShape } from '@/bridge'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
-import { TokenCache } from '@/stores/TokensCacheService'
-import { amount, formattedAmount } from '@/utils'
+import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
+import { formattedAmount } from '@/utils'
 
 
-type Props = {
-    amount?: string;
-    decimals?: number;
-    leftAddress?: string;
-    leftNetwork?: NetworkShape;
-    rightAddress?: string;
-    rightNetwork?: NetworkShape;
-    token?: TokenCache;
-}
-
-
-export function Summary({
-    amount: _amount,
-    decimals,
-    leftAddress,
-    leftNetwork,
-    rightAddress,
-    rightNetwork,
-    token,
-}: Props): JSX.Element {
+export function Summary(): JSX.Element {
     const intl = useIntl()
-
-    const vaultBalance = () => {
-        if (token?.root !== undefined && rightNetwork?.chainId !== undefined && rightNetwork.type === 'evm') {
-            return token.vaults?.find(vault => vault.chainId === rightNetwork.chainId)?.vaultBalance
-        }
-
-        return undefined
-    }
+    const summary = useSummary()
 
     return (
         <div className="card card--ghost card--flat card--small">
@@ -46,115 +19,165 @@ export function Summary({
                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TITLE',
                 })}
             </h3>
-            <Observer>
-                {() => (
-                    <ul className="list crosschain-transfer__list">
-                        <li>
-                            <span className="text-muted">
-                                {leftNetwork?.label !== undefined ? intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK',
-                                }, {
-                                    network: leftNetwork.label,
-                                }) : intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
-                                })}
-                            </span>
-                            {(leftNetwork?.label !== undefined && leftAddress !== undefined) ? (
+            <ul className="summary">
+                <li>
+                    <span className="text-muted">
+                        <Observer>
+                            {() => (
                                 <>
-                                    {leftNetwork?.type === 'ton' && (
-                                        <TonscanAccountLink
-                                            key="ton-address"
-                                            address={leftAddress}
-                                            copy
-                                        />
-                                    )}
-                                    {leftNetwork?.type === 'evm' && (
-                                        <BlockScanAddressLink
-                                            key="evm-address"
-                                            address={leftAddress}
-                                            baseUrl={leftNetwork.explorerBaseUrl}
-                                            copy
-                                        />
-                                    )}
+                                    {summary.leftNetwork?.name !== undefined ? intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK',
+                                    }, {
+                                        network: summary.leftNetwork.name,
+                                    }) : intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
+                                    })}
                                 </>
-                            ) : (
-                                <span>–</span>
                             )}
-                        </li>
-                        <li>
-                            <span className="text-muted">
-                                {rightNetwork?.label !== undefined ? intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK',
-                                }, {
-                                    network: rightNetwork.label,
-                                }) : intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
-                                })}
-                            </span>
-                            {(rightNetwork?.label !== undefined && rightAddress !== undefined) ? (
+                        </Observer>
+                    </span>
+                    <Observer>
+                        {() => (
+                            <>
+                                {(summary.leftNetwork?.name !== undefined && summary.leftAddress !== undefined) ? (
+                                    <>
+                                        {summary.leftNetwork?.type === 'ton' && (
+                                            <TonscanAccountLink
+                                                key="ton-address"
+                                                address={summary.leftAddress}
+                                                copy
+                                            />
+                                        )}
+                                        {summary.leftNetwork?.type === 'evm' && (
+                                            <BlockScanAddressLink
+                                                key="evm-address"
+                                                address={summary.leftAddress}
+                                                baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                                copy
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <span>–</span>
+                                )}
+                            </>
+                        )}
+                    </Observer>
+                </li>
+                <li>
+                    <span className="text-muted">
+                        <Observer>
+                            {() => (
                                 <>
-                                    {rightNetwork?.type === 'ton' && (
-                                        <TonscanAccountLink
-                                            key="ton-address"
-                                            address={rightAddress}
-                                            copy
-                                        />
-                                    )}
-                                    {rightNetwork?.type === 'evm' && (
-                                        <BlockScanAddressLink
-                                            key="evm-address"
-                                            address={rightAddress}
-                                            baseUrl={rightNetwork.explorerBaseUrl}
-                                            copy
-                                        />
-                                    )}
+                                    {summary.rightNetwork?.name !== undefined ? intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK',
+                                    }, {
+                                        network: summary.rightNetwork.name,
+                                    }) : intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
+                                    })}
                                 </>
-                            ) : (
-                                <span>–</span>
                             )}
-                        </li>
-                        {vaultBalance() !== undefined && (
-                            <li key="vault-balance">
-                                <span className="text-muted text-nowrap">
-                                    {intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE',
-                                    }, {
-                                        symbol: token?.symbol,
-                                    })}
-                                </span>
-                                <span className="truncate">{amount(vaultBalance(), decimals)}</span>
-                            </li>
+                        </Observer>
+                    </span>
+                    <Observer>
+                        {() => (
+                            <>
+                                {(summary.rightNetwork?.name !== undefined && summary.rightAddress !== undefined) ? (
+                                    <>
+                                        {summary.rightNetwork?.type === 'ton' && (
+                                            <TonscanAccountLink
+                                                key="ton-address"
+                                                address={summary.rightAddress}
+                                                copy
+                                            />
+                                        )}
+                                        {summary.rightNetwork?.type === 'evm' && (
+                                            <BlockScanAddressLink
+                                                key="evm-address"
+                                                address={summary.rightAddress}
+                                                baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                                copy
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <span>–</span>
+                                )}
+                            </>
                         )}
-                        {token?.symbol !== undefined && (
-                            <li key="bridge-fee">
-                                <span className="text-muted">
+                    </Observer>
+                </li>
+                <Observer>
+                    {() => (
+                        <>
+                            {summary.vaultBalance !== undefined && (
+                                <li key="vault-balance">
+                                    <span className="text-muted text-nowrap">
+
+                                        {intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE',
+                                        }, {
+                                            symbol: summary.token?.symbol,
+                                        })}
+                                    </span>
+                                    <span className="text-truncate">
+                                        {formattedAmount(summary.vaultBalance, summary.vaultDecimals)}
+                                    </span>
+                                </li>
+                            )}
+                        </>
+                    )}
+                </Observer>
+                <Observer>
+                    {() => (
+                        <>
+                            {summary.token?.symbol !== undefined && (
+                                <li key="bridge-fee">
+                                    <span className="text-muted">
+                                        {intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE',
+                                        }, {
+                                            symbol: summary.token.symbol || '',
+                                        })}
+                                    </span>
+                                    <span>-</span>
+                                    {/* <span>{formattedAmount(summary.fee, DexConstants.TONDecimals)}</span> */}
+                                </li>
+                            )}
+                        </>
+                    )}
+                </Observer>
+                <li className="divider" />
+                <li>
+                    <span className="text-muted text-nowrap">
+                        <Observer>
+                            {() => (
+                                <>
                                     {intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE',
+                                        id: summary.token?.symbol !== undefined
+                                            ? 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN'
+                                            : 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT',
                                     }, {
-                                        symbol: token.symbol || '',
+                                        symbol: summary.token?.symbol,
                                     })}
-                                </span>
-                                <span>–</span>
-                            </li>
-                        )}
-                        <li className="divider" />
-                        <li>
-                            <span className="text-muted text-nowrap">
-                                {intl.formatMessage({
-                                    id: token?.symbol !== undefined
-                                        ? 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN'
-                                        : 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT',
-                                }, {
-                                    symbol: token?.symbol,
-                                })}
-                            </span>
-                            <span className="text-lg truncate">
-                                <b>{_amount ? formattedAmount(_amount, decimals) : '–'}</b>
-                            </span>
-                        </li>
-                    </ul>
-                )}
-            </Observer>
+                                </>
+                            )}
+                        </Observer>
+                    </span>
+                    <span className="text-lg text-truncate">
+                        <Observer>
+                            {() => (
+                                <b>
+                                    {summary.amount
+                                        ? formattedAmount(summary.amount, undefined, false)
+                                        : '–'}
+                                </b>
+                            )}
+                        </Observer>
+                    </span>
+                </li>
+            </ul>
         </div>
     )
 }

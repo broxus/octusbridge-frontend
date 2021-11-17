@@ -2,36 +2,23 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { ApproveForm } from '@/modules/Bridge/components/ApproveForm'
-import { useBridge } from '@/modules/Bridge/stores/CrosschainBridge'
-import { ApprovalStrategies, CrosschainBridgeStep } from '@/modules/Bridge/types'
+import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
+import { ApproveForm } from '@/modules/Bridge/components/ApproveForm'
+import { useBridge } from '@/modules/Bridge/providers'
+import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 
 
 export function ApproveStep(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
 
-    const [isPendingApprove, setPendingApprove] = React.useState(false)
-
-    const changeStrategy = (value: ApprovalStrategies) => {
-        bridge.changeState('approvalStrategy', value)
-    }
-
     const nextStep = async () => {
-        try {
-            setPendingApprove(true)
-            await bridge.approve(() => {
-                setPendingApprove(false)
-            })
-        }
-        catch (e) {
-            setPendingApprove(false)
-        }
+        await bridge.approveAmount()
     }
 
     const prevStep = () => {
-        bridge.changeStep(CrosschainBridgeStep.SELECT_ASSET)
+        bridge.changeState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
 
     return (
@@ -54,46 +41,40 @@ export function ApproveStep(): JSX.Element {
                 </h2>
             </header>
 
-            <Observer>
-                {() => (
-                    <ApproveForm
-                        amount={bridge.amount}
-                        disabled={isPendingApprove}
-                        strategy={bridge.approvalStrategy}
-                        token={bridge.token}
-                        onChange={changeStrategy}
-                    />
-                )}
-            </Observer>
+            <ApproveForm />
 
-            <Observer>
-                {() => (
-                    <footer className="crosschain-transfer__footer">
-                        <button
-                            type="button"
-                            className="btn btn-lg btn-link crosschain-transfer__btn-prev"
-                            disabled={isPendingApprove}
-                            onClick={prevStep}
-                        >
-                            {intl.formatMessage({
-                                id: 'CROSSCHAIN_TRANSFER_PREV_STEP_BTN_TEXT',
-                            })}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-lg btn--primary crosschain-transfer__btn-next"
-                            disabled={isPendingApprove}
-                            onClick={nextStep}
-                        >
-                            {isPendingApprove ? (
-                                <Icon icon="loader" className="spin" />
-                            ) : intl.formatMessage({
-                                id: 'CROSSCHAIN_TRANSFER_CONFIRM_BTN_TEXT',
-                            })}
-                        </button>
-                    </footer>
-                )}
-            </Observer>
+            <footer className="crosschain-transfer__footer">
+                <Observer>
+                    {() => (
+                        <>
+                            <Button
+                                className="crosschain-transfer__btn-prev"
+                                disabled={bridge.isPendingApproval}
+                                size="lg"
+                                type="link"
+                                onClick={prevStep}
+                            >
+                                {intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_PREV_STEP_BTN_TEXT',
+                                })}
+                            </Button>
+                            <Button
+                                className="crosschain-transfer__btn-next"
+                                disabled={bridge.isPendingApproval}
+                                size="lg"
+                                type="primary"
+                                onClick={nextStep}
+                            >
+                                {bridge.isPendingApproval ? (
+                                    <Icon icon="loader" className="spin" />
+                                ) : intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_CONFIRM_BTN_TEXT',
+                                })}
+                            </Button>
+                        </>
+                    )}
+                </Observer>
+            </footer>
         </>
     )
 }
