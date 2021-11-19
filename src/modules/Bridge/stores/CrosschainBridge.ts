@@ -390,7 +390,7 @@ export class CrosschainBridge {
                 tries += 1
 
                 await this.wrapperContract.methods.depositToFactory(
-                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                    this.amountNumber.shiftedBy(this.tokenVault.decimals).dp(0, BigNumber.ROUND_DOWN).toFixed(),
                     '0',
                     `0x${target[1]}`,
                     `0x${creditFactoryTarget[1]}`,
@@ -586,6 +586,7 @@ export class CrosschainBridge {
             !this.isSwapEnabled
             || this.pairContract === undefined
             || this.token === undefined
+            || this.decimals === undefined
         ) {
             return
         }
@@ -690,6 +691,7 @@ export class CrosschainBridge {
         if (
             !this.isSwapEnabled
             || this.pairContract === undefined
+            || this.decimals === undefined
             || this.token === undefined
         ) {
             return
@@ -786,12 +788,14 @@ export class CrosschainBridge {
             minAmount: '',
             minReceiveTokens: '',
             minTonsAmount: '',
+            tokensAmount: '',
+            tonsAmount: '',
             pairAddress: undefined,
         }
         this.state = {
             ...this.state,
             isPendingAllowance: false,
-            isSwapEnabled: this.isCreditAvailable && this.isSwapEnabled,
+            isSwapEnabled: false,
         }
     }
 
@@ -1014,7 +1018,7 @@ export class CrosschainBridge {
      * @protected
      */
     protected async syncTokensAmount(): Promise<void> {
-        if (this.pairContract === undefined || this.token === undefined) {
+        if (this.pairContract === undefined || this.token === undefined || this.decimals === undefined) {
             return
         }
 
@@ -1028,7 +1032,14 @@ export class CrosschainBridge {
             const tokensAmount = this.amountNumber.shiftedBy(this.token.decimals).minus(result.expected_amount || 0)
 
             if (isGoodBignumber(tokensAmount)) {
-                this.changeData('maxTokensAmount', tokensAmount.toFixed())
+                this.changeData(
+                    'maxTokensAmount',
+                    tokensAmount
+                        .shiftedBy(this.decimals)
+                        .shiftedBy(-this.token.decimals)
+                        .dp(0, BigNumber.ROUND_DOWN)
+                        .toFixed(),
+                )
                 this.changeData('tokensAmount', tokensAmount.shiftedBy(-this.token.decimals).toFixed())
             }
             else {
@@ -1085,6 +1096,7 @@ export class CrosschainBridge {
             this.data.pairAddress === undefined
             || this.pairContract === undefined
             || this.token === undefined
+            || this.decimals === undefined
         ) {
             return
         }
@@ -1101,7 +1113,11 @@ export class CrosschainBridge {
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
-            const minAmountBN = new BigNumber(result.expected_amount || 0).plus(1)
+            const minAmountBN = new BigNumber(result.expected_amount || 0)
+                .plus(1)
+                .shiftedBy(-this.token.decimals)
+                .shiftedBy(this.decimals)
+                .dp(0, BigNumber.ROUND_DOWN)
 
             if (isGoodBignumber(minAmountBN)) {
                 this.changeData('minAmount', minAmountBN.toFixed())
