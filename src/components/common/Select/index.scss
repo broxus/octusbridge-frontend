@@ -41,6 +41,14 @@
         min-height: 44px;
     }
 
+    &--sm {
+        font-size: 14px;
+    }
+
+    &--sm &-item {
+        font-size: 14px;
+    }
+
     &-selector {
         border: 1px solid rgba(255, 255, 255, 0.24);
         flex-wrap: wrap;

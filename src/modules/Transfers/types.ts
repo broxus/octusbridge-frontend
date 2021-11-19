@@ -26,6 +26,7 @@ export type TransfersApiTransfer = {
     transferKind: TransferKind;
     volumeExec: string;
     chainId: number;
+    transactionHash: string;
 }
 
 export type TransfersApiParams = {
@@ -42,6 +43,7 @@ export type TransfersApiFilters = {
     volumeExecGe?: string;
     volumeExecLe?: string;
     chainId?: number;
+    tonTokenAddress?: string;
 }
 
 export type TransfersApiRequest = TransfersApiParams & TransfersApiFilters
