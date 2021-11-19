@@ -1,0 +1,55 @@
+@import '@/styles/form';
+
+.pagination {
+    align-items: center;
+    column-gap: 16px;
+    display: flex;
+    justify-content: flex-end;
+    margin: 32px 0 0;
+
+    &-nav {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+
+        &__btn {
+            position: relative;
+        }
+
+        &__icon {
+            left: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    &-pages {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+        font-size: 14px;
+        letter-spacing: 0.6px;
+
+        .form-input {
+            border: none;
+        }
+
+        &__field {
+            align-items: center;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+            display: flex;
+            width: 110px;
+        }
+
+        &__limit {
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            line-height: 1;
+            padding: 0 12px 0 0;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+    }
+}

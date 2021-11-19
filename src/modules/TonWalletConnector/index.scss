@@ -1,0 +1,16 @@
+.connect-install {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 500px;
+    text-align: center;
+
+    p {
+        margin: 0 0 1em;
+    }
+}
+
+.connect-install-text {
+    opacity: 0.64;
+}

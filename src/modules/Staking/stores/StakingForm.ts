@@ -12,11 +12,11 @@ import { StakingFormStoreData, StakingFormStoreState } from '@/modules/Staking/t
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
-import { GazToStaking } from '@/config'
+import { GasToStaking } from '@/config'
 
 export class StakingFormStore {
 
-    public readonly tonDepositAmount = GazToStaking
+    public readonly tonDepositAmount = GasToStaking
 
     protected state: StakingFormStoreState = STAKING_FORM_STORE_DEFAULT_STATE
 

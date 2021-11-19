@@ -6,6 +6,8 @@ import {
 
 export type ConfirmationStatus = 'pending' | 'checking' | 'confirmed' | 'disabled'
 
+export type Status = 'active' | 'disabled' | 'slashed' | 'terminated' | 'confirmation'
+
 export type StakingDataStoreState = {
     isLoading: boolean;
     isLoaded: boolean;
@@ -38,4 +40,8 @@ export type RelayerLinkStoreState = {
 export type RelayerLinkStoreData = {
     tonPublicKey: string;
     ethAddress: string;
+}
+
+export type RelayerRouteParams = {
+    address: string;
 }

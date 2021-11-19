@@ -15,6 +15,8 @@ import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
+import TransferList from '@/pages/transfer/list'
+import MyTransferList from '@/pages/transfer/list/my'
 import StakingAccount from '@/pages/staking/account'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
@@ -45,13 +47,19 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/credit">
+                            <Route path="/transfers/my">
+                                <MyTransferList />
+                            </Route>
+                            <Route path="/transfers/:userAddress(0:[A-Fa-f0-9]{64})?">
+                                <TransferList />
+                            </Route>
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/credit">
                                 <TransferStatus direction="evm-ton" depositType="credit" />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/:depositType?">
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
                                 <TransferStatus direction="evm-ton" depositType="default" />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Da-f0-9]{64})">
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
                                 <TransferStatus direction="ton-evm" />
                             </Route>
                             <Route path="/bridge">

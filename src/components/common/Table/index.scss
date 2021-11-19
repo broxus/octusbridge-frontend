@@ -1,0 +1,22 @@
+@import '@/styles/_mix';
+
+.table {
+    &.list {
+        min-height: 100px;
+    }
+
+    &__empty {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+        font-size: 14px;
+        justify-content: center;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+        padding: 24px 0 0;
+
+        @media only screen and (max-width: 767px) {
+            padding-top: 16px;
+        }
+    }
+}

@@ -8,10 +8,7 @@ export function useRedeemForm(
     accountData: AccountDataStore,
     tonWallet: TonWalletService = useTonWallet(),
 ): RedeemFormStore {
-    const redeemFormRef = React.useRef(new RedeemFormStore(
-        accountData,
-        tonWallet,
-    ))
-
-    return redeemFormRef.current
+    const ref = React.useRef<RedeemFormStore>()
+    ref.current = ref.current || new RedeemFormStore(accountData, tonWallet)
+    return ref.current
 }

@@ -1,0 +1,61 @@
+.data-card {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    line-height: 16px;
+
+    &.card {
+        padding: 16px 24px;
+    }
+
+    &__title {
+        color: rgba(255, 255, 255, 0.48);
+        margin: 0 0 4px;
+    }
+
+    &__value {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.15px;
+        line-height: 24px;
+        margin: 0 0 12px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: flex-end;
+    }
+
+    &__content {
+        align-items: center;
+        column-gap: 16px;
+        display: flex;
+        justify-content: space-between;
+
+        &_hint {
+            color: rgba(255, 255, 255, 0.48);
+        }
+
+        &_link {
+            justify-content: flex-end;
+        }
+    }
+
+    &__link {
+        align-items: center;
+        color: rgba(255, 255, 255, 0.48);
+        display: flex;
+        text-align: right;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+}

@@ -8,7 +8,7 @@ export function useAccountData(
     tokensCache: TokensCacheService = useTokensCache(),
     tonWallet: TonWalletService = useTonWallet(),
 ): AccountDataStore {
-    const accountDataRef = React.useRef(new AccountDataStore(tokensCache, tonWallet))
-
-    return accountDataRef.current
+    const ref = React.useRef<AccountDataStore>()
+    ref.current = ref.current || new AccountDataStore(tokensCache, tonWallet)
+    return ref.current
 }

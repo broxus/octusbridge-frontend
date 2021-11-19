@@ -1,0 +1,5 @@
+.stakeholders-table {
+    &.list {
+        --list-grid-template: minmax(140px, 20%) minmax(50px, 10%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 10%);
+    }
+}

@@ -1,0 +1,29 @@
+.round-statistic {
+    &__header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 16px;
+    }
+}
+
+.round-statistic-filter {
+    align-items: center;
+    column-gap: 8px;
+    display: flex;
+
+    &__nav {
+        &.btn {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            min-height: 36px;
+            min-width: 36px;
+            padding: 0;
+        }
+    }
+
+    &__input {
+        width: 80px;
+    }
+}
