@@ -1,0 +1,29 @@
+.relayer-message {
+    align-items: center;
+    background: #c5e4f3;
+    color: #000000;
+    column-gap: 16px;
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 24px;
+    padding: 24px;
+
+    h2 {
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 4px;
+    }
+
+    p {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+
+    &_danger {
+        background: #eb4361;
+        color: #ffffff;
+    }
+}

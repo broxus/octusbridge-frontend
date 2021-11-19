@@ -1,0 +1,12 @@
+.event-information {
+    display: grid;
+    grid-gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+
+    &__title {
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+    }
+}

@@ -1,0 +1,14 @@
+.rounds {
+    &__table {
+        &.list {
+            --list-grid-template: minmax(100px, 10%) minmax(130px, 20%) minmax(130px, 20%) minmax(130px, 10%) minmax(130px, 20%) minmax(150px, 10%) minmax(150px, 10%);
+        }
+    }
+
+    &__filters {
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0 0 16px;
+    }
+}

@@ -4,7 +4,6 @@ import { networks } from '@/config'
 import { DexConstants } from '@/misc'
 import { NetworkShape } from '@/types'
 
-
 export function amountWithSlippage(amount: BigNumber, slippage: number | string): string {
     return amount.times(100)
         .div(new BigNumber(100).minus(slippage))

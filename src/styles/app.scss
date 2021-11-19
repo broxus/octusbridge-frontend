@@ -161,6 +161,29 @@ ul.summary {
     }
 }
 
+.board {
+    display: grid;
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+    grid-template-columns: 284px 1fr;
+
+    &__side {
+        display: grid;
+        row-gap: 8px;
+    }
+
+    &__main {
+        display: flex;
+    }
+}
+
+.tiles {
+    display: grid;
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
 @keyframes checking {
     from {
         border: 1px solid rgba(255, 255, 255, 0.16);

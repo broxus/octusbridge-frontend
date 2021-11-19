@@ -7,11 +7,15 @@ export default {
     NAV_LINK_TEXT_STAKING: 'Staking',
     NAV_LINK_TEXT_GOVERNANCE: 'Governance',
     NAV_LINK_TEXT_RELAYERS: 'Relayers',
+    NAV_LINK_TEXT_MY_TRANSFERS: 'My transfers',
     NAV_LINK_SOON_HINT: 'Soon',
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
     WALLET_INSTALLATION_LINK_TEXT: 'Install Crystal Wallet',
+    WALLET_CONNECT_MSG: 'To continue, you need to connect the wallet',
+
+    TON_WALLET_INSTALLATION_NOTE: '<p>At the moment, only Crystal Wallet supports TON Swap.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
 
     FOOTER_NAV_HEADER_BRIDGE: 'Bridge',
     FOOTER_NAV_ETH_TO_TON_LINK_TEXT: 'ETH to TON',
@@ -255,6 +259,158 @@ export default {
     RELAYERS_CONNECT: 'Connect wallet',
     RELAYERS_CONNECT_TEXT: 'To add a new relayer to the Bridge, you need to connect the wallet.',
 
+    RELAYERS_TITLE: 'Relayers',
+    RELAYERS_STATUS_YES: 'Yes',
+    RELAYERS_STATUS_NO: 'No',
+    RELAYERS_STATUS_ACTIVE: 'Active',
+    RELAYERS_STATUS_SKIP: 'Skip',
+
+    RELAYERS_ROUNDS_VALUE: '{amount}/{total}',
+
+    RELAYERS_OVERVIEW_TITLE: 'Overview',
+
+    RELAYERS_EXPLORER_TITLE: 'Explorer',
+
+    RELAYERS_BREADCRUMB_EXPLORER: 'Explorer',
+    RELAYERS_BREADCRUMB_RELAYERS: 'Relayer {address}',
+    RELAYERS_BREADCRUMB_BIDDING: 'Bidding round {name}',
+    RELAYERS_BREADCRUMB_VALIDATION: 'Validation round {name}',
+
+    RELAYER_HEADER_NAME: 'Relayer {address}',
+    RELAYER_HEADER_SETTINGS: 'Settings',
+    RELAYER_HEADER_UP_STAKE: 'Increase stake',
+
+    RELAYER_STATUS_ACTIVE: 'Active',
+    RELAYER_STATUS_DISABLED: 'Disabled',
+    RELAYER_STATUS_SLASHED: 'Slashed',
+    RELAYER_STATUS_TERMINATED: 'Terminated',
+    RELAYER_STATUS_CONFIRMATION: 'Confirmation',
+
+    RELAYER_MESSAGE_LOW_STAKE_TITLE: 'Your stake is low',
+    RELAYER_MESSAGE_LOW_STAKE_TEXT: 'Increase your stake to improve your chances of participating in the next round of validation',
+    RELAYER_MESSAGE_LOW_STAKE_ACTION: 'Increase stake',
+
+    RELAYER_MESSAGE_SLASHED_TITLE: 'Relayer was slashed by decision of proposal #{proposal}',
+    RELAYER_MESSAGE_SLASHED_ACTION: 'Open proposal',
+
+    RELAYER_PERFORMANCE_TITLE: 'Relayer Performance',
+    RELAYER_PERFORMANCE_STAKE: 'Frozen stakes, BRIDGE',
+    RELAYER_PERFORMANCE_DEFROST: 'Defrost {value}',
+    RELAYER_PERFORMANCE_LATEST_REWARD: 'Latest reward, BRIDGE',
+    RELAYER_PERFORMANCE_TOTAL_REWARD: 'Total reward, BRIDGE',
+    RELAYER_PERFORMANCE_SUCCESS_ROUNDS: 'Successful rounds',
+    RELAYER_PERFORMANCE_ROUNDS: '{success}/{total}',
+    RELAYER_PERFORMANCE_EVENTS: '24h events',
+
+    ROUND_INFO_DATE_PERIOD: '{start} – {end}',
+    ROUND_INFO_DAY_LEFT: 'Ends {value}',
+
+    EVENTS_DISTRIBUTION_TITLE: 'Events distribution',
+    EVENTS_DISTRIBUTION_TABLE_TYPE: 'Event type',
+    EVENTS_DISTRIBUTION_TABLE_AMOUNT: 'Amount, BRIDGE',
+    EVENTS_DISTRIBUTION_TABLE_SHARE: 'Share',
+
+    ROUND_STATISTIC_BIDDING_PANEL_TITLE: 'Bidding results',
+    ROUND_STATISTIC_BIDDING_PANEL_VALUE: '{current}/{total}',
+    ROUND_STATISTIC_BIDDING_PANEL_LINK: 'Bidding round',
+    ROUND_STATISTIC_REWARD_PANEL_TITLE: 'Round reward, BRIDGE',
+    ROUND_STATISTIC_STAKE_PANEL_TITLE: 'Your stake, BRIDGE',
+    ROUND_STATISTIC_EVENTS_PANEL_TITLE: 'Events confirmed',
+    ROUND_STATISTIC_FILTER_CURRENT: 'Current',
+
+    ROUNDS_TABLE_ROUND: 'Round',
+    ROUNDS_TABLE_STAKE: 'Your stake, BRIDGE',
+    ROUNDS_TABLE_EVENTS: 'Events confirmed',
+    ROUNDS_TABLE_TON_TO_ETH: 'TON to ETH',
+    ROUNDS_TABLE_ETH_TO_TON: 'ETH to TON',
+    ROUNDS_TABLE_START: 'Start, UTC',
+    ROUNDS_TABLE_END: 'End, UTC',
+
+    VALIDATION_ROUNDS_TITLE: 'Validation rounds',
+
+    VALIDATION_ROUND_TITLE: 'Round information',
+
+    EVENTS_TABLE_COL_TYPE: 'Type',
+    EVENTS_TABLE_COL_ORIGINAL_ADDRESS: 'Original network address',
+    EVENTS_TABLE_COL_TARGET_ADDRESS: 'Target network address',
+    EVENTS_TABLE_COL_TOKEN: 'Token',
+    EVENTS_TABLE_COL_AMOUNT: 'Amount',
+    EVENTS_TABLE_COL_DATE: 'Event time, UTC',
+
+    EVENTS_TYPE_INFO: '{left} to {right}',
+
+    ROUNDS_CALENDAR_TITLE: 'Rounds calendar',
+
+    BIDDING_ROUND_HEADER_PAGINATION: 'Bidding round',
+    VALIDATION_ROUND_HEADER_PAGINATION: 'Validation round',
+
+    RELAYER_RANK: 'Rank #{rank}',
+
+    PAGINATION_PAGE: 'Page',
+    PAGINATION_LIMIT: 'of {value}',
+
+    FILTERS_SEARCH: 'Search...',
+    FILTERS_FILTER: 'Filter',
+    FILTERS_CLEAR: 'Clear',
+    FILTERS_APPLY: 'Apply',
+    FILTERS_FROM: 'From',
+    FILTERS_TO: 'To',
+    FILTERS_BC: 'Select a blockchain',
+
+    EVENTS_TITLE: 'Events',
+
+    EVENT_INFORMATION_TRANSFER_TITLE: 'Transfer information',
+    EVENT_INFORMATION_ADDRESSES_TITLE: 'Addresses',
+    EVENT_INFORMATION_TOKEN: 'Token',
+    EVENT_INFORMATION_VALUE: 'Value',
+    EVENT_INFORMATION_TIME: 'Event time, UTC',
+    EVENT_INFORMATION_ROUND: 'Validation round',
+    EVENT_INFORMATION_CONFIRMATION: 'Confirmation',
+    EVENT_INFORMATION_ORIGINAL_ADDRESS: 'Original contract address',
+    EVENT_INFORMATION_TARGET_ADDRESS: 'Target contract address',
+    EVENT_INFORMATION_TARGET_TON_TRANSACTION: 'TON transfer transaction',
+    EVENT_INFORMATION_TARGET_ETH_TRANSACTION: 'Etherium transfer transaction',
+
+    STAKING_COMMON_STATS_TITLE: 'Explorer',
+    STAKING_USER_STATS_TITLE: 'My stake',
+    STAKING_STATS_REDEEM: 'Redeem',
+    STAKING_STATS_CREATE: 'Become relayer',
+    STAKING_STATS_STAKE: 'Stake',
+
+    STAKING_TRANSACTIONS_TITLE: 'Transactions',
+    STAKING_TRANSACTIONS_ALL: 'All',
+    STAKING_TRANSACTIONS_DEPOSITS: 'Deposits',
+    STAKING_TRANSACTIONS_WITHDRAWALS: 'Withdrawals',
+    STAKING_TRANSACTIONS_REWARDS: 'Rewards',
+    STAKING_TRANSACTIONS_FREEZES: 'Freezes',
+    STAKING_TRANSACTIONS_COL_TYPE: 'Type',
+    STAKING_TRANSACTIONS_COL_TRS: 'Transaction',
+    STAKING_TRANSACTIONS_COL_AMOUNT: 'Amount, BRIDGE',
+    STAKING_TRANSACTIONS_COL_DATE: 'Date',
+
+    STAKING_STAKEHOLDERS_TITLE: 'Stakeholders',
+
+    TRANSFERS_BREADCRUMB_BRIDGE: 'Bridge',
+    TRANSFERS_BREADCRUMB_ADDRESS: 'Transfers {address}',
+    TRANSFERS_MY_TITLE: 'My transfers',
+    TRANSFERS_USER_TITLE: 'All transfers',
+    TRANSFERS_PENDING_TITLE: 'Pending transfers',
+    TRANSFERS_AMOUNT: 'Amount',
+    TRANSFERS_FROM: 'From',
+    TRANSFERS_TO: 'To',
+    TRANSFERS_STATUS: 'Status',
+    TRANSFERS_DATE: 'Date',
+    TRANSFERS_BC: 'Blockchain',
+
+    TRANSFERS_STATUS_CONFIRMED: 'Executed',
+    TRANSFERS_STATUS_PENDING: 'Pending',
+    TRANSFERS_STATUS_REJECTED: 'Canceled',
+
+    DATE_INPUT_PLACEHOLDER: 'YYYY.MM.DD',
+
+    EMPTY_LIST: 'List is empty',
+
     NO_VALUE: '–',
     AMOUNT: '{value} {symbol}',
+    PERCENT: '{value}%',
 }

@@ -1,0 +1,5 @@
+.transfers-table {
+    &.list {
+        --list-grid-template: minmax(300px, 44%) minmax(150px, 16%) minmax(150px, 16%) minmax(100px, 10%) minmax(150px, 14%);
+    }
+}

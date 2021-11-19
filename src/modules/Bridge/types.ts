@@ -195,5 +195,3 @@ export enum CreditProcessorState {
     Processed,
     Cancelled,
 }
-
-
