@@ -20,6 +20,7 @@ import { findNetwork } from '@/modules/Bridge/utils'
 import {
     TransfersApiFilters, TransfersApiOrdering, TransfersApiRequestStatus,
 } from '@/modules/Transfers/types'
+import { useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
 import { networks } from '@/config'
 
@@ -37,6 +38,7 @@ function TransfersInner({
     const intl = useIntl()
     const transfers = useTransfers()
     const pendingTransfers = useTransfers()
+    const tokensCache = useTokensCache()
 
     const pagination = usePagination(transfers.totalCount)
     const pendingPagination = usePagination(pendingTransfers.totalCount)
@@ -60,6 +62,9 @@ function TransfersInner({
     const chainIdNum = chainId ? parseInt(chainId, 10) : undefined
 
     const fetchAll = async () => {
+        if (!tokensCache.isInitialized) {
+            return
+        }
         try {
             await transfers.fetch({
                 status,
@@ -80,6 +85,9 @@ function TransfersInner({
     }
 
     const fetchPending = async () => {
+        if (!tokensCache.isInitialized) {
+            return
+        }
         try {
             await pendingTransfers.fetch({
                 status: 'pending',
@@ -117,6 +125,7 @@ function TransfersInner({
         pagination.limit,
         pagination.offset,
         tableOrder.order,
+        tokensCache.isInitialized,
     ])
 
     React.useEffect(() => {
@@ -126,6 +135,7 @@ function TransfersInner({
         pendingPagination.limit,
         pendingPagination.offset,
         pendingTableOrder.order,
+        tokensCache.isInitialized,
     ])
 
     return (
