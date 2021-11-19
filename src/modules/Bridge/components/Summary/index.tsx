@@ -142,7 +142,6 @@ export function Summary(): JSX.Element {
                                         })}
                                     </span>
                                     <span>-</span>
-                                    {/* <span>{formattedAmount(summary.fee, DexConstants.TONDecimals)}</span> */}
                                 </li>
                             )}
                         </>

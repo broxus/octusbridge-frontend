@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
+import { Contract } from 'ton-inpage-provider'
 
 import { networks } from '@/config'
-import { DexConstants } from '@/misc'
+import { BridgeConstants, DexConstants, TokenAbi } from '@/misc'
 import { NetworkShape } from '@/types'
 
 
@@ -11,6 +12,13 @@ export function amountWithSlippage(amount: BigNumber, slippage: number | string)
         .shiftedBy(DexConstants.TONDecimals)
         .dp(0, BigNumber.ROUND_UP)
         .toFixed()
+}
+
+export function getCreditFactoryContract(): Contract<typeof TokenAbi.CreditFactory> {
+    return new Contract(
+        TokenAbi.CreditFactory,
+        BridgeConstants.CreditFactoryAddress,
+    )
 }
 
 

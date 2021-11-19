@@ -60,7 +60,7 @@ export const networks: NetworkShape[] = [
     },
 ]
 
-export const CreditBody = '5000000000'
+export const CreditBody = '5800000000'
 
 export const EmptyWalletMinTonsAmount = '10000000000'
 

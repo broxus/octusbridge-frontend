@@ -123,7 +123,7 @@ export function TonsAmountFieldset(): JSX.Element {
                             }}
                         </Observer>
                     </div>
-                    {/*
+
                     {process.env.NODE_ENV !== 'production' && (
                         <React.Fragment key="amounts">
                             <div className="crosschain-transfer__control-hint">
@@ -150,7 +150,6 @@ export function TonsAmountFieldset(): JSX.Element {
                             </div>
                         </React.Fragment>
                     )}
-                    */}
                 </div>
             </div>
         </fieldset>
