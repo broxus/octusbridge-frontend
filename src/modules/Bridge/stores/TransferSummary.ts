@@ -20,10 +20,6 @@ export class TransferSummary {
         return this.data.decimals
     }
 
-    public get fee(): TransferSummaryData['fee'] {
-        return this.data.fee
-    }
-
     public get leftAddress(): TransferSummaryData['leftAddress'] {
         return this.data.leftAddress
     }

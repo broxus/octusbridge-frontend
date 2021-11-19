@@ -17,8 +17,8 @@ export enum CrosschainBridgeStep {
 
 export type CrosschainBridgeStoreData = {
     amount: string;
+    creditFactoryFee?: string;
     depositType: 'default' | 'credit';
-    fee?: string;
     leftAddress: string;
     leftNetwork?: NetworkShape;
     minAmount?: string;
@@ -170,7 +170,6 @@ export type TonTransferStoreState = {
 export type TransferSummaryData = {
     amount?: string;
     decimals?: number;
-    fee?: string;
     leftAddress?: string;
     leftNetwork?: NetworkShape;
     rightAddress?: string;

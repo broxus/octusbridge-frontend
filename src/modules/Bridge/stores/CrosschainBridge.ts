@@ -13,15 +13,10 @@ import {
     Dex,
     DexAbi,
     DexConstants,
-    TokenAbi,
 } from '@/misc'
 import {
-    debt,
     DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA,
     DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE,
-    emptyWalletMinTonsAmount,
-    maxSlippage,
-    minSlippage,
 } from '@/modules/Bridge/constants'
 import {
     CrosschainBridgeStep,
@@ -29,7 +24,12 @@ import {
     CrosschainBridgeStoreState,
     NetworkFields,
 } from '@/modules/Bridge/types'
-import { amountWithSlippage, getTonMainNetwork, isTonMainNetwork } from '@/modules/Bridge/utils'
+import {
+    amountWithSlippage,
+    getCreditFactoryContract,
+    getTonMainNetwork,
+    isTonMainNetwork,
+} from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokenAssetVault, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
@@ -41,6 +41,13 @@ import {
     validateMaxValue,
     validateMinValue,
 } from '@/utils'
+
+
+const maxSlippage = BridgeConstants.DepositToFactoryMaxSlippage
+const minSlippage = BridgeConstants.DepositToFactoryMinSlippage
+const emptyWalletMinTonsAmount = new BigNumber(
+    BridgeConstants.EmptyWalletMinTonsAmount,
+).shiftedBy(-DexConstants.TONDecimals)
 
 
 export class CrosschainBridge {
@@ -597,7 +604,7 @@ export class CrosschainBridge {
                 .div(100)
                 .dp(0, BigNumber.ROUND_DOWN)
                 .shiftedBy(-DexConstants.TONDecimals)
-                .minus(debt)
+                .minus(this.debt)
                 .dp(DexConstants.TONDecimals, BigNumber.ROUND_DOWN)
 
             if (this.tokensAmountNumber.isZero()) {
@@ -628,7 +635,7 @@ export class CrosschainBridge {
                     .div(100)
                     .dp(0, BigNumber.ROUND_DOWN)
                     .shiftedBy(-DexConstants.TONDecimals)
-                    .minus(debt)
+                    .minus(this.debt)
                     .dp(DexConstants.TONDecimals, BigNumber.ROUND_DOWN)
 
                 this.changeData('swapType', '0')
@@ -637,7 +644,7 @@ export class CrosschainBridge {
                     expected_amount: maxSpendTokens,
                 } = await this.pairContract.methods.expectedSpendAmount({
                     _answer_id: 0,
-                    receive_amount: debt
+                    receive_amount: this.debt
                         .plus(tonsAmountBN)
                         .times(100)
                         .div(new BigNumber(100).minus(maxSlippage))
@@ -693,7 +700,7 @@ export class CrosschainBridge {
                 expected_amount: maxSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: debt
+                receive_amount: this.debt
                     .plus(this.tonsAmountNumber)
                     .times(100)
                     .div(new BigNumber(100).minus(maxSlippage))
@@ -719,7 +726,7 @@ export class CrosschainBridge {
                 expected_amount: minSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: debt
+                receive_amount: this.debt
                     .plus(this.tonsAmountNumber)
                     .times(100)
                     .div(new BigNumber(100).minus(minSlippage))
@@ -812,6 +819,8 @@ export class CrosschainBridge {
             this.checkSwapCredit()
             this.checkMinTons()
             await this.syncToken()
+            await this.syncCreditFactoryFee()
+
             if (this.tonWallet.isConnected) {
                 await this.syncPair()
                 if (this.isSwapEnabled) {
@@ -977,7 +986,10 @@ export class CrosschainBridge {
         try {
             const result = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), maxSlippage),
+                receive_amount: amountWithSlippage(
+                    this.debt.plus(this.tonsAmountNumber),
+                    maxSlippage,
+                ),
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
@@ -1009,7 +1021,7 @@ export class CrosschainBridge {
         try {
             const result = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: amountWithSlippage(debt.plus(this.tonsAmountNumber), minSlippage),
+                receive_amount: amountWithSlippage(this.debt.plus(this.tonsAmountNumber), minSlippage),
                 receive_token_root: DexConstants.WTONRootAddress,
             }).call()
 
@@ -1049,7 +1061,7 @@ export class CrosschainBridge {
                 .times(new BigNumber(100).minus(maxSlippage))
                 .div(100)
                 .dp(0, BigNumber.ROUND_DOWN)
-                .minus(debt.shiftedBy(DexConstants.TONDecimals))
+                .minus(this.debt.shiftedBy(DexConstants.TONDecimals))
                 .dp(DexConstants.TONDecimals, BigNumber.ROUND_DOWN)
 
             if (isGoodBignumber(tonsAmountBN)) {
@@ -1078,20 +1090,9 @@ export class CrosschainBridge {
         }
 
         try {
-            const creditFactory = new Contract(
-                TokenAbi.CreditFactory,
-                BridgeConstants.CreditFactoryAddress,
-            )
-            const details = (await creditFactory.methods.getDetails({
-                answerId: 0,
-            }).call()).value0
-
-            this.changeData('fee', details.fee)
-
             const result = await this.pairContract.methods.expectedSpendAmount({
                 _answer_id: 0,
-                receive_amount: new BigNumber(BridgeConstants.CreditBody)
-                    .plus(this.fee || 0)
+                receive_amount: this.debt.shiftedBy(DexConstants.TONDecimals)
                     .plus(this.minTonsAmount || 0)
                     .times(100)
                     .div(new BigNumber(100).minus(maxSlippage))
@@ -1111,6 +1112,25 @@ export class CrosschainBridge {
         }
         catch (e) {
             error(e)
+        }
+    }
+
+    /**
+     *
+     * @protected
+     */
+    protected async syncCreditFactoryFee(): Promise<void> {
+        const creditFactory = getCreditFactoryContract()
+        try {
+            const { fee } = (await creditFactory.methods.getDetails({
+                answerId: 0,
+            }).call()).value0
+
+            this.changeData('creditFactoryFee', fee)
+        }
+        catch (e) {
+            this.changeData('creditFactoryFee', '')
+            error('Sync fee error', e)
         }
     }
 
@@ -1182,10 +1202,6 @@ export class CrosschainBridge {
 
     public get amount(): CrosschainBridgeStoreData['amount'] {
         return this.data.amount
-    }
-
-    public get fee(): CrosschainBridgeStoreData['fee'] {
-        return this.data.fee
     }
 
     public get maxTokensAmount(): CrosschainBridgeStoreData['maxTokensAmount'] {
@@ -1431,6 +1447,12 @@ export class CrosschainBridge {
 
     public get isFromEvm(): boolean {
         return this.isEvmToTon || this.isEvmToEvm
+    }
+
+    protected get debt(): BigNumber {
+        return new BigNumber(BridgeConstants.CreditBody)
+            .plus(new BigNumber(this.data.creditFactoryFee || 0))
+            .shiftedBy(-DexConstants.TONDecimals)
     }
 
     protected get pairContract(): Contract<typeof DexAbi.Pair> | undefined {
