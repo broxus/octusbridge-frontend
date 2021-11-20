@@ -122,7 +122,12 @@ export function Summary(): JSX.Element {
                                         })}
                                     </span>
                                     <span className="text-truncate">
-                                        {formattedAmount(summary.vaultBalance, summary.vaultDecimals)}
+                                        {formattedAmount(
+                                            summary.vaultBalance,
+                                            summary.vaultDecimals,
+                                            true,
+                                            true,
+                                        )}
                                     </span>
                                 </li>
                             )}

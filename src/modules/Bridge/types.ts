@@ -1,4 +1,4 @@
-import { Address, DecodedAbiFunctionInputs } from 'ton-inpage-provider'
+import { Address, DecodedAbiFunctionInputs, FullContractState } from 'ton-inpage-provider'
 import { LogItem } from 'abi-decoder'
 
 import { TokenAbi } from '@/misc'
@@ -27,6 +27,7 @@ export type CrosschainBridgeStoreData = {
     minTonsAmount?: string;
     minReceiveTokens?: string;
     pairAddress?: Address;
+    pairState?: FullContractState;
     rightAddress: string;
     rightNetwork?: NetworkShape;
     selectedToken?: string;
