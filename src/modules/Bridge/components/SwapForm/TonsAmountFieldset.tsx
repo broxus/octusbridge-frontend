@@ -24,7 +24,7 @@ export function TonsAmountFieldset(): JSX.Element {
         (async () => {
             await bridge.onChangeTonsAmount()
         })()
-    }, 400)
+    }, 50)
 
     const onChangeTonsAmount = (value: string) => {
         bridge.changeData('tonsAmount', value)

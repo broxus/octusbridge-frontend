@@ -22,7 +22,7 @@ export function AmountFieldset(): JSX.Element {
         (async () => {
             await bridge.onChangeAmount()
         })()
-    }, 400)
+    }, 50)
 
     const onChange = (value: string) => {
         bridge.changeData('amount', value)
@@ -32,12 +32,15 @@ export function AmountFieldset(): JSX.Element {
     }
 
     const onClickMax = () => {
+        const decimals = bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals
         let formattedBalance = new BigNumber(bridge.balance || 0)
         if (!isGoodBignumber(formattedBalance)) {
             return
         }
-        if (bridge.decimals !== undefined) {
-            formattedBalance = formattedBalance.shiftedBy(-bridge.decimals)
+        if (bridge.decimals !== undefined && decimals !== undefined) {
+            formattedBalance = formattedBalance
+                .shiftedBy(-bridge.decimals)
+                .dp(decimals, BigNumber.ROUND_DOWN)
         }
         onChange(formattedBalance.toFixed())
     }
@@ -54,7 +57,7 @@ export function AmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <AmountField
-                                decimals={bridge.decimals}
+                                decimals={bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals}
                                 disabled={bridge.token === undefined}
                                 displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
                                 isValid={bridge.isAmountValid}
@@ -71,19 +74,19 @@ export function AmountFieldset(): JSX.Element {
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
+                                const decimals = bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals
                                 let isMinValueValid = true
                                 if (bridge.isSwapEnabled && isGoodBignumber(bridge.amountNumber)) {
                                     isMinValueValid = validateMinValue(
                                         bridge.minAmount,
                                         bridge.amount,
-                                        bridge.decimals,
+                                        decimals,
                                     )
                                 }
                                 const isMaxValueValid = bridge.amount.length > 0
                                     ? validateMaxValue(
-                                        bridge.balance || '0',
+                                        bridge.balanceNumber.toFixed(),
                                         bridge.amount,
-                                        bridge.decimals,
                                     )
                                     : true
 
@@ -97,7 +100,7 @@ export function AmountFieldset(): JSX.Element {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
                                                         bridge.minAmount || 0,
-                                                        bridge.decimals,
+                                                        decimals,
                                                     ),
                                                 })}
                                             </span>
@@ -111,8 +114,7 @@ export function AmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.balance || 0,
-                                                        bridge.decimals,
+                                                        bridge.balanceNumber.toFixed(),
                                                     ),
                                                 })}
                                             </span>
@@ -147,7 +149,10 @@ export function AmountFieldset(): JSX.Element {
                                     <>
                                         Min value:
                                         {' '}
-                                        {formattedAmount(bridge.minAmount || 0, bridge.decimals)}
+                                        {formattedAmount(
+                                            bridge.minAmount || 0,
+                                            bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals,
+                                        )}
                                     </>
                                 )}
                             </Observer>
