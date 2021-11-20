@@ -248,7 +248,7 @@ export class TokensCacheService {
      * @param {string} chainId
      */
     public filterTokensByChainId(chainId: string): TokensCacheStoreData['tokens'] {
-        return this.data.tokens.filter(({ vaults }) => vaults.some(vault => vault.chainId === chainId) || false)
+        return this.tokens.filter(({ vaults }) => vaults.some(vault => vault.chainId === chainId) || false)
     }
 
     /**
@@ -259,7 +259,7 @@ export class TokensCacheService {
     public findTokenByVaultAddress(address: string, chainId: string): TokensCacheStoreData['tokens'][number] | undefined {
         return this.filterTokensByChainId(chainId).find(
             ({ vaults }) => vaults.some(
-                ({ vault }) => vault.toLowerCase() === address.toLowerCase(),
+                vault => vault.vault.toLowerCase() === address.toLowerCase() && vault.chainId === chainId,
             ),
         )
     }
