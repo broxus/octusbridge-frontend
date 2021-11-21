@@ -356,6 +356,7 @@ export default {
     FILTERS_FROM: 'From',
     FILTERS_TO: 'To',
     FILTERS_BC: 'Select a blockchain',
+    FILTERS_TOKEN: 'Select a token',
 
     EVENTS_TITLE: 'Events',
 
@@ -401,6 +402,7 @@ export default {
     TRANSFERS_STATUS: 'Status',
     TRANSFERS_DATE: 'Date',
     TRANSFERS_BC: 'Blockchain',
+    TRANSFERS_TOKEN: 'Token',
 
     TRANSFERS_STATUS_CONFIRMED: 'Executed',
     TRANSFERS_STATUS_PENDING: 'Pending',

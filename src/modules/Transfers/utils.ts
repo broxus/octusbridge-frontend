@@ -1,7 +1,7 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
     TransferKind, TransfersApiRequest, TransfersApiResponse,
-    TransfersApiStatus,
+    TransfersApiStatus, TransfersApiTransfer,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
 import { findNetwork } from '@/modules/Bridge/utils'
@@ -63,6 +63,17 @@ export function getToNetwork(transferKind: TransferKind, chainId: number): strin
             return findNetwork('1', 'ton')?.label
         case 'TonToEth':
             return findNetwork(chainId.toString(), 'evm')?.label
+        default:
+            return undefined
+    }
+}
+
+export function getTransferLink(transfer: TransfersApiTransfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'EthToTon':
+            return `/transfer/evm-${transfer.chainId}/ton-1/0x${transfer.transactionHash}`
+        case 'TonToEth':
+            return `/transfer/ton-1/evm-${transfer.chainId}/${transfer.contractAddress}`
         default:
             return undefined
     }

@@ -12,6 +12,8 @@ export * from '@/components/common/Filters/date'
 export * from '@/components/common/Filters/radio'
 export * from '@/components/common/Filters/text'
 export * from '@/components/common/Filters/field'
+export * from '@/components/common/Filters/network'
+export * from '@/components/common/Filters/token'
 
 type Props<T> = {
     filters: T;

@@ -18,7 +18,7 @@ export function Token({
     size,
 }: Props): JSX.Element {
     return (
-        <div className="events-token">
+        <span className="events-token">
             <TokenIcon
                 address={address}
                 size={size}
@@ -26,6 +26,6 @@ export function Token({
             />
 
             {symbol}
-        </div>
+        </span>
     )
 }

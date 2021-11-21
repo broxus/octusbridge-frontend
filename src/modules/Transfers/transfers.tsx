@@ -3,9 +3,9 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import {
-    DateFilter, FilterField, Filters, RadioFilter, TextFilter,
+    DateFilter, FilterField, Filters, NetworkFilter,
+    RadioFilter, TextFilter, TokenFilter,
 } from '@/components/common/Filters'
-import { Select } from '@/components/common/Select'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
@@ -16,11 +16,11 @@ import { useTableOrder } from '@/hooks/useTableOrder'
 import { useDateParam } from '@/hooks/useDateParam'
 import { useTextParam } from '@/hooks/useTextParam'
 import { useDictParam } from '@/hooks/useDictParam'
-import { findNetwork } from '@/modules/Bridge/utils'
+import { useNumParam } from '@/hooks/useNumParam'
 import {
     TransfersApiFilters, TransfersApiOrdering, TransfersApiRequestStatus,
 } from '@/modules/Transfers/types'
-import { useTokensCache } from '@/stores/TokensCacheService'
+import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
 import { networks } from '@/config'
 
@@ -46,20 +46,29 @@ function TransfersInner({
     const tableOrder = useTableOrder<TransfersApiOrdering>('createdatdescending')
     const pendingTableOrder = useTableOrder<TransfersApiOrdering>('createdatdescending')
 
-    const evmNetworks = networks.filter(item => item.type === 'evm')
-    const evmChainIds = evmNetworks.map(item => item.chainId)
+    const evmNetworks = React.useMemo(() => (
+        networks.filter(item => item.type === 'evm')
+    ), [])
 
+    const tokens = React.useMemo(() => (
+        evmNetworks
+            .flatMap(({ chainId }) => tokensCache.filterTokensByChainId(chainId))
+            .reduce<TokenCache[]>((acc, token) => (
+                acc.findIndex(({ root }) => root === token.root) === -1
+                    ? [...acc, token]
+                    : acc
+            ), [])
+    ), [tokensCache.tokens, evmNetworks])
+
+    const [chainId, setChainId] = useNumParam('chainId')
     const [createdAtGe, setCreatedAtGe] = useDateParam('createdAtGe')
     const [createdAtLe, setCreatedAtLe] = useDateParam('createdAtLe')
     const [volumeExecGe, setVolumeExecGe] = useTextParam('volumeExecGe')
     const [volumeExecLe, setVolumeExecLe] = useTextParam('volumeExecLe')
+    const [tonTokenAddress, setTonTokenAddress] = useTextParam('tonTokenAddress')
     const [status, setStatus] = useDictParam<TransfersApiRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
     )
-    const [chainId, setChainId] = useDictParam<typeof evmChainIds[number]>(
-        'chainId', evmChainIds,
-    )
-    const chainIdNum = chainId ? parseInt(chainId, 10) : undefined
 
     const fetchAll = async () => {
         if (!tokensCache.isInitialized) {
@@ -67,16 +76,17 @@ function TransfersInner({
         }
         try {
             await transfers.fetch({
+                chainId,
                 status,
                 createdAtGe,
                 createdAtLe,
                 volumeExecGe,
                 volumeExecLe,
                 userAddress,
+                tonTokenAddress,
                 limit: pagination.limit,
                 offset: pagination.offset,
                 ordering: tableOrder.order,
-                chainId: chainIdNum,
             })
         }
         catch (e) {
@@ -105,7 +115,8 @@ function TransfersInner({
     const changeFilters = (filters: TransfersApiFilters) => {
         pagination.submit(1)
         setStatus(filters.status)
-        setChainId(filters.chainId?.toString())
+        setChainId(filters.chainId)
+        setTonTokenAddress(filters.tonTokenAddress)
         setCreatedAtGe(filters.createdAtGe)
         setCreatedAtLe(filters.createdAtLe)
         setVolumeExecGe(filters.volumeExecGe)
@@ -121,6 +132,7 @@ function TransfersInner({
         createdAtLe,
         volumeExecGe,
         volumeExecLe,
+        tonTokenAddress,
         userAddress,
         pagination.limit,
         pagination.offset,
@@ -187,12 +199,13 @@ function TransfersInner({
 
                     <Filters<TransfersApiFilters>
                         filters={{
+                            chainId,
                             status,
                             createdAtGe,
                             createdAtLe,
                             volumeExecGe,
                             volumeExecLe,
-                            chainId: chainIdNum,
+                            tonTokenAddress,
                         }}
                         onChange={changeFilters}
                     >
@@ -237,19 +250,21 @@ function TransfersInner({
                                         id: 'TRANSFERS_BC',
                                     })}
                                 >
-                                    <Select
-                                        options={evmNetworks.map(item => ({
-                                            value: parseInt(item.chainId, 10),
-                                            label: item.label,
-                                        }))}
-                                        value={filters.chainId
-                                            ? findNetwork(filters.chainId.toString(), 'evm')?.label
-                                            : undefined}
-                                        inputValue={filters.chainId?.toString()}
+                                    <NetworkFilter
+                                        networks={evmNetworks}
+                                        chainId={filters.chainId}
                                         onChange={changeFilter('chainId')}
-                                        placeholder={intl.formatMessage({
-                                            id: 'FILTERS_BC',
-                                        })}
+                                    />
+                                </FilterField>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_TOKEN',
+                                    })}
+                                >
+                                    <TokenFilter
+                                        tokens={tokens}
+                                        tokenAddress={filters.tonTokenAddress}
+                                        onChange={changeFilter('tonTokenAddress')}
                                     />
                                 </FilterField>
                                 <FilterField

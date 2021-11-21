@@ -6,7 +6,8 @@ import { TokenAmount } from '@/components/common/TokenAmount'
 import { Badge } from '@/components/common/Badge'
 import { TransfersApiOrdering, TransfersApiTransfer } from '@/modules/Transfers/types'
 import {
-    getFromNetwork, getToNetwork, mapStatusToBadge, mapStatusToIntl,
+    getFromNetwork, getToNetwork, getTransferLink,
+    mapStatusToBadge, mapStatusToIntl,
 } from '@/modules/Transfers/utils'
 import { useTokensCache } from '@/stores/TokensCacheService'
 import { dateFormat } from '@/utils'
@@ -61,6 +62,7 @@ export function TransfersTable({
                 descending: 'createdatdescending',
             }]}
             rows={items.map(item => ({
+                link: getTransferLink(item),
                 cells: [
                     <TokenAmount
                         address={item.currencyAddress}
