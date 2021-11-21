@@ -60,12 +60,12 @@ function TransfersInner({
             ), [])
     ), [tokensCache.tokens, evmNetworks])
 
-    const [chainId, setChainId] = useNumParam('chainId')
-    const [createdAtGe, setCreatedAtGe] = useDateParam('createdAtGe')
-    const [createdAtLe, setCreatedAtLe] = useDateParam('createdAtLe')
-    const [volumeExecGe, setVolumeExecGe] = useTextParam('volumeExecGe')
-    const [volumeExecLe, setVolumeExecLe] = useTextParam('volumeExecLe')
-    const [tonTokenAddress, setTonTokenAddress] = useTextParam('tonTokenAddress')
+    const [chainId, setChainId] = useNumParam('chainid')
+    const [createdAtGe, setCreatedAtGe] = useDateParam('createdge')
+    const [createdAtLe, setCreatedAtLe] = useDateParam('createdle')
+    const [volumeExecGe, setVolumeExecGe] = useTextParam('volumege')
+    const [volumeExecLe, setVolumeExecLe] = useTextParam('volumele')
+    const [tonTokenAddress, setTonTokenAddress] = useTextParam('token')
     const [status, setStatus] = useDictParam<TransfersApiRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
     )
@@ -256,17 +256,19 @@ function TransfersInner({
                                         onChange={changeFilter('chainId')}
                                     />
                                 </FilterField>
-                                <FilterField
-                                    title={intl.formatMessage({
-                                        id: 'TRANSFERS_TOKEN',
-                                    })}
-                                >
-                                    <TokenFilter
-                                        tokens={tokens}
-                                        tokenAddress={filters.tonTokenAddress}
-                                        onChange={changeFilter('tonTokenAddress')}
-                                    />
-                                </FilterField>
+                                {tokens && (
+                                    <FilterField
+                                        title={intl.formatMessage({
+                                            id: 'TRANSFERS_TOKEN',
+                                        })}
+                                    >
+                                        <TokenFilter
+                                            tokens={tokens}
+                                            tokenAddress={filters.tonTokenAddress}
+                                            onChange={changeFilter('tonTokenAddress')}
+                                        />
+                                    </FilterField>
+                                )}
                                 <FilterField
                                     title={intl.formatMessage({
                                         id: 'TRANSFERS_STATUS',
