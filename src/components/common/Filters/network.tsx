@@ -2,7 +2,6 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Select } from '@/components/common/Select'
-import { findNetwork } from '@/modules/Bridge/utils'
 import { NetworkShape } from '@/types'
 
 import './index.scss'
@@ -33,10 +32,7 @@ export function NetworkFilter({
                 value: item.chainId,
                 label: item.label,
             }))}
-            value={chainIdStr
-                ? findNetwork(chainIdStr, 'evm')?.label
-                : undefined}
-            inputValue={chainIdStr}
+            value={chainIdStr}
             onChange={change}
             placeholder={intl.formatMessage({
                 id: 'FILTERS_BC',
