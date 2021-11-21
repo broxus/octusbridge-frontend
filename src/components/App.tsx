@@ -50,7 +50,7 @@ export function App(): JSX.Element {
                             <Route path="/transfers/my">
                                 <MyTransferList />
                             </Route>
-                            <Route path="/transfers/:userAddress(0:[A-Fa-f0-9]{64})?">
+                            <Route path="/transfers/:userAddress(0:[A-Fa-f0-9]{64})">
                                 <TransferList />
                             </Route>
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/credit">

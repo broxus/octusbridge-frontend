@@ -69,6 +69,10 @@ export function getToNetwork(transferKind: TransferKind, chainId: number): strin
 }
 
 export function getTransferLink(transfer: TransfersApiTransfer): string | undefined {
+    if (!transfer.contractAddress || !transfer.transactionHash) {
+        return undefined
+    }
+
     switch (transfer.transferKind) {
         case 'EthToTon':
             return `/transfer/evm-${transfer.chainId}/ton-1/0x${transfer.transactionHash}`

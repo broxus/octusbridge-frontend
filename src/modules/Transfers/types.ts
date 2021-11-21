@@ -17,7 +17,7 @@ export type TransfersApiOrdering =
 
 export type TransfersApiTransfer = {
     confirmVotes: number;
-    contractAddress: string;
+    contractAddress?: string;
     createdAt: number;
     currencyAddress: string;
     rejectVotes: number;
@@ -26,7 +26,7 @@ export type TransfersApiTransfer = {
     transferKind: TransferKind;
     volumeExec: string;
     chainId: number;
-    transactionHash: string;
+    transactionHash?: string;
 }
 
 export type TransfersApiParams = {
