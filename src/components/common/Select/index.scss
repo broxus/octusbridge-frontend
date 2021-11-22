@@ -186,6 +186,14 @@
         right: 0;
     }
 
+    &-clear {
+        height: 100%;
+        position: absolute;
+        right: 0;
+        width: 39px;
+        opacity: 0.48;
+    }
+
     &-dropdown {
         background: #1a1f3f;
         border: 1px solid rgba(255, 255, 255, 0.07);

@@ -27,6 +27,7 @@ export function NetworkFilter({
 
     return (
         <Select
+            allowClear
             className="rc-select--sm"
             options={networks.map(item => ({
                 value: item.chainId,

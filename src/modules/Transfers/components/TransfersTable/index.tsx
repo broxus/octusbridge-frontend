@@ -64,20 +64,24 @@ export function TransfersTable({
             rows={items.map(item => ({
                 link: getTransferLink(item),
                 cells: [
-                    <TokenAmount
-                        address={item.currencyAddress}
-                        uri={tokensCache.get(item.currencyAddress)?.icon}
-                        symbol={tokensCache.get(item.currencyAddress)?.symbol}
-                        amount={item.volumeExec}
-                    />,
+                    item.currencyAddress && item.volumeExec ? (
+                        <TokenAmount
+                            address={item.currencyAddress}
+                            uri={tokensCache.get(item.currencyAddress)?.icon}
+                            symbol={tokensCache.get(item.currencyAddress)?.symbol}
+                            amount={item.volumeExec}
+                        />
+                    ) : nullMessage,
                     getFromNetwork(item.transferKind, item.chainId) || nullMessage,
                     getToNetwork(item.transferKind, item.chainId) || nullMessage,
-                    <Badge status={mapStatusToBadge(item.status)}>
-                        {intl.formatMessage({
-                            id: mapStatusToIntl(item.status),
-                        })}
-                    </Badge>,
-                    dateFormat(item.createdAt),
+                    item.status ? (
+                        <Badge status={mapStatusToBadge(item.status)}>
+                            {intl.formatMessage({
+                                id: mapStatusToIntl(item.status),
+                            })}
+                        </Badge>
+                    ) : nullMessage,
+                    item.createdAt ? dateFormat(item.createdAt) : nullMessage,
                 ],
             }))}
         />

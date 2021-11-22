@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite'
 
 import {
     DateFilter, FilterField, Filters, NetworkFilter,
-    RadioFilter, TextFilter, TokenFilter,
+    NUM_REGEXP, RadioFilter, TextFilter, TokenFilter,
 } from '@/components/common/Filters'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
@@ -17,6 +17,7 @@ import { useDateParam } from '@/hooks/useDateParam'
 import { useTextParam } from '@/hooks/useTextParam'
 import { useDictParam } from '@/hooks/useDictParam'
 import { useNumParam } from '@/hooks/useNumParam'
+import { useBNParam } from '@/hooks/useBNParam'
 import {
     TransfersApiFilters, TransfersApiOrdering, TransfersApiRequestStatus,
 } from '@/modules/Transfers/types'
@@ -60,11 +61,11 @@ function TransfersInner({
             ), [])
     ), [tokensCache.tokens, evmNetworks])
 
-    const [chainId, setChainId] = useNumParam('chainid')
-    const [createdAtGe, setCreatedAtGe] = useDateParam('createdge')
-    const [createdAtLe, setCreatedAtLe] = useDateParam('createdle')
-    const [volumeExecGe, setVolumeExecGe] = useTextParam('volumege')
-    const [volumeExecLe, setVolumeExecLe] = useTextParam('volumele')
+    const [chainId, setChainId] = useNumParam('chain')
+    const [createdAtGe, setCreatedAtGe] = useDateParam('created-ge')
+    const [createdAtLe, setCreatedAtLe] = useDateParam('created-le')
+    const [volumeExecGe, setVolumeExecGe] = useBNParam('volume-ge')
+    const [volumeExecLe, setVolumeExecLe] = useBNParam('volume-le')
     const [tonTokenAddress, setTonTokenAddress] = useTextParam('token')
     const [status, setStatus] = useDictParam<TransfersApiRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
@@ -233,6 +234,7 @@ function TransfersInner({
                                     <TextFilter
                                         value={filters.volumeExecGe}
                                         onChange={changeFilter('volumeExecGe')}
+                                        regexp={NUM_REGEXP}
                                         placeholder={intl.formatMessage({
                                             id: 'FILTERS_FROM',
                                         })}
@@ -240,6 +242,7 @@ function TransfersInner({
                                     <TextFilter
                                         value={filters.volumeExecLe}
                                         onChange={changeFilter('volumeExecLe')}
+                                        regexp={NUM_REGEXP}
                                         placeholder={intl.formatMessage({
                                             id: 'FILTERS_TO',
                                         })}
