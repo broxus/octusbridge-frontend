@@ -337,7 +337,7 @@ export class CrosschainBridge {
 
                 await this.wrapperContract.methods.deposit(
                     [target[0], `0x${target[1]}`],
-                    this.amountNumber.shiftedBy(this.amountDecimals).toFixed(),
+                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
