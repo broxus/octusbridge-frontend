@@ -234,7 +234,10 @@ export class CrosschainBridge {
                 else {
                     await tokenContract.methods.approve(
                         this.tokenVault.vault,
-                        this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                        this.amountNumber
+                            .shiftedBy(this.tokenVault.decimals)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed(),
                     ).send({
                         from: this.evmWallet.address,
                         type: transactionType,
@@ -292,7 +295,7 @@ export class CrosschainBridge {
             ).call()
 
             const approvalDelta = new BigNumber(allowance).minus(
-                this.amountNumber.shiftedBy(this.amountDecimals),
+                this.amountNumber.shiftedBy(this.tokenVault.decimals).dp(0, BigNumber.ROUND_DOWN),
             )
 
             if (approvalDelta.lt(0)) {
@@ -337,7 +340,7 @@ export class CrosschainBridge {
 
                 await this.wrapperContract.methods.deposit(
                     [target[0], `0x${target[1]}`],
-                    this.amountNumber.shiftedBy(this.tokenVault.decimals).toFixed(),
+                    this.amountNumber.shiftedBy(this.tokenVault.decimals).dp(0, BigNumber.ROUND_DOWN).toFixed(),
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
@@ -435,7 +438,6 @@ export class CrosschainBridge {
             this.rightNetwork?.chainId === undefined
             || !this.rightAddress
             || this.token === undefined
-            || this.decimals === undefined
             || this.tonWallet.address === undefined
         ) {
             return
@@ -518,7 +520,7 @@ export class CrosschainBridge {
                 callback_payload: data.boc,
                 grams: '0',
                 send_gas_to: new Address(this.tonWallet.address),
-                tokens: this.amountNumber.shiftedBy(this.decimals).toFixed(),
+                tokens: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
             }).send({
                 amount: '6000000000',
                 bounce: true,
