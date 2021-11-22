@@ -5,6 +5,28 @@
     letter-spacing: 0.6px;
     line-height: 20px;
 
+    &_adaptive {
+        @media only screen and (max-width: 767px) {
+            flex-direction: column;
+            width: 100%;
+        }
+    }
+
+    &_adaptive &__item {
+        @media only screen and (max-width: 767px) {
+            border-bottom: none;
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    &_size {
+        &_lg {
+            font-size: 16px;
+            letter-spacing: 0.25;
+        }
+    }
+
     &__item {
         border-bottom: 1px solid transparent;
         cursor: pointer;

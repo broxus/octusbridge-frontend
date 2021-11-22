@@ -1,4 +1,6 @@
-export const lastOfCalls = <T, A extends any[]>(fn: (...args: A) => T): (...args: A) => Promise<T | undefined> => {
+export const lastOfCalls = <T, A extends any[]>(
+    fn: (...args: A) => Promise<T>,
+): (...args: A) => Promise<T | undefined> => {
     let queue: number[] = [],
         counter = 0
 

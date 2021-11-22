@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
-import { LineChart } from '@/components/common/LineChart'
+import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { RelayerStoreContext } from '@/modules/Relayers/providers/RelayerStoreProvider'
 import { dateRelative, formattedAmount } from '@/utils'
 
@@ -95,7 +95,7 @@ export function RelayerPerformance(): JSX.Element | null {
                 </div>
 
                 <div className="board__main">
-                    <LineChart />
+                    <ChartLayout />
                 </div>
             </div>
         </Section>

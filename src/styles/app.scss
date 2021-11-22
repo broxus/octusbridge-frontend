@@ -162,14 +162,27 @@ ul.summary {
 }
 
 .board {
+    column-gap: 8px;
     display: grid;
-    grid-column-gap: 8px;
-    grid-row-gap: 8px;
     grid-template-columns: 284px 1fr;
+    row-gap: 8px;
+
+    @media only screen and (max-width: 959px) {
+        grid-template-columns: 1fr;
+    }
 
     &__side {
+        column-gap: 8px;
         display: grid;
         row-gap: 8px;
+
+        @media only screen and (max-width: 959px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media only screen and (max-width: 767px) {
+            grid-template-columns: repeat(1, 1fr);
+        }
     }
 
     &__main {
@@ -182,6 +195,18 @@ ul.summary {
     grid-column-gap: 8px;
     grid-row-gap: 8px;
     grid-template-columns: repeat(3, 1fr);
+
+    &_fourth {
+        grid-template-columns: repeat(4, 1fr);
+
+        @media only screen and (max-width: 959px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media only screen and (max-width: 767px) {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 @keyframes checking {

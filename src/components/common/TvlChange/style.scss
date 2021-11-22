@@ -6,7 +6,6 @@
     letter-spacing: 0.75px;
     line-height: 20px;
     opacity: 0.7;
-    padding-left: 24px;
     position: relative;
 
     &::before {
@@ -20,6 +19,7 @@
 .changes-direction_up {
     color: #4ab44a;
     opacity: 1;
+    padding-left: 24px;
     &::before {
         border-bottom-color: #4ab44a;
         top: 2px;
@@ -28,6 +28,7 @@
 .changes-direction_down {
     color: #eb4361;
     opacity: 1;
+    padding-left: 24px;
     &::before {
         border-top-color: #eb4361;
         top: 7.5px;

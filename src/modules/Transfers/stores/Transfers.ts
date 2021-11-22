@@ -16,7 +16,7 @@ export class TransfersStore {
         limit: 10,
     }
 
-    protected apiHandle: (params: TransfersApiRequest) => Promise<Promise<TransfersApiResponse> | undefined>
+    protected apiHandle: (params: TransfersApiRequest) => Promise<TransfersApiResponse | undefined>
 
     constructor() {
         makeAutoObservable(this)

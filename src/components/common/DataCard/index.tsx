@@ -9,7 +9,7 @@ import './index.scss'
 type Props = {
     title?: string;
     hint?: string;
-    value?: string | null;
+    value?: number | string | null;
     linkUrl?: string;
     linkTitle?: string;
     children?: React.ReactNode | React.ReactNode[];

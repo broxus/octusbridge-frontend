@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
 import { Token } from '@/components/common/Token'
-import { Address } from '@/components/common/Address'
+import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 
 import './index.scss'
 
@@ -86,7 +86,7 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_ORIGINAL_ADDRESS',
                                 })}
                             </span>
-                            <Address address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
+                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
                         </li>
                         <li>
                             <span className="text-muted">
@@ -94,7 +94,7 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_TARGET_ADDRESS',
                                 })}
                             </span>
-                            <Address address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
+                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
                         </li>
                         <li>
                             <span className="text-muted">
@@ -102,7 +102,7 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_TARGET_TON_TRANSACTION',
                                 })}
                             </span>
-                            <Address address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
+                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
                         </li>
                         <li>
                             <span className="text-muted">
@@ -110,7 +110,7 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_TARGET_ETH_TRANSACTION',
                                 })}
                             </span>
-                            <Address address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
+                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
                         </li>
                     </ul>
                 </div>

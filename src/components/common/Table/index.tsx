@@ -23,7 +23,7 @@ type Row = {
 
 type Props<O> = {
     cols: Col<O>[];
-    rows: Row[];
+    rows?: Row[];
     order?: O;
     className?: string;
     onSort?: (order: O) => void;
@@ -56,7 +56,7 @@ export function Table<O>({
                 ))}
             </div>
 
-            {rows.length === 0 ? (
+            {!rows || rows.length === 0 ? (
                 <div className="table__empty">
                     {intl.formatMessage({
                         id: 'EMPTY_LIST',

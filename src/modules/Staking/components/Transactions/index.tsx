@@ -1,18 +1,75 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { Observer, observer } from 'mobx-react-lite'
 
+import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Tab, Tabs } from '@/components/common/Tabs'
 import { Table } from '@/components/common/Table'
-import { Address } from '@/components/common/Address'
 import { Amount } from '@/components/common/Amount'
 import { Pagination } from '@/components/common/Pagination'
-import { dateFormat } from '@/utils'
+import { mapTransactionKindToIntlId } from '@/modules/Staking/utils'
+import { TransactionKindApiRequest, TransactionOrdering } from '@/modules/Staking/types'
+import { UserStoreContext } from '@/modules/Staking/providers/UserStoreProvider'
+import { usePagination } from '@/hooks/usePagination'
+import { useTableOrder } from '@/hooks/useTableOrder'
+import { dateFormat, error } from '@/utils'
 
 import './index.scss'
 
-export function Transactions(): JSX.Element {
+type Props = {
+    userAddress: string;
+}
+
+export function TransactionsInner({
+    userAddress,
+}: Props): JSX.Element | null {
+    const user = React.useContext(UserStoreContext)
+
+    if (!user) {
+        return null
+    }
+
     const intl = useIntl()
+    const pagination = usePagination(user.transactionsTotalCount)
+    const tableOrder = useTableOrder<TransactionOrdering>('timestampblockatdescending')
+    const [transactionKind, setTransactionKind] = React.useState<TransactionKindApiRequest>()
+
+    const nullMessage = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
+
+    const fetch = async () => {
+        try {
+            await user.fetchTransactions({
+                userAddress,
+                transactionKind,
+                limit: pagination.limit,
+                offset: pagination.offset,
+                ordering: tableOrder.order,
+            })
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    const changeKindFn = (value?: TransactionKindApiRequest) => (
+        () => {
+            pagination.submit(1)
+            setTransactionKind(value)
+        }
+    )
+
+    React.useEffect(() => {
+        fetch()
+    }, [
+        userAddress,
+        transactionKind,
+        pagination.limit,
+        pagination.offset,
+        tableOrder.order,
+    ])
 
     return (
         <Section>
@@ -22,28 +79,43 @@ export function Transactions(): JSX.Element {
                         id: 'STAKING_TRANSACTIONS_TITLE',
                     })}
                 </Title>
-                <Tabs>
-                    <Tab active>
+                <Tabs adaptive size="lg">
+                    <Tab
+                        active={transactionKind === undefined}
+                        onClick={changeKindFn()}
+                    >
                         {intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_ALL',
                         })}
                     </Tab>
-                    <Tab>
+                    <Tab
+                        active={transactionKind === 'deposit'}
+                        onClick={changeKindFn('deposit')}
+                    >
                         {intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_DEPOSITS',
                         })}
                     </Tab>
-                    <Tab>
+                    <Tab
+                        active={transactionKind === 'withdraw'}
+                        onClick={changeKindFn('withdraw')}
+                    >
                         {intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_WITHDRAWALS',
                         })}
                     </Tab>
-                    <Tab>
+                    <Tab
+                        active={transactionKind === 'claim'}
+                        onClick={changeKindFn('claim')}
+                    >
                         {intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_REWARDS',
                         })}
                     </Tab>
-                    <Tab>
+                    <Tab
+                        active={transactionKind === 'freeze'}
+                        onClick={changeKindFn('freeze')}
+                    >
                         {intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_FREEZES',
                         })}
@@ -52,51 +124,60 @@ export function Transactions(): JSX.Element {
             </Header>
 
             <div className="card card--flat card--small">
-                <Table
-                    className="staking-transactions"
-                    cols={[{
-                        name: intl.formatMessage({
-                            id: 'STAKING_TRANSACTIONS_COL_TYPE',
-                        }),
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'STAKING_TRANSACTIONS_COL_TRS',
-                        }),
-                        align: 'right',
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'STAKING_TRANSACTIONS_COL_AMOUNT',
-                        }),
-                        align: 'right',
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'STAKING_TRANSACTIONS_COL_DATE',
-                        }),
-                        align: 'right',
-                        sortable: true,
-                        order: 'desc',
-                    }]}
-                    rows={[{
-                        cells: [
-                            'Deposit',
-                            <Address
-                                address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
-                                externalLink="/"
-                            />,
-                            <Amount
-                                value="12114"
-                            />,
-                            dateFormat(new Date().getTime()),
-                        ],
-                    }]}
-                />
+                <Observer>
+                    {() => (
+                        <Table<TransactionOrdering>
+                            className="staking-transactions"
+                            onSort={tableOrder.onSort}
+                            order={tableOrder.order}
+                            cols={[{
+                                name: intl.formatMessage({
+                                    id: 'STAKING_TRANSACTIONS_COL_TYPE',
+                                }),
+                            }, {
+                                name: intl.formatMessage({
+                                    id: 'STAKING_TRANSACTIONS_COL_TRS',
+                                }),
+                                align: 'right',
+                            }, {
+                                name: intl.formatMessage({
+                                    id: 'STAKING_TRANSACTIONS_COL_AMOUNT',
+                                }),
+                                align: 'right',
+                                ascending: 'amountascending',
+                                descending: 'amountdescending',
+                            }, {
+                                name: intl.formatMessage({
+                                    id: 'STAKING_TRANSACTIONS_COL_DATE',
+                                }),
+                                align: 'right',
+                                ascending: 'timestampblockascending',
+                                descending: 'timestampblockatdescending',
+                            }]}
+                            rows={user.transactionsItems.map(item => ({
+                                cells: [
+                                    intl.formatMessage({
+                                        id: mapTransactionKindToIntlId(item.transactionKind),
+                                    }),
+                                    item.transactionHash
+                                        ? <TransactionExplorerLink withIcon id={item.transactionHash} />
+                                        : nullMessage,
+                                    <Amount value={item.amountExec} />,
+                                    item.timestampBlock ? dateFormat(item.timestampBlock) : nullMessage,
+                                ],
+                            }))}
+                        />
+                    )}
+                </Observer>
 
                 <Pagination
-                    limit={10}
-                    current={2}
-                    onSubmit={() => {}}
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onSubmit={pagination.submit}
                 />
             </div>
         </Section>
     )
 }
+
+export const Transactions = observer(TransactionsInner)

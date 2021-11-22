@@ -39,7 +39,28 @@ export function Nav(): JSX.Element {
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_STAKING',
                         })}
+
+                        <Icon icon="arrowDown" className="main-nav__arrow" />
                     </NavLink>
+
+                    <div className="main-nav__sub">
+                        <ul>
+                            <li>
+                                <NavLink to="/staking/explorer" exact>
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_MY_STAKING_EXPLORER',
+                                    })}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/staking/explorer/my">
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_MY_STAKING_MY',
+                                    })}
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
                 <li>
                     <span>

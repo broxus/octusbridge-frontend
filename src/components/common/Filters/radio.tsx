@@ -6,7 +6,7 @@ import './index.scss'
 
 export type RadioFilter = {
     type: 'radio';
-    value: string | undefined;
+    value?: string;
     labels: {
         name: string;
         id: string;
@@ -14,12 +14,12 @@ export type RadioFilter = {
 }
 
 type Props<T> = {
-    value: T | undefined;
+    value?: T;
     labels: {
         name: string;
         id: T;
     }[]
-    onChange: (value: T | undefined) => void;
+    onChange: (value?: T) => void;
 }
 
 export function RadioFilter<T>({
