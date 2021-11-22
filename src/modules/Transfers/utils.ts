@@ -46,7 +46,11 @@ export function mapStatusToBadge(status: TransfersApiStatus): BadgeStatus {
     return map[status]
 }
 
-export function getFromNetwork(transferKind: TransferKind, chainId: number): string | undefined {
+export function getFromNetwork(transferKind?: TransferKind, chainId?: number): string | undefined {
+    if (!chainId || !transferKind) {
+        return undefined
+    }
+
     switch (transferKind) {
         case 'EthToTon':
             return findNetwork(chainId.toString(), 'evm')?.label
@@ -57,7 +61,11 @@ export function getFromNetwork(transferKind: TransferKind, chainId: number): str
     }
 }
 
-export function getToNetwork(transferKind: TransferKind, chainId: number): string | undefined {
+export function getToNetwork(transferKind?: TransferKind, chainId?: number): string | undefined {
+    if (!chainId || !transferKind) {
+        return undefined
+    }
+
     switch (transferKind) {
         case 'EthToTon':
             return findNetwork('1', 'ton')?.label
@@ -69,15 +77,15 @@ export function getToNetwork(transferKind: TransferKind, chainId: number): strin
 }
 
 export function getTransferLink(transfer: TransfersApiTransfer): string | undefined {
-    if (!transfer.contractAddress || !transfer.transactionHash) {
-        return undefined
-    }
-
     switch (transfer.transferKind) {
         case 'EthToTon':
-            return `/transfer/evm-${transfer.chainId}/ton-1/0x${transfer.transactionHash}`
+            return transfer.chainId && transfer.ethTransactionHash
+                ? `/transfer/evm-${transfer.chainId}/ton-1/${transfer.ethTransactionHash}`
+                : undefined
         case 'TonToEth':
-            return `/transfer/ton-1/evm-${transfer.chainId}/${transfer.contractAddress}`
+            return transfer.chainId && transfer.contractAddress
+                ? `/transfer/ton-1/evm-${transfer.chainId}/${transfer.contractAddress}`
+                : undefined
         default:
             return undefined
     }

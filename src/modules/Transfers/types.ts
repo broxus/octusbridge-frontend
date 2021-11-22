@@ -16,17 +16,18 @@ export type TransfersApiOrdering =
     | 'createdatdescending';
 
 export type TransfersApiTransfer = {
-    confirmVotes: number;
+    confirmVotes?: number;
+    createdAt?: number;
+    currencyAddress?: string;
+    rejectVotes?: number;
+    requiredVotes?: number;
+    status?: TransfersApiStatus;
+    volumeExec?: string;
+    transferKind?: TransferKind;
+    chainId?: number;
     contractAddress?: string;
-    createdAt: number;
-    currencyAddress: string;
-    rejectVotes: number;
-    requiredVotes: number;
-    status: TransfersApiStatus;
-    transferKind: TransferKind;
-    volumeExec: string;
-    chainId: number;
-    transactionHash?: string;
+    ethTransactionHash?: string;
+    tonTransactionHash?: string;
 }
 
 export type TransfersApiParams = {
