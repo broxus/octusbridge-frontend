@@ -92,13 +92,14 @@ export class TokensCacheService {
         // When the Tokens List Service has loaded the list of
         // available tokens, we will start creating a token map
         reaction(
-            () => [tokensList.time, tonWallet.address, evmWallet.address, tokensAssetsURI],
+            () => [tokensList.time, tokensList.tokens, tonWallet.address, evmWallet.address, tokensAssetsURI],
             async (
-                [time, tonAddress, evmAddress, assetsUri],
-                [prevTime, prevTonAddress, prevEvmAddress, prevAssetsUri],
+                [time, tokens, tonAddress, evmAddress, assetsUri],
+                [prevTime, prevTokens, prevTonAddress, prevEvmAddress, prevAssetsUri],
             ) => {
                 if (
                     time !== prevTime
+                    || tokens !== prevTokens
                     || tonAddress !== prevTonAddress
                     || evmAddress !== prevEvmAddress
                 ) {
