@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer, observer } from 'mobx-react-lite'
+import BigNumber from 'bignumber.js'
 
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { Header, Section, Title } from '@/components/common/Section'
@@ -162,7 +163,9 @@ export function TransactionsInner({
                                     item.transactionHash
                                         ? <TransactionExplorerLink withIcon id={item.transactionHash} />
                                         : nullMessage,
-                                    <Amount value={item.amountExec} />,
+                                    item.amountExec
+                                        ? <Amount value={new BigNumber(item.amountExec).abs().toFixed()} />
+                                        : nullMessage,
                                     item.timestampBlock ? dateFormat(item.timestampBlock) : nullMessage,
                                 ],
                             }))}
