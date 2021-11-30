@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Address } from '@/components/common/Address'
+import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { Badge } from '@/components/common/Badge'
 import { UserAvatar } from '@/components/common/UserAvatar'
 
@@ -17,8 +17,8 @@ export function EventCard(): JSX.Element {
                 <h3 className="event-card__title">Token transfer TON-ETH</h3>
 
                 <div className="event-card__meta">
-                    <Address
-                        address="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1"
+                    <TransactionExplorerLink
+                        id="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1"
                     />
 
                     <Badge status="success">Active</Badge>

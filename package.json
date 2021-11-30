@@ -20,6 +20,8 @@
         "bignumber.js": "^9.0.1",
         "classnames": "^2.3.1",
         "eth-ton-abi-converter": "^0.1.5",
+        "lightweight-charts": "^3.5.0",
+        "lodash.uniqby": "^4.7.0",
         "luxon": "^2.0.2",
         "mobx": "^6.3.5",
         "mobx-react-lite": "^3.2.1",

@@ -6,7 +6,7 @@ import { Token } from '@/components/common/Token'
 import { Table } from '@/components/common/Table'
 import { Amount } from '@/components/common/Amount'
 import { Pagination } from '@/components/common/Pagination'
-import { Address } from '@/components/common/Address'
+import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { EventType } from '@/modules/Relayers/components/Events/type'
 import { dateFormat } from '@/utils'
 
@@ -65,8 +65,8 @@ export function Events(): JSX.Element {
                                 type="Token transfer"
                                 link="/"
                             />,
-                            <Address address="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1" />,
-                            <Address address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />,
+                            <TransactionExplorerLink id="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1" />,
+                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />,
                             <Token
                                 address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
                                 symbol="TON"
@@ -82,8 +82,7 @@ export function Events(): JSX.Element {
                 />
 
                 <Pagination
-                    limit={10}
-                    current={1}
+                    page={1}
                     onSubmit={() => {}}
                 />
             </div>

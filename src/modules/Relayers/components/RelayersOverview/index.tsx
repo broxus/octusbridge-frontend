@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Section, Title } from '@/components/common/Section'
 import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
-import { LineChart } from '@/components/common/LineChart'
+import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 
 export function RelayersOverview(): JSX.Element {
     const intl = useIntl()
@@ -47,7 +47,7 @@ export function RelayersOverview(): JSX.Element {
                 </div>
 
                 <div className="board__main">
-                    <LineChart />
+                    <ChartLayout />
                 </div>
             </div>
         </Section>
