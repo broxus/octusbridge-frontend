@@ -64,7 +64,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
             }, {
-                networkName: leftNetwork?.label || '',
+                network: leftNetwork?.label || '',
             })}
             status={status}
             txHash={transfer.txHash}
