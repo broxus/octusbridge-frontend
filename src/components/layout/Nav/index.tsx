@@ -67,13 +67,27 @@ export function Nav(): JSX.Element {
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_GOVERNANCE',
                         })}
-                        {' '}
-                        <sup>
-                            {intl.formatMessage({
-                                id: 'NAV_LINK_SOON_HINT',
-                            })}
-                        </sup>
+                        <Icon icon="arrowDown" className="main-nav__arrow" />
                     </span>
+
+                    <div className="main-nav__sub">
+                        <ul>
+                            <li>
+                                <NavLink to="/governance/proposals" exact>
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_PROPOSALS',
+                                    })}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/governance/proposals/create" exact>
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_PROPOSALS_CREATE',
+                                    })}
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
                 <li>
                     <NavLink to="/relayers/create">

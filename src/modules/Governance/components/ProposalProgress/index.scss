@@ -1,0 +1,41 @@
+.proposal-progress {
+    &__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 6px;
+    }
+
+    &__value {
+        font-size: 14px;
+        line-height: 20px;
+        color: rgba(255,255,255,0.48);
+
+        &_left {
+            color: #4AB44A;
+        }
+
+        &_right {
+            color: #EB4361;
+        }
+    }
+
+    &__bar {
+        display: flex;
+        align-items: center;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    &__progress {
+        height: 4px;
+
+        &_left {
+            background: #4AB44A;
+        }
+
+        &_right {
+            background: #EB4361;
+        }
+    }
+}

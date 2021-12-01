@@ -31,7 +31,7 @@ export function CreateRelayerBalance({
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -50,7 +50,7 @@ export function CreateRelayerBalance({
                     </span>
                     {stakingBalance && stakingTokenDecimals !== undefined ? (
                         formattedAmount(stakingBalance, stakingTokenDecimals)
-                    ) : nullMessage}
+                    ) : noValue}
                 </li>
 
                 <li>
@@ -65,7 +65,7 @@ export function CreateRelayerBalance({
                     </span>
                     {requiredStake && stakingTokenDecimals !== undefined ? (
                         formattedAmount(requiredStake, stakingTokenDecimals)
-                    ) : nullMessage}
+                    ) : noValue}
                 </li>
 
                 {

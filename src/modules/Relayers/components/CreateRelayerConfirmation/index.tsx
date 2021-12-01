@@ -44,7 +44,7 @@ export function CreateRelayerConfirmation({
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -71,7 +71,7 @@ export function CreateRelayerConfirmation({
                                 value: formattedAmount(stakingBalance, stakingTokenDecimals),
                                 symbol: stakingTokenSymbol,
                             })
-                            : nullMessage
+                            : noValue
                     }
                 </li>
 
@@ -89,7 +89,7 @@ export function CreateRelayerConfirmation({
                                 value: formattedAmount(tonWalletBalance, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
-                            : nullMessage
+                            : noValue
                     }
                 </li>
 
@@ -107,7 +107,7 @@ export function CreateRelayerConfirmation({
                                 value: formattedAmount(contractFee, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
-                            : nullMessage
+                            : noValue
                     }
                 </li>
             </ul>

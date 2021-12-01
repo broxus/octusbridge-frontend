@@ -1,0 +1,21 @@
+.proposals-user-table {
+    &.list {
+        --list-grid-template: 30px minmax(330px, 50%) minmax(110px, 10%) minmax(110px, 10%) minmax(190px, 10%) minmax(180px, 20%) 100px;
+    }
+}
+
+.proposals-table.list {
+    --list-grid-template: 30px minmax(500px, 58%) minmax(110px, 14%) minmax(190px, 14%) minmax(180px, 14%);
+}
+
+.proposal-layout-content {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.proposal-layout-sidebar {
+    position: sticky;
+    top: 40px;
+}

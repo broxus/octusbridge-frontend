@@ -1,0 +1,104 @@
+.proposal-form {
+    &__layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 16px;
+    }
+
+    &__footer {
+        margin: 16px 0 0;
+        text-align: right;
+    }
+
+    &__title {
+        font-size: 18px;
+        line-height: 24px;
+        letter-spacing: 0.6px;
+        margin: 0 0 16px;
+        font-weight: 700;
+    }
+
+    &__field {
+        margin: 0 0 16px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__submit {
+        display: inline-flex;
+        column-gap: 12px;
+        align-items: center;
+    }
+
+    &-action-list {
+        &__title {
+            font-size: 14px;
+            line-height: 20px;
+            letter-spacing: 0.6px;
+            font-weight: 700;
+            margin: 0 0 16px;
+        }
+
+        &__items {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 0 0 16px;
+        }
+
+        &__item {
+            padding: 14px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            column-gap: 16px;
+            font-size: 14px;
+            line-height: 20px;
+            letter-spacing: 0.6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+        &__actions {
+            display: flex;
+            align-items: center;
+            column-gap: 12px;
+        }
+
+        &__icon {
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.48);
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: rgba(255, 255, 255, 1);
+            }
+        }
+    }
+
+    &-actions {
+        &__add {
+            column-gap: 8px;
+        }
+    }
+
+    &-popup {
+        &__title {
+            font-size: 24px;
+            line-height: 28px;
+            letter-spacing: 0.15px;
+            font-weight: 400;
+            margin: 0 0 20px;
+        }
+
+        &__field {
+            margin: 0 0 16px;
+        }
+
+        &__footer {
+            display: flex;
+            column-gap: 8px;
+            margin: 40px 0 0;
+        }
+    }
+}

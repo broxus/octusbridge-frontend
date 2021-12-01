@@ -1,0 +1,24 @@
+.proposal-form-warning {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 450px;
+
+    &__title {
+        font-size: 24px;
+        line-height: 28px;
+        letter-spacing: 0.15px;
+        font-weight: 400;
+        margin: 16px 0 4px 0;
+    }
+
+    &__text {
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+        max-width: 320px;
+        margin: 0 0 32px;
+        text-align: center;
+    }
+}

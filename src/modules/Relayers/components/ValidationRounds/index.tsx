@@ -1,7 +1,9 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Header, Section, Title } from '@/components/common/Section'
+import {
+    Header, Line, Section, Title,
+} from '@/components/common/Section'
 import { RoundStatistic } from '@/modules/Relayers/components/RoundStatistic'
 import { Rounds } from '@/modules/Relayers/components/Rounds'
 import { View, ViewSwitcher } from '@/modules/Relayers/components/ValidationRounds/ViewSwitcher'
@@ -25,7 +27,7 @@ export function ValidationRounds(): JSX.Element | null {
                 />
             </Header>
 
-            <hr />
+            <Line />
 
             {view === View.Stats ? (
                 <RoundStatistic />
