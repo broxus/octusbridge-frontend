@@ -15,12 +15,14 @@ import { dateFormat } from '@/utils'
 type Props = {
     items: TransfersApiTransfer[];
     order?: TransfersApiOrdering;
+    loading?: boolean;
     onSort?: (order: TransfersApiOrdering) => void;
 }
 
 export function TransfersTable({
     items,
     order,
+    loading,
     onSort,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -32,6 +34,7 @@ export function TransfersTable({
 
     return (
         <Table<TransfersApiOrdering>
+            loading={loading}
             className="transfers-table"
             order={order}
             onSort={onSort}

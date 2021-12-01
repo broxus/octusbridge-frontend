@@ -236,6 +236,7 @@ export function StakeholdersInner(): JSX.Element | null {
                 <Observer>
                     {() => (
                         <Table
+                            loading={explorer.stakeholdersLoading}
                             className="stakeholders-table"
                             onSort={tableOrder.onSort}
                             order={tableOrder.order}

@@ -180,4 +180,8 @@ export class ExplorerStore {
         return Boolean(this.state.chartLoading)
     }
 
+    public get stakeholdersLoading(): boolean {
+        return Boolean(this.state.stakeholdersLoading)
+    }
+
 }

@@ -2,6 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { useIntl } from 'react-intl'
 
+import { ContentLoader } from '@/components/common/ContentLoader'
 import { Row } from '@/components/common/Table/row'
 import { Align, Cell } from '@/components/common/Table/cell'
 
@@ -26,6 +27,7 @@ type Props<O> = {
     rows?: Row[];
     order?: O;
     className?: string;
+    loading?: boolean;
     onSort?: (order: O) => void;
 }
 
@@ -34,6 +36,7 @@ export function Table<O>({
     rows,
     order,
     className,
+    loading,
     onSort,
 }: Props<O>): JSX.Element {
     const intl = useIntl()
@@ -56,24 +59,36 @@ export function Table<O>({
                 ))}
             </div>
 
-            {!rows || rows.length === 0 ? (
-                <div className="table__empty">
-                    {intl.formatMessage({
-                        id: 'EMPTY_LIST',
+            <div className="table__body">
+                {(!rows || rows.length === 0) && !loading && (
+                    <div className="table__empty">
+                        {intl.formatMessage({
+                            id: 'EMPTY_LIST',
+                        })}
+                    </div>
+                )}
+
+                {rows && rows.length > 0 && (
+                    rows.map((row, i) => (
+                        /* eslint-disable react/no-array-index-key */
+                        <Row key={i} link={row.link}>
+                            {row.cells.map((cell, j) => (
+                                <Cell align={cols[j].align} key={j}>
+                                    {cell}
+                                </Cell>
+                            ))}
+                        </Row>
+                    ))
+                )}
+
+                <div
+                    className={classNames('table__loader', {
+                        table__loader_active: loading,
                     })}
+                >
+                    <ContentLoader slim />
                 </div>
-            ) : (
-                rows.map((row, i) => (
-                    /* eslint-disable react/no-array-index-key */
-                    <Row key={i} link={row.link}>
-                        {row.cells.map((cell, j) => (
-                            <Cell align={cols[j].align} key={j}>
-                                {cell}
-                            </Cell>
-                        ))}
-                    </Row>
-                ))
-            )}
+            </div>
         </div>
     )
 }
