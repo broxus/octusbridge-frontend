@@ -14,7 +14,8 @@ import {
     BridgeConstants,
     Dex,
     DexAbi,
-    DexConstants, TokenAbi,
+    DexConstants,
+    TokenAbi,
 } from '@/misc'
 import {
     DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA,
@@ -39,6 +40,7 @@ import {
     isEvmAddressValid,
     isGoodBignumber,
     isTonAddressValid,
+    log,
     throwException,
     validateMaxValue,
     validateMinValue,
@@ -1749,22 +1751,38 @@ export class CrosschainBridge {
         const rightChainId = this.rightNetwork?.chainId
 
         if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
-            return this.tokensCache.tokens.filter(
+            const tokens = this.tokensCache.tokens.filter(
                 ({ vaults }) => ((
                     vaults.some(vault => (vault.chainId === leftChainId && vault.depositType === 'credit'))
                     && vaults.some(vault => vault.chainId === rightChainId && vault.depositType === 'default')
                 ) || false),
             )
+            log(
+                'Tokens for EVM - EVM',
+                toJS(this.data),
+                toJS(this.state),
+                tokens,
+            )
+            return tokens
         }
 
         if (this.isEvmToTon && leftChainId !== undefined) {
+            log('Tokens for EVM - TON',
+                toJS(this.data),
+                toJS(this.state),
+                this.tokensCache.filterTokensByChainId(leftChainId))
             return this.tokensCache.filterTokensByChainId(leftChainId)
         }
 
         if (this.isTonToEvm && rightChainId !== undefined) {
+            log('Tokens for TON - EVM',
+                toJS(this.data),
+                toJS(this.state),
+                this.tokensCache.filterTokensByChainId(rightChainId))
             return this.tokensCache.filterTokensByChainId(rightChainId)
         }
 
+        log('Returns all tokens')
         return this.tokensCache.tokens
     }
 

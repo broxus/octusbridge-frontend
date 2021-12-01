@@ -137,9 +137,12 @@ export type EvmSwapTransferStoreState = {
 
 export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
     contractAddress?: Address;
+    creditFactoryFee?: string;
     encodedEvent?: string;
     maxTransferFee?: string;
     minTransferFee?: string;
+    pairAddress?: Address;
+    pairState?: FullContractState;
     withdrawalId?: string;
 }
 

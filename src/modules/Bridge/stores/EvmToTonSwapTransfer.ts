@@ -45,6 +45,7 @@ import {
 } from '@/utils'
 
 
+// noinspection DuplicatedCode
 export class EvmToTonSwapTransfer {
 
     protected data: EvmSwapTransferStoreData
@@ -1129,12 +1130,6 @@ export class EvmToTonSwapTransfer {
         }
     }
 
-    protected get creditProcessorContract(): Contract<typeof TokenAbi.CreditProcessor> | undefined {
-        return this.creditProcessorAddress !== undefined
-            ? new Contract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
-            : undefined
-    }
-
     public get amount(): EvmSwapTransferStoreData['amount'] {
         return this.data.amount
     }
@@ -1225,6 +1220,12 @@ export class EvmToTonSwapTransfer {
 
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
+    }
+
+    protected get creditProcessorContract(): Contract<typeof TokenAbi.CreditProcessor> | undefined {
+        return this.creditProcessorAddress !== undefined
+            ? new Contract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
+            : undefined
     }
 
     protected get tokenVault(): TokenAssetVault | undefined {

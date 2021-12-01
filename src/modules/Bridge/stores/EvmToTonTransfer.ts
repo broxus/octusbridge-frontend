@@ -29,6 +29,7 @@ import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
 
 
+// noinspection DuplicatedCode
 export class EvmToTonTransfer {
 
     protected data: EvmTransferStoreData

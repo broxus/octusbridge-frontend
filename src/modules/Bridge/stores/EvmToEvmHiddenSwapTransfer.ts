@@ -5,7 +5,12 @@ import { makeObservable, override, toJS } from 'mobx'
 import ton, { Address, Contract } from 'ton-inpage-provider'
 
 import { IndexerApiBaseUrl } from '@/config'
-import { TokenAbi } from '@/misc'
+import {
+    BridgeConstants, Dex,
+    DexAbi,
+    DexConstants,
+    TokenAbi,
+} from '@/misc'
 import {
     DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA,
     DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_STATE,
@@ -14,18 +19,22 @@ import { EvmToTonSwapTransfer } from '@/modules/Bridge/stores/EvmToTonSwapTransf
 import {
     BurnCallbackOrdering,
     BurnCallbackTableResponse,
-    CreditProcessorState, EventStateStatus, EvmHiddenSwapTransferStoreData,
+    CreditProcessorState,
+    EventStateStatus,
+    EvmHiddenSwapTransferStoreData,
     EvmHiddenSwapTransferStoreState,
     EvmSwapTransferStoreState,
     EvmTransferQueryParams,
     SearchBurnCallbackInfoRequest,
 } from '@/modules/Bridge/types'
+import { getCreditFactoryContract } from '@/modules/Bridge/utils'
 import { debug, error } from '@/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
 
 
+// noinspection DuplicatedCode
 export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     protected data: EvmHiddenSwapTransferStoreData
@@ -71,6 +80,16 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         value: EvmHiddenSwapTransferStoreState[K],
     ): void {
         this.state[key] = value
+    }
+
+    public async resolve(): Promise<void> {
+        await super.resolve()
+
+        await Promise.all([
+            this.tonWallet.isConnected ? this.syncPair() : undefined,
+            this.syncCreditFactoryFee(),
+        ])
+        await this.syncTransferFees()
     }
 
     public async release(): Promise<void> {
@@ -609,6 +628,92 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         }
     }
 
+    protected async syncCreditFactoryFee(): Promise<void> {
+        const creditFactory = getCreditFactoryContract()
+        try {
+            const { fee } = (await creditFactory.methods.getDetails({
+                answerId: 0,
+            }).call()).value0
+
+            this.changeData('creditFactoryFee', fee)
+        }
+        catch (e) {
+            this.changeData('creditFactoryFee', '')
+            error('Sync fee error', e)
+        }
+    }
+
+    protected async syncPair(): Promise<void> {
+        if (this.token?.root === undefined) {
+            return
+        }
+
+        try {
+            const pairAddress = await Dex.checkPair(
+                DexConstants.WTONRootAddress,
+                new Address(this.token.root),
+            )
+
+            if (pairAddress === undefined) {
+                return
+            }
+
+            const pairState = (await ton.getFullContractState({
+                address: pairAddress,
+            })).state
+
+            debug('Sync pair')
+            this.changeData('pairAddress', pairAddress)
+            this.changeData('pairState', pairState)
+        }
+        catch (e) {
+            error('Sync pair error', e)
+        }
+    }
+
+    protected async syncTransferFees(): Promise<void> {
+        if (this.pairContract === undefined || this.token === undefined) {
+            return
+        }
+
+        try {
+            const results = await Promise.allSettled([
+                this.pairContract.methods.expectedSpendAmount({
+                    _answer_id: 0,
+                    receive_amount: this.debt
+                        .shiftedBy(DexConstants.TONDecimals)
+                        .plus(BridgeConstants.HiddenBridgeStrategyGas)
+                        .times(100)
+                        .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMinSlippage))
+                        .dp(0, BigNumber.ROUND_UP)
+                        .toFixed(),
+                    receive_token_root: DexConstants.WTONRootAddress,
+                }).call({
+                    cachedState: toJS(this.data.pairState),
+                }),
+                this.pairContract.methods.expectedSpendAmount({
+                    _answer_id: 0,
+                    receive_amount: this.debt
+                        .shiftedBy(DexConstants.TONDecimals)
+                        .plus(BridgeConstants.HiddenBridgeStrategyGas)
+                        .times(100)
+                        .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMaxSlippage))
+                        .dp(0, BigNumber.ROUND_UP)
+                        .toFixed(),
+                    receive_token_root: DexConstants.WTONRootAddress,
+                }).call({
+                    cachedState: toJS(this.data.pairState),
+                }),
+            ]).then(r => r.map(i => (i.status === 'fulfilled' ? i.value : undefined)))
+
+            this.changeData('minTransferFee', results[0]?.expected_amount)
+            this.changeData('maxTransferFee', results[1]?.expected_amount)
+        }
+        catch (e) {
+            error('Sync transfers fee error', e)
+        }
+    }
+
     public get contractAddress(): EvmHiddenSwapTransferStoreData['contractAddress'] {
         return this.data.contractAddress
     }
@@ -631,6 +736,18 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     public get releaseState(): EvmHiddenSwapTransferStoreState['releaseState'] {
         return this.state.releaseState
+    }
+
+    protected get debt(): BigNumber {
+        return new BigNumber(BridgeConstants.CreditBody)
+            .plus(new BigNumber(this.data.creditFactoryFee || 0))
+            .shiftedBy(-DexConstants.TONDecimals)
+    }
+
+    protected get pairContract(): Contract<typeof DexAbi.Pair> | undefined {
+        return this.data.pairAddress !== undefined
+            ? new Contract(DexAbi.Pair, this.data.pairAddress)
+            : undefined
     }
 
 }
