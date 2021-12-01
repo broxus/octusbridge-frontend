@@ -36,7 +36,7 @@ export function WrongNetworkError({ network, wallet }: Props): JSX.Element {
             text={intl.formatMessage({
                 id: 'EVM_WALLET_WRONG_NETWORK_NOTE',
             }, {
-                networkName: network.name || '',
+                network: network.name || '',
             })}
             type="danger"
         />

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import isEqual from 'lodash.isequal'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
@@ -11,9 +12,9 @@ import {
     CrosschainBridgeStep,
     NetworkFields,
 } from '@/modules/Bridge/types'
-import { isSameNetwork, isTonMainNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
+import { getLabeledNetworks } from '@/utils'
 
 
 export function RouteStep(): JSX.Element {
@@ -76,9 +77,9 @@ export function RouteStep(): JSX.Element {
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_FROM_LABEL',
                             })}
                             network={bridge.leftNetwork}
-                            networks={networks.map(network => ({ label: network.label, value: network.id }))}
+                            networks={getLabeledNetworks()}
                             shouldDisplayNetworkAlert={bridge.isFromEvm
-                                ? !isSameNetwork(bridge.leftNetwork?.chainId, evmWallet.chainId)
+                                ? !isEqual(bridge.leftNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}
                         />
@@ -112,12 +113,9 @@ export function RouteStep(): JSX.Element {
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_TO_LABEL',
                             })}
                             network={bridge.rightNetwork}
-                            networkFieldDisabled={!isTonMainNetwork(bridge.leftNetwork)}
-                            networks={networks.filter(
-                                ({ id }) => id !== bridge.leftNetwork?.id,
-                            ).map(network => ({ label: network.label, value: network.id }))}
+                            networks={bridge.rightNetworks}
                             shouldDisplayNetworkAlert={bridge.isTonToEvm
-                                ? !isSameNetwork(bridge.rightNetwork?.chainId, evmWallet.chainId)
+                                ? !isEqual(bridge.rightNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}
                         />
@@ -130,12 +128,7 @@ export function RouteStep(): JSX.Element {
                     {() => (
                         <Button
                             className="crosschain-transfer__btn-next"
-                            disabled={(
-                                (bridge.isEvmToTon
-                                    ? !isSameNetwork(bridge.leftNetwork?.chainId, evmWallet.chainId)
-                                    : !isSameNetwork(bridge.rightNetwork?.chainId, evmWallet.chainId)
-                                ) || !bridge.isRouteValid
-                            )}
+                            disabled={!bridge.isRouteValid}
                             size="lg"
                             type="primary"
                             onClick={nextStep}

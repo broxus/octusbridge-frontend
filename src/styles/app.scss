@@ -155,6 +155,11 @@ ul.summary {
         margin: 0 0 16px;
         row-gap: 16px;
 
+        &.header {
+            font-weight: 700;
+            padding: 0;
+        }
+
         &:last-child {
             margin-bottom: 0;
         }

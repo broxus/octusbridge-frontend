@@ -19,7 +19,7 @@
 @mixin select-item {
     color: #ffffff;
     display: block;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: normal;
     line-height: 30px;
     padding: 8px 12px;
@@ -28,7 +28,7 @@
 
 .rc-select {
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     line-height: normal;
     min-height: 36px;
     padding: 0;
@@ -37,29 +37,20 @@
 
     @include flex;
 
-    &--lg {
-        min-height: 44px;
-    }
-
-    &--sm {
-        font-size: 14px;
-    }
-
-    &--sm &-item {
-        font-size: 14px;
-    }
+    &--sm { min-height: 28px; }
+    &--md { min-height: 44px; }
+    &--lg { min-height: 56px; }
 
     &-selector {
         border: 1px solid rgba(255, 255, 255, 0.24);
         flex-wrap: wrap;
         padding: 0 40px 0 12px;
         position: relative;
+        transition: border 0.2s ease;
         width: 100%;
 
         @include flex;
         @include flex-center;
-
-        &:hover { border-color: rgba(255, 255, 255, 0.24); }
 
         input {
             cursor: inherit;
@@ -82,6 +73,15 @@
                 display: none;
             }
         }
+    }
+
+    &:hover &-selector {
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    &.rc-select-focused &-selector,
+    &.rc-select-open &-selector {
+        border-color: rgba(197, 228, 243, 0.64);
     }
 
     &.rc-select-disabled &-selector {
@@ -107,8 +107,7 @@
     }
 
     &-selection-placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
         overflow: hidden;
         pointer-events: none;
         text-overflow: ellipsis;
@@ -151,9 +150,6 @@
         position: relative;
         user-select: none;
     }
-    &-single.rc-select-open &-selector {
-        border-color: rgba(255, 255, 255, 0.24);
-    }
 
     &-single.rc-select-open &-selection-item {
         color: #ffffff;
@@ -195,8 +191,8 @@
     }
 
     &-dropdown {
-        background: #1a1f3f;
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.08);
+        border: 0 none;
         border-radius: 0;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
         box-sizing: border-box;
@@ -204,10 +200,16 @@
         left: -9999px;
         outline: none;
         overflow: hidden;
-        padding: 5px;
+        padding: 0;
         position: absolute;
         top: -9999px;
         z-index: 5;
+
+        @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+            -webkit-backdrop-filter: blur(64px);
+            backdrop-filter: blur(64px);
+            background: linear-gradient(0deg, #191e3e, #202544), #191e3e;
+        }
 
         &-hidden { display: none; }
 
@@ -246,7 +248,7 @@
             &-state { display: none; }
 
             &-active:not(&-disabled) {
-                background-color: #101739;
+                background-color: #2b304d;
             }
 
             &-selected:not(&-disabled) {
@@ -304,9 +306,18 @@
     }
 }
 
-.rc-virtual-list-scrollbar-thumb {
-    background-color: rgba(7, 10, 38, 50%) !important;
-    transition: all 0.15s ease-in-out;
+.rc-virtual-list {
+    padding: 5px;
+    &-scrollbar {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-radius: 0 !important;
+
+        &-thumb {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            border-radius: 0 !important;
+            transition: all 0.15s ease-in-out;
+        }
+    }
 }
 
 @keyframes rcSlideUpIn {

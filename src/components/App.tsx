@@ -56,14 +56,11 @@ export function App(): JSX.Element {
                             <Route path="/transfers/:userAddress(0:[A-Fa-f0-9]{64})">
                                 <TransferList />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/credit">
-                                <TransferStatus direction="evm-ton" depositType="credit" />
-                            </Route>
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
-                                <TransferStatus direction="evm-ton" depositType="default" />
+                                <TransferStatus />
                             </Route>
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
-                                <TransferStatus direction="ton-evm" />
+                                <TransferStatus />
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />

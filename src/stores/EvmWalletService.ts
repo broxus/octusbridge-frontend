@@ -3,8 +3,7 @@ import { action, makeAutoObservable, runInAction } from 'mobx'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 
-import { findNetwork } from '@/modules/Bridge/utils'
-import { error, throwException } from '@/utils'
+import { error, findNetwork, throwException } from '@/utils'
 
 
 export type WalletData = {
@@ -171,6 +170,15 @@ export class EvmWalletService {
      */
     public get isInitializing(): WalletState['isInitializing'] {
         return this.state.isInitializing
+    }
+
+    public get isReady(): boolean {
+        return (
+            !this.isInitializing
+            && !this.isConnecting
+            && this.isInitialized
+            && this.isConnected
+        )
     }
 
     public get chainId(): string {

@@ -38,11 +38,16 @@
     overflow: hidden;
     padding: 0 12px;
     text-overflow: ellipsis;
+    transition: border 0.2s ease;
     white-space: nowrap;
 
-    &--lg {
-        height: 44px;
-    }
+    &--sm { height: 28px; }
+    &--md { height: 44px; }
+    &--lg { height: 56px; }
+
+    &:hover { border-color: rgba(255, 255, 255, 0.4); }
+
+    &:focus { border-color: rgba(197, 228, 243, 0.64); }
 
     &:disabled {
         background-color: rgba(0, 0, 0, 0.08);
@@ -62,28 +67,23 @@
     }
 
     &::-webkit-input-placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     &::-moz-placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     &:-moz-placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     &:-ms-input-placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     &::placeholder {
-        color: #ffffff;
-        opacity: 0.32;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     &:-webkit-autofill {

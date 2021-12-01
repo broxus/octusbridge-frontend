@@ -20,8 +20,10 @@
         font-weight: 700;
         letter-spacing: 0.06px;
         line-height: 24px;
-        max-width: 160px;
-        min-width: 160px;
+        @media only screen and (min-width: 960px) {
+            max-width: 190px;
+            min-width: 190px;
+        }
     }
 
     &__form {
@@ -128,13 +130,10 @@
         flex-wrap: nowrap;
         gap: 24px;
 
-        &-indicator {
-            min-width: 170px;
-        }
+        &.cancelled { opacity: 0.5; }
 
-        &-control {
-            padding: 8px 0;
-        }
+        &-indicator { min-width: 180px; }
+        &-control { padding: 8px 0; }
 
         &-note {
             display: flex;
@@ -143,14 +142,6 @@
             line-height: 20px;
             &:not(:last-child) {
                 margin-bottom: 12px;
-            }
-        }
-
-        p {
-            line-height: normal;
-            margin-bottom: 16px;
-            &:last-child {
-                margin-bottom: 0;
             }
         }
     }

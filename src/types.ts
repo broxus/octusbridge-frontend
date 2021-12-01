@@ -10,3 +10,8 @@ export type NetworkShape = {
     transactionType?: string;
     type: string;
 }
+
+export type LabeledNetwork = {
+    label: string;
+    value: string;
+}

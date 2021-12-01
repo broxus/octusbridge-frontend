@@ -26,13 +26,13 @@ export function AmountFieldset(): JSX.Element {
 
     const onChange = (value: string) => {
         bridge.changeData('amount', value)
-        if (bridge.isSwapEnabled) {
+        if (bridge.isSwapEnabled || bridge.isEvmToEvm) {
             onChangeAmount()
         }
     }
 
     const onClickMax = () => {
-        const decimals = bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals
+        const decimals = bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals
         let formattedBalance = new BigNumber(bridge.balance || 0)
         if (!isGoodBignumber(formattedBalance)) {
             return
@@ -57,36 +57,40 @@ export function AmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <AmountField
-                                decimals={bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals}
+                                decimals={bridge.isEvmToTon ? bridge.amountMinDecimals : bridge.decimals}
                                 disabled={bridge.token === undefined}
                                 displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
                                 isValid={bridge.isAmountValid}
-                                maxValue={bridge.balance}
                                 placeholder={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_PLACEHOLDER',
                                 })}
+                                size="md"
                                 value={bridge.amount}
-                                onClickMax={onClickMax}
                                 onChange={onChange}
+                                onClickMax={onClickMax}
                             />
                         )}
                     </Observer>
+
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
-                                const decimals = bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals
                                 let isMinValueValid = true
-                                if (bridge.isSwapEnabled && isGoodBignumber(bridge.amountNumber)) {
+                                if (bridge.amount.length > 0 && (
+                                    bridge.isEvmToEvm
+                                    || (bridge.isSwapEnabled && isGoodBignumber(bridge.amountNumber))
+                                )) {
                                     isMinValueValid = validateMinValue(
                                         bridge.minAmount,
                                         bridge.amount,
-                                        decimals,
+                                        bridge.amountMinDecimals,
                                     )
                                 }
                                 const isMaxValueValid = bridge.amount.length > 0
                                     ? validateMaxValue(
-                                        bridge.balanceNumber.toFixed(),
+                                        bridge.balance,
                                         bridge.amount,
+                                        bridge.decimals,
                                     )
                                     : true
 
@@ -100,7 +104,7 @@ export function AmountFieldset(): JSX.Element {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
                                                         bridge.minAmount || 0,
-                                                        decimals,
+                                                        bridge.amountMinDecimals,
                                                     ),
                                                 })}
                                             </span>
@@ -114,7 +118,8 @@ export function AmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.balanceNumber.toFixed(),
+                                                        bridge.balance,
+                                                        bridge.decimals,
                                                     ),
                                                 })}
                                             </span>
@@ -128,7 +133,7 @@ export function AmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.balance || 0,
+                                                        bridge.balance,
                                                         bridge.decimals,
                                                     ),
                                                 })}
@@ -143,20 +148,36 @@ export function AmountFieldset(): JSX.Element {
                     </div>
 
                     {process.env.NODE_ENV !== 'production' && (
-                        <div className="crosschain-transfer__control-hint">
-                            <Observer>
-                                {() => (
-                                    <>
-                                        Min value:
-                                        {' '}
-                                        {formattedAmount(
-                                            bridge.minAmount || 0,
-                                            bridge.isFromEvm ? bridge.amountDecimals : bridge.decimals,
-                                        )}
-                                    </>
-                                )}
-                            </Observer>
-                        </div>
+                        <>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            Min value:
+                                            {' '}
+                                            {formattedAmount(
+                                                bridge.minAmount || 0,
+                                                bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals,
+                                            )}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            Max value:
+                                            {' '}
+                                            {formattedAmount(
+                                                bridge.balance || 0,
+                                                bridge.decimals,
+                                            )}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
