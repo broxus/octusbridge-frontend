@@ -128,6 +128,7 @@ export function TransactionsInner({
                 <Observer>
                     {() => (
                         <Table<TransactionOrdering>
+                            loading={user.transactionsLoading}
                             className="staking-transactions"
                             onSort={tableOrder.onSort}
                             order={tableOrder.order}

@@ -57,4 +57,8 @@ export class TransfersStore {
         return this.data.apiResponse?.totalCount
     }
 
+    public get loading(): boolean {
+        return Boolean(this.state.loading)
+    }
+
 }

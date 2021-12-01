@@ -109,4 +109,8 @@ export class UserStore {
             : []
     }
 
+    public get transactionsLoading(): boolean {
+        return Boolean(this.state.transactionsLoading)
+    }
+
 }

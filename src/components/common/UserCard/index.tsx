@@ -71,7 +71,7 @@ export function UserCard({
                     title={intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted"
+                    className="text-muted user-card__external"
                 >
                     <Icon icon="externalLink" ratio={0.7} />
                 </a>

@@ -23,7 +23,6 @@ export function TokenFilter({
     return (
         <Select
             allowClear
-            className="rc-select--sm"
             options={tokens.map(({ root, icon, symbol }) => ({
                 label: (
                     <Token
