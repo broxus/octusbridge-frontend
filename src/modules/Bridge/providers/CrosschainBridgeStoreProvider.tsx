@@ -2,8 +2,7 @@ import * as React from 'react'
 import { reaction } from 'mobx'
 import { useHistory } from 'react-router-dom'
 
-import { CrosschainBridge } from '@/modules/Bridge/stores/CrosschainBridge'
-import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
+import { CrosschainBridge, useSummary } from '@/modules/Bridge/stores'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
@@ -62,6 +61,8 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 decimals: bridge.decimals,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
+                maxTransferFee: bridge.maxTransferFee,
+                minTransferFee: bridge.minTransferFee,
                 rightAddress: bridge.rightAddress,
                 rightNetwork: bridge.rightNetwork,
                 token: bridge.token,

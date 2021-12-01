@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { RelayEvmNetworkChainId } from '@/config'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
-import { findNetwork } from '@/modules/Bridge/utils'
-import { formattedAmount, sliceAddress } from '@/utils'
-import { RelayEvmNetworkChainId } from '@/config'
+import { findNetwork, formattedAmount, sliceAddress } from '@/utils'
 
 type Props = {
     tonTokenSymbol?: string;

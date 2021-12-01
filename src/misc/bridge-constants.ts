@@ -6,7 +6,8 @@ import {
     DepositToFactoryMaxSlippage,
     DepositToFactoryMinSlippageDenominator,
     DepositToFactoryMinSlippageNumerator,
-    EmptyWalletMinTonsAmount,
+    EmptyWalletMinTonsAmount, HiddenBridgeStrategyFactory,
+    HiddenBridgeStrategyGas,
     StakingAccountAddress,
     TokenAssetsURI,
     TokenListURI,
@@ -26,8 +27,12 @@ export class BridgeConstants {
 
     static DepositToFactoryMaxSlippage = DepositToFactoryMaxSlippage
 
-    // eslint-disable-next-line max-len
-    static DepositToFactoryMinSlippage = new BigNumber(DepositToFactoryMinSlippageNumerator).div(DepositToFactoryMinSlippageDenominator).toFixed()
+    static DepositToFactoryMinSlippage = new BigNumber(DepositToFactoryMinSlippageNumerator)
+        .div(DepositToFactoryMinSlippageDenominator).toFixed()
+
+    static HiddenBridgeStrategyGas = HiddenBridgeStrategyGas
+
+    static HiddenBridgeStrategyFactory = HiddenBridgeStrategyFactory
 
     static StakingAccountAddress = StakingAccountAddress
 

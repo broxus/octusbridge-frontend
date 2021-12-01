@@ -24,7 +24,7 @@ export function TokensAssetsFieldset(): JSX.Element {
             <div className="crosschain-transfer__controls">
                 <div className="crosschain-transfer__control">
                     <Select
-                        className="rc-select--lg"
+                        className="rc-select--md"
                         options={bridge.tokens.map(({ icon, root, symbol }) => ({
                             label: (
                                 <div className="token-select-label">

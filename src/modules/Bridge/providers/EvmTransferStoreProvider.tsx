@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { Redirect, useParams } from 'react-router-dom'
-import { reaction } from 'mobx'
 
-import { EvmToTonTransfer } from '@/modules/Bridge/stores/EvmToTonTransfer'
-import { useSummary } from '@/modules/Bridge/stores/TransferSummary'
+import { useTransferLifecycle } from '@/modules/Bridge/hooks'
+import { EvmToTonTransfer } from '@/modules/Bridge/stores'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
@@ -44,36 +43,7 @@ export function EvmTransferStoreProvider({ children, ...props }: Props): JSX.Ele
         params,
     ), [params])
 
-    React.useEffect(() => {
-        (async () => {
-            try {
-                await transfer.init()
-            }
-            catch (e) {}
-        })()
-        return () => transfer.dispose()
-    }, [params])
-
-    React.useEffect(() => {
-        const summary = useSummary()
-        const summaryDisposer = reaction(
-            () => ({
-                amount: transfer.amountNumber.toFixed(),
-                decimals: transfer.decimals,
-                leftAddress: transfer.leftAddress,
-                leftNetwork: transfer.leftNetwork,
-                rightAddress: transfer.rightAddress,
-                rightNetwork: transfer.rightNetwork,
-                token: transfer.token,
-            }),
-            data => {
-                summary.update(data)
-            },
-        )
-        return () => {
-            summaryDisposer()
-        }
-    }, [])
+    useTransferLifecycle(transfer)
 
     return (
         <EvmTransferContext.Provider value={transfer}>

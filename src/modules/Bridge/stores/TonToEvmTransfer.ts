@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
+import isEqual from 'lodash.isequal'
 import {
     IReactionDisposer,
     makeAutoObservable,
@@ -10,33 +11,27 @@ import ton, { Address, Contract } from 'ton-inpage-provider'
 
 import { TokenAbi } from '@/misc'
 import {
+    DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA,
+    DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE,
+} from '@/modules/Bridge/constants'
+import {
     EventStateStatus,
     TonTransferQueryParams,
     TonTransferStoreData,
     TonTransferStoreState,
 } from '@/modules/Bridge/types'
-import { findNetwork, isSameNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TokenAssetVault, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { NetworkShape } from '@/types'
-import { debug, error } from '@/utils'
+import { debug, error, findNetwork } from '@/utils'
 
 
 export class TonToEvmTransfer {
 
-    protected data: TonTransferStoreData = {
-        amount: '',
-        token: undefined,
-        withdrawalId: undefined,
-    }
+    protected data: TonTransferStoreData
 
-    protected state: TonTransferStoreState = {
-        isContractDeployed: false,
-        eventState: undefined,
-        prepareState: undefined,
-        releaseState: undefined,
-    }
+    protected state: TonTransferStoreState
 
     protected eventUpdater: ReturnType<typeof setTimeout> | undefined
 
@@ -48,6 +43,9 @@ export class TonToEvmTransfer {
         protected readonly tokensCache: TokensCacheService,
         protected readonly params?: TonTransferQueryParams,
     ) {
+        this.data = DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA
+        this.state = DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE
+
         makeAutoObservable(this)
     }
 
@@ -250,7 +248,8 @@ export class TonToEvmTransfer {
 
         const send = async (transactionType?: string) => {
             if (
-                this.evmWallet.web3 === undefined
+                tries >= 2
+                || this.evmWallet.web3 === undefined
                 || this.rightNetwork === undefined
                 || this.contractAddress === undefined
                 || this.token === undefined
@@ -462,7 +461,7 @@ export class TonToEvmTransfer {
                 this.data.withdrawalId !== undefined
                 && this.token !== undefined
                 && this.rightNetwork !== undefined
-                && isSameNetwork(this.rightNetwork.chainId, this.evmWallet.chainId)
+                && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
                 const vaultContract = this.tokensCache.getEthTokenVaultContract(
                     this.token.root,
@@ -504,18 +503,34 @@ export class TonToEvmTransfer {
         return this.data.amount
     }
 
-    public get amountNumber(): BigNumber {
-        return this.token === undefined
-            ? new BigNumber(0)
-            : new BigNumber(this.amount || 0).shiftedBy(-this.token.decimals)
-    }
-
     public get leftAddress(): TonTransferStoreData['leftAddress'] {
         return this.data.leftAddress
     }
 
     public get rightAddress(): TonTransferStoreData['rightAddress'] {
         return this.data.rightAddress
+    }
+
+    public get eventState(): TonTransferStoreState['eventState'] {
+        return this.state.eventState
+    }
+
+    public get prepareState(): TonTransferStoreState['prepareState'] {
+        return this.state.prepareState
+    }
+
+    public get releaseState(): TonTransferStoreState['releaseState'] {
+        return this.state.releaseState
+    }
+
+    public get amountNumber(): BigNumber {
+        return this.decimals === undefined
+            ? new BigNumber(0)
+            : new BigNumber(this.amount || 0).shiftedBy(-this.decimals)
+    }
+
+    public get decimals(): TokenAssetVault['decimals'] {
+        return this.tokenVault?.decimals
     }
 
     public get leftNetwork(): NetworkShape | undefined {
@@ -542,18 +557,6 @@ export class TonToEvmTransfer {
             : undefined
     }
 
-    public get eventState(): TonTransferStoreState['eventState'] {
-        return this.state.eventState
-    }
-
-    public get prepareState(): TonTransferStoreState['prepareState'] {
-        return this.state.prepareState
-    }
-
-    public get releaseState(): TonTransferStoreState['releaseState'] {
-        return this.state.releaseState
-    }
-
     public get useEvmWallet(): EvmWalletService {
         return this.evmWallet
     }
@@ -564,6 +567,13 @@ export class TonToEvmTransfer {
 
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
+    }
+
+    protected get tokenVault(): TokenAssetVault | undefined {
+        if (this.token === undefined || this.rightNetwork?.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensCache.getTokenVault(this.token.root, this.rightNetwork.chainId)
     }
 
     #chainIdDisposer: IReactionDisposer | undefined

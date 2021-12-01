@@ -227,6 +227,15 @@ export class TonWalletService {
         return this.state.isInitializing
     }
 
+    public get isReady(): boolean {
+        return (
+            !this.isInitializing
+            && !this.isConnecting
+            && this.isInitialized
+            && this.isConnected
+        )
+    }
+
     /**
      * Returns `true` if wallet contract is updating
      * @returns {boolean}

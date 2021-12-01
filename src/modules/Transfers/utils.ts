@@ -4,7 +4,7 @@ import {
     TransfersApiStatus, TransfersApiTransfer,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
-import { findNetwork } from '@/modules/Bridge/utils'
+import { findNetwork } from '@/utils'
 
 export async function handleTransfersApi(params: TransfersApiRequest): Promise<TransfersApiResponse> {
     const url = `${IndexerApiBaseUrl}/transfers/search`

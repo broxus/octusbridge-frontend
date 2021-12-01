@@ -7,35 +7,39 @@ import {
 import BigNumber from 'bignumber.js'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 import {
-    action,
-    IReactionDisposer,
-    makeAutoObservable,
+    action, computed,
+    IReactionDisposer, makeObservable, observable,
     reaction,
     toJS,
 } from 'mobx'
 import ton, { Address, Contract } from 'ton-inpage-provider'
 
 import {
-    BridgeConstants, DexConstants,
+    BridgeConstants,
+    DexConstants,
     EthAbi,
     TokenAbi,
     TokenWallet,
 } from '@/misc'
 import {
+    DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA,
+    DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE,
+} from '@/modules/Bridge/constants'
+import {
     CreditProcessorState,
     EventVoteData,
+    EvmSwapTransferStoreData,
     EvmSwapTransferStoreState,
     EvmTransferQueryParams,
-    EvmTransferStoreData,
 } from '@/modules/Bridge/types'
-import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TokensCacheService } from '@/stores/TokensCacheService'
+import { TokenAssetVault, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { NetworkShape } from '@/types'
 import {
     debug,
     error,
+    findNetwork,
     isGoodBignumber,
     throwException,
 } from '@/utils'
@@ -43,17 +47,9 @@ import {
 
 export class EvmToTonSwapTransfer {
 
-    protected data: EvmTransferStoreData = {
-        amount: '',
-        token: undefined,
-    }
+    protected data: EvmSwapTransferStoreData
 
-    protected state: EvmSwapTransferStoreState = {
-        eventState: undefined,
-        prepareState: undefined,
-        swapState: undefined,
-        transferState: undefined,
-    }
+    protected state: EvmSwapTransferStoreState
 
     protected txCreditProcessorUpdater: ReturnType<typeof setTimeout> | undefined
 
@@ -67,13 +63,49 @@ export class EvmToTonSwapTransfer {
         protected readonly tokensCache: TokensCacheService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
-        makeAutoObservable(this, {
+        this.data = DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA
+        this.state = DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE
+
+        makeObservable<
+            EvmToTonSwapTransfer,
+            | 'data'
+            | 'state'
+            | 'creditProcessorContract'
+            | 'tokenVault'
+        >(this, {
+            data: observable,
+            state: observable,
+            changeData: action.bound,
+            changeState: action.bound,
             broadcast: action.bound,
             process: action.bound,
             cancel: action.bound,
             withdrawTokens: action.bound,
             withdrawWtons: action.bound,
             withdrawTons: action.bound,
+            creditProcessorContract: computed,
+            amount: computed,
+            creditProcessorAddress: computed,
+            deriveEventAddress: computed,
+            leftAddress: computed,
+            rightAddress: computed,
+            token: computed,
+            creditProcessorState: computed,
+            eventState: computed,
+            prepareState: computed,
+            swapState: computed,
+            transferState: computed,
+            amountNumber: computed,
+            decimals: computed,
+            isDeployer: computed,
+            isOwner: computed,
+            leftNetwork: computed,
+            rightNetwork: computed,
+            txHash: computed,
+            useEvmWallet: computed,
+            useTonWallet: computed,
+            useTokensCache: computed,
+            tokenVault: computed,
         })
     }
 
@@ -141,9 +173,9 @@ export class EvmToTonSwapTransfer {
         this.stopWithdrawUpdater()
     }
 
-    public changeData<K extends keyof EvmTransferStoreData>(
+    public changeData<K extends keyof EvmSwapTransferStoreData>(
         key: K,
-        value: EvmTransferStoreData[K],
+        value: EvmSwapTransferStoreData[K],
     ): void {
         this.data[key] = value
     }
@@ -167,11 +199,11 @@ export class EvmToTonSwapTransfer {
             return
         }
 
-        this.state.transferState = {
+        this.changeState('transferState', {
             confirmedBlocksCount: this.state.transferState?.confirmedBlocksCount || 0,
             eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
             status: 'pending',
-        }
+        })
 
         try {
             const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
@@ -859,15 +891,16 @@ export class EvmToTonSwapTransfer {
             }
 
             const tx = (await ton.getTransactions({ address: this.deriveEventAddress })).transactions[0]
+
             this.changeState('swapState', {
                 ...this.swapState,
                 deployer: creditProcessorDetails.deployer,
             } as EvmSwapTransferStoreState['swapState'])
+
+            const isStuckNow = this.swapState?.isStuck
             const isStuck = ((Date.now() / 1000) - tx.createdAt) >= 600 && !isCancelled && !isProcessed
 
             debug('Stuck ts', (Date.now() / 1000) - tx.createdAt)
-
-            const isStuckNow = this.swapState?.isStuck
 
             if ([
                 CreditProcessorState.EventConfirmed,
@@ -888,7 +921,6 @@ export class EvmToTonSwapTransfer {
                 ...this.swapState,
                 isStuck: isStuckNow,
             } as EvmSwapTransferStoreState['swapState'])
-
 
             if (this.eventState?.status === 'confirmed') {
                 this.changeState('swapState', {
@@ -1103,27 +1135,27 @@ export class EvmToTonSwapTransfer {
             : undefined
     }
 
-    public get amount(): EvmTransferStoreData['amount'] {
+    public get amount(): EvmSwapTransferStoreData['amount'] {
         return this.data.amount
     }
 
-    public get creditProcessorAddress(): EvmTransferStoreData['creditProcessorAddress'] {
+    public get creditProcessorAddress(): EvmSwapTransferStoreData['creditProcessorAddress'] {
         return this.data.creditProcessorAddress
     }
 
-    public get deriveEventAddress(): EvmTransferStoreData['deriveEventAddress'] {
+    public get deriveEventAddress(): EvmSwapTransferStoreData['deriveEventAddress'] {
         return this.data.deriveEventAddress
     }
 
-    public get leftAddress(): EvmTransferStoreData['leftAddress'] {
+    public get leftAddress(): EvmSwapTransferStoreData['leftAddress'] {
         return this.data.leftAddress
     }
 
-    public get rightAddress(): EvmTransferStoreData['rightAddress'] {
+    public get rightAddress(): EvmSwapTransferStoreData['rightAddress'] {
         return this.data.rightAddress
     }
 
-    public get token(): EvmTransferStoreData['token'] {
+    public get token(): EvmSwapTransferStoreData['token'] {
         return this.data.token
     }
 
@@ -1148,36 +1180,13 @@ export class EvmToTonSwapTransfer {
     }
 
     public get amountNumber(): BigNumber {
-        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
-            return new BigNumber(0)
-        }
-
-        const tokenVault = this.tokensCache.getTokenVault(
-            this.token.root,
-            this.leftNetwork.chainId,
-            'credit',
-        )
-
-        if (tokenVault?.decimals === undefined) {
-            return new BigNumber(0)
-        }
-
-        return new BigNumber(this.amount || 0).shiftedBy(-tokenVault.decimals)
+        return this.decimals === undefined
+            ? new BigNumber(0)
+            : new BigNumber(this.amount || 0).shiftedBy(-this.decimals)
     }
 
-    public get decimals(): number | undefined {
-        if (
-            this.token === undefined
-            || this.leftNetwork?.chainId === undefined
-        ) {
-            return undefined
-        }
-
-        return this.tokensCache.getTokenVault(
-            this.token.root,
-            this.leftNetwork.chainId,
-            'credit',
-        )?.decimals
+    public get decimals(): TokenAssetVault['decimals'] {
+        return this.tokenVault?.decimals
     }
 
     public get isDeployer(): boolean {
@@ -1216,6 +1225,17 @@ export class EvmToTonSwapTransfer {
 
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
+    }
+
+    protected get tokenVault(): TokenAssetVault | undefined {
+        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensCache.getTokenVault(
+            this.token.root,
+            this.leftNetwork.chainId,
+            'credit',
+        )
     }
 
     #chainIdDisposer: IReactionDisposer | undefined

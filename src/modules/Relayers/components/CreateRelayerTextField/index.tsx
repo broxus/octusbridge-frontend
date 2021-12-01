@@ -30,7 +30,7 @@ export function CreateRelayerTextField({
 
             <input
                 type="text"
-                className={classNames('form-input form-input--lg', {
+                className={classNames('form-input form-input--md', {
                     invalid: !isValid && value,
                 })}
                 placeholder={placeholder}

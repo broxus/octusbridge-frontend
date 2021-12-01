@@ -41,19 +41,26 @@ export function TokensAmountFieldset(): JSX.Element {
                         {() => (
                             <TokenAmountField
                                 decimals={bridge.token?.decimals}
+                                disabled={!bridge.amount}
+                                displayMaxButton={false}
                                 isValid={bridge.isTokensAmountValid}
-                                placeholder="0"
+                                placeholder={!bridge.amount ? intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_FIRST_PLACEHOLDER',
+                                }) : '0'}
                                 token={bridge.token}
-                                value={bridge.tokensAmount}
+                                size="md"
+                                value={bridge.tokensAmount || ''}
                                 onChange={onChange}
                             />
                         )}
                     </Observer>
+
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
                                 const isMinValueValid = (
                                     bridge.tokensAmount
+                                    && bridge.tokensAmount.length > 0
                                     && isGoodBignumber(bridge.tokensAmountNumber, false)
                                 )
                                     ? validateMinValue('0', bridge.tokensAmount, bridge.token?.decimals)

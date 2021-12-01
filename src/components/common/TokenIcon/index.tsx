@@ -28,7 +28,7 @@ export function TokenIcon({
             <img
                 alt={name}
                 className={classNames('token-icon', {
-                    [`token-icon__size-${size}`]: Boolean(size),
+                    [`token-icon--${size}`]: Boolean(size),
                 }, className)}
                 src={uri}
             />

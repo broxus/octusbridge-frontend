@@ -3,9 +3,9 @@ import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { OptionSwitcher } from '@/components/common/OptionSwitcher'
-import { Button } from '@/components/common/Button'
 import { Alert } from '@/components/common/Alert'
+import { Button } from '@/components/common/Button'
+import { OptionSwitcher } from '@/components/common/OptionSwitcher'
 import { BridgeConstants, DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
 

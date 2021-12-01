@@ -8,7 +8,7 @@ import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { NetworkShape } from '@/types'
+import { LabeledNetwork, NetworkShape } from '@/types'
 import { isEvmAddressValid, isTonAddressValid } from '@/utils'
 
 
@@ -21,10 +21,7 @@ type Props = {
     label: React.ReactNode;
     network?: NetworkShape;
     networkFieldDisabled?: boolean;
-    networks: {
-        label: string;
-        value: string;
-    }[];
+    networks: LabeledNetwork[];
     shouldDisplayNetworkAlert?: boolean;
     wallet?: TonWalletService | EvmWalletService;
 }
@@ -78,7 +75,7 @@ export function RouteForm({
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
                             <Select
-                                className="rc-select--lg"
+                                className="rc-select--md"
                                 disabled={networkFieldDisabled}
                                 options={networks}
                                 placeholder={intl.formatMessage({
@@ -138,7 +135,7 @@ export function RouteForm({
                             <Observer>
                                 {() => (
                                     <input
-                                        className={classNames('form-input', 'form-input--lg', {
+                                        className={classNames('form-input', 'form-input--md', {
                                             invalid: !isAddressValid(),
                                         })}
                                         disabled={!wallet?.isConnected || addressFieldDisabled}

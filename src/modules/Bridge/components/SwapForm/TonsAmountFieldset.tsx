@@ -3,8 +3,8 @@ import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { Icon } from '@/components/common/Icon'
+import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
 import {
@@ -26,10 +26,19 @@ export function TonsAmountFieldset(): JSX.Element {
         })()
     }, 50)
 
-    const onChangeTonsAmount = (value: string) => {
+    const onChange = (value: string) => {
         bridge.changeData('tonsAmount', value)
         changeTonsAmountRecalculate()
     }
+
+    // const onClickMax = () => {
+    //     let formattedBalance = new BigNumber(bridge.maxTonsAmount || 0)
+    //     if (!isGoodBignumber(formattedBalance)) {
+    //         return
+    //     }
+    //     formattedBalance = formattedBalance.shiftedBy(-DexConstants.TONDecimals)
+    //     onChange(formattedBalance.toFixed())
+    // }
 
     return (
         <fieldset className="form-fieldset">
@@ -44,6 +53,8 @@ export function TonsAmountFieldset(): JSX.Element {
                         {() => (
                             <TokenAmountField
                                 decimals={DexConstants.TONDecimals}
+                                displayMaxButton={false}
+                                // displayMaxButton={bridge.maxTonsAmount !== undefined && bridge.maxTonsAmount !== '0'}
                                 isValid={bridge.isTonsAmountValid}
                                 placeholder="0"
                                 suffix={(
@@ -53,11 +64,14 @@ export function TonsAmountFieldset(): JSX.Element {
                                     </div>
                                 )}
                                 token={bridge.token}
-                                value={bridge.tonsAmount}
-                                onChange={onChangeTonsAmount}
+                                size="md"
+                                value={bridge.tonsAmount || ''}
+                                onChange={onChange}
+                                // onClickMax={onClickMax}
                             />
                         )}
                     </Observer>
+
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
@@ -70,7 +84,11 @@ export function TonsAmountFieldset(): JSX.Element {
                                         DexConstants.TONDecimals,
                                     )
                                 }
-                                else if (bridge.tonsAmount && isGoodBignumber(bridge.tonsAmountNumber, false)) {
+                                else if (
+                                    bridge.tonsAmount
+                                    && bridge.tonsAmount.length > 0
+                                    && isGoodBignumber(bridge.tonsAmountNumber, false)
+                                ) {
                                     isMinValueValid = validateMinValue(
                                         '0',
                                         bridge.tonsAmount,

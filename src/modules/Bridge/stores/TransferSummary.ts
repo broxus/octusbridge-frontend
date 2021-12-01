@@ -2,13 +2,16 @@ import { makeAutoObservable } from 'mobx'
 
 import { DEFAULT_TRANSFER_SUMMARY_STORE_DATA } from '@/modules/Bridge/constants'
 import { TransferSummaryData } from '@/modules/Bridge/types'
+import { TokenAssetVault, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 
 
 export class TransferSummary {
 
-    protected data: TransferSummaryData = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
+    protected data: TransferSummaryData
 
-    constructor() {
+    constructor(protected readonly tokensCache: TokensCacheService) {
+        this.data = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
+
         makeAutoObservable(this)
     }
 
@@ -16,8 +19,20 @@ export class TransferSummary {
         return this.data.amount
     }
 
+    public get bridgeFee(): TransferSummaryData['bridgeFee'] {
+        return this.data.bridgeFee
+    }
+
     public get decimals(): TransferSummaryData['decimals'] {
-        return this.data.decimals
+        return this.isFromEvm ? this.token?.decimals : this.tokenVault?.decimals
+    }
+
+    public get maxTransferFee(): TransferSummaryData['maxTransferFee'] {
+        return this.data.maxTransferFee
+    }
+
+    public get minTransferFee(): TransferSummaryData['minTransferFee'] {
+        return this.data.minTransferFee
     }
 
     public get leftAddress(): TransferSummaryData['leftAddress'] {
@@ -40,22 +55,36 @@ export class TransferSummary {
         return this.data.token
     }
 
-    public get vaultBalance(): string | undefined {
-        if (
-            this.token?.root === undefined
-            || this.rightNetwork?.chainId === undefined
-            || this.rightNetwork.type !== 'evm'
-        ) {
+    public get tokenVault(): TokenAssetVault | undefined {
+        if (this.token?.root === undefined || this.rightNetwork?.chainId === undefined) {
             return undefined
         }
-        return this.token.vaults?.find(vault => vault.chainId === this.rightNetwork!.chainId)?.vaultBalance
+        return this.tokensCache.getTokenVault(this.token.root, this.rightNetwork.chainId)
     }
 
-    public get vaultDecimals(): number | undefined {
-        if (this.token === undefined || this.rightNetwork?.chainId === undefined) {
-            return undefined
+    public get isEvmToTon(): boolean {
+        if (this.leftNetwork === undefined) {
+            return false
         }
-        return this.token.vaults.find(vault => vault.chainId === this.rightNetwork!.chainId)?.decimals
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'ton'
+    }
+
+    public get isTonToEvm(): boolean {
+        if (this.leftNetwork === undefined) {
+            return false
+        }
+        return this.leftNetwork?.type === 'ton' && this.rightNetwork?.type === 'evm'
+    }
+
+    public get isEvmToEvm(): boolean {
+        if (this.leftNetwork === undefined) {
+            return false
+        }
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
+    }
+
+    public get isFromEvm(): boolean {
+        return this.isEvmToTon || this.isEvmToEvm
     }
 
     public update(data: TransferSummaryData): void {
@@ -71,7 +100,7 @@ export class TransferSummary {
 
 }
 
-const TransferSummaryStore = new TransferSummary()
+const TransferSummaryStore = new TransferSummary(useTokensCache())
 
 export function useSummary(): TransferSummary {
     return TransferSummaryStore

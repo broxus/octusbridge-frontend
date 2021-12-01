@@ -31,8 +31,8 @@ export type TokenAssetVault = {
     decimals?: number;
     depositType: string;
     ethereumConfiguration: string;
+    tokenBalance?: string;
     vault: string;
-    vaultBalance?: string;
     wrapperAddress?: string;
 }
 
@@ -497,7 +497,7 @@ export class TokensCacheService {
         }
 
         this.update(root, 'vaults', token.vaults.map(
-            vault => (vault.chainId === chainId ? { ...vault, balance } : vault),
+            vault => (vault.chainId === chainId ? { ...vault, tokenBalance: balance } : vault),
         ))
     }
 
@@ -521,14 +521,14 @@ export class TokensCacheService {
 
         const tokenContract = await this.getEthTokenContract(root, chainId)
 
-        const vaultBalance = await tokenContract?.methods.balanceOf(tokenVault.vault).call()
+        const balance = await tokenContract?.methods.balanceOf(tokenVault.vault).call()
 
-        if (vaultBalance === undefined) {
+        if (balance === undefined) {
             return
         }
 
         this.update(root, 'vaults', token.vaults.map(
-            vault => (vault.chainId === chainId ? { ...vault, vaultBalance } : vault),
+            vault => (vault.chainId === chainId ? { ...vault, balance } : vault),
         ))
     }
 

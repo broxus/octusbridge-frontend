@@ -16,6 +16,8 @@ type Props = {
     maxValue?: string;
     placeholder?: string;
     prefix?: React.ReactNode;
+    readOnly?: boolean;
+    size?: 'sm' | 'md' | 'lg';
     suffix?: React.ReactNode;
     value?: string;
     onClickMax?: () => void;
@@ -33,6 +35,8 @@ export function AmountField({
     isValid,
     placeholder,
     prefix,
+    readOnly,
+    size,
     suffix,
     onClickMax,
     ...props
@@ -68,37 +72,42 @@ export function AmountField({
     }
 
     return (
-        <div
+        <label
             className={classNames('amount-field', className, {
+                [`amount-field--${size}`]: size !== undefined,
                 disabled,
                 invalid: !(isValid === undefined ? validateMaxValue(maxValue, props.value, decimals) : isValid),
             })}
         >
             {prefix}
             <input
-                className={classNames([
-                    'form-input',
-                    'form-input--lg',
-                ])}
+                className={classNames('form-input', {
+                    [`form-input--${size}`]: size !== undefined,
+                })}
                 disabled={disabled}
                 inputMode="decimal"
                 placeholder={placeholder}
+                readOnly={readOnly}
                 type="text"
                 value={props.value}
                 onBlur={onBlur}
                 onChange={onChange}
             />
-            {suffix}
             {displayMaxButton && (
-                <button
-                    className="btn btn--secondary btn--sm"
-                    disabled={disabled}
-                    type="button"
-                    onClick={onClickMax}
-                >
-                    {maxButtonLabel}
-                </button>
+                <div className="amount-field-suffix">
+                    <button
+                        className={classNames('btn btn--secondary', {
+                            [`btn--${size}`]: size !== undefined,
+                        })}
+                        disabled={disabled}
+                        type="button"
+                        onClick={onClickMax}
+                    >
+                        {maxButtonLabel}
+                    </button>
+                </div>
             )}
-        </div>
+            {suffix}
+        </label>
     )
 }

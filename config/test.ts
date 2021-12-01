@@ -74,11 +74,15 @@ export const DepositToFactoryMinSlippageDenominator = '100'
 
 export const GasToStaking = '11500000000'
 
+export const HiddenBridgeStrategyGas = '2500000000'
+
+export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92ce088cbb68659d3d8a2aa1bc546899d42abf46cc16132cd591')
+
 export const RelayEvmNetworkChainId = '1'
 
 export const StakingAccountAddress = new AddressLiteral('0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075')
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/update-1/main.json'
+export const TokenAssetsURI = 'https://github.com/broxus/bridge-assets/blob/master/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
