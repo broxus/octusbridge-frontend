@@ -329,7 +329,7 @@ export class TokensCacheService {
 
         const network = findNetwork(chainId, 'evm')
 
-        if (network?.rpcUrl !== undefined) {
+        if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.ERC20, tokenVault.address)
         }
@@ -356,7 +356,7 @@ export class TokensCacheService {
 
         const network = findNetwork(chainId, 'evm')
 
-        if (network?.rpcUrl !== undefined) {
+        if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.Vault, tokenVault.vault)
         }
@@ -383,7 +383,7 @@ export class TokensCacheService {
 
         const network = findNetwork(chainId, 'evm')
 
-        if (network?.rpcUrl !== undefined) {
+        if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.VaultWrapper, tokenVault.wrapperAddress)
         }

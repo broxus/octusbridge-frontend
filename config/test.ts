@@ -11,7 +11,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-1',
         label: 'Ethereum',
         name: 'Ethereum Mainnet',
-        rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161/',
+        rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
         transactionType: '0x2',
         type: 'evm',
     },
