@@ -517,9 +517,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const { chainId, ...rest } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
-
-            console.log({ rest })
+            const { chainId } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
 
             await this.tokensCache.syncEvmToken(token.root, chainId)
 
@@ -562,7 +560,6 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             if (
                 this.evmWallet.isConnected
-                && this.evmWallet.chainId === this.rightNetwork?.chainId
                 && this.secondEventState?.status === 'confirmed'
             ) {
                 this.runReleaseUpdater()
