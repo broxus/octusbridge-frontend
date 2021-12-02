@@ -4,6 +4,7 @@ import {
 } from 'mobx'
 import { Address, Contract, Subscription } from 'ton-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
+import Web3 from 'web3'
 
 import {
     BridgeConstants, EthAbi, TokenAbi, TokenWallet,
@@ -11,7 +12,7 @@ import {
 import { TokensListService } from '@/stores/TokensListService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
-import { error } from '@/utils'
+import { error, findNetwork } from '@/utils'
 
 
 export type BridgeTokenAssetsManifest = {
@@ -214,7 +215,7 @@ export class TokensCacheService {
 
     /**
      * Update token field by the given root address, key and value.
-     * @template T
+     * @template T, K
      * @param {string} root
      * @param {K extends keyof TokensCacheData['tokens'][number]} key
      * @param {TokensCacheStoreData['tokens'][number][K]} value
@@ -307,22 +308,30 @@ export class TokensCacheService {
     /**
      * If EVM Wallet is connected, web3 service is defined, token vault exist, vault has token
      * address (sync, if have not) - returns `ERC20 Contract`, otherwise `undefined`
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async getEthTokenContract(root: string, chainId: string): Promise<EthContract | undefined> {
+    public async getEthTokenContract(root: string, chainId: string, depositType: string = 'default'): Promise<EthContract | undefined> {
         if (this.evmWallet.web3 === undefined) {
             return undefined
         }
 
-        const tokenVault = this.getTokenVault(root, chainId)
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
 
         if (tokenVault?.address === undefined) {
-            await this.syncEvmTokenAddress(root, chainId)
+            await this.syncEvmTokenAddress(root, chainId, depositType)
         }
 
         if (tokenVault?.address === undefined) {
             return undefined
+        }
+
+        const network = findNetwork(chainId, 'evm')
+
+        if (network?.rpcUrl !== undefined) {
+            const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
+            return new web3.eth.Contract(EthAbi.ERC20, tokenVault.address)
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.ERC20, tokenVault.address)
@@ -330,18 +339,26 @@ export class TokensCacheService {
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public getEthTokenVaultContract(root: string, chainId: string): EthContract | undefined {
+    public getEthTokenVaultContract(root: string, chainId: string, depositType: string = 'default'): EthContract | undefined {
         if (this.evmWallet.web3 === undefined) {
             return undefined
         }
 
-        const tokenVault = this.getTokenVault(root, chainId)
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
 
         if (tokenVault === undefined) {
             return undefined
+        }
+
+        const network = findNetwork(chainId, 'evm')
+
+        if (network?.rpcUrl !== undefined) {
+            const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
+            return new web3.eth.Contract(EthAbi.Vault, tokenVault.vault)
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tokenVault.vault)
@@ -349,18 +366,26 @@ export class TokensCacheService {
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public getEthTokenVaultWrapperContract(root: string, chainId: string): EthContract | undefined {
+    public getEthTokenVaultWrapperContract(root: string, chainId: string, depositType: string = 'default'): EthContract | undefined {
         if (this.evmWallet.web3 === undefined) {
             return undefined
         }
 
-        const tokenVault = this.getTokenVault(root, chainId)
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
 
         if (tokenVault?.wrapperAddress === undefined) {
             return undefined
+        }
+
+        const network = findNetwork(chainId, 'evm')
+
+        if (network?.rpcUrl !== undefined) {
+            const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
+            return new web3.eth.Contract(EthAbi.VaultWrapper, tokenVault.wrapperAddress)
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tokenVault.wrapperAddress)
@@ -407,44 +432,46 @@ export class TokensCacheService {
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmToken(root: string, chainId: string): Promise<void> {
+    public async syncEvmToken(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         try {
-            await this.syncEvmTokenAddress(root, chainId)
+            await this.syncEvmTokenAddress(root, chainId, depositType)
         }
         catch (e) {
-            error(e)
+            error('Sync EVM token address error', e)
             return
         }
 
         try {
             await Promise.all([
-                this.syncEvmTokenDecimals(root, chainId),
-                this.syncEvmTokenBalance(root, chainId),
-                this.syncEvmTokenVaultBalance(root, chainId),
-                this.syncEvmTokenVaultWrapper(root, chainId),
+                this.syncEvmTokenDecimals(root, chainId, depositType),
+                this.syncEvmTokenBalance(root, chainId, depositType),
+                this.syncEvmTokenVaultBalance(root, chainId, depositType),
+                this.syncEvmTokenVaultWrapper(root, chainId, depositType),
             ])
         }
         catch (e) {
-            error(e)
+            error('Sync EVM token decimals, balance, vault balance or vault wrapper error', e)
         }
     }
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmTokenAddress(root: string, chainId: string): Promise<void> {
+    public async syncEvmTokenAddress(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         const token = this.get(root)
 
         if (token === undefined) {
             throw new Error(`Cannot find token by the given root address ${root} and chainId ${chainId}`)
         }
 
-        const vaultContract = this.getEthTokenVaultContract(root, chainId)
+        const vaultContract = this.getEthTokenVaultContract(root, chainId, depositType)
 
         const address = await vaultContract?.methods.token().call()
 
@@ -455,17 +482,18 @@ export class TokensCacheService {
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmTokenDecimals(root: string, chainId: string): Promise<void> {
+    public async syncEvmTokenDecimals(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         const token = this.get(root)
 
         if (token === undefined) {
             throw new Error(`Cannot find token by the given root address ${root} and chainId ${chainId}`)
         }
 
-        const tokenContract = await this.getEthTokenContract(root, chainId)
+        const tokenContract = await this.getEthTokenContract(root, chainId, depositType)
 
         const decimals = await tokenContract?.methods.decimals().call()
 
@@ -478,17 +506,18 @@ export class TokensCacheService {
 
     /**
      *
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmTokenBalance(root: string, chainId: string): Promise<void> {
+    public async syncEvmTokenBalance(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         const token = this.get(root)
 
         if (token === undefined) {
             throw new Error(`Cannot find token by the given root address ${root} and chainId ${chainId}`)
         }
 
-        const tokenContract = await this.getEthTokenContract(root, chainId)
+        const tokenContract = await this.getEthTokenContract(root, chainId, depositType)
 
         const balance = await tokenContract?.methods.balanceOf(this.evmWallet.address).call()
 
@@ -503,23 +532,24 @@ export class TokensCacheService {
 
     /**
      * Sync EVM token vault balance by the given token root address and chainId.
-     * @param root
-     * @param chainId
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmTokenVaultBalance(root: string, chainId: string): Promise<void> {
+    public async syncEvmTokenVaultBalance(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         const token = this.get(root)
 
         if (token === undefined) {
             throw new Error(`Cannot find token by the given root address ${root} and chainId ${chainId}`)
         }
 
-        const tokenVault = this.getTokenVault(root, chainId)
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
 
         if (tokenVault === undefined) {
             return
         }
 
-        const tokenContract = await this.getEthTokenContract(root, chainId)
+        const tokenContract = await this.getEthTokenContract(root, chainId, depositType)
 
         const balance = await tokenContract?.methods.balanceOf(tokenVault.vault).call()
 
@@ -536,15 +566,16 @@ export class TokensCacheService {
      * Sync EVM token vault wrapper by the given token root address and chainId.
      * @param {string} root
      * @param {string} chainId
+     * @param {string} depositType
      */
-    public async syncEvmTokenVaultWrapper(root: string, chainId: string): Promise<void> {
+    public async syncEvmTokenVaultWrapper(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
         const token = this.get(root)
 
         if (token === undefined) {
             return
         }
 
-        const tokenVaultContract = this.getEthTokenVaultContract(root, chainId)
+        const tokenVaultContract = this.getEthTokenVaultContract(root, chainId, depositType)
 
         const wrapperAddress = await tokenVaultContract?.methods.wrapper().call()
 

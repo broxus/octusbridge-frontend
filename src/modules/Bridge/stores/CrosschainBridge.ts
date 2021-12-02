@@ -149,8 +149,9 @@ export class CrosschainBridge {
             }
         }
 
-        this.changeData(key, value)
         this.resetAsset()
+        this.changeData(key, value)
+        this.changeData('depositType', this.isEvmToEvm ? 'credit' : 'default')
     }
 
     /**
@@ -432,8 +433,6 @@ export class CrosschainBridge {
      */
     public async transferWithHiddenSwap(reject?: () => void): Promise<void> {
         let tries = 0
-
-        this.changeData('depositType', 'credit')
 
         const send = async (transactionType?: string) => {
             if (
@@ -889,7 +888,7 @@ export class CrosschainBridge {
             ...this.data,
             amount: '',
             bridgeFee: undefined,
-            depositType: 'default',
+            depositType: this.isEvmToEvm ? 'credit' : 'default',
             maxTokensAmount: undefined,
             maxTonsAmount: undefined,
             minAmount: undefined,
@@ -970,24 +969,24 @@ export class CrosschainBridge {
         }
 
         if (connected) {
-            if (this.isFromEvm && !this.leftAddress) {
+            if (this.leftNetwork?.type === 'evm' && !this.leftAddress) {
                 this.changeData('leftAddress', this.evmWallet.address || '')
             }
-            else if (this.isTonToEvm && !this.rightAddress) {
+            if (this.rightNetwork?.type === 'evm' && !this.rightAddress) {
                 this.changeData('rightAddress', this.evmWallet.address || '')
             }
         }
-        else if (this.leftNetwork?.type === 'evm') {
-            this.changeData('amount', '')
-            this.changeData('leftAddress', '')
-            this.changeData('leftNetwork', undefined)
-            this.changeData('selectedToken', undefined)
-            this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
-        }
-        else if (this.rightNetwork?.type === 'evm') {
-            this.changeData('rightAddress', '')
-            this.changeData('rightNetwork', undefined)
-        }
+        // else if (this.leftNetwork?.type === 'evm') {
+        //     this.changeData('amount', '')
+        //     this.changeData('leftAddress', '')
+        //     this.changeData('leftNetwork', undefined)
+        //     this.changeData('selectedToken', undefined)
+        //     this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        // }
+        // else if (this.rightNetwork?.type === 'evm') {
+        //     this.changeData('rightAddress', '')
+        //     this.changeData('rightNetwork', undefined)
+        // }
     }
 
     /**
@@ -1021,7 +1020,7 @@ export class CrosschainBridge {
                 this.changeData('rightAddress', this.tonWallet.address || '')
                 this.changeData('rightNetwork', tonNetwork)
             }
-            else if (this.isTonToEvm && !this.leftAddress) {
+            else if (this.isFromTon && !this.leftAddress) {
                 this.changeData('leftAddress', this.tonWallet.address || '')
                 this.changeData('leftNetwork', tonNetwork)
             }
@@ -1036,23 +1035,23 @@ export class CrosschainBridge {
                 await this.onChangeAmount()
             }
         }
-        else {
-            this.changeState('isSwapEnabled', false)
-            this.changeData('tonsAmount', '')
-            this.changeData('minTonsAmount', '')
-
-            if (this.rightNetwork?.type === 'ton') {
-                this.changeData('rightAddress', '')
-                this.changeData('rightNetwork', undefined)
-            }
-            else if (this.leftNetwork?.type === 'ton') {
-                this.changeData('amount', '')
-                this.changeData('leftAddress', '')
-                this.changeData('leftNetwork', undefined)
-                this.changeData('selectedToken', undefined)
-                this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
-            }
-        }
+        // else {
+        //     this.changeState('isSwapEnabled', false)
+        //     this.changeData('tonsAmount', '')
+        //     this.changeData('minTonsAmount', '')
+        //
+        //     if (this.rightNetwork?.type === 'ton') {
+        //         this.changeData('rightAddress', '')
+        //         this.changeData('rightNetwork', undefined)
+        //     }
+        //     else if (this.leftNetwork?.type === 'ton') {
+        //         this.changeData('amount', '')
+        //         this.changeData('leftAddress', '')
+        //         this.changeData('leftNetwork', undefined)
+        //         this.changeData('selectedToken', undefined)
+        //         this.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        //     }
+        // }
     }
 
 
@@ -1419,17 +1418,19 @@ export class CrosschainBridge {
         }
 
         try {
-            if (this.isFromTon) {
+            if (this.leftNetwork?.type === 'ton') {
                 await this.tokensCache.syncTonToken(this.token.root)
                 debug('Sync TON token')
-                if (this.isTonToEvm && this.rightNetwork?.chainId !== undefined) {
-                    await this.tokensCache.syncEvmToken(this.token.root, this.rightNetwork.chainId)
-                    debug('Sync EVM token')
-                }
             }
-            else if (this.leftNetwork?.chainId !== undefined) {
-                await this.tokensCache.syncEvmToken(this.token.root, this.leftNetwork.chainId)
-                debug('Sync EVM token')
+
+            if (this.leftNetwork?.type === 'evm') {
+                debug('Sync EVM token by left network', this.depositType, this.data.depositType)
+                await this.tokensCache.syncEvmToken(this.token.root, this.leftNetwork.chainId, this.depositType)
+            }
+
+            if (this.rightNetwork?.type === 'evm') {
+                debug('Sync EVM token by right network', this.depositType)
+                await this.tokensCache.syncEvmToken(this.token.root, this.rightNetwork.chainId)
             }
         }
         catch (e) {
@@ -1688,20 +1689,6 @@ export class CrosschainBridge {
         return new BigNumber(this.tonWallet.balance || 0).lt(BridgeConstants.EmptyWalletMinTonsAmount)
     }
 
-    public get isEvmToTon(): boolean {
-        if (this.leftNetwork === undefined) {
-            return false
-        }
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'ton'
-    }
-
-    public get isTonToEvm(): boolean {
-        if (this.leftNetwork === undefined) {
-            return false
-        }
-        return this.leftNetwork?.type === 'ton' && this.rightNetwork?.type === 'evm'
-    }
-
     public get isEvmToEvm(): boolean {
         if (this.leftNetwork === undefined) {
             return false
@@ -1709,12 +1696,26 @@ export class CrosschainBridge {
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
+    public get isEvmToTon(): boolean {
+        if (this.leftNetwork === undefined) {
+            return false
+        }
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'ton'
+    }
+
     public get isFromEvm(): boolean {
-        return this.isEvmToTon || this.isEvmToEvm
+        return this.leftNetwork?.type === 'evm'
     }
 
     public get isFromTon(): boolean {
-        return this.isTonToEvm || this.leftNetwork?.type === 'ton'
+        return this.leftNetwork?.type === 'ton'
+    }
+
+    public get isTonToEvm(): boolean {
+        if (this.leftNetwork === undefined) {
+            return false
+        }
+        return this.leftNetwork?.type === 'ton' && this.rightNetwork?.type === 'evm'
     }
 
     public get rightNetworks(): LabeledNetwork[] {

@@ -142,6 +142,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
                 this.token.root,
                 this.rightNetwork.chainId,
+                'credit',
             )
 
             if (wrapperContract === undefined) {
@@ -516,7 +517,9 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const { chainId } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
+            const { chainId, ...rest } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
+
+            console.log({ rest })
 
             await this.tokensCache.syncEvmToken(token.root, chainId)
 
