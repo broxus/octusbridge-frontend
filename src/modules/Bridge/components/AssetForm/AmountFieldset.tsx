@@ -57,7 +57,7 @@ export function AmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <AmountField
-                                decimals={bridge.isEvmToTon ? bridge.amountMinDecimals : bridge.decimals}
+                                decimals={bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals}
                                 disabled={bridge.token === undefined}
                                 displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
                                 isValid={bridge.isAmountValid}

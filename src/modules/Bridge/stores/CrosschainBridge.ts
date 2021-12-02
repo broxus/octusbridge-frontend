@@ -1126,7 +1126,9 @@ export class CrosschainBridge {
         if (isGoodBignumber(minReceiveTokensNumber)) {
             this.changeData(
                 'minReceiveTokens',
-                minReceiveTokensNumber.toFixed(),
+                minReceiveTokensNumber
+                    .dp(tokenVault.decimals, BigNumber.ROUND_DOWN)
+                    .toFixed(),
             )
             this.changeData(
                 'tokensAmount',
@@ -1762,24 +1764,47 @@ export class CrosschainBridge {
                 'Tokens for EVM - EVM',
                 toJS(this.data),
                 toJS(this.state),
+            )
+            log(
+                'Tokens for EVM - EVM',
                 tokens,
+            )
+            log(
+                'Tokens for EVM - EVM',
+                toJS(this.tokensCache.tokens),
             )
             return tokens
         }
 
         if (this.isEvmToTon && leftChainId !== undefined) {
-            log('Tokens for EVM - TON',
+            log(
+                'Tokens for EVM - TON',
                 toJS(this.data),
                 toJS(this.state),
-                this.tokensCache.filterTokensByChainId(leftChainId))
+            )
+            log(
+                'Tokens for EVM - TON',
+                toJS(this.tokensCache.filterTokensByChainId(leftChainId)),
+            )
+            log(
+                'Tokens for EVM - TON',
+                toJS(this.tokensCache.tokens),
+            )
             return this.tokensCache.filterTokensByChainId(leftChainId)
         }
 
         if (this.isTonToEvm && rightChainId !== undefined) {
-            log('Tokens for TON - EVM',
+            log(
+                'Tokens for TON - EVM',
                 toJS(this.data),
                 toJS(this.state),
-                this.tokensCache.filterTokensByChainId(rightChainId))
+            )
+            log(
+                'Tokens for TON - EVM',
+                this.tokensCache.filterTokensByChainId(rightChainId),
+            )
+            log('Tokens for TON - EVM',
+                toJS(this.tokensCache.tokens))
             return this.tokensCache.filterTokensByChainId(rightChainId)
         }
 
