@@ -139,6 +139,7 @@ export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
     contractAddress?: Address;
     creditFactoryFee?: string;
     encodedEvent?: string;
+    everscaleAddress?: string;
     maxTransferFee?: string;
     minTransferFee?: string;
     pairAddress?: Address;
@@ -191,9 +192,10 @@ export type TonTransferStoreState = {
 
 export type TransferSummaryData = {
     amount?: string;
+    bridgeFee?: string;
     decimals?: number;
     depositType?: string;
-    bridgeFee?: string;
+    everscaleAddress?: string;
     minTransferFee?: string;
     maxTransferFee?: string;
     leftAddress?: string;

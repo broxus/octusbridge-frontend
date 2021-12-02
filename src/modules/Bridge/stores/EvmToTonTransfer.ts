@@ -163,13 +163,13 @@ export class EvmToTonTransfer {
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
             this.changeData('amount', methodCall.params[1].value)
-            this.changeData('leftAddress', tx.from)
+            this.changeData('leftAddress', tx.from.toLowerCase())
 
             const targetWid = methodCall.params[0].value[0]
             const targetAddress = methodCall.params[0].value[1]
             this.changeData(
                 'rightAddress',
-                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`,
+                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
             )
 
             this.changeState('transferState', {

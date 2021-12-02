@@ -27,8 +27,8 @@ function SecondEventStatusIndicatorInner(): JSX.Element {
     )
     const wrongNetwork = (
         evmWallet.isReady
-        && transfer.rightNetwork !== undefined
-        && !isEqual(transfer.rightNetwork.chainId, evmWallet.chainId)
+        && transfer.leftNetwork !== undefined
+        && !isEqual(transfer.leftNetwork.chainId, evmWallet.chainId)
         && isPrepareConfirmed
         && !isConfirmed
     )
@@ -63,7 +63,7 @@ function SecondEventStatusIndicatorInner(): JSX.Element {
                     return (
                         <WrongNetworkError
                             wallet={evmWallet}
-                            network={transfer.rightNetwork}
+                            network={transfer.leftNetwork}
                         />
                     )
                 }

@@ -33,6 +33,7 @@ export function useTransferLifecycle(transfer: Transfer): void {
             () => ({
                 amount: transfer.amountNumber.toFixed(),
                 decimals: transfer.decimals,
+                everscaleAddress: (transfer as EvmToEvmHiddenSwapTransfer).everscaleAddress,
                 leftAddress: transfer.leftAddress,
                 leftNetwork: transfer.leftNetwork,
                 maxTransferFee: (transfer as EvmToEvmHiddenSwapTransfer).maxTransferFee,

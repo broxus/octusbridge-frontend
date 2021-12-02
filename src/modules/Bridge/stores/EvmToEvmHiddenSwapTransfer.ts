@@ -1,3 +1,4 @@
+import { addABI, decodeMethod } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
@@ -8,7 +9,7 @@ import { IndexerApiBaseUrl } from '@/config'
 import {
     BridgeConstants, Dex,
     DexAbi,
-    DexConstants,
+    DexConstants, EthAbi,
     TokenAbi,
 } from '@/misc'
 import {
@@ -83,7 +84,116 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
     }
 
     public async resolve(): Promise<void> {
-        await super.resolve()
+        if (
+            this.evmWallet.web3 === undefined
+            || this.txHash === undefined
+            || this.leftNetwork === undefined
+            || this.tokensCache.tokens.length === 0
+            || this.transferState?.status === 'pending'
+            || this.transferState?.status === 'confirmed'
+        ) {
+            return
+        }
+
+        this.changeState('transferState', {
+            confirmedBlocksCount: this.state.transferState?.confirmedBlocksCount || 0,
+            eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
+            status: 'pending',
+        })
+
+        try {
+            const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
+
+            if (tx == null || tx.to == null) {
+                return
+            }
+
+            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tx.to)
+
+            const vaultAddress = await wrapper.methods.vault().call()
+            const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
+            const vaultWrapperAddress = await vaultContract.methods.wrapper().call()
+
+            const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
+
+            if (vaultWrapperAddress !== tx.to || token === undefined) {
+                return
+            }
+
+            await this.tokensCache.syncEvmToken(token.root, this.leftNetwork.chainId)
+
+            this.changeData('token', token)
+
+            addABI(EthAbi.VaultWrapper)
+            const methodCall = decodeMethod(tx.input)
+
+            if (methodCall?.name !== 'depositToFactory') {
+                return
+            }
+
+            const ethereumConfiguration = token.vaults.find(
+                vault => (
+                    vault.vault.toLowerCase() === vaultAddress.toLowerCase()
+                    && vault.chainId === this.leftNetwork?.chainId
+                    && vault.depositType === 'credit'
+                ),
+            )?.ethereumConfiguration
+
+            if (ethereumConfiguration === undefined) {
+                return
+            }
+
+            const ethConfigAddress = new Address(ethereumConfiguration)
+
+            this.changeData('ethConfigAddress', ethConfigAddress)
+
+            const ethConfig = new Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
+            const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
+
+            this.changeData('amount', methodCall?.params[0].value)
+            this.changeData('leftAddress', tx.from.toLowerCase())
+
+            const layer3 = methodCall?.params[10].value.substr(2, methodCall?.params[10].value.length)
+            const event = await ton.unpackFromCell({
+                allowPartial: true,
+                boc: Buffer.from(layer3, 'hex').toString('base64'),
+                structure: [
+                    { name: 'id', type: 'uint32' },
+                    { name: 'proxy', type: 'address' },
+                    { name: 'evmAddress', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
+                ] as const,
+            })
+
+            this.changeData(
+                'rightAddress',
+                `0x${new BigNumber(event.data.evmAddress).toString(16).padStart(40, '0')}`.toLowerCase(),
+            )
+
+            const targetWid = methodCall?.params[1].value
+            const targetAddress = methodCall?.params[2].value
+            this.changeData(
+                'everscaleAddress',
+                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
+            )
+
+            this.changeState('transferState', {
+                confirmedBlocksCount: 0,
+                eventBlocksToConfirm: parseInt(eventBlocksToConfirm, 10),
+                status: 'pending',
+            })
+
+            this.runTransferUpdater()
+        }
+        catch (e) {
+            error('Resolve error', e)
+            this.changeState('transferState', {
+                confirmedBlocksCount: 0,
+                eventBlocksToConfirm: 0,
+                status: 'disabled',
+            })
+        }
 
         await Promise.all([
             this.tonWallet.isConnected ? this.syncPair() : undefined,
@@ -558,10 +668,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             this.changeData('encodedEvent', encodedEvent)
             this.changeData('withdrawalId', withdrawalId)
 
-            if (
-                this.evmWallet.isConnected
-                && this.secondEventState?.status === 'confirmed'
-            ) {
+            if (this.evmWallet.isConnected && this.secondEventState?.status === 'confirmed') {
                 this.runReleaseUpdater()
             }
         })().finally(() => {
@@ -716,6 +823,10 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     public get contractAddress(): EvmHiddenSwapTransferStoreData['contractAddress'] {
         return this.data.contractAddress
+    }
+
+    public get everscaleAddress(): EvmHiddenSwapTransferStoreData['everscaleAddress'] {
+        return this.data.everscaleAddress
     }
 
     public get maxTransferFee(): EvmHiddenSwapTransferStoreData['maxTransferFee'] {

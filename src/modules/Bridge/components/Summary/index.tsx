@@ -116,6 +116,29 @@ export function Summary(): JSX.Element {
                 <Observer>
                     {() => (
                         <>
+                            {(summary.isEvmToEvm && summary.everscaleAddress !== undefined) && (
+                                <li key="everscale-address">
+                                    <span className="text-muted text-nowrap">
+                                        {intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_EVERSCALE_ADDRESS',
+                                        })}
+                                    </span>
+                                    <span className="text-truncate">
+                                        <TonscanAccountLink
+                                            key="everscale-address"
+                                            address={summary.everscaleAddress}
+                                            copy
+                                        />
+                                    </span>
+                                </li>
+                            )}
+                        </>
+                    )}
+                </Observer>
+
+                <Observer>
+                    {() => (
+                        <>
                             {(summary.isTonToEvm && summary.tokenVault?.balance !== undefined) && (
                                 <li key="vault-balance">
                                     <span className="text-muted text-nowrap">

@@ -27,6 +27,10 @@ export class TransferSummary {
         return this.isFromEvm ? this.token?.decimals : this.tokenVault?.decimals
     }
 
+    public get everscaleAddress(): TransferSummaryData['everscaleAddress'] {
+        return this.data.everscaleAddress
+    }
+
     public get maxTransferFee(): TransferSummaryData['maxTransferFee'] {
         return this.data.maxTransferFee
     }

@@ -224,8 +224,8 @@ export class TonToEvmTransfer {
 
         this.changeData('amount', tokens)
         this.changeData('chainId', chainId)
-        this.changeData('leftAddress', leftAddress)
-        this.changeData('rightAddress', rightAddress)
+        this.changeData('leftAddress', leftAddress.toLowerCase())
+        this.changeData('rightAddress', rightAddress.toLowerCase())
         this.changeData('token', token)
         this.changeState('prepareState', {
             status: 'confirmed',
