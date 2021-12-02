@@ -409,8 +409,8 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
         (async () => {
             const body: SearchBurnCallbackInfoRequest = {
-                chainId: this.leftNetwork?.chainId !== undefined
-                    ? parseInt(this.leftNetwork.chainId, 10)
+                chainId: this.rightNetwork?.chainId !== undefined
+                    ? parseInt(this.rightNetwork.chainId, 10)
                     : undefined,
                 creditProcessorAddress: this.creditProcessorAddress?.toString(),
                 limit: 20,
