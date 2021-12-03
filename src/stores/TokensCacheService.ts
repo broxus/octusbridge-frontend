@@ -12,7 +12,7 @@ import {
 import { TokensListService } from '@/stores/TokensListService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
-import { error, findNetwork } from '@/utils'
+import { error, findNetwork, log } from '@/utils'
 
 
 export type BridgeTokenAssetsManifest = {
@@ -465,6 +465,13 @@ export class TokensCacheService {
      * @param {string} depositType
      */
     public async syncEvmTokenAddress(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
+
+        if (tokenVault?.address !== undefined) {
+            log('Sync EMV token address. Address already synced. Skip..')
+            return
+        }
+
         const token = this.get(root)
 
         if (token === undefined) {
@@ -474,6 +481,8 @@ export class TokensCacheService {
         const vaultContract = this.getEthTokenVaultContract(root, chainId, depositType)
 
         const address = await vaultContract?.methods.token().call()
+
+        log(`Sync EMV token address by chainId (${chainId}) and deposit type (${depositType})`)
 
         this.update(root, 'vaults', token.vaults.map(
             vault => (vault.chainId === chainId ? { ...vault, address } : vault),
@@ -487,6 +496,13 @@ export class TokensCacheService {
      * @param {string} depositType
      */
     public async syncEvmTokenDecimals(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
+
+        if (tokenVault?.decimals !== undefined) {
+            log('Sync EMV token decimals. Decimals already synced. Skip..')
+            return
+        }
+
         const token = this.get(root)
 
         if (token === undefined) {
@@ -569,6 +585,13 @@ export class TokensCacheService {
      * @param {string} depositType
      */
     public async syncEvmTokenVaultWrapper(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
+
+        if (tokenVault?.wrapperAddress !== undefined) {
+            log('Sync EMV token wrapper address. Wrapper address already synced. Skip..')
+            return
+        }
+
         const token = this.get(root)
 
         if (token === undefined) {
