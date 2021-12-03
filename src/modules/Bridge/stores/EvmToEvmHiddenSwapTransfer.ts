@@ -539,7 +539,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 body: JSON.stringify(body),
             }).then(res => res.json())).transfers
 
-            if (transfer?.tonEventContractAddress === undefined) {
+            if (transfer?.tonEventContractAddress == null) {
                 return
             }
 
