@@ -19,7 +19,7 @@ function SecondEventStatusIndicatorInner(): JSX.Element {
     const isPrepareConfirmed = transfer.secondPrepareState?.status === 'confirmed'
     const status = transfer.secondEventState?.status || 'disabled'
     const isConfirmed = status === 'confirmed'
-    const { confirmations = 0, requiredConfirmations = 0 } = { ...transfer.eventState }
+    const { confirmations = 0, requiredConfirmations = 0 } = { ...transfer.secondEventState }
     const waitingWallet = (
         (!evmWallet.isReady || !tonWallet.isReady)
         && isPrepareConfirmed
