@@ -50,6 +50,9 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
+                            <Route exact path="/transfers">
+                                <TransferList />
+                            </Route>
                             <Route path="/transfers/my">
                                 <MyTransferList />
                             </Route>
