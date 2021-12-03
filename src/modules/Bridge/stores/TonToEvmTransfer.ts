@@ -529,8 +529,8 @@ export class TonToEvmTransfer {
             : new BigNumber(this.amount || 0).shiftedBy(-this.decimals)
     }
 
-    public get decimals(): TokenAssetVault['decimals'] {
-        return this.tokenVault?.decimals
+    public get decimals(): TokenCache['decimals'] | undefined {
+        return this.token?.decimals
     }
 
     public get leftNetwork(): NetworkShape | undefined {
