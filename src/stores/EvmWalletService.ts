@@ -3,7 +3,9 @@ import { action, makeAutoObservable, runInAction } from 'mobx'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 
-import { error, findNetwork, throwException } from '@/utils'
+import {
+    error, findNetwork, log, throwException,
+} from '@/utils'
 
 
 export type WalletData = {
@@ -255,9 +257,10 @@ export class EvmWalletService {
                 this.state.isConnecting = false
                 this.state.isConnected = address !== undefined
             })
+            log(`Sync EVM address: ${address}`)
         }
         catch (e) {
-            error(e)
+            error('Sync EVM account data error', e)
             runInAction(() => {
                 this.data.address = undefined
                 this.state.isConnecting = false
@@ -277,10 +280,11 @@ export class EvmWalletService {
                 runInAction(() => {
                     this.data.balance = balance
                 })
+                log(`Sync EVM balance: ${balance}`)
             }
         }
         catch (e) {
-            error(e)
+            error('Sync EVM balance error', e)
             runInAction(() => {
                 this.data.balance = '0'
             })
@@ -299,10 +303,11 @@ export class EvmWalletService {
                 runInAction(() => {
                     this.data.chainId = chainId.toString()
                 })
+                log(`Sync EVM Chain ID: ${chainId.toString()}`)
             }
         }
         catch (e) {
-            error('Chain ID request error', e)
+            error('Sync Chain ID error', e)
         }
     }
 
@@ -363,7 +368,7 @@ export class EvmWalletService {
         setInterval(async () => {
             await this.syncChainId()
             await this.syncBalance()
-        }, 10000)
+        }, 20000)
     }
 
     protected get cachedProvider(): string | undefined {
