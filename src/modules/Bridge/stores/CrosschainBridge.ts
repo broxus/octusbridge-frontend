@@ -1102,6 +1102,11 @@ export class CrosschainBridge {
      * @protected
      */
     protected checkMinReceiveTokens(): void {
+        if (!isGoodBignumber(this.amountNumber)) {
+            this.changeData('minReceiveTokens', '')
+            this.changeData('tokensAmount', '')
+        }
+
         if (
             this.token === undefined
             || this.decimals === undefined
@@ -1112,7 +1117,7 @@ export class CrosschainBridge {
 
         const tokenVault = this.tokensCache.getTokenVault(
             this.token.root,
-            this.rightNetwork?.chainId,
+            this.rightNetwork.chainId,
         )
 
         if (tokenVault?.decimals === undefined) {
