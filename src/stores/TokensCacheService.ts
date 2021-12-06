@@ -32,6 +32,7 @@ export type TokenAssetVault = {
     decimals?: number;
     depositType: string;
     ethereumConfiguration: string;
+    limit?: string;
     tokenBalance?: string;
     vault: string;
     wrapperAddress?: string;
@@ -93,22 +94,25 @@ export class TokensCacheService {
         // When the Tokens List Service has loaded the list of
         // available tokens, we will start creating a token map
         reaction(
-            () => [tokensList.time, tokensList.tokens, tonWallet.address, evmWallet.address, tokensAssetsURI],
+            () => [
+                tokensList.time,
+                tokensList.tokens,
+                tonWallet.address,
+                evmWallet.address,
+                this.assets,
+            ],
             async (
-                [time, tokens, tonAddress, evmAddress, assetsUri],
-                [prevTime, prevTokens, prevTonAddress, prevEvmAddress, prevAssetsUri],
+                [time, tokens, tonAddress, evmAddress, assets],
+                [prevTime, prevTokens, prevTonAddress, prevEvmAddress, prevAssets],
             ) => {
                 if (
                     time !== prevTime
                     || tokens !== prevTokens
                     || tonAddress !== prevTonAddress
                     || evmAddress !== prevEvmAddress
+                    || assets !== prevAssets
                 ) {
                     await this.build()
-                }
-
-                if (assetsUri !== prevAssetsUri) {
-                    await this.fetchAssets(tokensAssetsURI)
                 }
             },
             { delay: 100 },
@@ -181,6 +185,9 @@ export class TokensCacheService {
         return this.data.tokens
     }
 
+    /**
+     * Returns `true` if tokens list was loaded and tokens build.
+     */
     public get isInitialized(): boolean {
         return this.tokens.length > 0
     }
@@ -450,6 +457,7 @@ export class TokensCacheService {
                 this.syncEvmTokenDecimals(root, chainId, depositType),
                 this.syncEvmTokenBalance(root, chainId, depositType),
                 this.syncEvmTokenVaultBalance(root, chainId, depositType),
+                this.syncEvmTokenVaultLimit(root, chainId, depositType),
                 this.syncEvmTokenVaultWrapper(root, chainId, depositType),
             ])
         }
@@ -577,6 +585,38 @@ export class TokensCacheService {
 
         this.update(root, 'vaults', token.vaults.map(
             vault => (vault.chainId === chainId ? { ...vault, balance } : vault),
+        ))
+    }
+
+    /**
+     * Sync EVM token vault balance limit by the given token root address and chainId.
+     * @param {string} root
+     * @param {string} chainId
+     * @param {string} depositType
+     */
+    public async syncEvmTokenVaultLimit(root: string, chainId: string, depositType: string = 'default'): Promise<void> {
+        const token = this.get(root)
+
+        if (token === undefined) {
+            throw new Error(`Cannot find token by the given root address ${root} and chainId ${chainId}`)
+        }
+
+        const tokenVault = this.getTokenVault(root, chainId, depositType)
+
+        if (tokenVault === undefined) {
+            return
+        }
+
+        const tokenVaultContract = await this.getEthTokenVaultContract(root, chainId, depositType)
+
+        const limit = await tokenVaultContract?.methods.availableDepositLimit().call()
+
+        if (limit === undefined) {
+            return
+        }
+
+        this.update(root, 'vaults', token.vaults.map(
+            vault => (vault.chainId === chainId ? { ...vault, limit } : vault),
         ))
     }
 

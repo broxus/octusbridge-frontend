@@ -1476,10 +1476,16 @@ export class CrosschainBridge {
         return this.data.maxTransferFee
     }
 
+    /**
+     * Returns non-shifted minimum amount to spend
+     */
     public get minAmount(): CrosschainBridgeStoreData['minAmount'] {
         return this.data.minAmount
     }
 
+    /**
+     * Returns non-shifted minimum receive TON`s amount
+     */
     public get minTonsAmount(): CrosschainBridgeStoreData['minTonsAmount'] {
         return this.data.minTonsAmount
     }
@@ -1488,10 +1494,16 @@ export class CrosschainBridge {
         return this.data.minTransferFee
     }
 
+    /**
+     * Returns non-shifted receive tokens amount
+     */
     public get tokensAmount(): CrosschainBridgeStoreData['tokensAmount'] {
         return this.data.tokensAmount
     }
 
+    /**
+     * Returns non-shifted receive TON`s amount
+     */
     public get tonsAmount(): CrosschainBridgeStoreData['tonsAmount'] {
         return this.data.tonsAmount
     }
@@ -1556,10 +1568,16 @@ export class CrosschainBridge {
      * ----------------------------------------------------------------------------------
      */
 
+    /**
+     * Returns non-shifted amount field BigNumber instance
+     */
     public get amountNumber(): BigNumber {
         return new BigNumber(this.amount || 0)
     }
 
+    /**
+     * Returns min value of decomals between TON token and EVM token vault decimals
+     */
     public get amountMinDecimals(): number {
         if (this.token === undefined || this.tokenVault?.decimals === undefined) {
             return 0
@@ -1567,6 +1585,10 @@ export class CrosschainBridge {
         return Math.min(this.token.decimals, this.tokenVault.decimals)
     }
 
+    /**
+     * Returns token balance in EVM token vault for `EVM to` direction.
+     * Otherwise TON token balance
+     */
     public get balance(): string | undefined {
         if (this.isFromEvm) {
             return this.tokenVault?.tokenBalance
@@ -1574,15 +1596,17 @@ export class CrosschainBridge {
         return this.token?.balance
     }
 
+    /**
+     * Returns shifted token balance BigNumber instance
+     */
     public get balanceNumber(): BigNumber {
-        if (this.isFromEvm) {
-            return new BigNumber(this.tokenVault?.tokenBalance || 0)
-                .shiftedBy(this.tokenVault?.decimals ? -this.tokenVault.decimals : 0)
-        }
-        return new BigNumber(this.token?.balance || 0)
-            .shiftedBy(this.token?.decimals ? -this.token.decimals : 0)
+        return new BigNumber(this.balance || 0).shiftedBy(this.decimals ? -this.decimals : 0)
     }
 
+    /**
+     * Returns token decimals from EVM token vault for `EVM to` direction/
+     * Otherwise TON token decimals
+     */
     public get decimals(): number | undefined {
         if (this.isFromEvm) {
             return this.tokenVault?.decimals
@@ -1590,20 +1614,62 @@ export class CrosschainBridge {
         return this.token?.decimals
     }
 
+    /**
+     * Returns non-shifted min amount BigNumber instance
+     */
+    public get minAmountNumber(): BigNumber {
+        return new BigNumber(this.minAmount || 0)
+    }
+
+    /**
+     * Returns non-shifted min receive tokens BigNumber instance
+     */
     public get minReceiveTokensNumber(): BigNumber {
         return new BigNumber(this.minReceiveTokens || 0)
     }
 
-    public get isAmountValid(): boolean {
-        if (this.amount.length > 0 && (this.isEvmToEvm || (this.isSwapEnabled && isGoodBignumber(this.amountNumber)))) {
-            return (
-                validateMinValue(this.minAmount, this.amount, this.amountMinDecimals)
-                && validateMaxValue(this.balance, this.amount, this.decimals)
+    public get isAmountVaultLimitExceed(): boolean {
+        return isGoodBignumber(this.tokenVaultLimitNumber) && !validateMaxValue(
+            this.tokenVaultLimitNumber.shiftedBy(-this.amountMinDecimals).toFixed(),
+            this.amountNumber.toFixed(),
+        )
+    }
+
+    public get isAmountMinValueValid(): boolean {
+        if (this.amount.length > 0 && isGoodBignumber(this.amountNumber)) {
+            return validateMinValue(
+                this.minAmountNumber.shiftedBy(-this.amountMinDecimals).toFixed(),
+                this.amountNumber.toFixed(),
             )
         }
-        return this.amount.length > 0
-            ? validateMaxValue(this.balance, this.amount, this.decimals)
-            : true
+        return true
+    }
+
+    public get isAmountMaxValueValid(): boolean {
+        if (this.amount.length > 0 && isGoodBignumber(this.amountNumber)) {
+            return validateMaxValue(
+                this.balanceNumber.toFixed(),
+                this.amountNumber.toFixed(),
+            )
+        }
+        return true
+    }
+
+    public get isAmountValid(): boolean {
+        if (this.amount.length === 0) {
+            return true
+        }
+
+        if (this.isEvmToEvm || (this.isSwapEnabled && isGoodBignumber(this.amountNumber))) {
+            return (
+                this.isAmountMinValueValid
+                && this.isAmountMaxValueValid
+            ) && (this.isEvmToTon ? !this.isAmountVaultLimitExceed : true)
+        }
+
+        return this.isAmountMaxValueValid && (
+            this.isEvmToTon ? !this.isAmountVaultLimitExceed : true
+        )
     }
 
     public get isTokensAmountValid(): boolean {
@@ -1697,16 +1763,10 @@ export class CrosschainBridge {
     }
 
     public get isEvmToEvm(): boolean {
-        if (this.leftNetwork === undefined) {
-            return false
-        }
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
     public get isEvmToTon(): boolean {
-        if (this.leftNetwork === undefined) {
-            return false
-        }
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'ton'
     }
 
@@ -1719,9 +1779,6 @@ export class CrosschainBridge {
     }
 
     public get isTonToEvm(): boolean {
-        if (this.leftNetwork === undefined) {
-            return false
-        }
         return this.leftNetwork?.type === 'ton' && this.rightNetwork?.type === 'evm'
     }
 
@@ -1752,6 +1809,29 @@ export class CrosschainBridge {
         }
 
         return this.tokensCache.get(this.data.selectedToken)
+    }
+
+    public get tokenVault(): TokenAssetVault | undefined {
+        if (this.token === undefined || this.leftNetwork === undefined) {
+            return undefined
+        }
+
+        return this.tokensCache.getTokenVault(
+            this.token.root,
+            this.leftNetwork.chainId,
+            this.depositType,
+        )
+    }
+
+    public get tokenVaultLimit(): TokenAssetVault['limit'] {
+        return this.tokenVault?.limit
+    }
+
+    public get tokenVaultLimitNumber(): BigNumber {
+        return new BigNumber(this.tokenVault?.limit || 0)
+            .shiftedBy(-(this.tokenVault?.decimals || 0))
+            .shiftedBy(this.amountMinDecimals)
+            .dp(0, BigNumber.ROUND_DOWN)
     }
 
     public get tokens(): TokenCache[] {
@@ -1835,18 +1915,6 @@ export class CrosschainBridge {
         return this.data.pairAddress !== undefined
             ? new Contract(DexAbi.Pair, this.data.pairAddress)
             : undefined
-    }
-
-    protected get tokenVault(): TokenAssetVault | undefined {
-        if (this.token === undefined || this.leftNetwork === undefined) {
-            return undefined
-        }
-
-        return this.tokensCache.getTokenVault(
-            this.token.root,
-            this.leftNetwork.chainId,
-            this.depositType,
-        )
     }
 
     protected get wrapperContract(): EthContract | undefined {

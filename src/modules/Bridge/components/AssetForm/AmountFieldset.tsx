@@ -9,8 +9,6 @@ import {
     debounce,
     formattedAmount,
     isGoodBignumber,
-    validateMaxValue,
-    validateMinValue,
 } from '@/utils'
 
 
@@ -75,27 +73,23 @@ export function AmountFieldset(): JSX.Element {
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
-                                let isMinValueValid = true
-                                if (bridge.amount.length > 0 && (
-                                    bridge.isEvmToEvm
-                                    || (bridge.isSwapEnabled && isGoodBignumber(bridge.amountNumber))
-                                )) {
-                                    isMinValueValid = validateMinValue(
-                                        bridge.minAmount,
-                                        bridge.amount,
-                                        bridge.amountMinDecimals,
-                                    )
-                                }
-                                const isMaxValueValid = bridge.amount.length > 0
-                                    ? validateMaxValue(
-                                        bridge.balance,
-                                        bridge.amount,
-                                        bridge.decimals,
-                                    )
-                                    : true
-
                                 switch (true) {
-                                    case !isMinValueValid:
+                                    case bridge.isEvmToTon && bridge.isAmountVaultLimitExceed:
+                                        return (
+                                            <span className="text-danger">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_VAULT_AMOUNT_HINT',
+                                                }, {
+                                                    symbol: bridge.token?.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.tokenVaultLimitNumber.toFixed(),
+                                                        bridge.amountMinDecimals,
+                                                    ),
+                                                })}
+                                            </span>
+                                        )
+
+                                    case !bridge.isAmountMinValueValid:
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
@@ -110,7 +104,7 @@ export function AmountFieldset(): JSX.Element {
                                             </span>
                                         )
 
-                                    case !isMaxValueValid:
+                                    case !bridge.isAmountMaxValueValid:
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
@@ -177,6 +171,22 @@ export function AmountFieldset(): JSX.Element {
                                     )}
                                 </Observer>
                             </div>
+                            <Observer>
+                                {() => (
+                                    <>
+                                        {bridge.isEvmToTon && (
+                                            <div className="crosschain-transfer__control-hint">
+                                                Available vault limit:
+                                                {' '}
+                                                {formattedAmount(
+                                                    bridge.tokenVaultLimitNumber.toFixed(),
+                                                    bridge.amountMinDecimals,
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </Observer>
                         </>
                     )}
                 </div>

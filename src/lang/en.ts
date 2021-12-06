@@ -80,6 +80,7 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_VAULT_BALANCE_HINT: 'Bridge vault balance: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_AMOUNT_HINT: 'Minimum spend: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT: 'Insufficient {symbol} balance. Maximum spend: {value} {symbol}',
+    CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_VAULT_AMOUNT_HINT: 'Vault limit exceeded. Available limit {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TOKENS_AMOUNT_HINT: 'Minimum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TOKENS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT: 'Minimum for exchange: {value} {symbol}',

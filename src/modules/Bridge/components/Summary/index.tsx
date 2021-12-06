@@ -139,7 +139,7 @@ export function Summary(): JSX.Element {
                 <Observer>
                     {() => (
                         <>
-                            {(summary.isTonToEvm && summary.tokenVault?.balance !== undefined) && (
+                            {((summary.isEvmToTon || summary.isTonToEvm) && summary.vaultBalance !== undefined) && (
                                 <li key="vault-balance">
                                     <span className="text-muted text-nowrap">
                                         {intl.formatMessage({
@@ -150,8 +150,8 @@ export function Summary(): JSX.Element {
                                     </span>
                                     <span className="text-truncate">
                                         {formattedAmount(
-                                            summary.tokenVault?.balance,
-                                            summary.tokenVault?.decimals,
+                                            summary.vaultBalance,
+                                            summary.vaultDecimals,
                                             true,
                                             true,
                                         )}
