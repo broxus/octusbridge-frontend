@@ -205,6 +205,7 @@ export class EvmWalletService {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
             })
+            await this.syncBalance()
             await this.syncChainId()
         }
         catch (e: any) {
