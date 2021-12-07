@@ -22,7 +22,7 @@ export type CrosschainBridgeStoreData = {
     leftAddress: string;
     leftNetwork?: NetworkShape;
     minAmount?: string;
-    maxTokensAmount?: string;
+    maxTokenAmount?: string;
     maxTonsAmount?: string;
     maxTransferFee?: string;
     minReceiveTokens?: string;
@@ -34,7 +34,7 @@ export type CrosschainBridgeStoreData = {
     rightNetwork?: NetworkShape;
     selectedToken?: string;
     swapType: '0' | '1';
-    tokensAmount?: string;
+    tokenAmount?: string;
     tonsAmount?: string;
     txHash?: string;
 }
@@ -144,6 +144,8 @@ export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
     minTransferFee?: string;
     pairAddress?: Address;
     pairState?: FullContractState;
+    swapAmount?: string;
+    tokenAmount?: string;
     withdrawalId?: string;
 }
 
@@ -193,7 +195,6 @@ export type TonTransferStoreState = {
 export type TransferSummaryData = {
     amount?: string;
     bridgeFee?: string;
-    decimals?: number;
     depositType?: string;
     everscaleAddress?: string;
     minTransferFee?: string;
@@ -202,7 +203,14 @@ export type TransferSummaryData = {
     leftNetwork?: NetworkShape;
     rightAddress?: string;
     rightNetwork?: NetworkShape;
+    swapAmount?: string;
     token?: TokenCache;
+    tokenAmount?: string;
+}
+
+export type TransferSummaryState = {
+    isTransferPage?: boolean;
+    isTransferReleased?: boolean;
 }
 
 export enum CreditProcessorState {

@@ -13,7 +13,7 @@ import {
     EvmTransferStoreState,
     TonTransferStoreData,
     TonTransferStoreState,
-    TransferSummaryData,
+    TransferSummaryData, TransferSummaryState,
 } from '@/modules/Bridge/types'
 
 
@@ -25,7 +25,7 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     leftAddress: '',
     leftNetwork: undefined,
     minAmount: undefined,
-    maxTokensAmount: undefined,
+    maxTokenAmount: undefined,
     maxTonsAmount: undefined,
     maxTransferFee: undefined,
     minReceiveTokens: undefined,
@@ -37,7 +37,7 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     rightNetwork: undefined,
     selectedToken: undefined,
     swapType: '0',
-    tokensAmount: undefined,
+    tokenAmount: undefined,
     tonsAmount: undefined,
     txHash: undefined,
 }
@@ -128,6 +128,10 @@ export const DEFAULT_TRANSFER_SUMMARY_STORE_DATA: TransferSummaryData = {
     amount: '',
     leftAddress: '',
     rightAddress: '',
+}
+
+export const DEFAULT_TRANSFER_SUMMARY_STORE_STATE: TransferSummaryState = {
+    isTransferPage: false,
 }
 
 export const EMPTY_WALLET_MIN_TONS_AMOUNT = new BigNumber(

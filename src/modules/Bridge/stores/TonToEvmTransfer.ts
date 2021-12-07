@@ -523,16 +523,6 @@ export class TonToEvmTransfer {
         return this.state.releaseState
     }
 
-    public get amountNumber(): BigNumber {
-        return this.decimals === undefined
-            ? new BigNumber(0)
-            : new BigNumber(this.amount || 0).shiftedBy(-this.decimals)
-    }
-
-    public get decimals(): TokenCache['decimals'] | undefined {
-        return this.token?.decimals
-    }
-
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined

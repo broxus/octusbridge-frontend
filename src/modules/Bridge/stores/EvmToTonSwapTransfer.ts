@@ -96,8 +96,6 @@ export class EvmToTonSwapTransfer {
             prepareState: computed,
             swapState: computed,
             transferState: computed,
-            amountNumber: computed,
-            decimals: computed,
             isDeployer: computed,
             isOwner: computed,
             leftNetwork: computed,
@@ -1172,16 +1170,6 @@ export class EvmToTonSwapTransfer {
 
     public get transferState(): EvmSwapTransferStoreState['transferState'] {
         return this.state.transferState
-    }
-
-    public get amountNumber(): BigNumber {
-        return this.decimals === undefined
-            ? new BigNumber(0)
-            : new BigNumber(this.amount || 0).shiftedBy(-this.decimals)
-    }
-
-    public get decimals(): TokenAssetVault['decimals'] {
-        return this.tokenVault?.decimals
     }
 
     public get isDeployer(): boolean {

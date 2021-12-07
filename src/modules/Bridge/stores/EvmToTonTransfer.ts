@@ -462,22 +462,6 @@ export class EvmToTonTransfer {
         return this.state.transferState
     }
 
-    public get amountNumber(): BigNumber {
-        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
-            return new BigNumber(0)
-        }
-
-        if (this.tokenVault?.decimals === undefined) {
-            return new BigNumber(0)
-        }
-
-        return new BigNumber(this.amount || 0).shiftedBy(-this.tokenVault.decimals)
-    }
-
-    public get decimals(): number | undefined {
-        return this.tokenVault?.decimals
-    }
-
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined

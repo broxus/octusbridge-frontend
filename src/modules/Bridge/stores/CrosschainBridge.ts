@@ -651,8 +651,8 @@ export class CrosschainBridge {
 
             if (!this.amount || this.amountNumber.isZero()) {
                 this.changeData('minReceiveTokens', '')
-                this.changeData('maxTokensAmount', '')
-                this.changeData('tokensAmount', '')
+                this.changeData('maxTokenAmount', '')
+                this.changeData('tokenAmount', '')
                 this.changeData(
                     'tonsAmount',
                     this.isInsufficientTonBalance
@@ -705,8 +705,8 @@ export class CrosschainBridge {
                 .minus(this.debt)
                 .dp(DexConstants.TONDecimals, BigNumber.ROUND_DOWN)
 
-            if (this.tokensAmountNumber.isZero()) {
-                this.changeData('tokensAmount', '0')
+            if (this.tokenAmountNumber.isZero()) {
+                this.changeData('tokenAmount', '0')
                 this.changeData('minReceiveTokens', '0')
                 this.changeData('swapType', '1')
 
@@ -715,7 +715,7 @@ export class CrosschainBridge {
                 }
             }
             else {
-                const minSpentTokensNumber = this.amountNumber.minus(this.tokensAmountNumber)
+                const minSpentTokensNumber = this.amountNumber.minus(this.tokenAmountNumber)
 
                 const {
                     expected_amount: toExchangeAmount,
@@ -768,7 +768,7 @@ export class CrosschainBridge {
                     }
                 }
                 else {
-                    this.changeData('tokensAmount', '0')
+                    this.changeData('tokenAmount', '0')
                     this.changeData('minReceiveTokens', '0')
                     this.changeData('swapType', '1')
 
@@ -823,7 +823,7 @@ export class CrosschainBridge {
             }
             else {
                 this.changeData('minReceiveTokens', '')
-                this.changeData('tokensAmount', '')
+                this.changeData('tokenAmount', '')
                 return
             }
 
@@ -850,7 +850,7 @@ export class CrosschainBridge {
 
             if (isGoodBignumber(tokensAmountBN)) {
                 this.changeData('swapType', '0')
-                this.changeData('tokensAmount', tokensAmountBN.toFixed())
+                this.changeData('tokenAmount', tokensAmountBN.toFixed())
             }
         }
         catch (e) {
@@ -864,7 +864,7 @@ export class CrosschainBridge {
      */
     public async onSwapToggle(): Promise<void> {
         if (!this.isSwapEnabled) {
-            this.changeData('tokensAmount', '')
+            this.changeData('tokenAmount', '')
             this.changeData('tonsAmount', '')
             this.changeData('minAmount', '')
             return
@@ -889,13 +889,13 @@ export class CrosschainBridge {
             amount: '',
             bridgeFee: undefined,
             depositType: this.isEvmToEvm ? 'credit' : 'default',
-            maxTokensAmount: undefined,
+            maxTokenAmount: undefined,
             maxTonsAmount: undefined,
             minAmount: undefined,
             minTransferFee: undefined,
             minReceiveTokens: undefined,
             minTonsAmount: undefined,
-            tokensAmount: undefined,
+            tokenAmount: undefined,
             tonsAmount: undefined,
             pairAddress: undefined,
             pairState: undefined,
@@ -1104,7 +1104,7 @@ export class CrosschainBridge {
     protected checkMinReceiveTokens(): void {
         if (!isGoodBignumber(this.amountNumber)) {
             this.changeData('minReceiveTokens', '')
-            this.changeData('tokensAmount', '')
+            this.changeData('tokenAmount', '')
         }
 
         if (
@@ -1136,7 +1136,7 @@ export class CrosschainBridge {
                     .toFixed(),
             )
             this.changeData(
-                'tokensAmount',
+                'tokenAmount',
                 minReceiveTokensNumber
                     .shiftedBy(-this.amountMinDecimals)
                     .dp(tokenVault.decimals, BigNumber.ROUND_DOWN)
@@ -1176,8 +1176,8 @@ export class CrosschainBridge {
             }
             else {
                 this.changeData('minReceiveTokens', '')
-                this.changeData('tokensAmount', '')
-                this.changeData('maxTokensAmount', '')
+                this.changeData('tokenAmount', '')
+                this.changeData('maxTokenAmount', '')
             }
         }
         catch (e) {
@@ -1210,9 +1210,9 @@ export class CrosschainBridge {
                 .minus(tokensAmount || 0)
 
             if (isGoodBignumber(tokensAmountNumber)) {
-                this.changeData('maxTokensAmount', tokensAmountNumber.toFixed())
+                this.changeData('maxTokenAmount', tokensAmountNumber.toFixed())
                 this.changeData(
-                    'tokensAmount',
+                    'tokenAmount',
                     tokensAmountNumber
                         .shiftedBy(-this.token.decimals)
                         .dp(this.token.decimals, BigNumber.ROUND_DOWN)
@@ -1220,8 +1220,8 @@ export class CrosschainBridge {
                 )
             }
             else {
-                this.changeData('maxTokensAmount', '')
-                this.changeData('tokensAmount', '')
+                this.changeData('maxTokenAmount', '')
+                this.changeData('tokenAmount', '')
             }
         }
         catch (e) {
@@ -1464,8 +1464,8 @@ export class CrosschainBridge {
         return this.data.amount
     }
 
-    public get maxTokensAmount(): CrosschainBridgeStoreData['maxTokensAmount'] {
-        return this.data.maxTokensAmount
+    public get maxTokenAmount(): CrosschainBridgeStoreData['maxTokenAmount'] {
+        return this.data.maxTokenAmount
     }
 
     public get maxTonsAmount(): CrosschainBridgeStoreData['maxTonsAmount'] {
@@ -1497,8 +1497,8 @@ export class CrosschainBridge {
     /**
      * Returns non-shifted receive tokens amount
      */
-    public get tokensAmount(): CrosschainBridgeStoreData['tokensAmount'] {
-        return this.data.tokensAmount
+    public get tokenAmount(): CrosschainBridgeStoreData['tokenAmount'] {
+        return this.data.tokenAmount
     }
 
     /**
@@ -1673,13 +1673,13 @@ export class CrosschainBridge {
     }
 
     public get isTokensAmountValid(): boolean {
-        if (this.tokensAmount && this.tokensAmount.length > 0 && isGoodBignumber(this.tokensAmountNumber, false)) {
+        if (this.tokenAmount && this.tokenAmount.length > 0 && isGoodBignumber(this.tokenAmountNumber, false)) {
             return (
-                validateMinValue('0', this.tokensAmount, this.token?.decimals)
-                && validateMaxValue(this.maxTokensAmount, this.tokensAmount, this.token?.decimals)
+                validateMinValue('0', this.tokenAmount, this.token?.decimals)
+                && validateMaxValue(this.maxTokenAmount, this.tokenAmount, this.token?.decimals)
             )
         }
-        return isGoodBignumber(this.tokensAmountNumber, false)
+        return isGoodBignumber(this.tokenAmountNumber, false)
     }
 
     public get isTonsAmountValid(): boolean {
@@ -1897,8 +1897,8 @@ export class CrosschainBridge {
         return this.tokensCache.tokens
     }
 
-    public get tokensAmountNumber(): BigNumber {
-        return new BigNumber(this.tokensAmount || 0)
+    public get tokenAmountNumber(): BigNumber {
+        return new BigNumber(this.tokenAmount || 0)
     }
 
     public get tonsAmountNumber(): BigNumber {

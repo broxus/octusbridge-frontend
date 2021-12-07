@@ -29,10 +29,10 @@ export function useTransferLifecycle(transfer: Transfer): void {
 
     React.useEffect(() => {
         const summary = useSummary()
+        summary.changeState('isTransferPage', true)
         const summaryDisposer = reaction(
             () => ({
-                amount: transfer.amountNumber.toFixed(),
-                decimals: transfer.decimals,
+                amount: transfer.amount,
                 everscaleAddress: (transfer as EvmToEvmHiddenSwapTransfer).everscaleAddress,
                 leftAddress: transfer.leftAddress,
                 leftNetwork: transfer.leftNetwork,
@@ -40,14 +40,26 @@ export function useTransferLifecycle(transfer: Transfer): void {
                 minTransferFee: (transfer as EvmToEvmHiddenSwapTransfer).minTransferFee,
                 rightAddress: transfer.rightAddress,
                 rightNetwork: transfer.rightNetwork,
+                swapAmount: (transfer as EvmToEvmHiddenSwapTransfer).swapAmount,
                 token: transfer.token,
+                tokenAmount: (transfer as EvmToEvmHiddenSwapTransfer).tokenAmount,
             }),
             data => {
-                summary.update(data)
+                summary.updateData(data)
             },
         )
+
+        const transferReleaseDisposer = reaction(
+            () => (transfer as EvmToEvmHiddenSwapTransfer).releaseState?.isReleased,
+            value => {
+                summary.changeState('isTransferReleased', value)
+            },
+        )
+
         return () => {
             summaryDisposer()
+            transferReleaseDisposer()
+            summary.reset()
         }
     }, [])
 }

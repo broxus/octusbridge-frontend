@@ -29,7 +29,7 @@ import {
     SearchBurnCallbackInfoRequest,
 } from '@/modules/Bridge/types'
 import { getCreditFactoryContract } from '@/modules/Bridge/utils'
-import { debug, error } from '@/utils'
+import { debug, error, isGoodBignumber } from '@/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
@@ -152,6 +152,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
             this.changeData('amount', methodCall?.params[0].value)
+            this.changeData('tokenAmount', methodCall?.params[5].value)
             this.changeData('leftAddress', tx.from.toLowerCase())
 
             const layer3 = methodCall?.params[10].value.substr(2, methodCall?.params[10].value.length)
@@ -396,6 +397,23 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 this.changeState('swapState', swapState)
 
                 if (isProcessed) {
+                    this.changeData('swapAmount', creditProcessorDetails.swapAmount)
+
+                    const swapAmountNumber = new BigNumber(creditProcessorDetails.swapAmount)
+                        .shiftedBy(this.token?.decimals ? -this.token.decimals : 0)
+                    const tokenAmountNumber = new BigNumber(this.amount)
+                        .shiftedBy(this.tokenVault?.decimals ? -this.tokenVault.decimals : 0)
+
+                    if (isGoodBignumber(tokenAmountNumber) && isGoodBignumber(swapAmountNumber)) {
+                        this.changeData(
+                            'tokenAmount',
+                            tokenAmountNumber
+                                .minus(swapAmountNumber)
+                                .shiftedBy(this.token?.decimals || 0)
+                                .toFixed(),
+                        )
+                    }
+
                     this.changeState('secondPrepareState', {
                         status: 'pending',
                     })
@@ -492,13 +510,6 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             else {
                 this.changeState('swapState', this.swapState)
             }
-
-            // if (this.swapState?.status === 'confirmed') {
-            //     this.changeState('secondPrepareState', {
-            //         status: 'pending',
-            //     })
-            //     this.runContractUpdater()
-            // }
         })().finally(() => {
             if (
                 this.swapState?.status !== 'confirmed'
@@ -835,6 +846,14 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     public get minTransferFee(): EvmHiddenSwapTransferStoreData['minTransferFee'] {
         return this.data.minTransferFee
+    }
+
+    public get swapAmount(): EvmHiddenSwapTransferStoreData['swapAmount'] {
+        return this.data.swapAmount
+    }
+
+    public get tokenAmount(): EvmHiddenSwapTransferStoreData['tokenAmount'] {
+        return this.data.tokenAmount
     }
 
     public get secondPrepareState(): EvmHiddenSwapTransferStoreState['secondPrepareState'] {

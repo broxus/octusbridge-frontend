@@ -126,9 +126,9 @@
 
     &__status {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         flex-wrap: nowrap;
-        gap: 24px;
+        gap: 12px;
 
         &.cancelled { opacity: 0.5; }
 
@@ -144,10 +144,19 @@
                 margin-bottom: 12px;
             }
         }
+
+        @media only screen and (min-width: 768px) {
+            flex-direction: row;
+            gap: 24px;
+        }
     }
 
     &__status + &__status {
-        margin-top: 12px;
+        margin-top: 24px;
+
+        @media only screen and (min-width: 768px) {
+            margin-top: 12px;
+        }
     }
 
     &-statuses-list {

@@ -37,7 +37,7 @@ export function MinReceiveTokensFieldset(): JSX.Element {
                                 }) : '0'}
                                 token={bridge.token}
                                 size="md"
-                                value={bridge.tokensAmount || ''}
+                                value={bridge.tokenAmount || ''}
                             />
                         )}
                     </Observer>

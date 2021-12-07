@@ -23,26 +23,22 @@ export function Summary(): JSX.Element {
                 <li>
                     <Observer>
                         {() => (
-                            <span
-                                className="text-muted"
-                                dangerouslySetInnerHTML={{
-                                    __html: summary.leftNetwork?.name !== undefined ? intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK',
-                                    }, {
-                                        abbr: parts => `<abbr title="${summary.leftNetwork?.label}">${parts.join('')}</abbr>`,
-                                        name: summary.leftNetwork.name,
-                                    }) : intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
-                                    }),
-                                }}
-                            />
-                        )}
-                    </Observer>
-                    <Observer>
-                        {() => (
                             <>
+                                <div
+                                    className="text-muted"
+                                    dangerouslySetInnerHTML={{
+                                        __html: intl.formatMessage({
+                                            id: summary.leftNetwork?.name !== undefined
+                                                ? 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK'
+                                                : 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
+                                        }, {
+                                            abbr: parts => `<abbr title="${summary.leftNetwork?.label}">${parts.join('')}</abbr>`,
+                                            name: summary.leftNetwork?.name || '',
+                                        }),
+                                    }}
+                                />
                                 {(summary.leftNetwork?.name !== undefined && summary.leftAddress !== undefined) ? (
-                                    <>
+                                    <div>
                                         {summary.leftNetwork?.type === 'ton' && (
                                             <TonscanAccountLink
                                                 key="ton-address"
@@ -58,9 +54,9 @@ export function Summary(): JSX.Element {
                                                 copy
                                             />
                                         )}
-                                    </>
+                                    </div>
                                 ) : (
-                                    <span>–</span>
+                                    <div>–</div>
                                 )}
                             </>
                         )}
@@ -69,26 +65,22 @@ export function Summary(): JSX.Element {
                 <li>
                     <Observer>
                         {() => (
-                            <span
-                                className="text-muted"
-                                dangerouslySetInnerHTML={{
-                                    __html: summary.rightNetwork?.name !== undefined ? intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK',
-                                    }, {
-                                        abbr: parts => `<abbr title="${summary.rightNetwork?.label}">${parts.join('')}</abbr>`,
-                                        name: summary.rightNetwork.name,
-                                    }) : intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
-                                    }),
-                                }}
-                            />
-                        )}
-                    </Observer>
-                    <Observer>
-                        {() => (
                             <>
+                                <div
+                                    className="text-muted"
+                                    dangerouslySetInnerHTML={{
+                                        __html: intl.formatMessage({
+                                            id: summary.rightNetwork?.name !== undefined
+                                                ? 'CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK'
+                                                : 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
+                                        }, {
+                                            abbr: parts => `<abbr title="${summary.rightNetwork?.label}">${parts.join('')}</abbr>`,
+                                            name: summary.rightNetwork?.name || '',
+                                        }),
+                                    }}
+                                />
                                 {(summary.rightNetwork?.name !== undefined && summary.rightAddress !== undefined) ? (
-                                    <>
+                                    <div>
                                         {summary.rightNetwork?.type === 'ton' && (
                                             <TonscanAccountLink
                                                 key="ton-address"
@@ -104,137 +96,56 @@ export function Summary(): JSX.Element {
                                                 copy
                                             />
                                         )}
-                                    </>
+                                    </div>
                                 ) : (
-                                    <span>–</span>
+                                    <div>–</div>
                                 )}
                             </>
                         )}
                     </Observer>
                 </li>
-
                 <Observer>
                     {() => (
                         <>
                             {(summary.isEvmToEvm && summary.everscaleAddress !== undefined) && (
                                 <li key="everscale-address">
-                                    <span className="text-muted text-nowrap">
+                                    <div className="text-muted">
                                         {intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_SUMMARY_EVERSCALE_ADDRESS',
                                         })}
-                                    </span>
-                                    <span className="text-truncate">
+                                    </div>
+                                    <div className="text-truncate">
                                         <TonscanAccountLink
                                             key="everscale-address"
                                             address={summary.everscaleAddress}
                                             copy
                                         />
-                                    </span>
+                                    </div>
                                 </li>
                             )}
                         </>
                     )}
                 </Observer>
-
                 <Observer>
                     {() => (
                         <>
                             {((summary.isEvmToTon || summary.isTonToEvm) && summary.vaultBalance !== undefined) && (
                                 <li key="vault-balance">
-                                    <span className="text-muted text-nowrap">
+                                    <div className="text-muted">
                                         {intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE',
                                         }, {
-                                            symbol: summary.token?.symbol,
+                                            symbol: summary.token?.symbol || '',
                                         })}
-                                    </span>
-                                    <span className="text-truncate">
+                                    </div>
+                                    <div className="text-truncate">
                                         {formattedAmount(
                                             summary.vaultBalance,
                                             summary.vaultDecimals,
                                             true,
                                             true,
                                         )}
-                                    </span>
-                                </li>
-                            )}
-                        </>
-                    )}
-                </Observer>
-
-                <Observer>
-                    {() => (
-                        <>
-                            {(
-                                summary.isEvmToEvm
-                                && summary.minTransferFee !== undefined
-                                && summary.maxTransferFee !== undefined
-                            ) && (
-                                <>
-                                    <li className="divider" />
-
-                                    <li className="header">
-                                        {intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_TRANSFER_FEE',
-                                        }, {
-                                            symbol: summary.token?.symbol,
-                                        })}
-                                    </li>
-
-                                    <li>
-                                        <span className="text-muted text-nowrap">
-                                            Min
-                                        </span>
-                                        <span className="text-truncate">
-                                            {formattedAmount(summary.minTransferFee, summary.token?.decimals)}
-                                        </span>
-                                    </li>
-
-                                    <li>
-                                        <span className="text-muted text-nowrap">
-                                            Max
-                                        </span>
-                                        <span className="text-truncate">
-                                            {formattedAmount(summary.maxTransferFee, summary.token?.decimals)}
-                                        </span>
-                                    </li>
-                                </>
-                            )}
-                        </>
-                    )}
-                </Observer>
-
-                <Observer>
-                    {() => (
-                        <>
-                            {summary.bridgeFee !== undefined && (
-                                <>
-                                    <li className="divider" />
-
-                                    <li className="header">
-                                        {intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_FEES',
-                                        })}
-                                    </li>
-                                </>
-                            )}
-                        </>
-                    )}
-                </Observer>
-
-                <Observer>
-                    {() => (
-                        <>
-                            {(summary.token?.symbol !== undefined && summary.bridgeFee) && (
-                                <li key="bridge-fee">
-                                    <span className="text-muted">
-                                        {intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE',
-                                        }, {
-                                            symbol: summary.token.symbol || '',
-                                        })}
-                                    </span>
-                                    <span>-</span>
+                                    </div>
                                 </li>
                             )}
                         </>
@@ -242,7 +153,6 @@ export function Summary(): JSX.Element {
                 </Observer>
 
                 <li className="divider" />
-
                 <li className="header">
                     <Observer>
                         {() => (
@@ -252,21 +162,163 @@ export function Summary(): JSX.Element {
                                         ? 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT_TOKEN'
                                         : 'CROSSCHAIN_TRANSFER_SUMMARY_AMOUNT',
                                 }, {
-                                    symbol: summary.token?.symbol,
+                                    symbol: summary.token?.symbol || '',
                                 })}
                             </>
                         )}
                     </Observer>
                 </li>
                 <li>
-                    <span className="text-lg text-truncate">
-                        <Observer>
-                            {() => (
-                                <b>{summary.amount ? formattedAmount(summary.amount) : '–'}</b>
-                            )}
-                        </Observer>
-                    </span>
+                    <Observer>
+                        {() => (
+                            <b className="text-lg text-truncate">
+                                {(summary.amount && summary.amount !== '0')
+                                    ? formattedAmount(
+                                        summary.amount,
+                                        summary.isFromTon
+                                            ? summary.token?.decimals
+                                            : summary.tokenVault?.decimals,
+                                    )
+                                    : '–'}
+                            </b>
+                        )}
+                    </Observer>
                 </li>
+
+                <Observer>
+                    {() => (
+                        <>
+                            {(
+                                summary.isEvmToEvm && (
+                                    summary.minTransferFee !== undefined
+                                    || summary.maxTransferFee !== undefined
+                                ) && summary.swapAmount === undefined
+                            ) && (
+                                <>
+                                    <li key="min-max-transfer-fees-divider" className="divider" />
+
+                                    <li key="min-max-transfer-fees-header" className="header">
+                                        {intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_TRANSFER_FEE',
+                                        }, {
+                                            symbol: summary.token?.symbol || '',
+                                        })}
+                                    </li>
+
+                                    {summary.minTransferFee !== undefined && (
+                                        <li key="min-transfer-fee">
+                                            <div className="text-muted">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_MIN_TRANSFER_FEE',
+                                                })}
+                                            </div>
+                                            <div className="text-truncate">
+                                                {formattedAmount(summary.minTransferFee, summary.token?.decimals)}
+                                            </div>
+                                        </li>
+                                    )}
+
+                                    {summary.minTransferFee !== undefined && (
+                                        <li key="max-transfer-fee">
+                                            <div className="text-muted">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_MAX_TRANSFER_FEE',
+                                                })}
+                                            </div>
+                                            <div className="text-truncate">
+                                                {formattedAmount(summary.maxTransferFee, summary.token?.decimals)}
+                                            </div>
+                                        </li>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+                </Observer>
+                <Observer>
+                    {() => (
+                        <>
+                            {(summary.token?.symbol !== undefined && (
+                                summary.bridgeFee !== undefined
+                                || summary.swapAmount !== undefined
+                            )) && (
+                                <>
+                                    <li key="fees-divider" className="divider" />
+
+                                    <li key="fees-header" className="header">
+                                        {intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_FEES',
+                                        })}
+                                    </li>
+
+                                    {summary.swapAmount !== undefined && (
+                                        <li key="transfer-fee">
+                                            <div className="text-muted">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_TRANSFER_FEE',
+                                                }, {
+                                                    symbol: summary.token.symbol || '',
+                                                })}
+                                            </div>
+                                            <div className="text-truncate">
+                                                {formattedAmount(summary.swapAmount, summary.token?.decimals)}
+                                            </div>
+                                        </li>
+                                    )}
+
+                                    {summary.bridgeFee !== undefined && (
+                                        <li key="bridge-fee">
+                                            <div className="text-muted">
+                                                {intl.formatMessage({
+                                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE',
+                                                }, {
+                                                    symbol: summary.token.symbol || '',
+                                                })}
+                                            </div>
+                                            <div>-</div>
+                                        </li>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+                </Observer>
+
+                <Observer>
+                    {() => {
+                        if (!summary.isEvmToEvm) {
+                            return null
+                        }
+
+                        return (
+                            <>
+                                <li key="receive-token-amount-divider" className="divider" />
+                                <li key="receive-token-amount-header" className="header">
+                                    {(!summary.isTransferPage || !summary.isTransferReleased)
+                                        ? intl.formatMessage({
+                                            id: summary.token?.symbol !== undefined
+                                                ? 'CROSSCHAIN_TRANSFER_SUMMARY_TO_RECEIVE_AMOUNT_TOKEN'
+                                                : 'CROSSCHAIN_TRANSFER_SUMMARY_TO_RECEIVE_AMOUNT',
+                                        }, {
+                                            symbol: summary.token?.symbol || '',
+                                        })
+                                        : intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_SUMMARY_RECEIVE_AMOUNT_TOKEN',
+                                        }, {
+                                            symbol: summary.token?.symbol || '',
+                                        })}
+                                </li>
+                                <li>
+                                    <b className="text-lg text-truncate">
+                                        {(summary.tokenAmount !== undefined && summary.tokenAmount !== '0')
+                                            ? formattedAmount(summary.tokenAmount, summary.token?.decimals)
+                                            : '–'}
+                                    </b>
+                                </li>
+                            </>
+                        )
+                    }}
+                </Observer>
             </ul>
         </div>
     )

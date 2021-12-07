@@ -75,7 +75,7 @@ export function TonsAmountFieldset(): JSX.Element {
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
-                                let isMinValueValid = isGoodBignumber(bridge.tokensAmountNumber, false)
+                                let isMinValueValid = isGoodBignumber(bridge.tokenAmountNumber, false)
 
                                 if (bridge.isInsufficientTonBalance) {
                                     isMinValueValid = validateMinValue(

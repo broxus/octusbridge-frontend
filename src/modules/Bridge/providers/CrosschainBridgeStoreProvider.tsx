@@ -41,7 +41,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
     React.useEffect(() => {
         bridge.init()
-        summary.clean()
+        summary.reset()
 
         const redirectDisposer = reaction(() => bridge.txHash, value => {
             if (value === undefined) {
@@ -57,8 +57,11 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
         const summaryDisposer = reaction(
             () => ({
-                amount: bridge.amount,
-                decimals: bridge.decimals,
+                amount: bridge.amountNumber
+                    .shiftedBy(bridge.isFromTon
+                        ? (bridge.token?.decimals || 0)
+                        : (bridge.tokenVault?.decimals || 0))
+                    .toFixed(),
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
                 maxTransferFee: bridge.maxTransferFee,
@@ -66,9 +69,12 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 rightAddress: bridge.rightAddress,
                 rightNetwork: bridge.rightNetwork,
                 token: bridge.token,
+                tokenAmount: bridge.tokenAmountNumber
+                    .shiftedBy(bridge.token?.decimals || 0)
+                    .toFixed(),
             }),
             data => {
-                summary.update(data)
+                summary.updateData(data)
             },
         )
 

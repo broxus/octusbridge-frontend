@@ -24,7 +24,7 @@ export function TokensAmountFieldset(): JSX.Element {
     }, 50)
 
     const onChange = (value: string) => {
-        bridge.changeData('tokensAmount', value)
+        bridge.changeData('tokenAmount', value)
         onChangeTokensAmount()
     }
 
@@ -49,7 +49,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                 }) : '0'}
                                 token={bridge.token}
                                 size="md"
-                                value={bridge.tokensAmount || ''}
+                                value={bridge.tokenAmount || ''}
                                 onChange={onChange}
                             />
                         )}
@@ -59,16 +59,16 @@ export function TokensAmountFieldset(): JSX.Element {
                         <Observer>
                             {() => {
                                 const isMinValueValid = (
-                                    bridge.tokensAmount
-                                    && bridge.tokensAmount.length > 0
-                                    && isGoodBignumber(bridge.tokensAmountNumber, false)
+                                    bridge.tokenAmount
+                                    && bridge.tokenAmount.length > 0
+                                    && isGoodBignumber(bridge.tokenAmountNumber, false)
                                 )
-                                    ? validateMinValue('0', bridge.tokensAmount, bridge.token?.decimals)
-                                    : isGoodBignumber(bridge.tokensAmountNumber, false)
+                                    ? validateMinValue('0', bridge.tokenAmount, bridge.token?.decimals)
+                                    : isGoodBignumber(bridge.tokenAmountNumber, false)
 
                                 const isMaxValueValid = validateMaxValue(
-                                    bridge.maxTokensAmount,
-                                    bridge.tokensAmount,
+                                    bridge.maxTokenAmount,
+                                    bridge.tokenAmount,
                                     bridge.token?.decimals,
                                 )
 
@@ -93,7 +93,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.maxTokensAmount || 0,
+                                                        bridge.maxTokenAmount || 0,
                                                         bridge.token?.decimals,
                                                     ),
                                                 })}
@@ -135,7 +135,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                         <>
                                             Max value:
                                             {' '}
-                                            {formattedAmount(bridge.maxTokensAmount || 0, bridge.token?.decimals)}
+                                            {formattedAmount(bridge.maxTokenAmount || 0, bridge.token?.decimals)}
                                         </>
                                     )}
                                 </Observer>
