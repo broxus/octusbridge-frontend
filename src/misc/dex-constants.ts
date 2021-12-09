@@ -8,6 +8,6 @@ export class DexConstants {
 
     static TONDecimals = 9
 
-    static TONSymbol = 'TON'
+    static TONSymbol = 'EVER'
 
 }

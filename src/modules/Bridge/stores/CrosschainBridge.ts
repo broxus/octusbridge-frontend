@@ -312,7 +312,7 @@ export class CrosschainBridge {
     }
 
     /**
-     * Common transfer tokens from EVM to Free TON.
+     * Common transfer tokens from EVM to Everscale.
      * @param {() => void} reject
      */
     public async transfer(reject?: () => void): Promise<void> {
@@ -365,7 +365,7 @@ export class CrosschainBridge {
     }
 
     /**
-     * Transfer from EVM to Free TON with swap tokens between selected token and TONs.
+     * Transfer from EVM to Everscale with swap tokens between selected token and TONs.
      * @param {() => void} reject
      */
     public async transferWithSwap(reject?: () => void): Promise<void> {
@@ -520,7 +520,7 @@ export class CrosschainBridge {
     }
 
     /**
-     * Prepare transfer from Free TON to EVM.
+     * Prepare transfer from Everscale to EVM.
      * @param {() => void} reject
      */
     public async prepareTonToEvm(reject?: () => void): Promise<void> {

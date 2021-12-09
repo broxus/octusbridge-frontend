@@ -23,12 +23,12 @@ export function EventsDistribution(): JSX.Element {
                     amount: '1000000000',
                     color: '#3A458C',
                     decimals: 9,
-                    name: 'TON to ETH',
+                    name: 'EVER to ETH',
                 }, {
                     amount: '2005600000',
                     color: '#AD90E9',
                     decimals: 9,
-                    name: 'ETH to TON',
+                    name: 'ETH to EVER',
                 }]}
             />
 
@@ -56,7 +56,7 @@ export function EventsDistribution(): JSX.Element {
                     link: '/',
                     cells: [
                         <Checkbox />,
-                        'TON to ETH',
+                        'EVER to ETH',
                         '949 080.00',
                         intl.formatMessage({
                             id: 'PERCENT',
@@ -68,7 +68,7 @@ export function EventsDistribution(): JSX.Element {
                     link: '/',
                     cells: [
                         <Checkbox />,
-                        'ETH to TON',
+                        'ETH to EVER',
                         '370 920.00',
                         intl.formatMessage({
                             id: 'PERCENT',

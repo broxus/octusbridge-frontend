@@ -14,7 +14,7 @@ export function EventCard(): JSX.Element {
             />
 
             <div>
-                <h3 className="event-card__title">Token transfer TON-ETH</h3>
+                <h3 className="event-card__title">Token transfer EVER-ETH</h3>
 
                 <div className="event-card__meta">
                     <TransactionExplorerLink

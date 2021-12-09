@@ -59,7 +59,7 @@ export function Events(): JSX.Element {
                         cells: [
                             <EventType
                                 leftAddress="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1"
-                                leftSymbol="TON"
+                                leftSymbol="EVER"
                                 rightAddress="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
                                 rightSymbol="ETH"
                                 type="Token transfer"
@@ -69,7 +69,7 @@ export function Events(): JSX.Element {
                             <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />,
                             <Token
                                 address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
-                                symbol="TON"
+                                symbol="EVER"
                                 size="small"
                             />,
                             <Amount
