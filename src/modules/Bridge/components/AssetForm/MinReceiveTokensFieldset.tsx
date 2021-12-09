@@ -4,7 +4,6 @@ import { Observer } from 'mobx-react-lite'
 
 import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
 
 
 export function MinReceiveTokensFieldset(): JSX.Element {
@@ -41,27 +40,6 @@ export function MinReceiveTokensFieldset(): JSX.Element {
                             />
                         )}
                     </Observer>
-
-                    {process.env.NODE_ENV !== 'production' && (
-                        <div className="crosschain-transfer__control-hint">
-                            <Observer>
-                                {() => (
-                                    <>
-                                        {intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT',
-                                        }, {
-                                            symbol: bridge.token?.symbol || '',
-                                            value: formattedAmount(
-                                                bridge.minReceiveTokens || 0,
-                                                bridge.token?.decimals,
-                                            ),
-                                        })}
-                                    </>
-                                )}
-                            </Observer>
-                        </div>
-                    )}
-
                 </div>
             </div>
         </fieldset>

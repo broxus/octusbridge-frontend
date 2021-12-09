@@ -1129,12 +1129,14 @@ export class CrosschainBridge {
             // .minus(0) // Bridge fee. 0 now
 
         if (isGoodBignumber(minReceiveTokensNumber)) {
+            // For send int transactopn
             this.changeData(
                 'minReceiveTokens',
                 minReceiveTokensNumber
                     .dp(tokenVault.decimals, BigNumber.ROUND_DOWN)
                     .toFixed(),
             )
+            // For display in field
             this.changeData(
                 'tokenAmount',
                 minReceiveTokensNumber
