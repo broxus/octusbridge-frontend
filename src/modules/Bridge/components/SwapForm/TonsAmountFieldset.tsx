@@ -59,7 +59,7 @@ export function TonsAmountFieldset(): JSX.Element {
                                 placeholder="0"
                                 suffix={(
                                     <div className="amount-field-suffix">
-                                        <Icon icon="tonWalletIcon" ratio={1.715} />
+                                        <Icon icon="everCoinIcon" ratio={1.2} />
                                         <span>{DexConstants.TONSymbol}</span>
                                     </div>
                                 )}

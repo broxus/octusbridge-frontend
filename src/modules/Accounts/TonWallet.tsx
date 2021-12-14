@@ -40,7 +40,7 @@ export function TonWallet(): JSX.Element | null {
                                     size="small"
                                 />
                                 <div className="wallet-icon">
-                                    <Icon icon="tonWalletIcon" />
+                                    <Icon icon="everCoinIcon" ratio={0.8} />
                                 </div>
                             </div>
                             <div className="wallet__info">
