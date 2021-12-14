@@ -1,8 +1,8 @@
 import * as React from 'react'
 
 import { AmountField } from '@/components/common/AmountField'
-import { TokenCache } from '@/stores/TokensCacheService'
 import { TokenIcon } from '@/components/common/TokenIcon'
+import { TokenCache } from '@/stores/TokensCacheService'
 
 import './index.scss'
 
@@ -10,11 +10,17 @@ import './index.scss'
 type Props = {
     decimals?: number;
     disabled?: boolean;
+    displayMaxButton?: boolean;
     isValid?: boolean;
+    maxButtonLabel?: string;
+    maxValue?: string;
     placeholder?: string;
+    readOnly?: boolean;
     suffix?: React.ReactNode;
     token?: TokenCache;
+    size?: 'sm' | 'md' | 'lg';
     value?: string;
+    onClickMax?: () => void;
     onChange?: (value: string) => void;
 }
 
@@ -23,7 +29,7 @@ export function TokenAmountField({ token, ...props }: Props): JSX.Element {
     return (
         <AmountField
             className="token-amount-field"
-            suffix={(
+            suffix={token !== undefined ? (
                 <div className="amount-field-suffix">
                     <TokenIcon
                         address={token?.root}
@@ -32,9 +38,8 @@ export function TokenAmountField({ token, ...props }: Props): JSX.Element {
                     />
                     <span>{token?.symbol}</span>
                 </div>
-            )}
+            ) : undefined}
             {...props}
-            displayMaxButton={false}
         />
     )
 }

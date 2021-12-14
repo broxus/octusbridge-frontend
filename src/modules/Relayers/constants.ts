@@ -40,3 +40,13 @@ export const RELAYER_LINK_STORE_DATA: RelayerLinkStoreData = {
 
 export const TON_PUBLIC_KEY_REGEXP = /^(0x)?[a-fA-F0-9]{64}$/
 export const ETH_ADDRESS_REGEXP = /^(0x)?[0-9a-fA-F]{40}$/
+
+export const RELAYER_EXPLORER_LOCATION = '/relayers'
+
+export const RELAYER_STATUS_NAME_INTL_ID_BY_STATUS = {
+    active: 'RELAYER_STATUS_ACTIVE',
+    disabled: 'RELAYER_STATUS_DISABLED',
+    slashed: 'RELAYER_STATUS_SLASHED',
+    terminated: 'RELAYER_STATUS_TERMINATED',
+    confirmation: 'RELAYER_STATUS_CONFIRMATION',
+}

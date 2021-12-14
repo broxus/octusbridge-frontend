@@ -45,6 +45,10 @@
         }
     }
 
+    .btn {
+        flex-shrink: 0;
+    }
+
     .btn--tertiary { color: #ffffff; }
 
     + .alert {

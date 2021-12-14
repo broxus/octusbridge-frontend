@@ -8,11 +8,11 @@ import { RedeemFormStoreData, RedeemFormStoreState } from '@/modules/Staking/typ
 import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
-import { GazToStaking } from '@/config'
+import { GasToStaking } from '@/config'
 
 export class RedeemFormStore {
 
-    public readonly tonDepositAmount = GazToStaking
+    public readonly tonDepositAmount = GasToStaking
 
     protected state: RedeemFormStoreState = REDEEM_FORM_STORE_DEFAULT_STATE
 

@@ -15,7 +15,12 @@ import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
+import TransferList from '@/pages/transfer/list'
+import MyTransferList from '@/pages/transfer/list/my'
 import StakingAccount from '@/pages/staking/account'
+import StakingSelf from '@/pages/staking/explorer/my'
+import StakingUser from '@/pages/staking/explorer/user'
+import StakingExplorer from '@/pages/staking/explorer'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
 import { useEvmWallet } from '@/stores/EvmWalletService'
@@ -45,14 +50,20 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/credit">
-                                <TransferStatus direction="evm-ton" depositType="credit" />
+                            <Route exact path="/transfers">
+                                <TransferList />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Da-f0-9]{64})/:depositType?">
-                                <TransferStatus direction="evm-ton" depositType="default" />
+                            <Route path="/transfers/my">
+                                <MyTransferList />
                             </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Da-f0-9]{64})">
-                                <TransferStatus direction="ton-evm" />
+                            <Route path="/transfers/:userAddress(0:[A-Fa-f0-9]{64})">
+                                <TransferList />
+                            </Route>
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
+                                <TransferStatus />
+                            </Route>
+                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
+                                <TransferStatus />
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />
@@ -62,6 +73,15 @@ export function App(): JSX.Element {
                             </Route>
                             <Route exact path="/staking/redeem">
                                 <StakingAccount />
+                            </Route>
+                            <Route exact path="/staking/explorer">
+                                <StakingExplorer />
+                            </Route>
+                            <Route exact path="/staking/explorer/my">
+                                <StakingSelf />
+                            </Route>
+                            <Route exact path="/staking/explorer/:userAddress(0:[A-Fa-f0-9]{64})">
+                                <StakingUser />
                             </Route>
                             <Route exact path="/relayers/create">
                                 <RelayersStatus />

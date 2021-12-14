@@ -1,0 +1,7 @@
+.stakeholders-table {
+    letter-spacing: 0.75px;
+
+    &.list {
+        --list-grid-template: minmax(200px, 20%) minmax(70px, 10%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 20%) minmax(150px, 10%);
+    }
+}

@@ -3,8 +3,9 @@ import { action, makeAutoObservable, runInAction } from 'mobx'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 
-import { findNetwork } from '@/modules/Bridge/utils'
-import { error, throwException } from '@/utils'
+import {
+    error, findNetwork, log, throwException,
+} from '@/utils'
 
 
 export type WalletData = {
@@ -173,6 +174,15 @@ export class EvmWalletService {
         return this.state.isInitializing
     }
 
+    public get isReady(): boolean {
+        return (
+            !this.isInitializing
+            && !this.isConnecting
+            && this.isInitialized
+            && this.isConnected
+        )
+    }
+
     public get chainId(): string {
         return this.data.chainId
     }
@@ -195,6 +205,7 @@ export class EvmWalletService {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
             })
+            await this.syncBalance()
             await this.syncChainId()
         }
         catch (e: any) {
@@ -234,40 +245,50 @@ export class EvmWalletService {
     }
 
     public async syncAccountData(): Promise<void> {
-        if (this.#web3 !== undefined) {
-            this.state.isConnecting = this.state.isConnecting === undefined
+        if (this.#web3 === undefined) {
+            return
+        }
 
-            try {
-                const [address] = await this.#web3.eth.getAccounts()
-                runInAction(() => {
-                    this.data.address = address
-                    this.state.isConnecting = false
-                    this.state.isConnected = address !== undefined
-                })
-            }
-            catch (e) {
-                error(e)
-                runInAction(() => {
-                    this.data.address = undefined
-                    this.state.isConnecting = false
-                    this.state.isConnected = false
-                })
-            }
+        this.state.isConnecting = this.state.isConnecting === undefined
 
-            try {
-                if (this.address !== undefined) {
-                    const balance = await this.#web3?.eth.getBalance(this.address)
-                    runInAction(() => {
-                        this.data.balance = balance
-                    })
-                }
-            }
-            catch (e) {
-                error(e)
+        try {
+            const [address] = await this.#web3.eth.getAccounts()
+            runInAction(() => {
+                this.data.address = address
+                this.state.isConnecting = false
+                this.state.isConnected = address !== undefined
+            })
+            log(`Sync EVM address: ${address}`)
+        }
+        catch (e) {
+            error('Sync EVM account data error', e)
+            runInAction(() => {
+                this.data.address = undefined
+                this.state.isConnecting = false
+                this.state.isConnected = false
+            })
+        }
+    }
+
+    public async syncBalance(): Promise<void> {
+        if (this.#web3 === undefined) {
+            return
+        }
+
+        try {
+            if (this.address !== undefined) {
+                const balance = await this.#web3.eth.getBalance(this.address)
                 runInAction(() => {
-                    this.data.balance = '0'
+                    this.data.balance = balance
                 })
+                log(`Sync EVM balance: ${balance}`)
             }
+        }
+        catch (e) {
+            error('Sync EVM balance error', e)
+            runInAction(() => {
+                this.data.balance = '0'
+            })
         }
     }
 
@@ -283,10 +304,11 @@ export class EvmWalletService {
                 runInAction(() => {
                     this.data.chainId = chainId.toString()
                 })
+                log(`Sync EVM Chain ID: ${chainId.toString()}`)
             }
         }
         catch (e) {
-            error('Chain ID request error', e)
+            error('Sync Chain ID error', e)
         }
     }
 
@@ -316,6 +338,7 @@ export class EvmWalletService {
         try {
             await this.syncChainId()
             await this.syncAccountData()
+            await this.syncBalance()
 
             runInAction(() => {
                 this.state.isInitialized = this.cachedProvider === 'injected'
@@ -345,8 +368,8 @@ export class EvmWalletService {
 
         setInterval(async () => {
             await this.syncChainId()
-            await this.syncAccountData()
-        }, 10000)
+            await this.syncBalance()
+        }, 20000)
     }
 
     protected get cachedProvider(): string | undefined {

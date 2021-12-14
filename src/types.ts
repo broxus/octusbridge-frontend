@@ -1,3 +1,5 @@
+export type NetworkType = 'evm' | 'ton'
+
 export type NetworkShape = {
     chainId: string;
     currencySymbol: string;
@@ -8,5 +10,10 @@ export type NetworkShape = {
     rpcUrl: string;
     tokenType?: string;
     transactionType?: string;
-    type: string;
+    type: NetworkType;
+}
+
+export type LabeledNetwork = {
+    label: string;
+    value: string;
 }

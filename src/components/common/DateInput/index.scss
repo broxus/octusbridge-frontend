@@ -1,0 +1,36 @@
+@import '@/styles/_mix';
+
+.date-input {
+    width: 100%;
+
+    &__head {
+        align-items: center;
+        display: flex;
+        font-weight: bold;
+        justify-content: space-between;
+    }
+
+    &__nav {
+        @include btn-reset;
+
+        align-items: center;
+        color: rgba(255, 255, 255, 0.48);
+        display: flex;
+        justify-content: center;
+        min-height: 36px;
+        min-width: 36px;
+        padding: 0;
+
+        &:hover:not(:disabled),
+        &:focus:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.2;
+            outline: none;
+        }
+    }
+}

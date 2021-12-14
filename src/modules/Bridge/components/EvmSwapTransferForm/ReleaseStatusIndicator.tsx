@@ -1,57 +1,29 @@
 import * as React from 'react'
-import { Observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
 import { useEvmSwapTransfer } from '@/modules/Bridge/providers'
+import { getTonMainNetwork } from '@/utils'
 
 
-export function ReleaseStatusIndicator(): JSX.Element {
+function ReleaseStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmSwapTransfer()
 
+    const status = transfer.eventState?.status || 'disabled'
+
     return (
-        <div className="crosschain-transfer__status">
-            <div className="crosschain-transfer__status-indicator">
-                <Observer>
-                    {() => (
-                        <StatusIndicator
-                            status={transfer.eventState?.status || 'disabled'}
-                        >
-                            {(() => {
-                                switch (transfer.eventState?.status) {
-                                    case 'confirmed':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CONFIRMED',
-                                        })
-
-                                    case 'pending':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
-                                        })
-
-                                    case 'rejected':
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_REJECTED',
-                                        })
-
-                                    default:
-                                        return intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_DISABLED',
-                                        })
-                                }
-                            })()}
-                        </StatusIndicator>
-                    )}
-                </Observer>
-            </div>
-            <div className="crosschain-transfer__status-control">
-                <div className="crosschain-transfer__status-note">
-                    {intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
-                    })}
-                </div>
-            </div>
-        </div>
+        <ReleaseStatus
+            isReleased={status === 'pending'}
+            note={intl.formatMessage({
+                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
+            }, {
+                network: getTonMainNetwork()?.label || '',
+            })}
+            status={status}
+        />
     )
 }
+
+export const ReleaseStatusIndicator = observer(ReleaseStatusIndicatorInner)

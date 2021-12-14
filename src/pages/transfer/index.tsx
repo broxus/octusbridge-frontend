@@ -1,8 +1,11 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { useParams } from 'react-router-dom'
 
 import {
+    EvmHiddenSwapTransferStoreProvider,
     EvmSwapTransferStoreProvider,
+    EvmToEvmHiddenSwapStatus,
     EvmToTonStatus,
     EvmToTonSwapStatus,
     EvmTransferStoreProvider,
@@ -12,18 +15,14 @@ import {
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
 import { useTokensCache } from '@/stores/TokensCacheService'
+import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 
 
-type Props = {
-    depositType?: 'default' | 'credit';
-    direction?: 'ton-evm' | 'evm-ton' | 'evm-evm';
-}
-
-
-export default function Page({ depositType, direction }: Props): JSX.Element | null {
+export default function Page(): JSX.Element | null {
     const intl = useIntl()
+    const params = useParams<EvmTransferQueryParams>()
 
-    switch (direction) {
+    switch (`${params.fromType}-${params.toType}`) {
         case 'evm-ton':
             return (
                 <div className="container container--large">
@@ -35,7 +34,7 @@ export default function Page({ depositType, direction }: Props): JSX.Element | n
                         </h1>
                     </header>
 
-                    {depositType === 'credit' ? (
+                    {params.depositType === 'credit' ? (
                         <EvmSwapTransferStoreProvider
                             evmWallet={useEvmWallet()}
                             tonWallet={useTonWallet()}
@@ -52,6 +51,27 @@ export default function Page({ depositType, direction }: Props): JSX.Element | n
                             <EvmToTonStatus />
                         </EvmTransferStoreProvider>
                     )}
+                </div>
+            )
+
+        case 'evm-evm':
+            return (
+                <div className="container container--large">
+                    <header className="page-header">
+                        <h1 className="page-title">
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_HEADER_TITLE',
+                            })}
+                        </h1>
+                    </header>
+
+                    <EvmHiddenSwapTransferStoreProvider
+                        evmWallet={useEvmWallet()}
+                        tonWallet={useTonWallet()}
+                        tokensCache={useTokensCache()}
+                    >
+                        <EvmToEvmHiddenSwapStatus />
+                    </EvmHiddenSwapTransferStoreProvider>
                 </div>
             )
 
@@ -76,7 +96,6 @@ export default function Page({ depositType, direction }: Props): JSX.Element | n
                 </div>
             )
 
-        case 'evm-evm':
         default:
             return null
     }

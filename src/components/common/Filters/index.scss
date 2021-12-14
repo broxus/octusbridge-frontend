@@ -1,0 +1,80 @@
+.filters {
+    align-items: center;
+    column-gap: 16px;
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    max-width: 550px;
+
+    &__query {
+        flex-grow: 1;
+    }
+
+    &__filter {
+        position: relative;
+    }
+
+    &__counter {
+        background: #c5e4f3;
+        border-radius: 20px;
+        color: #050b2e;
+        display: inline-block;
+        font-size: 12px;
+        line-height: 20px;
+        margin: 0 0 0 10px;
+        min-width: 20px;
+        padding: 0 5px;
+        text-align: center;
+    }
+}
+
+.filters-popup {
+    background: #313551;
+    box-shadow: 0 8px 16px rgba(43, 51, 56, 0.08);
+    margin-top: 8px;
+    padding: 20px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    width: 320px;
+    z-index: 4;
+
+    @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+        backdrop-filter: blur(80px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    &__actions {
+        align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        column-gap: 10px;
+        display: flex;
+        justify-content: flex-end;
+        margin: 20px 0 0;
+        padding: 20px 0 0;
+    }
+}
+
+.filters-field {
+    margin: 0 0 16px;
+
+    &__title {
+        font-size: 14px;
+        letter-spacing: 0.6px;
+        line-height: 20px;
+        margin: 0 0 4px;
+    }
+
+    &__inputs {
+        align-items: center;
+        column-gap: 10px;
+        display: flex;
+    }
+}
+
+.filters-radio-input {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    row-gap: 12px;
+}

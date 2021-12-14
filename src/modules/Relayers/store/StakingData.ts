@@ -319,7 +319,9 @@ export class StakingDataStore {
     }
 
     public get isLoading(): boolean {
-        return this.state.isLoading || this.tonWallet.isConnecting || this.tonWallet.isInitializing
+        return this.state.isLoading
+            || this.tonWallet.isConnecting
+            || this.tonWallet.isInitializing
     }
 
     public get isLoaded(): boolean {
@@ -327,7 +329,9 @@ export class StakingDataStore {
     }
 
     public get isConnected(): boolean {
-        return this.tonWallet.isInitialized && this.tokensCache.isInitialized && this.tonWallet.isConnected
+        return this.tonWallet.isInitialized
+            && this.tokensCache.isInitialized
+            && this.tonWallet.isConnected
     }
 
     public get stakingToken(): TokenCache | undefined {
@@ -335,7 +339,9 @@ export class StakingDataStore {
             return undefined
         }
 
-        return this.tokensCache.get(this.data.stackingDetails?.tokenRoot.toString())
+        return this.tokensCache.get(
+            this.data.stackingDetails?.tokenRoot.toString(),
+        )
     }
 
     public get stakingTokenSymbol(): string | undefined {
@@ -368,7 +374,6 @@ export class StakingDataStore {
         if (!tonPubkeyNum || tonPubkeyNum === '0') {
             return undefined
         }
-
 
         const tonPubkey = new BigNumber(tonPubkeyNum).toString(16).padStart(64, '0')
 

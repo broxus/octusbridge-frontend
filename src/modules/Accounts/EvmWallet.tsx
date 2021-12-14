@@ -5,9 +5,8 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { findNetwork } from '@/modules/Bridge/utils'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { formattedAmount, sliceAddress } from '@/utils'
+import { findNetwork, formattedAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
@@ -44,7 +43,7 @@ export function EvmWallet(): JSX.Element | null {
                                         />
                                     )}
                                     <div className="wallet-icon">
-                                        <Icon icon="ethWalletIcon" />
+                                        <Icon icon="ethWalletIcon" ratio={0.8} />
                                     </div>
                                 </div>
                                 <div className="wallet__info">

@@ -11,7 +11,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-1',
         label: 'Ethereum',
         name: 'Ethereum Mainnet',
-        rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161/',
+        rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
         transactionType: '0x2',
         type: 'evm',
     },
@@ -53,14 +53,14 @@ export const networks: NetworkShape[] = [
         currencySymbol: 'TON',
         explorerBaseUrl: 'https://tonscan.io/',
         id: 'ton-1',
-        label: 'Free TON',
-        name: 'Free TON',
+        label: 'Everscale',
+        name: 'Everscale',
         rpcUrl: '',
         type: 'ton',
     },
 ]
 
-export const CreditBody = '5000000000'
+export const CreditBody = '5800000000'
 
 export const EmptyWalletMinTonsAmount = '10000000000'
 
@@ -72,17 +72,23 @@ export const DepositToFactoryMinSlippageNumerator = '1'
 
 export const DepositToFactoryMinSlippageDenominator = '100'
 
-export const GazToStaking = '11500000000'
+export const GasToStaking = '11500000000'
+
+export const HiddenBridgeStrategyGas = '2500000000'
+
+export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92ce088cbb68659d3d8a2aa1bc546899d42abf46cc16132cd591')
 
 export const RelayEvmNetworkChainId = '1'
 
-export const StakingAccountAddress = '0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075'
+export const StakingAccountAddress = new AddressLiteral('0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075')
 
 export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+
+export const IndexerApiBaseUrl = 'https://bridge-indexer-test.broxus.com/v1'
 
 
 // export const networks: NetworkShape[] = [
@@ -111,8 +117,8 @@ export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa44
 //         currencySymbol: 'TON',
 //         explorerBaseUrl: 'https://tonscan.io/',
 //         id: 'ton-1',
-//         label: 'Free TON',
-//         name: 'Free TON',
+//         label: 'Everscale',
+//         name: 'Everscale',
 //         rpcUrl: '',
 //         type: 'ton',
 //     },
@@ -126,7 +132,7 @@ export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa44
 //
 // export const DepositToFactoryMinSlippage = 5
 //
-// export const GazToStaking = '55000000000'
+// export const GasToStaking = '55000000000'
 //
 // export const RelayEvmNetworkChainId = '5'
 //

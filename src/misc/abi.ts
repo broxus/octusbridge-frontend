@@ -4113,7 +4113,7 @@ export class TokenAbi {
         ],
     } as const
 
-    static CreditTokenTransferEthereumEvent = {
+    static HiddenBridgeStrategyFactory = {
         'ABI version': 2,
         version: '2.1',
         header: ['pubkey', 'time', 'expire'],
@@ -4121,8 +4121,81 @@ export class TokenAbi {
             {
                 name: 'constructor',
                 inputs: [
-                    { name: '_initializer', type: 'address' },
-                    { name: '_meta', type: 'cell' },
+                    { name: 'code', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'deployStrategy',
+                inputs: [
+                    { name: 'tokenRoot', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'buildLayer3',
+                inputs: [
+                    { name: 'id', type: 'uint32' },
+                    { name: 'proxy', type: 'address' },
+                    { name: 'evmAddress', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'cell' },
+                ],
+            },
+            {
+                name: 'getStrategyAddress',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'tokenRoot', type: 'address' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: '_randomNonce',
+                inputs: [
+                ],
+                outputs: [
+                    { name: '_randomNonce', type: 'uint256' },
+                ],
+            },
+            {
+                name: 'strategyCode',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'strategyCode', type: 'cell' },
+                ],
+            },
+        ],
+        data: [
+            { key: 1, name: '_randomNonce', type: 'uint256' },
+        ],
+        events: [
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: '_randomNonce', type: 'uint256' },
+            { name: 'strategyCode', type: 'cell' },
+        ],
+    } as const
+
+    static HiddenBridgeStrategy = {
+        'ABI version': 2,
+        version: '2.1',
+        header: ['pubkey', 'time', 'expire'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                    { name: 'deployer_', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -4133,232 +4206,94 @@ export class TokenAbi {
                     { name: 'answerId', type: 'uint32' },
                 ],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: '_eventInitData', type: 'tuple' },
-                    { name: '_status', type: 'uint8' },
-                    { name: '_confirms', type: 'uint256[]' },
-                    { name: '_rejects', type: 'uint256[]' },
-                    { name: 'empty', type: 'uint256[]' },
-                    { name: 'balance', type: 'uint128' },
-                    { name: '_initializer', type: 'address' },
-                    { name: '_meta', type: 'cell' },
-                    { name: '_requiredVotes', type: 'uint32' },
+                    { name: 'factory_', type: 'address' },
+                    { name: 'tokenRoot_', type: 'address' },
+                    { name: 'tokenWallet_', type: 'address' },
                 ],
             },
             {
-                name: 'getDecodedData',
+                name: 'onTokenWallet',
                 inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { components: [{ name: 'amount', type: 'uint128' }, { name: 'user', type: 'address' }, { name: 'creditor', type: 'address' }, { name: 'recipient', type: 'address' }, { name: 'tokenAmount', type: 'uint128' }, { name: 'tonAmount', type: 'uint128' }, { name: 'swapType', type: 'uint8' }, { components: [{ name: 'numerator', type: 'uint128' }, { name: 'denominator', type: 'uint128' }], name: 'slippage', type: 'tuple' }, { name: 'layer3', type: 'cell' }], name: 'value0', type: 'tuple' },
-                ],
-            },
-            {
-                name: 'getEventInitData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'value0', type: 'tuple' },
-                ],
-            },
-            {
-                name: 'confirm',
-                inputs: [
+                    { name: 'wallet', type: 'address' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'reject',
+                name: 'tokensReceivedCallback',
                 inputs: [
+                    { name: 'tokenWallet_', type: 'address' },
+                    { name: 'tokenRoot_', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'senderPublicKey', type: 'uint256' },
+                    { name: 'senderAddress', type: 'address' },
+                    { name: 'senderWallet', type: 'address' },
+                    { name: 'originalGasTo', type: 'address' },
+                    { name: 'value7', type: 'uint128' },
+                    { name: 'payload', type: 'cell' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'receiveRoundAddress',
+                name: 'buildLayer3',
                 inputs: [
-                    { name: 'roundContract', type: 'address' },
-                    { name: 'roundNum', type: 'uint32' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'receiveRoundRelays',
-                inputs: [
-                    { name: 'keys', type: 'uint256[]' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'getVoters',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                    { name: 'vote', type: 'uint8' },
-                ],
-                outputs: [
-                    { name: 'voters', type: 'uint256[]' },
-                ],
-            },
-            {
-                name: 'getVote',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                    { name: 'voter', type: 'uint256' },
-                ],
-                outputs: [
-                    { name: 'vote', type: 'optional(uint8)' },
-                ],
-            },
-            {
-                name: 'encodeEthereumEventData',
-                inputs: [
-                    { name: 'tokens', type: 'uint256' },
-                    { name: 'wid', type: 'int128' },
-                    { name: 'owner_addr', type: 'uint256' },
-                ],
-                outputs: [
-                    { name: 'data', type: 'cell' },
-                ],
-            },
-            {
-                name: 'decodeEthereumEventData',
-                inputs: [
-                    { name: 'data', type: 'cell' },
-                ],
-                outputs: [
-                    { name: 'tokens', type: 'uint128' },
-                    { name: 'wid', type: 'int8' },
-                    { name: 'owner_addr', type: 'uint256' },
-                ],
-            },
-            {
-                name: 'encodeTonEventData',
-                inputs: [
-                    { name: 'wid', type: 'int8' },
-                    { name: 'addr', type: 'uint256' },
-                    { name: 'tokens', type: 'uint128' },
-                    { name: 'ethereum_address', type: 'uint160' },
+                    { name: 'id', type: 'uint32' },
+                    { name: 'proxy', type: 'address' },
+                    { name: 'evmAddress', type: 'uint160' },
                     { name: 'chainId', type: 'uint32' },
                 ],
                 outputs: [
-                    { name: 'data', type: 'cell' },
+                    { name: 'value0', type: 'cell' },
                 ],
             },
             {
-                name: 'decodeTonEventData',
+                name: 'onReceiveTONsFromBridgeCallback',
                 inputs: [
-                    { name: 'data', type: 'cell' },
+                    { components: [{ name: 'amount', type: 'uint128' }, { name: 'user', type: 'address' }, { name: 'creditor', type: 'address' }, { name: 'recipient', type: 'address' }, { name: 'tokenAmount', type: 'uint128' }, { name: 'tonAmount', type: 'uint128' }, { name: 'swapType', type: 'uint8' }, { components: [{ name: 'numerator', type: 'uint128' }, { name: 'denominator', type: 'uint128' }], name: 'slippage', type: 'tuple' }, { name: 'layer3', type: 'cell' }], name: 'decodedEventData', type: 'tuple' },
                 ],
                 outputs: [
-                    { name: 'wid', type: 'int8' },
-                    { name: 'addr', type: 'uint256' },
-                    { name: 'tokens', type: 'uint128' },
-                    { name: 'ethereum_address', type: 'uint160' },
-                    { name: 'chainId', type: 'uint32' },
                 ],
             },
             {
-                name: 'status',
+                name: 'factory',
                 inputs: [
                 ],
                 outputs: [
-                    { name: 'status', type: 'uint8' },
+                    { name: 'factory', type: 'address' },
                 ],
             },
             {
-                name: 'votes',
+                name: 'tokenRoot',
                 inputs: [
                 ],
                 outputs: [
-                    { name: 'votes', type: 'map(uint256,uint8)' },
+                    { name: 'tokenRoot', type: 'address' },
                 ],
             },
             {
-                name: 'initializer',
+                name: 'tokenWallet',
                 inputs: [
                 ],
                 outputs: [
-                    { name: 'initializer', type: 'address' },
-                ],
-            },
-            {
-                name: 'meta',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'meta', type: 'cell' },
-                ],
-            },
-            {
-                name: 'requiredVotes',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'requiredVotes', type: 'uint32' },
-                ],
-            },
-            {
-                name: 'confirms',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'confirms', type: 'uint16' },
-                ],
-            },
-            {
-                name: 'rejects',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'rejects', type: 'uint16' },
-                ],
-            },
-            {
-                name: 'relay_round',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'relay_round', type: 'address' },
-                ],
-            },
-            {
-                name: 'round_number',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'round_number', type: 'uint32' },
+                    { name: 'tokenWallet', type: 'address' },
                 ],
             },
         ],
         data: [
-            {
-                components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], key: 1, name: 'eventInitData', type: 'tuple',
-            },
+            { key: 1, name: 'factory', type: 'address' },
+            { key: 2, name: 'tokenRoot', type: 'address' },
         ],
         events: [
             {
-                name: 'Confirm',
+                name: 'BurnTokens',
                 inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'Closed',
-                inputs: [
+                    { name: 'id', type: 'uint32' },
+                    { name: 'user', type: 'address' },
+                    { name: 'processor', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'evmAddress', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
                 ],
                 outputs: [
                 ],
@@ -4366,17 +4301,12 @@ export class TokenAbi {
         ],
         fields: [
             { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
             { name: '_constructorFlag', type: 'bool' },
-            { name: 'status', type: 'uint8' },
-            { name: 'votes', type: 'map(uint256,uint8)' },
-            { name: 'initializer', type: 'address' },
-            { name: 'meta', type: 'cell' },
-            { name: 'requiredVotes', type: 'uint32' },
-            { name: 'confirms', type: 'uint16' },
-            { name: 'rejects', type: 'uint16' },
-            { name: 'relay_round', type: 'address' },
-            { name: 'round_number', type: 'uint32' },
-            { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData', type: 'tuple' },
+            { name: 'factory', type: 'address' },
+            { name: 'tokenRoot', type: 'address' },
+            { name: 'tokenWallet', type: 'address' },
+            { name: 'deployer', type: 'address' },
         ],
     } as const
 

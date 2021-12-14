@@ -1,0 +1,39 @@
+.chart-layout {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    &__head {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 24px;
+    }
+
+    &__chart {
+        flex: 1;
+        min-height: 310px;
+
+        .chart {
+            min-height: 320px;
+        }
+    }
+
+    &__spinner {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+        left: 0;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        transition: opacity 0.2s ease;
+        width: 100%;
+
+        &_visible {
+            opacity: 1;
+        }
+    }
+}

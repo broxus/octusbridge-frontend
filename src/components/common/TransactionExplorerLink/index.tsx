@@ -12,6 +12,7 @@ type Props = {
     className?: string;
     id: string;
     copy?: boolean;
+    withIcon?: boolean;
 }
 
 export function TransactionExplorerLink({
@@ -19,24 +20,38 @@ export function TransactionExplorerLink({
     className,
     copy,
     id,
+    withIcon,
 }: Props): JSX.Element {
     const intl = useIntl()
+    const href = `https://ton-explorer.com/transactions/${id}`
+    const title = intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })
 
     return (
         <span className={classNames('explorer-link', className)}>
             <a
                 className={className}
-                href={`https://ton-explorer.com/transactions/${id}`}
-                title={intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })}
+                href={href}
+                title={title}
                 target="_blank"
                 rel="noopener noreferrer"
             >
                 {children || sliceAddress(id)}
             </a>
             {copy && (
-                <Copy text={id} id={`copy-${id}`}>
+                <Copy text={id} id={`copy-${id}`} className="text-muted">
                     <Icon icon="copy" />
                 </Copy>
+            )}
+            {withIcon && (
+                <a
+                    href={href}
+                    title={title}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted"
+                >
+                    <Icon icon="externalLink" ratio={0.7} />
+                </a>
             )}
         </span>
     )

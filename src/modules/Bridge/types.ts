@@ -1,5 +1,4 @@
-import { Address, DecodedAbiFunctionInputs } from 'ton-inpage-provider'
-import { LogItem } from 'abi-decoder'
+import { Address, DecodedAbiFunctionInputs, FullContractState } from 'ton-inpage-provider'
 
 import { TokenAbi } from '@/misc'
 import { TokenCache } from '@/stores/TokensCacheService'
@@ -17,21 +16,25 @@ export enum CrosschainBridgeStep {
 
 export type CrosschainBridgeStoreData = {
     amount: string;
+    bridgeFee?: string;
+    creditFactoryFee?: string;
     depositType: 'default' | 'credit';
-    fee?: string;
     leftAddress: string;
     leftNetwork?: NetworkShape;
     minAmount?: string;
-    maxTokensAmount?: string;
+    maxTokenAmount?: string;
     maxTonsAmount?: string;
-    minTonsAmount?: string;
+    maxTransferFee?: string;
     minReceiveTokens?: string;
+    minTonsAmount?: string;
+    minTransferFee?: string;
     pairAddress?: Address;
+    pairState?: FullContractState;
     rightAddress: string;
     rightNetwork?: NetworkShape;
     selectedToken?: string;
     swapType: '0' | '1';
-    tokensAmount?: string;
+    tokenAmount?: string;
     tonsAmount?: string;
     txHash?: string;
 }
@@ -72,14 +75,12 @@ export type EvmTransferQueryParams = {
 
 export type EvmTransferStoreData = {
     amount: string;
-    creditProcessorAddress?: Address;
     deriveEventAddress?: Address;
     ethConfigAddress?: Address;
     eventVoteData?: EventVoteData;
     leftAddress?: string;
-    log?: LogItem;
     rightAddress?: string;
-    token: TokenCache | undefined;
+    token?: TokenCache;
 }
 
 export type EvmTransferStoreState = {
@@ -101,6 +102,10 @@ export type EvmTransferStoreState = {
         eventBlocksToConfirm: number;
         status: TransferStateStatus;
     };
+}
+
+export type EvmSwapTransferStoreData = EvmTransferStoreData & {
+    creditProcessorAddress?: Address;
 }
 
 export type EvmSwapTransferStoreState = {
@@ -130,6 +135,26 @@ export type EvmSwapTransferStoreState = {
     };
 }
 
+export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
+    contractAddress?: Address;
+    creditFactoryFee?: string;
+    encodedEvent?: string;
+    everscaleAddress?: string;
+    maxTransferFee?: string;
+    minTransferFee?: string;
+    pairAddress?: Address;
+    pairState?: FullContractState;
+    swapAmount?: string;
+    tokenAmount?: string;
+    withdrawalId?: string;
+}
+
+export type EvmHiddenSwapTransferStoreState = EvmSwapTransferStoreState & {
+    secondEventState?: TonTransferStoreState['eventState'];
+    secondPrepareState?: TonTransferStoreState['prepareState'];
+    releaseState?: TonTransferStoreState['releaseState'];
+}
+
 export type TonTransferQueryParams = {
     contractAddress: string;
     fromId: string;
@@ -144,18 +169,18 @@ export type TonTransferStoreData = {
     encodedEvent?: string;
     leftAddress?: string;
     rightAddress?: string;
-    token: TokenCache | undefined;
+    token?: TokenCache;
     withdrawalId?: string;
 }
 
 export type TonTransferStoreState = {
-    isContractDeployed: boolean;
     eventState?: {
         confirmations: number;
         errorMessage?: string;
         requiredConfirmations: number;
         status: EventStateStatus;
     };
+    isContractDeployed: boolean;
     prepareState?: {
         errorMessage?: string;
         status: PrepareStateStatus;
@@ -169,13 +194,23 @@ export type TonTransferStoreState = {
 
 export type TransferSummaryData = {
     amount?: string;
-    decimals?: number;
-    fee?: string;
+    bridgeFee?: string;
+    depositType?: string;
+    everscaleAddress?: string;
+    minTransferFee?: string;
+    maxTransferFee?: string;
     leftAddress?: string;
     leftNetwork?: NetworkShape;
     rightAddress?: string;
     rightNetwork?: NetworkShape;
+    swapAmount?: string;
     token?: TokenCache;
+    tokenAmount?: string;
+}
+
+export type TransferSummaryState = {
+    isTransferPage?: boolean;
+    isTransferReleased?: boolean;
 }
 
 export enum CreditProcessorState {
@@ -196,4 +231,44 @@ export enum CreditProcessorState {
     Cancelled,
 }
 
+export enum BurnCallbackOrdering {
+    AMOUNT_EXEC_ASCENDING = 'amountexecascending',
+    AMOUNT_EXEC_DESCENDING = 'amountexecdescending',
+    CREATED_AT_ASCENDING = 'createdatascending',
+    CREATED_AT_DESCENDING = 'createdatdescending',
+}
 
+export type SearchBurnCallbackInfoRequest = {
+    amountGe?: string;
+    amountLe?: string;
+    callId?: number;
+    chainId?: number;
+    createdAtGe?: number;
+    createdAtLe?: number;
+    creditProcessorAddress?: string;
+    ethUserAddress?: string;
+    limit: number;
+    offset: number;
+    ordering?: BurnCallbackOrdering;
+    proxyAddress?: string;
+    tonEventUserAddress?: string;
+}
+
+export type BurnCallbackInfoResponse = {
+    amount: string;
+    burnCallbackTimestampLt: number;
+    callId: number;
+    chainId: number;
+    createdAt: number;
+    creditProcessorAddress?: string;
+    ethUserAddress: string;
+    proxyAddress: string;
+    tonEventContractAddress?: string;
+    tonTransactionHash?: string;
+    userAddress?: string;
+}
+
+export type BurnCallbackTableResponse = {
+    totalCount: number;
+    transfers: BurnCallbackInfoResponse[];
+}

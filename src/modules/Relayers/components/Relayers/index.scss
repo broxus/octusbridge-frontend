@@ -1,0 +1,24 @@
+.relayers-status {
+    &_success {
+        color: #4ab44a;
+    }
+
+    &_fail {
+        color: #eb4361;
+    }
+}
+
+.relayers-rounds {
+    &__percent {
+        color: rgba(255, 255, 255, 0.48);
+        font-size: 12px;
+        line-height: 16px;
+        margin: 2px 0 0;
+    }
+}
+
+.relayers-table {
+    &.list {
+        --list-grid-template: 30px minmax(150px, 10%) minmax(150px, 50%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%);
+    }
+}

@@ -4,6 +4,7 @@ import { Observer } from 'mobx-react-lite'
 import {
     ApproveStep,
     AssetStep,
+    EvmHiddenSwapTransferStep,
     EvmSwapTransferStep,
     EvmTransferStep,
     RouteStep,
@@ -38,6 +39,14 @@ export function Bridge(): JSX.Element {
                                         return bridge.isSwapEnabled
                                             ? <EvmSwapTransferStep key="evm-swap-transfer" />
                                             : <EvmTransferStep key="evm-transfer" />
+                                    }
+
+                                    if (bridge.isEvmToEvm) {
+                                        return (
+                                            <EvmHiddenSwapTransferStep
+                                                key="evm-hidden-swap-transfer"
+                                            />
+                                        )
                                     }
 
                                     if (bridge.isTonToEvm) {

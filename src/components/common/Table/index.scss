@@ -1,0 +1,47 @@
+@import '@/styles/_mix';
+
+.table {
+    &.list {
+        min-height: 100px;
+        position: relative;
+    }
+
+    &__empty {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+        font-size: 14px;
+        justify-content: center;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+
+        @media only screen and (max-width: 767px) {
+            padding-top: 16px;
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        position: relative;
+    }
+
+    &__loader {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+        left: 0;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        transition: opacity 0.25s ease;
+        width: 100%;
+
+        &_active {
+            opacity: 1;
+        }
+    }
+}

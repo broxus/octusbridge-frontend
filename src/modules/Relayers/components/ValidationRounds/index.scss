@@ -1,0 +1,24 @@
+@import '@/styles/_mix';
+
+.validation-rounds-view-switcher {
+    align-items: center;
+    column-gap: 8px;
+    display: flex;
+
+    &__item {
+        @include btn-reset;
+
+        align-items: center;
+        color: #c5e4f3;
+        display: flex;
+        height: 36px;
+        justify-content: center;
+        transition: background 0.2s ease;
+        width: 36px;
+
+        &_active ,
+        &:hover {
+            background: rgba(197, 228, 243, 0.08);
+        }
+    }
+}

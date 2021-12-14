@@ -18,7 +18,7 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isEvmToTon) {
+        if (bridge.isFromEvm) {
             await bridge.checkAllowance()
         }
         else {
@@ -52,7 +52,7 @@ export function AssetStep(): JSX.Element {
             <Observer>
                 {() => (
                     <>
-                        {(bridge.isFromEvm && bridge.isCreditAvailable) && (
+                        {(bridge.isEvmToTon && bridge.isCreditAvailable) && (
                             <SwapForm />
                         )}
                     </>

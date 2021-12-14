@@ -1,0 +1,29 @@
+.events-distribution {
+    display: flex;
+    flex-direction: column;
+
+    &__table {
+        &.list {
+            min-height: auto;
+
+            --list-grid-template: 44px minmax(130px, 20%) minmax(100px, 35%) minmax(80px, 45%);
+        }
+    }
+
+    &__title {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 24px;
+    }
+
+    &__chart {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+        justify-content: center;
+        margin: 0 0 24px;
+        min-height: 240px;
+    }
+}

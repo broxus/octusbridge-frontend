@@ -10,11 +10,11 @@ export function useStakingForm(
     tokensCache: TokensCacheService = useTokensCache(),
     tonWallet: TonWalletService = useTonWallet(),
 ): StakingFormStore {
-    const stakingFormRef = React.useRef(new StakingFormStore(
+    const ref = React.useRef<StakingFormStore>()
+    ref.current = ref.current || new StakingFormStore(
         accountData,
         tokensCache,
         tonWallet,
-    ))
-
-    return stakingFormRef.current
+    )
+    return ref.current
 }

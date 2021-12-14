@@ -13,31 +13,28 @@ import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
 import { EthAbi, TokenAbi } from '@/misc'
 import {
+    DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA,
+    DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE,
+} from '@/modules/Bridge/constants'
+import {
     EventVoteData,
     EvmTransferQueryParams,
     EvmTransferStoreData,
     EvmTransferStoreState,
 } from '@/modules/Bridge/types'
-import { findNetwork } from '@/modules/Bridge/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TokenAssetVault, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { NetworkShape } from '@/types'
-import { debug, error } from '@/utils'
+import { debug, error, findNetwork } from '@/utils'
 
 
+// noinspection DuplicatedCode
 export class EvmToTonTransfer {
 
-    protected data: EvmTransferStoreData = {
-        amount: '',
-        token: undefined,
-    }
+    protected data: EvmTransferStoreData
 
-    protected state: EvmTransferStoreState = {
-        transferState: undefined,
-        prepareState: undefined,
-        eventState: undefined,
-    }
+    protected state: EvmTransferStoreState
 
     protected txTransferUpdater: ReturnType<typeof setTimeout> | undefined
 
@@ -49,6 +46,9 @@ export class EvmToTonTransfer {
         protected readonly tokensCache: TokensCacheService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
+        this.data = DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA
+        this.state = DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE
+
         makeAutoObservable(this)
     }
 
@@ -163,13 +163,13 @@ export class EvmToTonTransfer {
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
             this.changeData('amount', methodCall.params[1].value)
-            this.changeData('leftAddress', tx.from)
+            this.changeData('leftAddress', tx.from.toLowerCase())
 
             const targetWid = methodCall.params[0].value[0]
             const targetAddress = methodCall.params[0].value[1]
             this.changeData(
                 'rightAddress',
-                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`,
+                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
             )
 
             this.changeState('transferState', {
@@ -462,22 +462,6 @@ export class EvmToTonTransfer {
         return this.state.transferState
     }
 
-    public get amountNumber(): BigNumber {
-        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
-            return new BigNumber(0)
-        }
-
-        if (this.tokenVault?.decimals === undefined) {
-            return new BigNumber(0)
-        }
-
-        return new BigNumber(this.amount || 0).shiftedBy(-this.tokenVault.decimals)
-    }
-
-    public get decimals(): number | undefined {
-        return this.tokenVault?.decimals
-    }
-
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
@@ -496,13 +480,6 @@ export class EvmToTonTransfer {
         return this.params?.txHash
     }
 
-    protected get tokenVault(): TokenAssetVault | undefined {
-        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
-            return undefined
-        }
-        return this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
-    }
-
     public get useEvmWallet(): EvmWalletService {
         return this.evmWallet
     }
@@ -513,6 +490,13 @@ export class EvmToTonTransfer {
 
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
+    }
+
+    protected get tokenVault(): TokenAssetVault | undefined {
+        if (this.token === undefined || this.leftNetwork?.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensCache.getTokenVault(this.token.root, this.leftNetwork.chainId)
     }
 
     #evmWalletDisposer: IReactionDisposer | undefined
