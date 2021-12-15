@@ -2,17 +2,17 @@
     margin: 0 0 16px;
 
     &__name {
-        display: flex;
         align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        line-height: 20px;
-        letter-spacing: 0.6px;
         cursor: pointer;
+        display: flex;
+        font-size: 14px;
+        justify-content: space-between;
+        letter-spacing: 0.6px;
+        line-height: 20px;
     }
 
     &__icon {
-        color: rgba(255,255,255,0.48);
+        color: rgba(255, 255, 255, 0.48);
     }
 
     &__data {

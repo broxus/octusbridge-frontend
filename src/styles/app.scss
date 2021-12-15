@@ -175,8 +175,8 @@ ul.summary {
 
     &_compact {
         li {
-            justify-content: flex-start;
             column-gap: 16px;
+            justify-content: flex-start;
         }
 
         .summary__key {

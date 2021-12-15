@@ -1,14 +1,15 @@
 import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
 import { makeAutoObservable, toJS } from 'mobx'
-import BigNumber from 'bignumber.js'
 
 import {
-    BridgeConstants, CastedVotes, StackingAbi, UserDataAbi, UserDetails,
+    BridgeConstants, CastedVotes, StackingAbi, StackingDetails, UserDataAbi, UserDetails,
 } from '@/misc'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { VotingStoreData, VotingStoreState } from '@/modules/Governance/types'
+import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { Proposal, VotingStoreData, VotingStoreState } from '@/modules/Governance/types'
+import { calcGazToUnlockVotes, handleProposalsByIds } from '@/modules/Governance/utils'
 import { error, throwException } from '@/utils'
-import { GasToCastVote, GasToUnlockCastedVote, MinGasToUnlockCastedVotes } from '@/config'
+import { GasToCastVote } from '@/config'
 
 export class VotingStore {
 
@@ -18,30 +19,72 @@ export class VotingStore {
 
     constructor(
         protected tonWallet: TonWalletService,
+        protected tokensCache: TokensCacheService,
     ) {
         makeAutoObservable(this)
     }
 
-    protected async syncUserData(): Promise<void> {
+    protected async syncToken(): Promise<void> {
+        try {
+            if (!this.data.stakingDetails?.tokenRoot) {
+                throwException('Staking details must be defined in data')
+            }
+
+            await this.tokensCache.syncTonToken(this.data.stakingDetails?.tokenRoot.toString())
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async syncCastedProposals(): Promise<void> {
+        try {
+            if (!this.castedVotes) {
+                throwException('Casted votes must be defined in data')
+            }
+
+            const proposalIds = this.castedVotes.map(([id]) => parseInt(id, 10))
+            const proposals = await handleProposalsByIds(proposalIds)
+
+            this.setProposals(proposals)
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async syncStakingData(): Promise<void> {
         try {
             if (!this.tonWallet.address) {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 
-            const { value0: userDataAddress } = await stackingContract.methods.getUserDataAddress({
+            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: new Address(this.tonWallet.address),
             }).call()
 
             const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
 
-            const { value0: userDetails } = await userDataContract.methods.getDetails({ answerId: 0 }).call()
+            const { value0: userDetails } = await userDataContract.methods.getDetails({
+                answerId: 0,
+            }).call()
 
-            const { casted_votes: castedVotes } = await userDataContract.methods.casted_votes({}).call()
+            const { casted_votes: castedVotes } = await userDataContract.methods.casted_votes({
+            }).call()
 
-            this.setUserDetails(userDetails)
+            const { value0: lockedTokens } = await userDataContract.methods.lockedTokens({
+                answerId: 0,
+            }).call()
+
+            const { value0: stakingDetails } = await stakingContract.methods.getDetails({
+                answerId: 0,
+            }).call()
+
+            this.setStakingDetails(stakingDetails)
+            this.setUserDetails(userDetails, lockedTokens)
             this.setCastedVotes(castedVotes)
         }
         catch (e) {
@@ -59,9 +102,9 @@ export class VotingStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 
-            const { value0: userDataAddress } = await stackingContract.methods.getUserDataAddress({
+            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: this.tonWallet.account.address,
             }).call()
@@ -85,7 +128,7 @@ export class VotingStore {
                 .first()
 
             if (reason) {
-                await stackingContract.methods.castVoteWithReason({
+                await stakingContract.methods.castVoteWithReason({
                     reason,
                     support,
                     proposal_id: proposalId,
@@ -96,7 +139,7 @@ export class VotingStore {
                     })
             }
             else {
-                await stackingContract.methods.castVote({
+                await stakingContract.methods.castVote({
                     support,
                     proposal_id: proposalId,
                 })
@@ -117,9 +160,10 @@ export class VotingStore {
         this.setCastLoading(false)
     }
 
-    public async unlockCastedVote(proposalIds: number[]): Promise<void> {
+    public async unlockCastedVote(proposalIds: number[]): Promise<boolean> {
         this.setUnlockVoteLoading(true)
 
+        let success = false
         const subscriber = new Subscriber(ton)
 
         try {
@@ -127,9 +171,9 @@ export class VotingStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 
-            const { value0: userDataAddress } = await stackingContract.methods.getUserDataAddress({
+            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: this.tonWallet.account.address,
             }).call()
@@ -154,22 +198,17 @@ export class VotingStore {
                 })
                 .first()
 
-            const minAmountBN = new BigNumber(MinGasToUnlockCastedVotes)
-            const unlockAmountBN = new BigNumber(GasToUnlockCastedVote)
-                .times(proposalIds.length)
-                .plus('1000000000')
-            const amountBN = minAmountBN.lt(unlockAmountBN) ? unlockAmountBN : minAmountBN
-
-            await stackingContract.methods.tryUnlockCastedVotes({
+            await stakingContract.methods.tryUnlockCastedVotes({
                 proposal_ids: proposalIds,
             })
                 .send({
                     from: this.tonWallet.account.address,
-                    amount: amountBN.toFixed(),
+                    amount: calcGazToUnlockVotes(proposalIds.length),
                 })
 
             await successStream
             await this.sync()
+            success = true
         }
         catch (e) {
             await subscriber.unsubscribe()
@@ -177,11 +216,15 @@ export class VotingStore {
         }
 
         this.setUnlockVoteLoading(false)
+
+        return success
     }
 
     public async sync(): Promise<void> {
         try {
-            await this.syncUserData()
+            await this.syncStakingData()
+            await this.syncCastedProposals()
+            await this.syncToken()
         }
         catch (e) {
             error(e)
@@ -199,12 +242,21 @@ export class VotingStore {
         this.setLoading(false)
     }
 
-    protected setUserDetails(userDetails: UserDetails): void {
+    protected setUserDetails(userDetails: UserDetails, lockedTokens: string): void {
         this.data.userDetails = userDetails
+        this.data.lockedTokens = lockedTokens
     }
 
     protected setCastedVotes(castedVotes: CastedVotes): void {
         this.data.castedVotes = castedVotes
+    }
+
+    protected setProposals(proposals: Proposal[]): void {
+        this.data.proposals = proposals
+    }
+
+    protected setStakingDetails(stakingDetails: StackingDetails): void {
+        this.data.stakingDetails = stakingDetails
     }
 
     protected setLoading(loading: boolean): void {
@@ -220,7 +272,7 @@ export class VotingStore {
     }
 
     public get connected(): boolean {
-        return this.tonWallet.isConnected
+        return this.tokensCache.isInitialized && this.tonWallet.isConnected
     }
 
     public get loading(): boolean {
@@ -241,6 +293,26 @@ export class VotingStore {
 
     public get castedVotes(): CastedVotes | undefined {
         return toJS(this.data.castedVotes)
+    }
+
+    public get proposals(): Proposal[] | undefined {
+        return toJS(this.data.proposals)
+    }
+
+    public get lockedTokens(): string | undefined {
+        return this.data.lockedTokens
+    }
+
+    public get token(): TokenCache | undefined {
+        if (!this.data.stakingDetails) {
+            return undefined
+        }
+
+        return this.tokensCache.get(this.data.stakingDetails.tokenRoot.toString())
+    }
+
+    public get tokenDecimals(): number | undefined {
+        return this.token?.decimals
     }
 
 }

@@ -11,9 +11,7 @@ export class UserProposalsStore {
 
     protected data: UserProposalsStoreData = {}
 
-    protected state: UserProposalsStoreState = {
-        loading: false,
-    }
+    protected state: UserProposalsStoreState = {}
 
     protected handleUserProposals: (
         address: string,
@@ -24,6 +22,11 @@ export class UserProposalsStore {
         makeAutoObservable(this)
 
         this.handleUserProposals = lastOfCalls(handleUserProposals)
+    }
+
+    public dispose(): void {
+        this.state = {}
+        this.data = {}
     }
 
     public async fetch(address: string, params: ProposalsRequest): Promise<void> {
@@ -59,7 +62,7 @@ export class UserProposalsStore {
     }
 
     public get loading(): boolean {
-        return this.state.loading
+        return !!this.state.loading
     }
 
 }

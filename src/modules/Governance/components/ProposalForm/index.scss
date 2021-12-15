@@ -1,8 +1,8 @@
 .proposal-form {
     &__layout {
+        column-gap: 16px;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        column-gap: 16px;
     }
 
     &__footer {
@@ -12,10 +12,10 @@
 
     &__title {
         font-size: 18px;
-        line-height: 24px;
-        letter-spacing: 0.6px;
-        margin: 0 0 16px;
         font-weight: 700;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 16px;
     }
 
     &__field {
@@ -27,17 +27,17 @@
     }
 
     &__submit {
-        display: inline-flex;
-        column-gap: 12px;
         align-items: center;
+        column-gap: 12px;
+        display: inline-flex;
     }
 
     &-action-list {
         &__title {
             font-size: 14px;
-            line-height: 20px;
-            letter-spacing: 0.6px;
             font-weight: 700;
+            letter-spacing: 0.6px;
+            line-height: 20px;
             margin: 0 0 16px;
         }
 
@@ -47,27 +47,27 @@
         }
 
         &__item {
-            padding: 14px 0;
-            display: flex;
             align-items: center;
-            justify-content: space-between;
-            column-gap: 16px;
-            font-size: 14px;
-            line-height: 20px;
-            letter-spacing: 0.6px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
+            column-gap: 16px;
+            display: flex;
+            font-size: 14px;
+            justify-content: space-between;
+            letter-spacing: 0.6px;
+            line-height: 20px;
+            padding: 14px 0;
 
         }
 
         &__actions {
-            display: flex;
             align-items: center;
             column-gap: 12px;
+            display: flex;
         }
 
         &__icon {
-            cursor: pointer;
             color: rgba(255, 255, 255, 0.48);
+            cursor: pointer;
             transition: color 0.2s ease;
 
             &:hover {
@@ -85,9 +85,9 @@
     &-popup {
         &__title {
             font-size: 24px;
-            line-height: 28px;
-            letter-spacing: 0.15px;
             font-weight: 400;
+            letter-spacing: 0.15px;
+            line-height: 28px;
             margin: 0 0 20px;
         }
 
@@ -96,8 +96,8 @@
         }
 
         &__footer {
-            display: flex;
             column-gap: 8px;
+            display: flex;
             margin: 40px 0 0;
         }
     }

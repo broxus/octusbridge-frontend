@@ -1,10 +1,12 @@
 import BigNumber from 'bignumber.js'
 
 import {
-    Description, ProposalsRequest, ProposalsResponse, UserProposalsResponse,
-    VotesRequest, VotesResponse,
+    Description, Proposal, ProposalsRequest, ProposalsResponse,
+    UserProposalsResponse, VotesRequest, VotesResponse,
 } from '@/modules/Governance/types'
-import { DaoIndexerApiBaseUrl } from '@/config'
+import {
+    DaoIndexerApiBaseUrl, GasToUnlockCastedVote, MinGasToUnlockCastedVotes,
+} from '@/config'
 import { handleApi, isGoodBignumber } from '@/utils'
 
 export async function handleProposals(data: ProposalsRequest): Promise<ProposalsResponse> {
@@ -25,6 +27,14 @@ export async function handleUserProposals(
 export async function handleVotes(data: VotesRequest): Promise<VotesResponse> {
     const url = `${DaoIndexerApiBaseUrl}/votes/search`
     const result = await handleApi<VotesResponse>({ url, data })
+    return result
+}
+
+export async function handleProposalsByIds(
+    ids: number[],
+): Promise<Proposal[]> {
+    const url = `${DaoIndexerApiBaseUrl}/proposals`
+    const result = await handleApi<Proposal[]>({ url, data: { ids }})
     return result
 }
 
@@ -55,4 +65,14 @@ export function getVotesPercents(forVotes: string, againstVotes: string): [numbe
         : 0
 
     return [left, right]
+}
+
+export function calcGazToUnlockVotes(count: number): string {
+    const minAmountBN = new BigNumber(MinGasToUnlockCastedVotes)
+    const unlockAmountBN = new BigNumber(GasToUnlockCastedVote)
+        .times(count)
+        .plus('1000000000')
+    const amountBN = BigNumber.max(unlockAmountBN, minAmountBN)
+
+    return amountBN.toFixed()
 }

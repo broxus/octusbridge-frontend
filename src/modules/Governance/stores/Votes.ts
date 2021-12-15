@@ -10,9 +10,7 @@ export class VotesStore {
 
     protected data: VotesStoreData = {}
 
-    protected state: VotesStoreState = {
-        loading: false,
-    }
+    protected state: VotesStoreState = {}
 
     protected handleVotes: (params: VotesRequest) => Promise<VotesResponse | undefined>
 
@@ -20,6 +18,11 @@ export class VotesStore {
         makeAutoObservable(this)
 
         this.handleVotes = lastOfCalls(handleVotes)
+    }
+
+    public dispose(): void {
+        this.data = {}
+        this.state = {}
     }
 
     public async fetch(params: VotesRequest): Promise<void> {
@@ -55,7 +58,7 @@ export class VotesStore {
     }
 
     public get loading(): boolean {
-        return this.state.loading
+        return !!this.state.loading
     }
 
 }

@@ -25,7 +25,6 @@ type Props = {
     loading?: boolean;
 }
 
-// TODO: View all link
 export function VotingPanel({
     type,
     value,
@@ -35,6 +34,12 @@ export function VotingPanel({
     loading,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const scrollToAll = (e: React.FormEvent<HTMLAnchorElement>) => {
+        e.preventDefault()
+        const el = document.querySelector('#votes')
+        if (el) el.scrollIntoView(true)
+    }
 
     return (
         <div className="voting-panel card card--flat card--small">
@@ -102,7 +107,7 @@ export function VotingPanel({
                             />
 
                             <div className="voting-panel__footer">
-                                <a className="voting-panel__more" href="#votes">
+                                <a className="voting-panel__more" href="#votes" onClick={scrollToAll}>
                                     {intl.formatMessage({
                                         id: 'VOTING_PANEL_VIEW_ALL',
                                     })}

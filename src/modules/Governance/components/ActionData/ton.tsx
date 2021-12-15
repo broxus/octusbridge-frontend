@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl'
 
 import { Summary } from '@/components/common/Summary'
 import { TonAction } from '@/modules/Governance/types'
-import './index.scss'
 
 type Props = TonAction
 

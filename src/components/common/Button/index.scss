@@ -190,23 +190,23 @@
 }
 
 .btn--accept {
-    background-color: #4AB44A;
+    background-color: #4ab44a;
     color: #ffffff;
 
     &:hover,
     &:focus {
-        background-color: rgba(74,180,74, 0.8);
+        background-color: rgba(74, 180, 74, 0.8);
         color: #ffffff;
     }
 
     &:active {
-        background-color: rgba(74,180,74, 0.64);
+        background-color: rgba(74, 180, 74, 0.64);
         color: #ffffff;
     }
 
     &[disabled],
     &:disabled {
-        background-color: rgba(74,180,74, 0.48);
+        background-color: rgba(74, 180, 74, 0.48);
         color: rgba(255, 255, 255, 0.48);
     }
 }
