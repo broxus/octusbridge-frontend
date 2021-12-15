@@ -14,7 +14,7 @@ import { ProposalProgress } from '@/modules/Governance/components/ProposalProgre
 import { DateCard } from '@/modules/Governance/components/DateCard'
 import { ProposalsFilters } from '@/modules/Governance/components/ProposalsFilters'
 import { UnlockButton } from '@/modules/Governance/components/UnlockButton'
-// import { UnlockAllButton } from '@/modules/Governance/components/UnlockAllButton'
+import { UnlockAllButton } from '@/modules/Governance/components/UnlockAllButton'
 import { ProposalsFilters as Filters } from '@/modules/Governance/types'
 import { useProposalsFilters, useUserProposal } from '@/modules/Governance/hooks'
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
@@ -24,7 +24,6 @@ import { error } from '@/utils'
 
 import './index.scss'
 
-// TODO: Unlock all tokens buttons
 // TODO: Vote power
 export function ProposalsTableUserInner(): JSX.Element | null {
     const intl = useIntl()
@@ -68,7 +67,12 @@ export function ProposalsTableUserInner(): JSX.Element | null {
     }
 
     React.useEffect(() => {
-        fetch()
+        if (tonWallet.address) {
+            fetch()
+        }
+        else {
+            userProposal.dispose()
+        }
     }, [
         filters.state,
         filters.endTimeGe,
@@ -89,7 +93,9 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                 </Title>
 
                 <Actions>
-                    {/* <UnlockAllButton /> */}
+                    <UnlockAllButton
+                        onSuccess={fetch}
+                    />
 
                     <ProposalsFilters
                         filters={filters}

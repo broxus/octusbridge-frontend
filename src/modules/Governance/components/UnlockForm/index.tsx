@@ -3,51 +3,41 @@ import { useIntl } from 'react-intl'
 
 import { Popup } from '@/components/common/Popup'
 import { ContentLoader } from '@/components/common/ContentLoader'
-import { Pagination } from '@/components/common/Pagination'
 import { Summary } from '@/components/common/Summary'
 import { Button } from '@/components/common/Button'
 import { Table } from '@/components/common/Table'
 import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary'
-import { ProposalState } from '@/modules/Governance/types'
-import { usePagination } from '@/hooks'
+import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
+import { Proposal } from '@/modules/Governance/types'
+import { DexConstants } from '@/misc'
+import { formattedAmount } from '@/utils'
 
 import './index.scss'
 
-type Proposal = {
-    id: number;
-    state: ProposalState;
-}
-
 type Props = {
-    proposals?: Proposal[];
+    tokens?: string;
     loading?: boolean;
-    disabled?: boolean;
-    totalCount?: number;
+    proposals: Proposal[];
     onDismiss: () => void;
     onSubmit: () => void;
-    onChangePage?: (page: number) => void;
 }
 
 // TODO: VotingPower
 export function UnlockForm({
-    proposals = [],
+    tokens,
     loading,
-    disabled,
-    totalCount,
+    proposals,
     onDismiss,
     onSubmit,
-    onChangePage,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const pagination = usePagination(totalCount)
-    const submitDisabled = proposals.length === 0 || disabled || loading
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
     return (
         <Popup
-            disabled={disabled}
+            disabled={loading}
             className="unlock-form"
             onDismiss={onDismiss}
         >
@@ -77,24 +67,17 @@ export function UnlockForm({
                         }]}
                         rows={proposals.map(item => ({
                             cells: [
-                                item.id,
-                                <ProposalSummary
-                                    state={item.state}
-                                    id={item.id}
-                                />,
-                                noValue,
+                                item.proposalId,
+                                item.state ? (
+                                    <ProposalSummary
+                                        state={item.state}
+                                        id={item.proposalId}
+                                    />
+                                ) : noValue,
+                                tokens || noValue,
                             ],
                         }))}
                     />
-
-                    {onChangePage && pagination.totalPages > 1 && (
-                        <Pagination
-                            page={pagination.page}
-                            totalPages={pagination.totalPages}
-                            className="unlock-form__pagination"
-                            onSubmit={onChangePage}
-                        />
-                    )}
 
                     <Summary
                         items={[{
@@ -104,7 +87,10 @@ export function UnlockForm({
                             value: intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: '50.00',
+                                value: formattedAmount(
+                                    calcGazToUnlockVotes(proposals.length),
+                                    DexConstants.TONDecimals,
+                                ),
                                 symbol: 'TON',
                             }),
                         }]}
@@ -122,7 +108,7 @@ export function UnlockForm({
                 <Button
                     block
                     type="secondary"
-                    disabled={disabled}
+                    disabled={loading}
                     onClick={onDismiss}
                 >
                     {intl.formatMessage({
@@ -132,7 +118,7 @@ export function UnlockForm({
                 <Button
                     block
                     type="primary"
-                    disabled={submitDisabled}
+                    disabled={proposals.length === 0 || loading}
                     onClick={onSubmit}
                 >
                     {loading ? (

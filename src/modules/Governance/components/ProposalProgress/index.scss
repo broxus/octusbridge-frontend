@@ -1,41 +1,41 @@
 .proposal-progress {
     &__head {
-        display: flex;
         align-items: center;
+        display: flex;
         justify-content: space-between;
         margin: 0 0 6px;
     }
 
     &__value {
+        color: rgba(255, 255, 255, 0.48);
         font-size: 14px;
         line-height: 20px;
-        color: rgba(255,255,255,0.48);
 
         &_left {
-            color: #4AB44A;
+            color: #4ab44a;
         }
 
         &_right {
-            color: #EB4361;
+            color: #eb4361;
         }
     }
 
     &__bar {
-        display: flex;
         align-items: center;
-        height: 4px;
         background: rgba(255, 255, 255, 0.08);
+        display: flex;
+        height: 4px;
     }
 
     &__progress {
         height: 4px;
 
         &_left {
-            background: #4AB44A;
+            background: #4ab44a;
         }
 
         &_right {
-            background: #EB4361;
+            background: #eb4361;
         }
     }
 }

@@ -11,16 +11,19 @@ export * from '@/components/common/Section/Description'
 export * from '@/components/common/Section/Line'
 
 type Props = {
+    id?: string;
     children: React.ReactNode;
     className?: string;
 }
 
 export function Section({
+    id,
     children,
     className,
 }: Props): JSX.Element {
     return (
         <div
+            id={id}
             className={classNames('content-section', className)}
         >
             {children}

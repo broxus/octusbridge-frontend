@@ -67,7 +67,7 @@ export type Proposal = {
     forVotes?: string;
     gracePeriod?: number;
     messageHash?: string;
-    proposalId?: number;
+    proposalId: number;
     proposer?: string;
     queued?: boolean;
     queuedAt?: number;
@@ -115,7 +115,7 @@ export type Vote = {
     createdAt: number;
     messageHash: string;
     proposalId: number;
-    reason: string;
+    reason?: string;
     support: boolean;
     timestampBlock: number;
     transactionHash: string;
@@ -164,7 +164,7 @@ export type UserProposalsStoreData = {
 }
 
 export type UserProposalsStoreState = {
-    loading: boolean;
+    loading?: boolean;
 }
 
 export type ProposalStoreData = {
@@ -181,7 +181,7 @@ export type VotesStoreData = {
 }
 
 export type VotesStoreState = {
-    loading: boolean;
+    loading?: boolean;
 }
 
 export type ConfigStoreData = {
@@ -195,6 +195,9 @@ export type ConfigStoreState = {
 export type VotingStoreData = {
     userDetails?: UserDetails;
     castedVotes?: CastedVotes;
+    proposals?: Proposal[];
+    lockedTokens?: string;
+    stakingDetails?: StackingDetails;
 }
 
 export type VotingStoreState = {

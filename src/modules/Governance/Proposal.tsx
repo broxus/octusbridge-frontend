@@ -7,6 +7,7 @@ import { ProposalHeader } from '@/modules/Governance/components/ProposalHeader'
 import { ProposalBreadcrumb } from '@/modules/Governance/components/ProposalBreadcrumb'
 import { ProposalVoting } from '@/modules/Governance/components/ProposalVoting'
 import { ProposalContent } from '@/modules/Governance/components/ProposalContent'
+import { VotesTable } from '@/modules/Governance/VotesTable'
 import { ProposalTimeline } from '@/modules/Governance/components/ProposalTimeline'
 import { ProposalManagement } from '@/modules/Governance/components/ProposalManagement'
 import { UserVote } from '@/modules/Governance/components/UserVote'
@@ -39,6 +40,8 @@ export function ProposalInner(): JSX.Element | null {
                     <UserVote />
                 </div>
             </div>
+
+            <VotesTable proposalId={proposal.id} />
         </Container>
     )
 }

@@ -18,7 +18,7 @@ export function ProposalContentInner(): JSX.Element | null {
     const intl = useIntl()
 
     return (
-        <Section>
+        <Section className="proposal-content">
             <Title>
                 {intl.formatMessage({
                     id: 'PROPOSAL_CONTENT_TITLE',

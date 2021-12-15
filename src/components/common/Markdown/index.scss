@@ -10,8 +10,8 @@
 
     ul,
     ol {
-        padding: 0 0 0 1.9em;
         margin: 0 0 1em;
+        padding: 0 0 0 1.9em;
     }
 
     ul li {
@@ -27,12 +27,12 @@
     }
 
     blockquote {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
         padding: 0 0 0 1em;
-        border-left: 1px solid rgba(255,255,255,0.08);
     }
 
     pre {
-        background: rgba(255,255,255,0.04);
+        background: rgba(255, 255, 255, 0.04);
         padding: 1em;
     }
 

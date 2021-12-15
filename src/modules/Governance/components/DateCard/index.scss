@@ -1,14 +1,14 @@
 .proposal-date-card {
     &__label {
         font-size: 14px;
-        line-height: 20px;
         letter-spacing: 0.5px;
+        line-height: 20px;
     }
 
     &__value {
+        color: rgba(255, 255, 255, 0.48);
         font-size: 12px;
-        line-height: 16px;
         letter-spacing: 0.6px;
-        color: rgba(255,255,255,0.48);
+        line-height: 16px;
     }
 }

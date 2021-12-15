@@ -3,18 +3,18 @@
     flex-direction: column;
 
     &__head {
-        display: flex;
-        margin: 0 0 16px;
-        justify-content: space-between;
         align-items: center;
+        display: flex;
         font-size: 18px;
         font-weight: 700;
-        line-height: 24px;
+        justify-content: space-between;
         letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 16px;
     }
 
     &__total {
-        color: rgba(255,255,255,0.48);
+        color: rgba(255, 255, 255, 0.48);
     }
 
     &__progress {
@@ -22,9 +22,9 @@
     }
 
     &__loading {
-        flex-grow: 1;
-        display: flex;
         align-items: center;
+        display: flex;
+        flex-grow: 1;
         justify-content: center;
     }
 
@@ -48,11 +48,11 @@
     }
 
     &__more {
+        color: #c5e4f3;
+        cursor: pointer;
         font-size: 14px;
         font-weight: 700;
-        line-height: 20px;
         letter-spacing: 0.6px;
-        color: #C5E4F3;
-        cursor: pointer;
+        line-height: 20px;
     }
 }

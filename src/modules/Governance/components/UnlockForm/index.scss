@@ -1,26 +1,27 @@
 .unlock-form {
     &.popup__wrap {
-        padding: 20px;
         max-width: 560px;
+        padding: 20px;
     }
 
     &__title {
         font-size: 24px;
-        line-height: 28px;
         letter-spacing: 0.15px;
+        line-height: 28px;
         margin: 0 0 20px;
     }
 
     &__actions {
-        display: flex;
         align-items: center;
         column-gap: 8px;
+        display: flex;
         margin: 20px 0 0;
     }
 
     &__table {
         &.list {
             min-height: auto;
+
             --list-grid-template: minmax(30px, 5%) minmax(250px, 70%) minmax(120px, 25%);
         }
     }

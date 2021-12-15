@@ -45,30 +45,15 @@ export class ProposalCreateStore {
         }
     }
 
-    protected async syncStaking(): Promise<void> {
-        try {
-            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-
-            const { value0: stakingDetails } = await stakingContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            this.setStakingDetails(stakingDetails)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
     protected async syncUserData(): Promise<void> {
         try {
             if (!this.tonWallet.account?.address) {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 
-            const { value0: userDataAddress } = await stackingContract.methods.getUserDataAddress({
+            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: this.tonWallet.account?.address,
             }).call()
@@ -83,7 +68,12 @@ export class ProposalCreateStore {
                 answerId: 0,
             }).call()
 
+            const { value0: stakingDetails } = await stakingContract.methods.getDetails({
+                answerId: 0,
+            }).call()
+
             this.setUserData(lockedTokens, userDetails)
+            this.setStakingDetails(stakingDetails)
         }
         catch (e) {
             error(e)
@@ -109,7 +99,6 @@ export class ProposalCreateStore {
         try {
             await this.syncConfig()
             await this.syncUserData()
-            await this.syncStaking()
             await this.syncToken()
         }
         catch (e) {
@@ -137,9 +126,9 @@ export class ProposalCreateStore {
             }
 
             const tonActions = _tonActions.map(item => ({
-                value: item.value,
+                ...item,
+                payload: item.payload, // TODO: Fix
                 target: new Address(item.target),
-                payload: item.payload,
             }))
 
             const ethActions = _ethActions.map(item => ({
