@@ -1,0 +1,16 @@
+.progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+
+    &__value {
+        height: 4px;
+
+        &_red {
+            background: #EB4361;
+        }
+
+        &_green {
+            background: #4AB44A;
+        }
+    }
+}

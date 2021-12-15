@@ -3,10 +3,11 @@ import BigNumber from 'bignumber.js'
 import {
     CreditBody,
     CreditFactoryAddress,
+    DaoRootContractAddress,
     DepositToFactoryMaxSlippage,
     DepositToFactoryMinSlippageDenominator,
-    DepositToFactoryMinSlippageNumerator,
-    EmptyWalletMinTonsAmount, HiddenBridgeStrategyFactory,
+    DepositToFactoryMinSlippageNumerator, EmptyWalletMinTonsAmount,
+    HiddenBridgeStrategyFactory,
     HiddenBridgeStrategyGas,
     StakingAccountAddress,
     TokenAssetsURI,
@@ -39,5 +40,7 @@ export class BridgeConstants {
     static TokenAssetsURI = TokenAssetsURI
 
     static TokenListURI = TokenListURI
+
+    static DaoRootContractAddress = DaoRootContractAddress
 
 }

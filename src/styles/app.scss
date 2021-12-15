@@ -164,6 +164,26 @@ ul.summary {
             margin-bottom: 0;
         }
     }
+
+    &_space {
+        &_sm {
+            li {
+                margin-bottom: 8px;
+            }
+        }
+    }
+
+    &_compact {
+        li {
+            justify-content: flex-start;
+            column-gap: 16px;
+        }
+
+        .summary__key {
+            flex-grow: 1;
+            max-width: 226px;
+        }
+    }
 }
 
 .board {

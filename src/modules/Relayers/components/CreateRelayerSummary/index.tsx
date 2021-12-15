@@ -31,7 +31,7 @@ export function CreateRelayerSummary({
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -52,7 +52,7 @@ export function CreateRelayerSummary({
                     </span>
 
                     <div className="explorer-link">
-                        {tonPublicKey ? sliceAddress(tonPublicKey.slice(2)) : nullMessage}
+                        {tonPublicKey ? sliceAddress(tonPublicKey.slice(2)) : noValue}
                         {tonPublicKey && (
                             <Copy text={tonPublicKey} id={`copy-${tonPublicKey}`}>
                                 <Icon icon="copy" />
@@ -81,7 +81,7 @@ export function CreateRelayerSummary({
                                     </a>
                                 ) : sliceAddress(ethAddress)}
                             </>
-                        ) : nullMessage}
+                        ) : noValue}
 
                         {ethAddress && (
                             <Copy text={ethAddress} id={`copy-${ethAddress}`}>
@@ -105,7 +105,7 @@ export function CreateRelayerSummary({
                         {
                             stakingBalance !== undefined && stakingTokenDecimals !== undefined
                                 ? formattedAmount(stakingBalance, stakingTokenDecimals)
-                                : nullMessage
+                                : noValue
                         }
                     </span>
                 </li>
@@ -121,7 +121,7 @@ export function CreateRelayerSummary({
                     {
                         contractFee !== undefined && tonTokenDecimals !== undefined
                             ? formattedAmount(contractFee, tonTokenDecimals)
-                            : nullMessage
+                            : noValue
                     }
                 </li>
 

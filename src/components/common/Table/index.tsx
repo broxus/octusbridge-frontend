@@ -86,7 +86,7 @@ export function Table<O>({
                         table__loader_active: loading,
                     })}
                 >
-                    <ContentLoader slim />
+                    <ContentLoader transparent slim />
                 </div>
             </div>
         </div>

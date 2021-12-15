@@ -35,7 +35,7 @@ export function UserCard({
     )
 
     return (
-        <span className="user-card">
+        <div className="user-card">
             {link ? <Link to={link}>{avatar}</Link> : avatar}
 
             {name ? (
@@ -50,9 +50,9 @@ export function UserCard({
                     </div>
                 </div>
             ) : (
-                <>
+                <div className="user-card__name">
                     {link ? <Link to={link}>{shortAddress}</Link> : shortAddress}
-                </>
+                </div>
             )}
 
             {copy && (
@@ -76,6 +76,6 @@ export function UserCard({
                     <Icon icon="externalLink" ratio={0.7} />
                 </a>
             )}
-        </span>
+        </div>
     )
 }

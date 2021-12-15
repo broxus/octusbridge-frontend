@@ -1,0 +1,14 @@
+.vote-card {
+    &__value {
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    &__percent {
+        font-size: 12px;
+        line-height: 16px;
+        color: rgba(255,255,255,0.43);
+        letter-spacing: 0.6px;
+    }
+}

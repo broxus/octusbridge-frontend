@@ -1629,6 +1629,953 @@ export class StackingAbi {
 
 }
 
+export class DaoAbi {
+
+    static Root = {
+        'ABI version': 2,
+        version: '2.1',
+        header: ['time'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                    { name: 'platformCode_', type: 'cell' },
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'proposalConfiguration_', type: 'tuple' },
+                    { name: 'admin_', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'getAdmin',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'getPendingAdmin',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'getProposalCount',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'getStakingRoot',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'getEthereumActionEventConfiguration',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                    { name: 'value1', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'expectedProposalAddress',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'proposalId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'expectedStakingAccountAddress',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'accountOwner', type: 'address' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'propose',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions', type: 'tuple[]' },
+                    { name: 'description', type: 'string' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'deployProposal',
+                inputs: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'accountOwner', type: 'address' },
+                    { name: 'proposalData', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'onProposalSucceeded',
+                inputs: [
+                    { name: 'proposalId', type: 'uint32' },
+                    { name: 'proposer', type: 'address' },
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions', type: 'tuple[]' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'calcTonActionsValue',
+                inputs: [
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'actions', type: 'tuple[]' },
+                ],
+                outputs: [
+                    { name: 'totalValue', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'calcEthActionsValue',
+                inputs: [
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'actions', type: 'tuple[]' },
+                ],
+                outputs: [
+                    { name: 'totalValue', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'requestUpgradeProposal',
+                inputs: [
+                    { name: 'currentVersion', type: 'uint16' },
+                    { name: 'sendGasTo', type: 'address' },
+                    { name: 'proposalId', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setStakingRoot',
+                inputs: [
+                    { name: 'newStakingRoot', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'transferAdmin',
+                inputs: [
+                    { name: 'newAdmin', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'acceptAdmin',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateEthereumActionEventConfiguration',
+                inputs: [
+                    { name: 'newConfiguration', type: 'address' },
+                    { name: 'newDeployEventValue', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateProposalCode',
+                inputs: [
+                    { name: 'code', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateQuorumVotes',
+                inputs: [
+                    { name: 'newQuorumVotes', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateThreshold',
+                inputs: [
+                    { name: 'newThreshold', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateTimeLock',
+                inputs: [
+                    { name: 'newTimeLock', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateVotingPeriod',
+                inputs: [
+                    { name: 'newVotingPeriod', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateVotingDelay',
+                inputs: [
+                    { name: 'newVotingDelay', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateGracePeriod',
+                inputs: [
+                    { name: 'newGracePeriod', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'updateProposalConfiguration',
+                inputs: [
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'newConfig', type: 'tuple' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'addDelegate',
+                inputs: [
+                    { name: 'addr', type: 'address' },
+                    { name: 'callHash', type: 'uint256' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'upgrade',
+                inputs: [
+                    { name: 'code', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'encodeDaoEthereumActionData',
+                inputs: [
+                    { name: 'gasBackWid', type: 'int8' },
+                    { name: 'gasBackAddress', type: 'uint256' },
+                    { name: 'chainId', type: 'uint32' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'actions', type: 'tuple[]' },
+                ],
+                outputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+            },
+            {
+                name: 'decodeDaoEthereumActionData',
+                inputs: [
+                    { name: 'data', type: 'cell' },
+                ],
+                outputs: [
+                    { name: 'gasBackWid', type: 'int8' },
+                    { name: 'gasBackAddress', type: 'uint256' },
+                    { name: 'chainId', type: 'uint32' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'actions', type: 'tuple[]' },
+                ],
+            },
+            {
+                name: 'delegators',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'delegators', type: 'map(address,uint256[])' },
+                ],
+            },
+            {
+                name: 'stakingRoot',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'stakingRoot', type: 'address' },
+                ],
+            },
+            {
+                name: 'ethereumActionEventConfiguration',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'ethereumActionEventConfiguration', type: 'address' },
+                ],
+            },
+            {
+                name: 'deployEventValue',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'deployEventValue', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'proposalCount',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'proposalCount', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'proposalConfiguration',
+                inputs: [
+                ],
+                outputs: [
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'proposalConfiguration', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'proposalCode',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'proposalCode', type: 'cell' },
+                ],
+            },
+            {
+                name: 'platformCode',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'platformCode', type: 'cell' },
+                ],
+            },
+            {
+                name: 'proposalVersion',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'proposalVersion', type: 'uint16' },
+                ],
+            },
+            {
+                name: 'admin',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'admin', type: 'address' },
+                ],
+            },
+            {
+                name: 'pendingAdmin',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'pendingAdmin', type: 'address' },
+                ],
+            },
+        ],
+        data: [
+            { key: 1, name: '_nonce', type: 'uint32' },
+        ],
+        events: [
+            {
+                name: 'EthActions',
+                inputs: [
+                    { name: 'gasBackWid', type: 'int8' },
+                    { name: 'gasBackAddress', type: 'uint256' },
+                    { name: 'chainId', type: 'uint32' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'actions', type: 'tuple[]' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalCreated',
+                inputs: [
+                    { name: 'proposalId', type: 'uint32' },
+                    { name: 'proposer', type: 'address' },
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions', type: 'tuple[]' },
+                    { name: 'description', type: 'string' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'StakingRootUpdated',
+                inputs: [
+                    { name: 'oldRoot', type: 'address' },
+                    { name: 'newRoot', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'RequestedAdminTransfer',
+                inputs: [
+                    { name: 'oldAdmin', type: 'address' },
+                    { name: 'newAdmin', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'AdminTransferAccepted',
+                inputs: [
+                    { name: 'oldAdmin', type: 'address' },
+                    { name: 'newAdmin', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'EthereumActionEventConfigurationUpdated',
+                inputs: [
+                    { name: 'oldConfiguration', type: 'address' },
+                    { name: 'newConfiguration', type: 'address' },
+                    { name: 'oldDeployEventValue', type: 'uint128' },
+                    { name: 'newDeployEventValue', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalCodeUpgraded',
+                inputs: [
+                    { name: 'newVersion', type: 'uint16' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalConfigurationUpdated',
+                inputs: [
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'oldConfig', type: 'tuple' },
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'newConfig', type: 'tuple' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalVotingDelayUpdated',
+                inputs: [
+                    { name: 'oldVotingDelay', type: 'uint32' },
+                    { name: 'newVotingDelay', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalGracePeriodUpdated',
+                inputs: [
+                    { name: 'oldGracePeriod', type: 'uint32' },
+                    { name: 'newGracePeriod', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalVotingPeriodUpdated',
+                inputs: [
+                    { name: 'oldVotingPeriod', type: 'uint32' },
+                    { name: 'newVotingPeriod', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalThresholdUpdated',
+                inputs: [
+                    { name: 'oldThreshold', type: 'uint128' },
+                    { name: 'newThreshold', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalQuorumVotesUpdated',
+                inputs: [
+                    { name: 'oldQuorumVotes', type: 'uint128' },
+                    { name: 'newQuorumVotes', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalTimeLockUpdated',
+                inputs: [
+                    { name: 'oldTimeLock', type: 'uint32' },
+                    { name: 'newTimeLock', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ExecutingTonActions',
+                inputs: [
+                    { name: 'proposalId', type: 'uint32' },
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'RootCodeUpgraded',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'delegators', type: 'map(address,uint256[])' },
+            { name: '_nonce', type: 'uint32' },
+            { name: 'stakingRoot', type: 'address' },
+            { name: 'ethereumActionEventConfiguration', type: 'address' },
+            { name: 'deployEventValue', type: 'uint128' },
+            { name: 'proposalCount', type: 'uint32' },
+            { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'proposalConfiguration', type: 'tuple' },
+            { name: 'proposalCode', type: 'cell' },
+            { name: 'platformCode', type: 'cell' },
+            { name: 'proposalVersion', type: 'uint16' },
+            { name: 'admin', type: 'address' },
+            { name: 'pendingAdmin', type: 'address' },
+        ],
+    } as const
+
+}
+
+export class ProposalAbi {
+
+    static Root = {
+        'ABI version': 2,
+        version: '2.1',
+        header: ['time'],
+        functions: [
+            {
+                name: 'getOverview',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'proposer_', type: 'address' },
+                    { name: 'description_', type: 'string' },
+                    { name: 'startTime_', type: 'uint32' },
+                    { name: 'endTime_', type: 'uint32' },
+                    { name: 'executionTime_', type: 'uint32' },
+                    { name: 'forVotes_', type: 'uint128' },
+                    { name: 'againstVotes_', type: 'uint128' },
+                    { name: 'quorumVotes_', type: 'uint128' },
+                    { name: 'state_', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'getProposer',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'getActions',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'value0', type: 'tuple[]' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'value1', type: 'tuple[]' },
+                ],
+            },
+            {
+                name: 'getConfig',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'value0', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'getTimings',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'uint32' },
+                    { name: 'value1', type: 'uint32' },
+                    { name: 'value2', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'getVotes',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'uint128' },
+                    { name: 'value1', type: 'uint128' },
+                    { name: 'value2', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'getStatuses',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'bool' },
+                    { name: 'value1', type: 'bool' },
+                ],
+            },
+            {
+                name: 'getState',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'queue',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'execute',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'cancel',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'castVote',
+                inputs: [
+                    { name: 'value0', type: 'uint32' },
+                    { name: 'voter', type: 'address' },
+                    { name: 'votes', type: 'uint128' },
+                    { name: 'support', type: 'bool' },
+                    { name: 'reason', type: 'string' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'onActionsExecuted',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'unlockCastedVote',
+                inputs: [
+                    { name: 'accountOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'unlockVoteTokens',
+                inputs: [
+                    { name: 'accountOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'initialParams',
+                inputs: [
+                    { name: 'stakingRoot_', type: 'address' },
+                    { name: 'proposer_', type: 'address' },
+                    { name: 'description_', type: 'string' },
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions_', type: 'tuple[]' },
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions_', type: 'tuple[]' },
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'config_', type: 'tuple' },
+                    { name: 'proposalVersion_', type: 'uint16' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'requestUpgrade',
+                inputs: [
+                    { name: 'sendGasTo', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'upgrade',
+                inputs: [
+                    { name: 'code', type: 'cell' },
+                    { name: 'newVersion', type: 'uint16' },
+                    { name: 'sendGasTo', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'constructor',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'root',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'root', type: 'address' },
+                ],
+            },
+            {
+                name: 'platformCode',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'platformCode', type: 'cell' },
+                ],
+            },
+            {
+                name: 'id',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'id', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'stakingRoot',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'stakingRoot', type: 'address' },
+                ],
+            },
+            {
+                name: 'proposer',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'proposer', type: 'address' },
+                ],
+            },
+            {
+                name: 'description',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'description', type: 'string' },
+                ],
+            },
+            {
+                name: 'tonActions',
+                inputs: [
+                ],
+                outputs: [
+                    { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+                ],
+            },
+            {
+                name: 'ethActions',
+                inputs: [
+                ],
+                outputs: [
+                    { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions', type: 'tuple[]' },
+                ],
+            },
+            {
+                name: 'proposalVersion',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'proposalVersion', type: 'uint16' },
+                ],
+            },
+            {
+                name: 'config',
+                inputs: [
+                ],
+                outputs: [
+                    { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'config', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'startTime',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'startTime', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'endTime',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'endTime', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'executionTime',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'executionTime', type: 'uint32' },
+                ],
+            },
+            {
+                name: 'canceled',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'canceled', type: 'bool' },
+                ],
+            },
+            {
+                name: 'executed',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'executed', type: 'bool' },
+                ],
+            },
+            {
+                name: 'forVotes',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'forVotes', type: 'uint128' },
+                ],
+            },
+            {
+                name: 'againstVotes',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'againstVotes', type: 'uint128' },
+                ],
+            },
+        ],
+        data: [
+        ],
+        events: [
+            {
+                name: 'VoteCast',
+                inputs: [
+                    { name: 'voter', type: 'address' },
+                    { name: 'support', type: 'bool' },
+                    { name: 'votes', type: 'uint128' },
+                    { name: 'reason', type: 'string' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'Queued',
+                inputs: [
+                    { name: 'executionTime', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'Executed',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'Canceled',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'CodeUpgradeRequested',
+                inputs: [
+                    { name: 'currentVersion', type: 'uint16' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'ProposalCodeUpgraded',
+                inputs: [
+                    { name: 'newVersion', type: 'uint16' },
+                ],
+                outputs: [
+                ],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'root', type: 'address' },
+            { name: 'platformCode', type: 'cell' },
+            { name: 'id', type: 'uint32' },
+            { name: 'stakingRoot', type: 'address' },
+            { name: 'proposer', type: 'address' },
+            { name: 'description', type: 'string' },
+            { components: [{ name: 'value', type: 'uint128' }, { name: 'target', type: 'address' }, { name: 'payload', type: 'cell' }], name: 'tonActions', type: 'tuple[]' },
+            { components: [{ name: 'value', type: 'uint256' }, { name: 'chainId', type: 'uint32' }, { name: 'target', type: 'uint160' }, { name: 'signature', type: 'string' }, { name: 'callData', type: 'bytes' }], name: 'ethActions', type: 'tuple[]' },
+            { name: 'proposalVersion', type: 'uint16' },
+            { components: [{ name: 'votingDelay', type: 'uint32' }, { name: 'votingPeriod', type: 'uint32' }, { name: 'quorumVotes', type: 'uint128' }, { name: 'timeLock', type: 'uint32' }, { name: 'threshold', type: 'uint128' }, { name: 'gracePeriod', type: 'uint32' }], name: 'config', type: 'tuple' },
+            { name: 'startTime', type: 'uint32' },
+            { name: 'endTime', type: 'uint32' },
+            { name: 'executionTime', type: 'uint32' },
+            { name: 'canceled', type: 'bool' },
+            { name: 'executed', type: 'bool' },
+            { name: 'forVotes', type: 'uint128' },
+            { name: 'againstVotes', type: 'uint128' },
+        ],
+    } as const
+
+}
+
 export class UserDataAbi {
 
     static Root = {

@@ -1,0 +1,37 @@
+.proposal-content {
+    &__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 16px;
+    }
+
+    &__head &__title {
+        margin-bottom: 0;
+    }
+
+    &__title {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 24px;
+        letter-spacing: 0.6px;
+        margin: 0 0 16px;
+    }
+
+    &__discussion {
+        display: flex;
+        align-items: center;
+        column-gap: 9px;
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: 0.6px;
+        color: rgba(255,255,255,0.48);
+    }
+
+    &__body {
+        margin: 0 0 24px;
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+    }
+}

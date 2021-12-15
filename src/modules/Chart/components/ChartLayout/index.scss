@@ -25,15 +25,14 @@
         height: 100%;
         justify-content: center;
         left: 0;
-        opacity: 0;
+        visibility: hidden;
         pointer-events: none;
         position: absolute;
         top: 0;
-        transition: opacity 0.2s ease;
         width: 100%;
 
         &_visible {
-            opacity: 1;
+            visibility: visible;
         }
     }
 }

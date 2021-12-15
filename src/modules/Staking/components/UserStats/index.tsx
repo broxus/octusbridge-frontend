@@ -27,7 +27,7 @@ export function UserStats({
     }
 
     const intl = useIntl()
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -77,7 +77,7 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_TVL',
                             })}
-                            value={user.userTvl ? formattedAmount(user.userTvl) : nullMessage}
+                            value={user.userTvl ? formattedAmount(user.userTvl) : noValue}
                         >
                             {user.userTvlChange && (
                                 <TvlChange
@@ -96,7 +96,7 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_FROZEN',
                             })}
-                            value={user.userFrozenStake ? formattedAmount(user.userFrozenStake) : nullMessage}
+                            value={user.userFrozenStake ? formattedAmount(user.userFrozenStake) : noValue}
                         />
                     )}
                 </Observer>
@@ -107,7 +107,7 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_REWARD',
                             })}
-                            value={user.user30dReward ? formattedAmount(user.user30dReward) : nullMessage}
+                            value={user.user30dReward ? formattedAmount(user.user30dReward) : noValue}
                         >
                             {user.user30dRewardChange && (
                                 <TvlChange
@@ -126,7 +126,7 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_APR',
                             })}
-                            value={user.averageApr ? `${user.averageApr}%` : nullMessage}
+                            value={user.averageApr ? `${user.averageApr}%` : noValue}
                         />
                     )}
                 </Observer>
