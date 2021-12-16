@@ -1,3 +1,5 @@
+import { Address } from 'ton-inpage-provider'
+
 import {
     CastedVotes, ProposalConfig, StackingDetails, UserDetails,
 } from '@/misc'
@@ -192,14 +194,6 @@ export type ConfigStoreState = {
     loading: boolean;
 }
 
-export type VotingStoreData = {
-    userDetails?: UserDetails;
-    castedVotes?: CastedVotes;
-    proposals?: Proposal[];
-    lockedTokens?: string;
-    stakingDetails?: StackingDetails;
-}
-
 export type VotingStoreState = {
     loading?: boolean;
     castLoading?: boolean;
@@ -208,13 +202,18 @@ export type VotingStoreState = {
 
 export type ProposalCreateStoreData = {
     config?: ProposalConfig;
-    lockedTokens?: string;
-    userDetails?: UserDetails;
-    stakingDetails?: StackingDetails;
 }
 
 export type ProposalCreateStoreState = {
     loading?: boolean;
     createLoading?: boolean;
+}
 
+export type UserDataStoreData = {
+    userDataAddress?: Address;
+    userDetails?: UserDetails;
+    lockedTokens?: string;
+    castedVotes?: CastedVotes;
+    stakingDetails?: StackingDetails;
+    castedProposals?: Proposal[];
 }

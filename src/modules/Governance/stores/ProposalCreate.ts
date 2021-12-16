@@ -5,12 +5,10 @@ import BigNumber from 'bignumber.js'
 import {
     EthAction, ProposalCreateStoreData, ProposalCreateStoreState, TonAction,
 } from '@/modules/Governance/types'
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TokenCache } from '@/stores/TokensCacheService'
+import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { TonWalletService } from '@/stores/TonWalletService'
-import {
-    BridgeConstants, DaoAbi, ProposalConfig, StackingAbi,
-    StackingDetails, UserDataAbi, UserDetails,
-} from '@/misc'
+import { DaoAbi } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
 
@@ -22,7 +20,7 @@ export class ProposalCreateStore {
 
     constructor(
         protected tonWallet: TonWalletService,
-        protected tokensCache: TokensCacheService,
+        protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)
     }
@@ -32,61 +30,11 @@ export class ProposalCreateStore {
         this.data = {}
     }
 
-    protected async syncToken(): Promise<void> {
-        try {
-            if (!this.data.stakingDetails?.tokenRoot) {
-                throwException('Staking details must be defined in data')
-            }
-
-            await this.tokensCache.syncTonToken(this.data.stakingDetails?.tokenRoot.toString())
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    protected async syncUserData(): Promise<void> {
-        try {
-            if (!this.tonWallet.account?.address) {
-                throwException('Ton wallet must be connected')
-            }
-
-            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-
-            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
-                answerId: 0,
-                user: this.tonWallet.account?.address,
-            }).call()
-
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
-
-            const { value0: lockedTokens } = await userDataContract.methods.lockedTokens({
-                answerId: 0,
-            }).call()
-
-            const { value0: userDetails } = await userDataContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            const { value0: stakingDetails } = await stakingContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            this.setUserData(lockedTokens, userDetails)
-            this.setStakingDetails(stakingDetails)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
     protected async syncConfig(): Promise<void> {
         try {
             const daoContract = new Contract(DaoAbi.Root, DaoRootContractAddress)
-
             const { proposalConfiguration } = await daoContract.methods.proposalConfiguration({}).call()
-
-            this.setConfig(proposalConfiguration)
+            this.setData('config', proposalConfiguration)
         }
         catch (e) {
             error(e)
@@ -94,18 +42,15 @@ export class ProposalCreateStore {
     }
 
     public async fetch(): Promise<void> {
-        this.setLoading(true)
-
+        this.setState('loading', true)
         try {
             await this.syncConfig()
-            await this.syncUserData()
-            await this.syncToken()
+            await this.userData.sync()
         }
         catch (e) {
             error(e)
         }
-
-        this.setLoading(false)
+        this.setState('loading', false)
     }
 
     public async submit(
@@ -113,7 +58,7 @@ export class ProposalCreateStore {
         _tonActions: TonAction[],
         _ethActions: EthAction[],
     ): Promise<string | undefined> {
-        this.setCreateLoading(true)
+        this.setState('createLoading', true)
 
         let proposalId
         const subscriber = new Subscriber(ton)
@@ -182,34 +127,21 @@ export class ProposalCreateStore {
             error(e)
         }
 
-        this.setCreateLoading(false)
+        this.setState('createLoading', false)
 
         return proposalId
     }
 
-    protected setConfig(config: ProposalConfig): void {
-        this.data.config = config
+    protected setData<K extends keyof ProposalCreateStoreData>(key: K, value: ProposalCreateStoreData[K]): void {
+        this.data[key] = value
     }
 
-    protected setUserData(lockedTokens: string, userDetails: UserDetails): void {
-        this.data.lockedTokens = lockedTokens
-        this.data.userDetails = userDetails
-    }
-
-    protected setStakingDetails(stakingDetails: StackingDetails): void {
-        this.data.stakingDetails = stakingDetails
-    }
-
-    protected setLoading(loading: boolean): void {
-        this.state.loading = loading
-    }
-
-    protected setCreateLoading(loading: boolean): void {
-        this.state.createLoading = loading
+    protected setState<K extends keyof ProposalCreateStoreState>(key: K, value: ProposalCreateStoreState[K]): void {
+        this.state[key] = value
     }
 
     public get connected(): boolean {
-        return this.tokensCache.isInitialized && this.tonWallet.isConnected
+        return this.userData.connected && this.tonWallet.isConnected
     }
 
     public get loading(): boolean {
@@ -221,35 +153,31 @@ export class ProposalCreateStore {
     }
 
     public get token(): TokenCache | undefined {
-        if (!this.data.stakingDetails) {
-            return undefined
-        }
-
-        return this.tokensCache.get(this.data.stakingDetails.tokenRoot.toString())
+        return this.userData.token
     }
 
     public get canCreate(): boolean | undefined {
-        if (!this.data.userDetails?.token_balance || !this.data.lockedTokens || !this.data.config) {
+        if (!this.userData.tokenBalance || !this.userData.lockedTokens || !this.data.config) {
             return undefined
         }
 
-        return new BigNumber(this.data.userDetails?.token_balance)
-            .minus(this.data.lockedTokens)
+        return new BigNumber(this.userData.tokenBalance)
+            .minus(this.userData.lockedTokens)
             .gte(this.data.config.threshold)
     }
 
     public get tokenMissing(): string | undefined {
         if (
-            !this.data.userDetails?.token_balance
-            || !this.data.lockedTokens
+            !this.userData.tokenBalance
+            || !this.userData.lockedTokens
             || !this.data.config
             || !this.token
         ) {
             return undefined
         }
 
-        const actualBalanceBN = new BigNumber(this.data.userDetails.token_balance)
-            .minus(this.data.lockedTokens)
+        const actualBalanceBN = new BigNumber(this.userData.tokenBalance)
+            .minus(this.userData.lockedTokens)
 
         return new BigNumber(this.data.config.threshold)
             .minus(actualBalanceBN)
