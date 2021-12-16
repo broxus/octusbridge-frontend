@@ -81,8 +81,9 @@ export function ProposalContentInner(): JSX.Element | null {
                                         id: 'PROPOSAL_CONTENT_ETH_ACTIONS',
                                     })}
                                 >
-                                    {proposal.ethActions.map(action => (
-                                        <>
+                                    {proposal.ethActions.map((action, index) => (
+                                        /* eslint-disable react/no-array-index-key */
+                                        <React.Fragment key={index}>
                                             <Line type="light" />
 
                                             <EthActionData
@@ -92,7 +93,7 @@ export function ProposalContentInner(): JSX.Element | null {
                                                 target={action.target}
                                                 value={action.value}
                                             />
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </Collapse>
 
@@ -107,8 +108,8 @@ export function ProposalContentInner(): JSX.Element | null {
                                         id: 'PROPOSAL_CONTENT_TON_ACTIONS',
                                     })}
                                 >
-                                    {proposal.tonActions.map(action => (
-                                        <>
+                                    {proposal.tonActions.map((action, index) => (
+                                        <React.Fragment key={index}>
                                             <Line type="light" />
 
                                             <TonActionData
@@ -116,7 +117,7 @@ export function ProposalContentInner(): JSX.Element | null {
                                                 target={action.target}
                                                 value={action.value}
                                             />
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </Collapse>
 

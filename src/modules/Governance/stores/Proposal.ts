@@ -1,4 +1,6 @@
-import { makeAutoObservable, toJS } from 'mobx'
+import {
+    IReactionDisposer, makeAutoObservable, reaction, toJS,
+} from 'mobx'
 import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
 
 import {
@@ -7,6 +9,8 @@ import {
     ProposalStoreState, TonAction,
 } from '@/modules/Governance/types'
 import { handleProposals, parseDescription } from '@/modules/Governance/utils'
+import { ProposalConfigStore } from '@/modules/Governance/stores/ProposalConfig'
+import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { ProposalAbi } from '@/misc'
 import {
@@ -19,14 +23,42 @@ export class ProposalStore {
 
     protected _state: ProposalStoreState = {}
 
+    protected syncConfigDisposer: IReactionDisposer
+
+    protected userDataDisposer: IReactionDisposer
+
     protected handleProposals: (params: ProposalsRequest) => Promise<ProposalsResponse | undefined>
 
     constructor(
         protected tonWallet: TonWalletService,
+        protected config: ProposalConfigStore,
+        protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)
 
         this.handleProposals = lastOfCalls(handleProposals)
+
+        this.syncConfigDisposer = reaction(
+            () => [this.config.isConnected, this.proposalAddress],
+            async () => {
+                if (this.config.isConnected && this.proposalAddress) {
+                    await this.config.fetch(this.proposalAddress)
+                }
+            },
+        )
+
+        this.userDataDisposer = reaction(
+            () => [this.userData.connected],
+            async () => {
+                if (this.userData.connected) {
+                    await this.userData.sync()
+                }
+            },
+        )
+    }
+
+    public dispose(): void {
+        this.syncConfigDisposer()
     }
 
     public async sync(proposalId: number): Promise<void> {
@@ -76,11 +108,11 @@ export class ProposalStore {
                 throwException('Wallet must be connected')
             }
 
-            if (!this.contractAddress) {
+            if (!this.proposalAddress) {
                 throwException('Contract address must be defined in data')
             }
 
-            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.contractAddress))
+            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
 
             const successStream = subscriber
                 .transactions(proposalContract.address)
@@ -143,6 +175,10 @@ export class ProposalStore {
         return !!this._state.loading
     }
 
+    public get configLoading(): boolean {
+        return this.config.loading
+    }
+
     public get cancelLoading(): boolean {
         return !!this._state.cancelLoading
     }
@@ -196,8 +232,8 @@ export class ProposalStore {
         return this.proposal?.againstVotes
     }
 
-    public get contractAddress(): string | undefined {
-        return this.proposal?.contractAddress
+    public get proposalAddress(): string | undefined {
+        return this.proposal?.proposalAddress
     }
 
     public get createdAt(): number | undefined {
@@ -205,39 +241,45 @@ export class ProposalStore {
     }
 
     public get startTime(): number | undefined {
-        return this.proposal?.startTime
+        if (!this.proposal?.startTime) {
+            return undefined
+        }
+
+        return this.proposal.startTime * 1000
     }
 
     public get queuedAt(): number | undefined {
-        return this.proposal?.queuedAt
+        if (!this.startTime || !this.votingPeriod) {
+            return undefined
+        }
+        return this.startTime + this.votingPeriod
     }
 
     public get executedAt(): number | undefined {
-        return this.proposal?.executedAt
+        if (!this.queuedAt || !this.timeLock) {
+            return undefined
+        }
+        return this.queuedAt + this.timeLock
     }
 
     public get gracePeriod(): number | undefined {
-        return this.proposal?.gracePeriod
-            ? this.proposal?.gracePeriod * 1000
-            : undefined
+        return this.config.gracePeriod
     }
 
     public get votingDelay(): number | undefined {
-        return this.proposal?.createdAt && this.proposal.startTime
-            ? this.proposal.startTime - this.proposal.createdAt
-            : undefined
+        return this.config.votingDelay
     }
 
     public get timeLock(): number | undefined {
-        return this.proposal?.queuedAt && this.proposal.executedAt
-            ? this.proposal.executedAt - this.proposal.queuedAt
-            : undefined
+        return this.config.timeLock
     }
 
     public get votingPeriod(): number | undefined {
-        return this.proposal?.startTime && this.proposal.queuedAt
-            ? this.proposal.queuedAt - this.proposal?.startTime
-            : undefined
+        return this.config.votingPeriod
+    }
+
+    public get votingPower(): string | undefined {
+        return this.userData.tokenBalance
     }
 
 }

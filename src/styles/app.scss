@@ -130,7 +130,7 @@
 .explorer-link {
     align-items: center;
     display: inline-flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 ul.summary {
@@ -181,8 +181,15 @@ ul.summary {
 
         .summary__key {
             flex-grow: 1;
-            max-width: 226px;
+            flex-shrink: 0;
+            max-width: 200px;
+            width: 100%;
         }
+    }
+
+    .summary__value {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 

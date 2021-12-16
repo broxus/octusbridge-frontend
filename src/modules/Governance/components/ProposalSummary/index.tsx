@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
 import { ProposalState } from '@/modules/Governance/types'
+import { parseDescription } from '@/modules/Governance/utils'
 import './index.scss'
 
 type Props = {
+    description?: string;
     state: ProposalState;
     id?: number;
 }
@@ -23,16 +25,28 @@ const intlIdMap = new Map<ProposalState, string>([
 ])
 
 export function ProposalSummary({
+    description,
     state,
     id,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const intlId = intlIdMap.get(state) || 'PROPOSAL_SUMMARY_UNKNOWN'
+
+    let intlId,
+        summary
+
+    if (description) {
+        const parsedDesc = parseDescription(description)
+        summary = parsedDesc?.title
+    }
+
+    if (!summary) {
+        intlId = intlIdMap.get(state) || 'PROPOSAL_SUMMARY_UNKNOWN'
+    }
 
     if (id) {
         return (
             <Link className="proposal-summary" to={`/governance/proposals/${id}`}>
-                {intl.formatMessage({ id: intlId })}
+                {summary || intl.formatMessage({ id: intlId })}
                 <Icon icon="link" />
             </Link>
         )
@@ -40,7 +54,7 @@ export function ProposalSummary({
 
     return (
         <span className="proposal-summary">
-            {intl.formatMessage({ id: intlId })}
+            {summary || intl.formatMessage({ id: intlId })}
         </span>
     )
 }

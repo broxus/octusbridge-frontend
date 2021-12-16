@@ -27,6 +27,10 @@ export class UserDataStore {
                 throwException('Casted votes must be defined in data')
             }
 
+            if (this.castedVotes.length === 0) {
+                return
+            }
+
             const proposalIds = this.castedVotes.map(([id]) => parseInt(id, 10))
             const proposals = await handleProposalsByIds(proposalIds)
 

@@ -1,13 +1,15 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
+import { ContentLoader } from '@/components/common/ContentLoader'
 import { Section, Title } from '@/components/common/Section'
 import { Timeline } from '@/modules/Governance/components/ProposalTimeline/Timeline'
 import { useProposalContext } from '@/modules/Governance/providers'
 
 import './index.scss'
 
-export function ProposalTimeline(): JSX.Element | null {
+export function ProposalTimelineInner(): JSX.Element | null {
     const intl = useIntl()
     const proposal = useProposalContext()
 
@@ -34,11 +36,17 @@ export function ProposalTimeline(): JSX.Element | null {
                     />
                 ) : (
                     <div className="card card--flat card--small proposal-timeline-empty">
-                        {intl.formatMessage({
-                            id: 'PROPOSAL_NO_TIMELINE',
-                        })}
+                        {(proposal.loading || proposal.configLoading) ? (
+                            <ContentLoader slim transparent />
+                        ) : (
+                            intl.formatMessage({
+                                id: 'PROPOSAL_NO_TIMELINE',
+                            })
+                        )}
                     </div>
                 )}
         </Section>
     )
 }
+
+export const ProposalTimeline = observer(ProposalTimelineInner)

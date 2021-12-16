@@ -72,6 +72,7 @@ export function UnlockForm({
                                     <ProposalSummary
                                         state={item.state}
                                         id={item.proposalId}
+                                        description={item.description}
                                     />
                                 ) : noValue,
                                 tokens || noValue,
