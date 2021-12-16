@@ -445,10 +445,13 @@ export default {
     TRANSFERS_DATE: 'Date',
     TRANSFERS_BC: 'Blockchain',
     TRANSFERS_TOKEN: 'Token',
+    TRANSFERS_ETH_TO_TON: '{network} to Everscale',
+    TRANSFERS_TON_TO_ETH: 'Everscale to {network}',
 
     TRANSFERS_STATUS_CONFIRMED: 'Executed',
     TRANSFERS_STATUS_PENDING: 'Pending',
     TRANSFERS_STATUS_REJECTED: 'Canceled',
+    TRANSFERS_STATUS_UNKNOWN: 'Unknown',
 
     PROPOSALS_TITLE: 'Proposals',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',
@@ -643,6 +646,7 @@ export default {
 
     EMPTY_LIST: 'List is empty',
 
+    NA: 'N/A',
     NO_VALUE: '–',
     AMOUNT: '{value} {symbol}',
     PERCENT: '{value}%',

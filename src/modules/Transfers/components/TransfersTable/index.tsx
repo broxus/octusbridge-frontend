@@ -1,39 +1,31 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
 import { Table } from '@/components/common/Table'
-import { TokenAmount } from '@/components/common/TokenAmount'
-import { Badge } from '@/components/common/Badge'
-import { TransfersApiOrdering, TransfersApiTransfer } from '@/modules/Transfers/types'
-import {
-    getFromNetwork, getToNetwork, getTransferLink,
-    mapStatusToBadge, mapStatusToIntl,
-} from '@/modules/Transfers/utils'
-import { useTokensCache } from '@/stores/TokensCacheService'
-import { dateFormat } from '@/utils'
+import { Transfer, TransfersOrdering } from '@/modules/Transfers/types'
+import { Item } from '@/modules/Transfers/components/TransfersTable/Item'
+
+
+import './index.scss'
 
 type Props = {
-    items: TransfersApiTransfer[];
-    order?: TransfersApiOrdering;
+    items: Transfer[];
+    order?: TransfersOrdering;
     loading?: boolean;
-    onSort?: (order: TransfersApiOrdering) => void;
+    onSort?: (order: TransfersOrdering) => void;
 }
 
-export function TransfersTable({
+export function TransfersTableInner({
     items,
     order,
     loading,
     onSort,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const tokensCache = useTokensCache()
-
-    const noValue = intl.formatMessage({
-        id: 'NO_VALUE',
-    })
 
     return (
-        <Table<TransfersApiOrdering>
+        <Table<TransfersOrdering>
             loading={loading}
             className="transfers-table"
             order={order}
@@ -42,8 +34,6 @@ export function TransfersTable({
                 name: intl.formatMessage({
                     id: 'TRANSFERS_AMOUNT',
                 }),
-                ascending: 'volumeexecascending',
-                descending: 'volumeexecdescending',
             }, {
                 name: intl.formatMessage({
                     id: 'TRANSFERS_FROM',
@@ -64,29 +54,12 @@ export function TransfersTable({
                 ascending: 'createdatascending',
                 descending: 'createdatdescending',
             }]}
-            rows={items.map(item => ({
-                link: getTransferLink(item),
-                cells: [
-                    item.currencyAddress && item.volumeExec ? (
-                        <TokenAmount
-                            address={item.currencyAddress}
-                            uri={tokensCache.get(item.currencyAddress)?.icon}
-                            symbol={tokensCache.get(item.currencyAddress)?.symbol}
-                            amount={item.volumeExec}
-                        />
-                    ) : noValue,
-                    getFromNetwork(item.transferKind, item.chainId) || noValue,
-                    getToNetwork(item.transferKind, item.chainId) || noValue,
-                    item.status ? (
-                        <Badge status={mapStatusToBadge(item.status)}>
-                            {intl.formatMessage({
-                                id: mapStatusToIntl(item.status),
-                            })}
-                        </Badge>
-                    ) : noValue,
-                    item.createdAt ? dateFormat(item.createdAt) : noValue,
-                ],
-            }))}
+            rawRows={items.map((item, index) => (
+                /* eslint-disable react/no-array-index-key */
+                <Item transfer={item} key={`${index}.${item.createdAt}`} />
+            ))}
         />
     )
 }
+
+export const TransfersTable = observer(TransfersTableInner)
