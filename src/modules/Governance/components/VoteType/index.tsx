@@ -7,7 +7,7 @@ import './index.scss'
 
 type Props = {
     type: 1 | 0;
-    value: string;
+    value?: string;
     badge?: boolean;
 }
 
@@ -40,9 +40,11 @@ export function VoteType({
                     {typeStr}
                 </div>
             )}
-            <div className="vote-type__value">
-                {value}
-            </div>
+            {value && (
+                <div className="vote-type__value">
+                    {value}
+                </div>
+            )}
         </div>
     )
 }

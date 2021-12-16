@@ -59,7 +59,7 @@ export type Proposal = {
     againstVotes?: string;
     canceled?: boolean;
     canceledAt?: number;
-    contractAddress?: string;
+    proposalAddress?: string;
     createdAt?: number;
     description?: string;
     endTime?: number;

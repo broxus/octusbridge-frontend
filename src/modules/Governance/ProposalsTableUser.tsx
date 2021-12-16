@@ -20,7 +20,8 @@ import { useProposalsFilters, useUserProposal } from '@/modules/Governance/hooks
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { useTonWallet } from '@/stores/TonWalletService'
 import { usePagination } from '@/hooks'
-import { error } from '@/utils'
+import { error, formattedAmount } from '@/utils'
+import { DexConstants } from '@/misc'
 
 import './index.scss'
 
@@ -147,12 +148,15 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                                     <ProposalSummary
                                         state={item.state}
                                         id={item.proposalId}
+                                        description={item.description}
                                     />
                                 ) : noValue,
                                 item.vote?.support !== undefined ? (
                                     <VoteType
                                         type={item.vote.support === true ? 1 : 0}
-                                        value="123 000.72"
+                                        value={item.vote.votes
+                                            ? formattedAmount(item.vote.votes, DexConstants.TONDecimals)
+                                            : undefined}
                                     />
                                 ) : noValue,
                                 item.state ? <ProposalStatus state={item.state} /> : noValue,
@@ -160,7 +164,7 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                                     againstVotes={item.againstVotes}
                                     forVotes={item.forVotes}
                                 />,
-                                item.endTime ? <DateCard timestamp={item.endTime} /> : noValue,
+                                item.endTime ? <DateCard timestamp={item.endTime * 1000} /> : noValue,
                                 item.proposalId && item.state ? (
                                     <UnlockButton
                                         proposalId={item.proposalId}

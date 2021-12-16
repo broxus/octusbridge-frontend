@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { DexConstants } from '@/misc'
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { Table } from '@/components/common/Table'
 import { UserCard } from '@/components/common/UserCard'
@@ -50,7 +51,7 @@ export function VotingPanel({
                     })}
                 </div>
                 <div className="voting-panel__value">
-                    {value ? formattedAmount(value) : null}
+                    {value ? formattedAmount(value, DexConstants.TONDecimals) : null}
 
                     {total && (
                         <span className="voting-panel__total">
@@ -58,7 +59,7 @@ export function VotingPanel({
                             {intl.formatMessage({
                                 id: 'VOTING_PANEL_TOTAL',
                             }, {
-                                total: formattedAmount(total),
+                                total: formattedAmount(total, DexConstants.TONDecimals),
                             })}
                         </span>
                     )}

@@ -14,11 +14,13 @@ export function ProposalHeaderInner(): JSX.Element | null {
     const intl = useIntl()
     const proposal = useProposalContext()
 
-    const duration = proposal.endTime ? proposal.endTime - new Date().getTime() : 0
+    const duration = proposal.endTime
+        ? (proposal.endTime * 1000) - new Date().getTime()
+        : 0
     const { days, hours, minutes } = Duration.fromMillis(duration)
         .shiftTo('days', 'hours', 'minutes', 'seconds')
 
-    let timeIntlId: string
+    let timeIntlId
     if (days > 0) {
         timeIntlId = 'PROPOSAL_HEAD_TIME_DAYS'
     }

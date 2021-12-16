@@ -112,6 +112,7 @@ export function ProposalsTableInner(): JSX.Element {
                                 <ProposalSummary
                                     state={item.state}
                                     id={item.proposalId}
+                                    description={item.description}
                                 />
                             ) : noValue,
                             item.state ? <ProposalStatus state={item.state} /> : noValue,
@@ -119,7 +120,7 @@ export function ProposalsTableInner(): JSX.Element {
                                 againstVotes={item.againstVotes}
                                 forVotes={item.forVotes}
                             />,
-                            item.endTime ? <DateCard timestamp={item.endTime} /> : noValue,
+                            item.endTime ? <DateCard timestamp={item.endTime * 1000} /> : noValue,
                         ],
                     }))}
                 />

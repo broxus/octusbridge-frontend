@@ -2,7 +2,10 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Summary } from '@/components/common/Summary'
+import { Icon } from '@/components/common/Icon'
+import { Copy } from '@/components/common/Copy'
 import { EthAction } from '@/modules/Governance/types'
+import { sliceAddress } from '@/utils'
 
 type Props = EthAction
 
@@ -37,7 +40,14 @@ export function EthActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_TARGET',
                 }),
-                value: target,
+                value: (
+                    <div className="explorer-link">
+                        {sliceAddress(target)}
+                        <Copy text={target} id="copy-target">
+                            <Icon icon="copy" />
+                        </Copy>
+                    </div>
+                ),
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_VALUE',

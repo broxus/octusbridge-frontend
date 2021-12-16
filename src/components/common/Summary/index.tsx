@@ -30,7 +30,9 @@ export function Summary({
                         {key}
                     </span>
 
-                    {value}
+                    <div className="summary__value">
+                        {value}
+                    </div>
                 </li>
             ))}
         </ul>

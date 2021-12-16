@@ -11,7 +11,8 @@ import { TonButtonConnector } from '@/modules/TonWalletConnector/Button'
 import { useProposalContext, useVotingContext } from '@/modules/Governance/providers'
 import { VotingForm } from '@/modules/Governance/components/VotingForm'
 import { useMounted } from '@/hooks'
-import { dateFormat, error } from '@/utils'
+import { DexConstants } from '@/misc'
+import { dateFormat, error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -82,16 +83,18 @@ export function UserVoteInner(): JSX.Element {
                     key: intl.formatMessage({
                         id: 'USER_VOTE_VOTING_POWER',
                     }),
-                    value: intl.formatMessage({
-                        id: 'NO_VALUE',
-                    }),
-                }, {
-                    key: intl.formatMessage({
-                        id: 'USER_VOTE_VOTING_WEIGHT',
-                    }),
-                    value: intl.formatMessage({
-                        id: 'NO_VALUE',
-                    }),
+                    value: proposal.votingPower
+                        ? formattedAmount(proposal.votingPower, DexConstants.TONDecimals)
+                        : intl.formatMessage({
+                            id: 'NO_VALUE',
+                        }),
+                // }, {
+                //     key: intl.formatMessage({
+                //         id: 'USER_VOTE_VOTING_WEIGHT',
+                //     }),
+                //     value: intl.formatMessage({
+                //         id: 'NO_VALUE',
+                //     }),
                 }]}
             />
 
@@ -174,9 +177,9 @@ export function UserVoteInner(): JSX.Element {
                                     </div>
                                 )
                             ) : (
-                                <div className="user-vote__message text-muted">
-                                    {proposal.startTime && proposal.queuedAt ? (
-                                        currentTime > proposal.startTime && currentTime < proposal.queuedAt ? (
+                                proposal.startTime && proposal.queuedAt && (
+                                    <div className="user-vote__message text-muted">
+                                        {currentTime < proposal.startTime ? (
                                             intl.formatMessage({
                                                 id: 'USER_VOTE_START_TEXT',
                                             }, {
@@ -190,13 +193,9 @@ export function UserVoteInner(): JSX.Element {
                                                 start: dateFormat(proposal.startTime),
                                                 end: dateFormat(proposal.queuedAt),
                                             })
-                                        )
-                                    ) : (
-                                        intl.formatMessage({
-                                            id: 'USER_VOTE_UNKNOWN_STATE',
-                                        })
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
+                                )
                             )
                         )
                     )
