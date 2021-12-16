@@ -1,13 +1,14 @@
-import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
+import ton, { Contract, Subscriber } from 'ton-inpage-provider'
 import { makeAutoObservable, toJS } from 'mobx'
 
 import {
-    BridgeConstants, CastedVotes, StackingAbi, StackingDetails, UserDataAbi, UserDetails,
+    BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
-import { Proposal, VotingStoreData, VotingStoreState } from '@/modules/Governance/types'
-import { calcGazToUnlockVotes, handleProposalsByIds } from '@/modules/Governance/utils'
+import { TokenCache } from '@/stores/TokensCacheService'
+import { Proposal, VotingStoreState } from '@/modules/Governance/types'
+import { UserDataStore } from '@/modules/Governance/stores/UserData'
+import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { error, throwException } from '@/utils'
 import { GasToCastVote } from '@/config'
 
@@ -15,85 +16,15 @@ export class VotingStore {
 
     protected state: VotingStoreState = {}
 
-    protected data: VotingStoreData = {}
-
     constructor(
         protected tonWallet: TonWalletService,
-        protected tokensCache: TokensCacheService,
+        protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)
     }
 
-    protected async syncToken(): Promise<void> {
-        try {
-            if (!this.data.stakingDetails?.tokenRoot) {
-                throwException('Staking details must be defined in data')
-            }
-
-            await this.tokensCache.syncTonToken(this.data.stakingDetails?.tokenRoot.toString())
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    protected async syncCastedProposals(): Promise<void> {
-        try {
-            if (!this.castedVotes) {
-                throwException('Casted votes must be defined in data')
-            }
-
-            const proposalIds = this.castedVotes.map(([id]) => parseInt(id, 10))
-            const proposals = await handleProposalsByIds(proposalIds)
-
-            this.setProposals(proposals)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    protected async syncStakingData(): Promise<void> {
-        try {
-            if (!this.tonWallet.address) {
-                throwException('Ton wallet must be connected')
-            }
-
-            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-
-            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
-                answerId: 0,
-                user: new Address(this.tonWallet.address),
-            }).call()
-
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
-
-            const { value0: userDetails } = await userDataContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            const { casted_votes: castedVotes } = await userDataContract.methods.casted_votes({
-            }).call()
-
-            const { value0: lockedTokens } = await userDataContract.methods.lockedTokens({
-                answerId: 0,
-            }).call()
-
-            const { value0: stakingDetails } = await stakingContract.methods.getDetails({
-                answerId: 0,
-            }).call()
-
-            this.setStakingDetails(stakingDetails)
-            this.setUserDetails(userDetails, lockedTokens)
-            this.setCastedVotes(castedVotes)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
     public async castVote(proposalId: number, support: boolean, reason?: string): Promise<void> {
-        this.setCastLoading(true)
+        this.setState('castLoading', true)
 
         const subscriber = new Subscriber(ton)
 
@@ -102,14 +33,12 @@ export class VotingStore {
                 throwException('Ton wallet must be connected')
             }
 
+            if (!this.userData.userDataAddress) {
+                throwException('userDataAddress must be defined')
+            }
+
             const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-
-            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
-                answerId: 0,
-                user: this.tonWallet.account.address,
-            }).call()
-
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = new Contract(UserDataAbi.Root, this.userData.userDataAddress)
 
             const successStream = subscriber
                 .transactions(userDataContract.address)
@@ -157,11 +86,11 @@ export class VotingStore {
             error(e)
         }
 
-        this.setCastLoading(false)
+        this.setState('castLoading', false)
     }
 
     public async unlockCastedVote(proposalIds: number[]): Promise<boolean> {
-        this.setUnlockVoteLoading(true)
+        this.setState('unlockVoteLoading', true)
 
         let success = false
         const subscriber = new Subscriber(ton)
@@ -171,14 +100,12 @@ export class VotingStore {
                 throwException('Ton wallet must be connected')
             }
 
+            if (!this.userData.userDataAddress) {
+                throwException('userDataAddress must be defined')
+            }
+
             const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-
-            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
-                answerId: 0,
-                user: this.tonWallet.account.address,
-            }).call()
-
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = new Contract(UserDataAbi.Root, this.userData.userDataAddress)
 
             let testIds = proposalIds.map(id => `${id}`)
             const successStream = subscriber
@@ -215,16 +142,14 @@ export class VotingStore {
             error(e)
         }
 
-        this.setUnlockVoteLoading(false)
+        this.setState('unlockVoteLoading', false)
 
         return success
     }
 
     public async sync(): Promise<void> {
         try {
-            await this.syncStakingData()
-            await this.syncCastedProposals()
-            await this.syncToken()
+            await this.userData.sync()
         }
         catch (e) {
             error(e)
@@ -232,31 +157,18 @@ export class VotingStore {
     }
 
     public async fetch(): Promise<void> {
-        this.setLoading(true)
+        this.setState('loading', true)
         try {
             await this.sync()
         }
         catch (e) {
             error(e)
         }
-        this.setLoading(false)
+        this.setState('loading', false)
     }
 
-    protected setUserDetails(userDetails: UserDetails, lockedTokens: string): void {
-        this.data.userDetails = userDetails
-        this.data.lockedTokens = lockedTokens
-    }
-
-    protected setCastedVotes(castedVotes: CastedVotes): void {
-        this.data.castedVotes = castedVotes
-    }
-
-    protected setProposals(proposals: Proposal[]): void {
-        this.data.proposals = proposals
-    }
-
-    protected setStakingDetails(stakingDetails: StackingDetails): void {
-        this.data.stakingDetails = stakingDetails
+    protected setState<K extends keyof VotingStoreState>(key: K, value: VotingStoreState[K]): void {
+        this.state[key] = value
     }
 
     protected setLoading(loading: boolean): void {
@@ -272,7 +184,7 @@ export class VotingStore {
     }
 
     public get connected(): boolean {
-        return this.tokensCache.isInitialized && this.tonWallet.isConnected
+        return this.userData.connected && this.tonWallet.isConnected
     }
 
     public get loading(): boolean {
@@ -288,27 +200,23 @@ export class VotingStore {
     }
 
     public get tokenBalance(): string | undefined {
-        return this.data.userDetails?.token_balance
+        return this.userData.tokenBalance
     }
 
     public get castedVotes(): CastedVotes | undefined {
-        return toJS(this.data.castedVotes)
+        return toJS(this.userData.castedVotes)
     }
 
-    public get proposals(): Proposal[] | undefined {
-        return toJS(this.data.proposals)
+    public get castedProposals(): Proposal[] | undefined {
+        return toJS(this.userData.castedProposals)
     }
 
     public get lockedTokens(): string | undefined {
-        return this.data.lockedTokens
+        return this.userData.lockedTokens
     }
 
     public get token(): TokenCache | undefined {
-        if (!this.data.stakingDetails) {
-            return undefined
-        }
-
-        return this.tokensCache.get(this.data.stakingDetails.tokenRoot.toString())
+        return this.userData.token
     }
 
     public get tokenDecimals(): number | undefined {

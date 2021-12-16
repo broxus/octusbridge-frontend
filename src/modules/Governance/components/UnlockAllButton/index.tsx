@@ -21,7 +21,7 @@ export function UnlockAllButton({
     const showForm = () => setFormVisible(true)
     const hideForm = () => setFormVisible(false)
 
-    const proposals = (voting.proposals || [])
+    const proposals = (voting.castedProposals || [])
         .filter(({ state }) => state !== 'Active')
 
     const submit = async () => {
