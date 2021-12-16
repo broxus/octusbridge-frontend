@@ -258,7 +258,7 @@ export class EvmWalletService {
                 this.state.isConnecting = false
                 this.state.isConnected = address !== undefined
                 this.state.isInitialized = true
-                this.state.isInitializing = true
+                this.state.isInitializing = false
             })
             log(`Sync EVM address: ${address}`)
         }
@@ -344,6 +344,8 @@ export class EvmWalletService {
                 this.state.isInitialized = this.cachedProvider === 'injected'
                 this.state.isInitializing = false
             })
+
+            console.log(this.cachedProvider)
 
             await this.syncAccountData()
             await this.syncBalance()
