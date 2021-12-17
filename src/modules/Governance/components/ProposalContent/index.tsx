@@ -7,7 +7,8 @@ import { Collapse } from '@/components/common/Collapse'
 import { Markdown } from '@/components/common/Markdown'
 import { Icon } from '@/components/common/Icon'
 import { EthActionData, TonActionData } from '@/modules/Governance/components/ActionData'
-import { ProposalConfig } from '@/modules/Governance/components/ProposalConfig'
+import { ProposalConfig } from '@/modules/Governance/components/ProposalContent/Config'
+import { ProposalInfo } from '@/modules/Governance/components/ProposalContent/Info'
 import { useProposalContext } from '@/modules/Governance/providers'
 
 import './index.scss'
@@ -127,11 +128,7 @@ export function ProposalContentInner(): JSX.Element | null {
                     </>
                 )}
 
-                <div className="proposal-content__title">
-                    {intl.formatMessage({
-                        id: 'PROPOSAL_CONTENT_PERIODS',
-                    })}
-                </div>
+                <ProposalInfo />
 
                 <ProposalConfig />
             </div>

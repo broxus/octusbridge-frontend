@@ -1,9 +1,7 @@
 import * as React from 'react'
-import { observer } from 'mobx-react-lite'
 
 import { useVoting } from '@/modules/Governance/hooks'
 import { VotingStore } from '@/modules/Governance/stores'
-import { error } from '@/utils'
 
 export const VotingContext = React.createContext<VotingStore | undefined>(undefined)
 
@@ -21,26 +19,14 @@ type Props = {
     children: React.ReactNode;
 }
 
-export function VotingStoreProviderInner({
+export function VotingStoreProvider({
     children,
 }: Props): JSX.Element {
     const voting = useVoting()
 
-    const fetch = async () => {
-        if (!voting.connected) {
-            return
-        }
-        try {
-            await voting.fetch()
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    React.useEffect(() => {
-        fetch()
-    }, [voting.connected])
+    React.useEffect(() => () => (
+        voting.dispose()
+    ), [])
 
     return (
         <VotingContext.Provider value={voting}>
@@ -48,5 +34,3 @@ export function VotingStoreProviderInner({
         </VotingContext.Provider>
     )
 }
-
-export const VotingStoreProvider = observer(VotingStoreProviderInner)

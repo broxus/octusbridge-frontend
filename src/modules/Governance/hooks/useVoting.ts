@@ -1,6 +1,7 @@
 import * as React from 'react'
 
-import { useUserData, VotingStore } from '@/modules/Governance/stores'
+import { VotingStore } from '@/modules/Governance/stores'
+import { useUserData } from '@/modules/Governance/hooks/useUserData'
 import { useTonWallet } from '@/stores/TonWalletService'
 
 export function useVoting(): VotingStore {

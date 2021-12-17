@@ -20,6 +20,7 @@ export function TonActionData({
     return (
         <Summary
             compact
+            space="sm"
             items={[{
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_PAYLOAD',

@@ -3,10 +3,11 @@ import { makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
 
 import {
-    EthAction, ProposalCreateStoreData, ProposalCreateStoreState, TonAction,
+    EthAction, ProposalCreateStoreState, TonAction,
 } from '@/modules/Governance/types'
 import { TokenCache } from '@/stores/TokensCacheService'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
+import { DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { DaoAbi } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
@@ -14,43 +15,20 @@ import { error, throwException } from '@/utils'
 
 export class ProposalCreateStore {
 
-    protected data: ProposalCreateStoreData = {}
-
     protected state: ProposalCreateStoreState = {}
 
     constructor(
         protected tonWallet: TonWalletService,
         protected userData: UserDataStore,
+        protected daoConfig: DaoConfigStore,
     ) {
         makeAutoObservable(this)
     }
 
     public dispose(): void {
+        this.daoConfig.dispose()
+        this.userData.dispose()
         this.state = {}
-        this.data = {}
-    }
-
-    protected async syncConfig(): Promise<void> {
-        try {
-            const daoContract = new Contract(DaoAbi.Root, DaoRootContractAddress)
-            const { proposalConfiguration } = await daoContract.methods.proposalConfiguration({}).call()
-            this.setData('config', proposalConfiguration)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    public async fetch(): Promise<void> {
-        this.setState('loading', true)
-        try {
-            await this.syncConfig()
-            await this.userData.sync()
-        }
-        catch (e) {
-            error(e)
-        }
-        this.setState('loading', false)
     }
 
     public async submit(
@@ -72,7 +50,7 @@ export class ProposalCreateStore {
 
             const tonActions = _tonActions.map(item => ({
                 ...item,
-                payload: item.payload, // TODO: Fix
+                payload: item.payload,
                 target: new Address(item.target),
             }))
 
@@ -132,20 +110,12 @@ export class ProposalCreateStore {
         return proposalId
     }
 
-    protected setData<K extends keyof ProposalCreateStoreData>(key: K, value: ProposalCreateStoreData[K]): void {
-        this.data[key] = value
-    }
-
     protected setState<K extends keyof ProposalCreateStoreState>(key: K, value: ProposalCreateStoreState[K]): void {
         this.state[key] = value
     }
 
     public get connected(): boolean {
         return this.userData.connected && this.tonWallet.isConnected
-    }
-
-    public get loading(): boolean {
-        return !!this.state.loading
     }
 
     public get createLoading(): boolean {
@@ -157,20 +127,28 @@ export class ProposalCreateStore {
     }
 
     public get canCreate(): boolean | undefined {
-        if (!this.userData.tokenBalance || !this.userData.lockedTokens || !this.data.config) {
+        if (!this.userData.hasAccount) {
+            return false
+        }
+
+        if (
+            !this.userData.tokenBalance
+            || !this.userData.lockedTokens
+            || !this.daoConfig.threshold
+        ) {
             return undefined
         }
 
         return new BigNumber(this.userData.tokenBalance)
             .minus(this.userData.lockedTokens)
-            .gte(this.data.config.threshold)
+            .gte(this.daoConfig.threshold)
     }
 
     public get tokenMissing(): string | undefined {
         if (
             !this.userData.tokenBalance
             || !this.userData.lockedTokens
-            || !this.data.config
+            || !this.daoConfig.threshold
             || !this.token
         ) {
             return undefined
@@ -179,9 +157,13 @@ export class ProposalCreateStore {
         const actualBalanceBN = new BigNumber(this.userData.tokenBalance)
             .minus(this.userData.lockedTokens)
 
-        return new BigNumber(this.data.config.threshold)
+        return new BigNumber(this.daoConfig.threshold)
             .minus(actualBalanceBN)
             .toFixed()
+    }
+
+    public get threshold(): string | undefined {
+        return this.daoConfig.threshold
     }
 
 }

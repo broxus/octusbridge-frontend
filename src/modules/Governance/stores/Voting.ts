@@ -23,6 +23,10 @@ export class VotingStore {
         makeAutoObservable(this)
     }
 
+    public dispose(): void {
+        this.userData.dispose()
+    }
+
     public async castVote(proposalId: number, support: boolean, reason?: string): Promise<void> {
         this.setState('castLoading', true)
 
@@ -79,7 +83,7 @@ export class VotingStore {
             }
 
             await successStream
-            await this.sync()
+            await this.userData.sync()
         }
         catch (e) {
             await subscriber.unsubscribe()
@@ -134,7 +138,7 @@ export class VotingStore {
                 })
 
             await successStream
-            await this.sync()
+            await this.userData.sync()
             success = true
         }
         catch (e) {
@@ -145,26 +149,6 @@ export class VotingStore {
         this.setState('unlockVoteLoading', false)
 
         return success
-    }
-
-    public async sync(): Promise<void> {
-        try {
-            await this.userData.sync()
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    public async fetch(): Promise<void> {
-        this.setState('loading', true)
-        try {
-            await this.sync()
-        }
-        catch (e) {
-            error(e)
-        }
-        this.setState('loading', false)
     }
 
     protected setState<K extends keyof VotingStoreState>(key: K, value: VotingStoreState[K]): void {
