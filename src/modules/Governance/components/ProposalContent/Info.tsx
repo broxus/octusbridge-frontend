@@ -6,7 +6,7 @@ import { Icon } from '@/components/common/Icon'
 import { Copy } from '@/components/common/Copy'
 import { Summary } from '@/components/common/Summary'
 import { useProposalContext } from '@/modules/Governance/providers'
-import { sliceAddress } from '@/utils'
+import { dateFormat, sliceAddress } from '@/utils'
 
 export function ProposalInfoInner(): JSX.Element | null {
     const proposal = useProposalContext()
@@ -19,7 +19,7 @@ export function ProposalInfoInner(): JSX.Element | null {
         <>
             <div className="proposal-content__title">
                 {intl.formatMessage({
-                    id: 'PROPOSAL_DATA_TITLE',
+                    id: 'PROPOSAL_INFO_TITLE',
                 })}
             </div>
 
@@ -28,7 +28,7 @@ export function ProposalInfoInner(): JSX.Element | null {
                 space="sm"
                 items={[{
                     key: intl.formatMessage({
-                        id: 'PROPOSAL_DATA_ADDRESS',
+                        id: 'PROPOSAL_INFO_ADDRESS',
                     }),
                     value: proposal.proposalAddress ? (
                         <div className="explorer-link">
@@ -39,6 +39,16 @@ export function ProposalInfoInner(): JSX.Element | null {
                             </Copy>
                         </div>
                     ) : noValue,
+                }, {
+                    key: intl.formatMessage({
+                        id: 'PROPOSAL_INFO_VOTING_START',
+                    }),
+                    value: proposal.startTime ? dateFormat(proposal.startTime) : noValue,
+                }, {
+                    key: intl.formatMessage({
+                        id: 'PROPOSAL_INFO_VOTING_END',
+                    }),
+                    value: proposal.endTime ? dateFormat(proposal.endTime * 1000) : noValue,
                 }]}
             />
         </>

@@ -21,14 +21,14 @@ export function ProposalTimelineInner(): JSX.Element | null {
                 })}
             </Title>
 
-            {proposal.createdAt
+            {proposal.createTime
             && proposal.startTime
             && proposal.queuedAt
             && proposal.executedAt
             && proposal.gracePeriod
                 ? (
                     <Timeline
-                        createdAt={proposal.createdAt}
+                        createdAt={proposal.createTime}
                         executedAt={proposal.executedAt}
                         gracePeriod={proposal.gracePeriod}
                         queuedAt={proposal.queuedAt}

@@ -10,13 +10,13 @@ import { ContentLoader } from '@/components/common/ContentLoader'
 import { TonButtonConnector } from '@/modules/TonWalletConnector/Button'
 import { useProposalContext, useVotingContext } from '@/modules/Governance/providers'
 import { VotingForm } from '@/modules/Governance/components/VotingForm'
+import { ProposalDates } from '@/modules/Governance/components/UserVote/Dates'
 import { useMounted } from '@/hooks'
 import { DexConstants } from '@/misc'
-import { dateFormat, error, formattedAmount } from '@/utils'
+import { error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
-// TODO: Voting power
 // TODO: Voting weight
 export function UserVoteInner(): JSX.Element {
     const intl = useIntl()
@@ -25,7 +25,6 @@ export function UserVoteInner(): JSX.Element {
     const voting = useVotingContext()
     const [formVisible, setFormVisible] = React.useState(false)
     const [support, setSupport] = React.useState(false)
-    const currentTime = new Date().getTime()
     const castedVote = voting.castedVotes?.find(([id]) => parseInt(id, 10) === proposal.id)
 
     const showFormFn = (_support: boolean) => () => {
@@ -178,23 +177,7 @@ export function UserVoteInner(): JSX.Element {
                                 )
                             ) : (
                                 proposal.startTime && proposal.queuedAt && (
-                                    <div className="user-vote__message text-muted">
-                                        {currentTime < proposal.startTime ? (
-                                            intl.formatMessage({
-                                                id: 'USER_VOTE_START_TEXT',
-                                            }, {
-                                                start: dateFormat(proposal.startTime),
-                                                end: dateFormat(proposal.queuedAt),
-                                            })
-                                        ) : (
-                                            intl.formatMessage({
-                                                id: 'USER_VOTE_ENDED_TEXT',
-                                            }, {
-                                                start: dateFormat(proposal.startTime),
-                                                end: dateFormat(proposal.queuedAt),
-                                            })
-                                        )}
-                                    </div>
+                                    <ProposalDates />
                                 )
                             )
                         )

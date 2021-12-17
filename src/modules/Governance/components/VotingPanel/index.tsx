@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import BigNumber from 'bignumber.js'
 
 import { DexConstants } from '@/misc'
 import { ContentLoader } from '@/components/common/ContentLoader'
@@ -36,6 +37,13 @@ export function VotingPanel({
 }: Props): JSX.Element {
     const intl = useIntl()
 
+    const valueRounded = value
+        ? new BigNumber(value)
+            .shiftedBy(-DexConstants.TONDecimals)
+            .dp(0, BigNumber.ROUND_DOWN)
+            .toFixed()
+        : undefined
+
     const scrollToAll = (e: React.FormEvent<HTMLAnchorElement>) => {
         e.preventDefault()
         const el = document.querySelector('#votes')
@@ -51,7 +59,7 @@ export function VotingPanel({
                     })}
                 </div>
                 <div className="voting-panel__value">
-                    {value ? formattedAmount(value, DexConstants.TONDecimals) : null}
+                    {valueRounded ? formattedAmount(valueRounded) : null}
 
                     {total && (
                         <span className="voting-panel__total">
