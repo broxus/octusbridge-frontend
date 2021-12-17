@@ -72,6 +72,7 @@ export function ProposalHeaderInner(): JSX.Element | null {
                     copy
                     external
                     address={proposal.proposer}
+                    link={`/staking/explorer/${proposal.proposer}`}
                 />
             )}
         </Header>

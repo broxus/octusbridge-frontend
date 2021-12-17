@@ -2,11 +2,10 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
-import { Icon } from '@/components/common/Icon'
-import { Copy } from '@/components/common/Copy'
+import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { Summary } from '@/components/common/Summary'
 import { useProposalContext } from '@/modules/Governance/providers'
-import { dateFormat, sliceAddress } from '@/utils'
+import { dateFormat } from '@/utils'
 
 export function ProposalInfoInner(): JSX.Element | null {
     const proposal = useProposalContext()
@@ -31,13 +30,7 @@ export function ProposalInfoInner(): JSX.Element | null {
                         id: 'PROPOSAL_INFO_ADDRESS',
                     }),
                     value: proposal.proposalAddress ? (
-                        <div className="explorer-link">
-                            {sliceAddress(proposal.proposalAddress)}
-
-                            <Copy text={proposal.proposalAddress} id="copy-proposal-address">
-                                <Icon icon="copy" />
-                            </Copy>
-                        </div>
+                        <TonscanAccountLink copy address={proposal.proposalAddress} />
                     ) : noValue,
                 }, {
                     key: intl.formatMessage({

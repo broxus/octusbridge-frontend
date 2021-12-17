@@ -2,11 +2,10 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { DexConstants } from '@/misc'
+import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
 import { Summary } from '@/components/common/Summary'
-import { Icon } from '@/components/common/Icon'
-import { Copy } from '@/components/common/Copy'
 import { TonAction } from '@/modules/Governance/types'
-import { formattedAmount, sliceAddress } from '@/utils'
+import { formattedAmount } from '@/utils'
 
 type Props = TonAction
 
@@ -30,14 +29,7 @@ export function TonActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_TARGET',
                 }),
-                value: (
-                    <div className="explorer-link">
-                        {sliceAddress(target)}
-                        <Copy text={target} id="copy-target">
-                            <Icon icon="copy" />
-                        </Copy>
-                    </div>
-                ),
+                value: <TonscanAccountLink copy address={target} />,
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_VALUE',
