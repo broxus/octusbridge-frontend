@@ -626,8 +626,8 @@ export default {
     PROPOSAL_INFO_VOTING_START: 'Voting start',
     PROPOSAL_INFO_VOTING_END: 'Voting end',
 
-    PROPOSAL_DATES_START_HOURS: 'Voting starts in {hours}h {minutes}m',
-    PROPOSAL_DATES_START_MINS: 'Voting starts in {minutes}m',
+    PROPOSAL_DATES_START_HOURS: 'Voting start in {hours}h {minutes}m',
+    PROPOSAL_DATES_START_MINS: 'Voting start in {minutes}m',
     PROPOSAL_DATES_NOW: 'Voting started',
 
     PROPOSAL_DATES_END_HOURS: 'Voting ended {hours}h {minutes}m ago',
