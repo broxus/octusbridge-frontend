@@ -621,8 +621,17 @@ export default {
     PROPOSAL_FORM_WARNING_TEXT: 'Your current stake is not big enough to create a proposal. Please increase your stake to at least {amount} BRIDGE tokens.',
     PROPOSAL_FORM_LINK: 'Increase stake',
 
-    PROPOSAL_DATA_TITLE: 'Info',
-    PROPOSAL_DATA_ADDRESS: 'Address',
+    PROPOSAL_INFO_TITLE: 'Info',
+    PROPOSAL_INFO_ADDRESS: 'Address',
+    PROPOSAL_INFO_VOTING_START: 'Voting start',
+    PROPOSAL_INFO_VOTING_END: 'Voting end',
+
+    PROPOSAL_DATES_START_HOURS: 'Start in {hours}h {minutes}m',
+    PROPOSAL_DATES_START_MINS: 'Start in {minutes}m',
+    PROPOSAL_DATES_NOW: 'Voting started',
+
+    PROPOSAL_DATES_END_HOURS: 'Ended at {hours}h {minutes}m',
+    PROPOSAL_DATES_END_MINS: 'Ended at {minutes}m',
 
     VOTES_TABLE_TITLE: 'All votes',
     VOTES_TABLE_VOTER: 'Voter',

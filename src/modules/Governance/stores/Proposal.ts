@@ -127,10 +127,6 @@ export class ProposalStore {
         this.setCancelLoading(false)
     }
 
-    protected setLoading(loading: boolean): void {
-        this._state.loading = loading
-    }
-
     protected setCancelLoading(loading: boolean): void {
         this._state.cancelLoading = loading
     }
@@ -150,7 +146,7 @@ export class ProposalStore {
     }
 
     public get loading(): boolean {
-        return !!this._state.loading
+        return this.proposalAddress === undefined
     }
 
     public get configLoading(): boolean {
@@ -178,6 +174,7 @@ export class ProposalStore {
         return link && validateUrl(link) ? link : undefined
     }
 
+    // TODO: Convert to milliseconds
     public get endTime(): number | undefined {
         return this.proposal?.endTime
     }
@@ -216,6 +213,14 @@ export class ProposalStore {
 
     public get createdAt(): number | undefined {
         return this.proposal?.createdAt
+    }
+
+    public get createTime(): number | undefined {
+        if (!this.proposal?.startTime || !this.votingDelay) {
+            return undefined
+        }
+
+        return (this.proposal.startTime * 1000) - this.votingDelay
     }
 
     public get startTime(): number | undefined {
