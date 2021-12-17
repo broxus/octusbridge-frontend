@@ -1,24 +1,39 @@
 import { Address, Contract } from 'ton-inpage-provider'
-import { makeAutoObservable, toJS } from 'mobx'
+import {
+    IReactionDisposer, makeAutoObservable, toJS, when,
+} from 'mobx'
 
-import { Proposal, UserDataStoreData } from '@/modules/Governance/types'
+import { Proposal, UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import { handleProposalsByIds } from '@/modules/Governance/utils'
 import {
     BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
-import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
+import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 
 export class UserDataStore {
 
     protected data: UserDataStoreData = {}
 
+    protected state: UserDataStoreState = {}
+
+    protected syncDisposer: IReactionDisposer
+
     constructor(
         protected tonWallet: TonWalletService,
         protected tokensCache: TokensCacheService,
     ) {
         makeAutoObservable(this)
+
+        this.syncDisposer = when(
+            () => this.tonWallet.isConnected && this.tokensCache.isInitialized,
+            () => this.sync(),
+        )
+    }
+
+    public dispose(): void {
+        this.syncDisposer()
     }
 
     protected async syncCastedProposals(): Promise<void> {
@@ -94,9 +109,10 @@ export class UserDataStore {
 
             this.setData('castedVotes', castedVotes)
             this.setData('lockedTokens', lockedTokens)
-            this.setData('userDetails', userDetails)
+            this.setData('tokenBalance', userDetails.token_balance)
         }
         catch (e) {
+            this.setState('hasAccount', false)
             error(e)
         }
     }
@@ -130,6 +146,10 @@ export class UserDataStore {
         this.data[key] = value
     }
 
+    protected setState<K extends keyof UserDataStoreState>(key: K, value: UserDataStoreState[K]): void {
+        this.state[key] = value
+    }
+
     public get connected(): boolean {
         return this.tokensCache.isInitialized && this.tonWallet.isConnected
     }
@@ -151,7 +171,7 @@ export class UserDataStore {
     }
 
     public get tokenBalance(): string | undefined {
-        return this.data.userDetails?.token_balance
+        return this.data.tokenBalance
     }
 
     public get userDataAddress(): Address | undefined {
@@ -162,13 +182,8 @@ export class UserDataStore {
         return this.data.castedProposals
     }
 
-}
+    public get hasAccount(): boolean | undefined {
+        return this.state.hasAccount
+    }
 
-const userDataStore = new UserDataStore(
-    useTonWallet(),
-    useTokensCache(),
-)
-
-export function useUserData(): UserDataStore {
-    return userDataStore
 }

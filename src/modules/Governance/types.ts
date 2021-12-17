@@ -1,7 +1,7 @@
 import { Address } from 'ton-inpage-provider'
 
 import {
-    CastedVotes, ProposalConfig, StackingDetails, UserDetails,
+    CastedVotes, ProposalConfig, StackingDetails,
 } from '@/misc'
 
 export enum ActionNetwork {
@@ -200,20 +200,19 @@ export type VotingStoreState = {
     unlockVoteLoading?: boolean;
 }
 
-export type ProposalCreateStoreData = {
-    config?: ProposalConfig;
-}
-
 export type ProposalCreateStoreState = {
-    loading?: boolean;
     createLoading?: boolean;
 }
 
 export type UserDataStoreData = {
     userDataAddress?: Address;
-    userDetails?: UserDetails;
+    tokenBalance?: string;
     lockedTokens?: string;
     castedVotes?: CastedVotes;
     stakingDetails?: StackingDetails;
     castedProposals?: Proposal[];
+}
+
+export type UserDataStoreState = {
+    hasAccount?: boolean;
 }

@@ -13,7 +13,11 @@ export function ProposalFormWarningInner(): JSX.Element | null {
     const intl = useIntl()
     const proposalCreate = useProposalCreateContext()
 
-    if (!proposalCreate.token || !proposalCreate.tokenMissing) {
+    if (!proposalCreate.tokenMissing && !proposalCreate.threshold) {
+        return null
+    }
+
+    if (!proposalCreate.token?.decimals) {
         return null
     }
 
@@ -33,7 +37,7 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                         id: 'PROPOSAL_FORM_WARNING_TEXT',
                     }, {
                         amount: formattedAmount(
-                            proposalCreate.tokenMissing,
+                            proposalCreate.tokenMissing || proposalCreate.threshold,
                             proposalCreate.token.decimals,
                         ),
                     })}

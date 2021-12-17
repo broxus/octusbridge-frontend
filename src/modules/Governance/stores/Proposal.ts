@@ -25,11 +25,10 @@ export class ProposalStore {
 
     protected syncConfigDisposer: IReactionDisposer
 
-    protected userDataDisposer: IReactionDisposer
-
     protected handleProposals: (params: ProposalsRequest) => Promise<ProposalsResponse | undefined>
 
     constructor(
+        protected proposalId: number,
         protected tonWallet: TonWalletService,
         protected config: ProposalConfigStore,
         protected userData: UserDataStore,
@@ -45,26 +44,22 @@ export class ProposalStore {
                     await this.config.fetch(this.proposalAddress)
                 }
             },
-        )
-
-        this.userDataDisposer = reaction(
-            () => [this.userData.connected],
-            async () => {
-                if (this.userData.connected) {
-                    await this.userData.sync()
-                }
+            {
+                fireImmediately: true,
             },
         )
+
+        this.sync()
     }
 
     public dispose(): void {
         this.syncConfigDisposer()
     }
 
-    public async sync(proposalId: number): Promise<void> {
+    public async sync(): Promise<void> {
         try {
             const response = await this.handleProposals({
-                proposalId,
+                proposalId: this.proposalId,
                 limit: 1,
                 offset: 0,
             })
@@ -75,23 +70,6 @@ export class ProposalStore {
         catch (e) {
             error(e)
         }
-    }
-
-    public async fetch(proposalId: number): Promise<void> {
-        if (this._state.loading) {
-            return
-        }
-
-        this.setLoading(true)
-
-        try {
-            await this.sync(proposalId)
-        }
-        catch (e) {
-            error(e)
-        }
-
-        this.setLoading(false)
     }
 
     public async cancel(): Promise<void> {
@@ -137,7 +115,7 @@ export class ProposalStore {
             await successStream
 
             while (this.state !== 'Canceled') {
-                await this.sync(this.id)
+                await this.sync()
                 await new Promise(r => setTimeout(r, 2000))
             }
         }
