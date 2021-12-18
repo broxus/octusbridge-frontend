@@ -79,6 +79,8 @@ export type Proposal = {
     timestampBlock?: number;
     transactionHash?: string;
     updatedAt?: number;
+    timeLock?: number;
+    votingDelay?: number;
 }
 
 export type ProposalWithVote = Proposal & {

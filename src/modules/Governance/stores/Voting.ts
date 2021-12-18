@@ -172,7 +172,7 @@ export class VotingStore {
     }
 
     public get loading(): boolean {
-        return !!this.state.loading
+        return !!this.state.loading || this.userData.hasAccount === undefined
     }
 
     public get castLoading(): boolean {

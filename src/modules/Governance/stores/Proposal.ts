@@ -1,6 +1,4 @@
-import {
-    IReactionDisposer, makeAutoObservable, reaction, toJS,
-} from 'mobx'
+import { makeAutoObservable, toJS } from 'mobx'
 import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
 
 import {
@@ -9,7 +7,6 @@ import {
     ProposalStoreState, TonAction,
 } from '@/modules/Governance/types'
 import { handleProposals, parseDescription } from '@/modules/Governance/utils'
-import { ProposalConfigStore } from '@/modules/Governance/stores/ProposalConfig'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { ProposalAbi } from '@/misc'
@@ -23,37 +20,18 @@ export class ProposalStore {
 
     protected _state: ProposalStoreState = {}
 
-    protected syncConfigDisposer: IReactionDisposer
-
     protected handleProposals: (params: ProposalsRequest) => Promise<ProposalsResponse | undefined>
 
     constructor(
         protected proposalId: number,
         protected tonWallet: TonWalletService,
-        protected config: ProposalConfigStore,
         protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)
 
         this.handleProposals = lastOfCalls(handleProposals)
 
-        this.syncConfigDisposer = reaction(
-            () => [this.config.isConnected, this.proposalAddress],
-            async () => {
-                if (this.config.isConnected && this.proposalAddress) {
-                    await this.config.fetch(this.proposalAddress)
-                }
-            },
-            {
-                fireImmediately: true,
-            },
-        )
-
         this.sync()
-    }
-
-    public dispose(): void {
-        this.syncConfigDisposer()
     }
 
     public async sync(): Promise<void> {
@@ -149,10 +127,6 @@ export class ProposalStore {
         return this.proposalAddress === undefined
     }
 
-    public get configLoading(): boolean {
-        return this.config.loading
-    }
-
     public get cancelLoading(): boolean {
         return !!this._state.cancelLoading
     }
@@ -246,19 +220,35 @@ export class ProposalStore {
     }
 
     public get gracePeriod(): number | undefined {
-        return this.config.gracePeriod
+        if (!this.proposal?.gracePeriod) {
+            return undefined
+        }
+
+        return this.proposal.gracePeriod * 1000
     }
 
     public get votingDelay(): number | undefined {
-        return this.config.votingDelay
+        if (!this.proposal?.votingDelay) {
+            return undefined
+        }
+
+        return this.proposal.votingDelay * 1000
     }
 
     public get timeLock(): number | undefined {
-        return this.config.timeLock
+        if (!this.proposal?.timeLock) {
+            return undefined
+        }
+
+        return this.proposal.timeLock * 1000
     }
 
     public get votingPeriod(): number | undefined {
-        return this.config.votingPeriod
+        if (!this.proposal?.startTime || !this.proposal?.endTime) {
+            return undefined
+        }
+
+        return (this.proposal.endTime - this.proposal.startTime) * 1000
     }
 
     public get votingPower(): string | undefined {

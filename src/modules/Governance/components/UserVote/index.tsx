@@ -100,7 +100,7 @@ export function UserVoteInner(): JSX.Element {
 
             <TonButtonConnector size="md">
                 {/* eslint-disable no-nested-ternary */}
-                {!mounted || voting.loading || proposal.loading ? (
+                {voting.loading || proposal.loading ? (
                     <Button
                         block
                         size="md"
