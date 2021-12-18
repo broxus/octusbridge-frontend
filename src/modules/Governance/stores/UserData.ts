@@ -135,7 +135,7 @@ export class UserDataStore {
             await this.syncStaking()
             await this.syncUserData()
             await this.syncToken()
-            await this.syncCastedProposals()
+            // await this.syncCastedProposals()
         }
         catch (e) {
             error(e)
