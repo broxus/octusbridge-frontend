@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
 import { Header, Section, Title } from '@/components/common/Section'
 import { Table } from '@/components/common/Table'
@@ -18,7 +19,7 @@ type Props = {
     proposalId?: number;
 }
 
-export function VotesTable({
+export function VotesTableInner({
     proposalId,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -117,3 +118,5 @@ export function VotesTable({
         </Section>
     )
 }
+
+export const VotesTable = observer(VotesTableInner)
