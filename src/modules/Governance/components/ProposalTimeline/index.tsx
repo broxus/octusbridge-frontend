@@ -36,7 +36,7 @@ export function ProposalTimelineInner(): JSX.Element | null {
                     />
                 ) : (
                     <div className="card card--flat card--small proposal-timeline-empty">
-                        {(proposal.loading || proposal.configLoading) ? (
+                        {proposal.loading ? (
                             <ContentLoader slim transparent />
                         ) : (
                             intl.formatMessage({

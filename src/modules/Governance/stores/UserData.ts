@@ -110,6 +110,7 @@ export class UserDataStore {
             this.setData('castedVotes', castedVotes)
             this.setData('lockedTokens', lockedTokens)
             this.setData('tokenBalance', userDetails.token_balance)
+            this.setState('hasAccount', true)
         }
         catch (e) {
             this.setState('hasAccount', false)
