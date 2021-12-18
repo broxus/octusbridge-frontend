@@ -3,4 +3,9 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     row-gap: 16px;
+    column-gap: 16px;
+
+    @media only screen and (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
 }

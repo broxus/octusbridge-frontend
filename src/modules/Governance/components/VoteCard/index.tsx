@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { DexConstants } from '@/misc'
 import { formattedAmount } from '@/utils'
 
 import './index.scss'
@@ -19,7 +20,7 @@ export function VoteCard({
     return (
         <div className="vote-card">
             <div className="vote-card__value">
-                {value ? formattedAmount(value) : intl.formatMessage({
+                {value ? formattedAmount(value, DexConstants.TONDecimals) : intl.formatMessage({
                     id: 'NO_VALUE',
                 })}
             </div>

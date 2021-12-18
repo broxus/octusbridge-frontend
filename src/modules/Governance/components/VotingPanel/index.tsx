@@ -106,6 +106,7 @@ export function VotingPanel({
                                             copy
                                             external
                                             address={vote.address}
+                                            link={`/staking/explorer/${vote.address}`}
                                         />,
                                         <VoteCard
                                             value={vote.value}
