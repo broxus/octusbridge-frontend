@@ -12,13 +12,24 @@
     align-items: flex-start;
     column-gap: 40px;
     display: grid;
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: minmax(0, 1fr) 360px;
     margin: 0 0 40px;
+
+    @media only screen and (max-width: 959px) {
+        display: flex;
+        row-gap: 40px;
+        flex-direction: column-reverse;
+        align-items: initial;
+    }
 }
 
 .proposal-layout-sidebar {
     position: sticky;
     top: 40px;
+
+    @media only screen and (max-width: 959px) {
+        position: static;
+    }
 }
 
 .votes-table {

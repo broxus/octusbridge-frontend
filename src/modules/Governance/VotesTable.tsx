@@ -8,8 +8,9 @@ import { UserCard } from '@/components/common/UserCard'
 import { VoteType } from '@/modules/Governance/components/VoteType'
 import { VoteReason } from '@/modules/Governance/components/VoteReason'
 import { useVotesStore } from '@/modules/Governance/hooks'
-import { dateFormat, error } from '@/utils'
+import { dateFormat, error, formattedAmount } from '@/utils'
 import { usePagination } from '@/hooks'
+import { DexConstants } from '@/misc'
 
 import './index.scss'
 
@@ -92,12 +93,15 @@ export function VotesTable({
                             <UserCard
                                 copy
                                 address={item.voter}
+                                link={`/staking/explorer/${item.voter}`}
                             />,
                             item.reason ? <VoteReason value={item.reason} /> : noValue,
                             <VoteType
                                 badge
                                 type={item.support === true ? 1 : 0}
-                                value={item.votes}
+                                value={item.votes
+                                    ? formattedAmount(item.votes, DexConstants.TONDecimals)
+                                    : undefined}
                             />,
                             dateFormat(item.createdAt),
                         ],

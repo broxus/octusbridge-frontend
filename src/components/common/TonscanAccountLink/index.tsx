@@ -6,7 +6,6 @@ import { sliceAddress } from '@/utils'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
 
-
 type Props = {
     address: string;
     children?: React.ReactChild | React.ReactChild[] | null;
