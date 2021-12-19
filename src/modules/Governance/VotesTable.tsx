@@ -54,7 +54,10 @@ export function VotesTableInner({
         else {
             votes.dispose()
         }
-    }, [proposalId])
+    }, [
+        proposalId,
+        pagination.page,
+    ])
 
     return (
         <Section id="votes">
