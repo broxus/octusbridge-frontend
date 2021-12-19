@@ -141,34 +141,34 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                             }),
                             align: 'right',
                         }]}
-                        rows={userProposal.items.map(item => ({
+                        rows={userProposal.items.map(({ proposal, vote }) => ({
                             cells: [
-                                item.proposalId || noValue,
-                                item.state ? (
+                                proposal.proposalId || noValue,
+                                proposal.state ? (
                                     <ProposalSummary
-                                        state={item.state}
-                                        id={item.proposalId}
-                                        description={item.description}
+                                        state={proposal.state}
+                                        id={proposal.proposalId}
+                                        description={proposal.description}
                                     />
                                 ) : noValue,
-                                item.vote?.support !== undefined ? (
+                                vote?.support !== undefined ? (
                                     <VoteType
-                                        type={item.vote.support === true ? 1 : 0}
-                                        value={item.vote.votes
-                                            ? formattedAmount(item.vote.votes, DexConstants.TONDecimals)
+                                        type={vote.support === true ? 1 : 0}
+                                        value={vote.votes
+                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals)
                                             : undefined}
                                     />
                                 ) : noValue,
-                                item.state ? <ProposalStatus state={item.state} /> : noValue,
+                                proposal.state ? <ProposalStatus state={proposal.state} /> : noValue,
                                 <ProposalProgress
-                                    againstVotes={item.againstVotes}
-                                    forVotes={item.forVotes}
+                                    againstVotes={proposal.againstVotes}
+                                    forVotes={proposal.forVotes}
                                 />,
-                                item.endTime ? <DateCard timestamp={item.endTime * 1000} /> : noValue,
-                                item.proposalId && item.state ? (
+                                proposal.endTime ? <DateCard timestamp={proposal.endTime * 1000} /> : noValue,
+                                proposal.proposalId && proposal.state ? (
                                     <UnlockButton
-                                        proposalId={item.proposalId}
-                                        state={item.state}
+                                        proposalId={proposal.proposalId}
+                                        state={proposal.state}
                                     />
                                 ) : noValue,
                             ],
