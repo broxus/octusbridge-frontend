@@ -83,8 +83,9 @@ export type Proposal = {
     votingDelay?: number;
 }
 
-export type ProposalWithVote = Proposal & {
-    vote?: ProposalVote
+export type ProposalWithVote = {
+    proposal: Proposal;
+    vote?: ProposalVote;
 }
 
 export type ProposalsParams = {

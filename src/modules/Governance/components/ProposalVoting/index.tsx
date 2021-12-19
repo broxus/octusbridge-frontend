@@ -25,26 +25,28 @@ export function ProposalVotingInner(): JSX.Element | null {
 
     const fetch = async () => {
         try {
-            await forVotes.fetch({
-                limit: 3,
-                offset: 0,
-                proposalId: proposal.id,
-                support: true,
-                ordering: {
-                    column: 'createdAt',
-                    direction: 'DESC',
-                },
-            })
-            await againstVotes.fetch({
-                limit: 3,
-                offset: 0,
-                proposalId: proposal.id,
-                support: false,
-                ordering: {
-                    column: 'createdAt',
-                    direction: 'DESC',
-                },
-            })
+            await Promise.all([
+                forVotes.fetch({
+                    limit: 3,
+                    offset: 0,
+                    proposalId: proposal.id,
+                    support: true,
+                    ordering: {
+                        column: 'createdAt',
+                        direction: 'DESC',
+                    },
+                }),
+                againstVotes.fetch({
+                    limit: 3,
+                    offset: 0,
+                    proposalId: proposal.id,
+                    support: false,
+                    ordering: {
+                        column: 'createdAt',
+                        direction: 'DESC',
+                    },
+                }),
+            ])
         }
         catch (e) {
             error(e)
