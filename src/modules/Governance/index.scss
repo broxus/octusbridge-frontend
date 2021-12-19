@@ -15,7 +15,7 @@
     grid-template-columns: minmax(0, 1fr) 360px;
     margin: 0 0 40px;
 
-    @media only screen and (max-width: 959px) {
+    @media only screen and (max-width: 1169px) {
         display: flex;
         row-gap: 40px;
         flex-direction: column-reverse;
@@ -27,7 +27,7 @@
     position: sticky;
     top: 40px;
 
-    @media only screen and (max-width: 959px) {
+    @media only screen and (max-width: 1169px) {
         position: static;
     }
 }
