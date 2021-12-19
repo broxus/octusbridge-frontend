@@ -29,6 +29,11 @@ export function Container({
     const currentDay = new Date().setHours(0, 0, 0, 0)
     const currentDayIndex = dates.findIndex(date => date === currentDay)
 
+    const currentTime = new Date().getTime()
+    const duration = endRounded - startRounded
+    const currentDuration = currentTime - startRounded
+    const currentPercent = (currentDuration * 100) / duration
+
     return (
         <div className="card card--flat card--small timeline">
             <div className="timeline__inner">
@@ -47,7 +52,15 @@ export function Container({
                             />
                         </Interval>
                     ))}
+
+                    <div
+                        className="timeline-day__cursor"
+                        style={{
+                            left: `${currentPercent}%`,
+                        }}
+                    />
                 </Line>
+
                 <hr />
 
                 {children}
