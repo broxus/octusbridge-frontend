@@ -31,10 +31,6 @@ export function ProposalStoreProvider({
     const proposalId = parseInt(routeParams.id, 10)
     const proposal = useProposal(proposalId)
 
-    React.useEffect(() => () => (
-        proposal.dispose()
-    ), [])
-
     return (
         <ProposalContext.Provider value={proposal}>
             {children}
