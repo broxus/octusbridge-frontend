@@ -28,10 +28,6 @@ export function Day({
             <span className="timeline-day__date">
                 {DateTime.fromMillis(timestamp).toFormat('d.L')}
             </span>
-
-            {active && (
-                <div className="timeline-day__cursor" />
-            )}
         </div>
     )
 }

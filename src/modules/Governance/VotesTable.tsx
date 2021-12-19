@@ -107,7 +107,7 @@ export function VotesTableInner({
                                     ? formattedAmount(item.votes, DexConstants.TONDecimals)
                                     : undefined}
                             />,
-                            dateFormat(item.createdAt),
+                            dateFormat(item.createdAt * 1000),
                         ],
                     }))}
                 />
