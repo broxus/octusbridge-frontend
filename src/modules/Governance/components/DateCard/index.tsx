@@ -7,41 +7,81 @@ import { dateFormat } from '@/utils'
 import './index.scss'
 
 type Props = {
-    timestamp: number;
+    startTime: number;
+    endTime: number;
 }
 
 export function DateCard({
-    timestamp,
+    startTime,
+    endTime,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const duration = timestamp - new Date().getTime()
-    const { days, hours, minutes } = Duration.fromMillis(duration)
-        .shiftTo('days', 'hours', 'minutes', 'seconds')
 
-    let intlId
-    if (days > 0) {
-        intlId = 'PROPOSAL_ACTION_DAYS'
+    let label,
+        timestamp
+
+    const currentTime = new Date().getTime()
+
+    if (currentTime < startTime) {
+        let intlId
+        const duration = startTime - currentTime
+        const { days, hours, minutes } = Duration.fromMillis(duration)
+            .shiftTo('days', 'hours', 'minutes', 'seconds')
+
+        if (days > 0) {
+            intlId = 'PROPOSAL_DATE_START_DAYS'
+        }
+        else if (hours > 0) {
+            intlId = 'PROPOSAL_DATE_START_HOURS'
+        }
+        else {
+            intlId = 'PROPOSAL_DATE_START_MINUTES'
+        }
+
+        label = intl.formatMessage({
+            id: intlId,
+        }, {
+            days, hours, minutes,
+        })
+
+        timestamp = startTime
     }
-    else if (hours > 0) {
-        intlId = 'PROPOSAL_ACTION_HOURS'
-    }
-    else if (minutes > 0) {
-        intlId = 'PROPOSAL_ACTION_MINUTES'
+    else if (currentTime >= startTime && currentTime < endTime) {
+        let intlId
+        const duration = endTime - currentTime
+        const { days, hours, minutes } = Duration.fromMillis(duration)
+            .shiftTo('days', 'hours', 'minutes', 'seconds')
+
+        if (days > 0) {
+            intlId = 'PROPOSAL_DATE_END_DAYS'
+        }
+        else if (hours > 0) {
+            intlId = 'PROPOSAL_DATE_END_HOURS'
+        }
+        else {
+            intlId = 'PROPOSAL_DATE_END_MINUTES'
+        }
+
+        label = intl.formatMessage({
+            id: intlId,
+        }, {
+            days, hours, minutes,
+        })
+
+        timestamp = endTime
     }
     else {
-        intlId = 'PROPOSAL_ACTION_EXPIRED'
+        label = intl.formatMessage({
+            id: 'PROPOSAL_DATE_ENDED',
+        })
+
+        timestamp = endTime
     }
 
     return (
         <div className="proposal-date-card">
             <div className="proposal-date-card__label">
-                {intl.formatMessage({
-                    id: intlId,
-                }, {
-                    days,
-                    hours,
-                    minutes,
-                })}
+                {label}
             </div>
             <div className="proposal-date-card__value">
                 {dateFormat(timestamp)}

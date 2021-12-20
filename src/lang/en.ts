@@ -483,9 +483,17 @@ export default {
     PROPOSALS_VOTE_0: 'Against',
 
     PROPOSAL_HEAD_ID: '#{id}',
-    PROPOSAL_HEAD_TIME_DAYS: '{days} days {hours} hrs {minutes} mins left',
-    PROPOSAL_HEAD_TIME_HOURS: '{hours} hrs {minutes} mins left',
-    PROPOSAL_HEAD_TIME_MINS: '{minutes} mins left',
+
+    PROPOSAL_HEAD_START_DAYS: 'Voting start in {days}d {hours}h {minutes}m',
+    PROPOSAL_HEAD_START_HOURS: 'Voting start in {hours}h {minutes}m',
+    PROPOSAL_HEAD_START_MINUTES: 'Voting start in {minutes}m',
+    PROPOSAL_HEAD_END_DAYS: 'Voting ends in {days}d {hours}h {minutes}m',
+    PROPOSAL_HEAD_END_HOURS: 'Voting ends in {hours}h {minutes}m',
+    PROPOSAL_HEAD_END_MINUTES: 'Voting ends in {minutes}m',
+    PROPOSAL_HEAD_EXECUTION_DAYS: 'Execution in {days}d {hours}h {minutes}m',
+    PROPOSAL_HEAD_EXECUTION_HOURS: 'Execution in {hours}h {minutes}m',
+    PROPOSAL_HEAD_EXECUTION_MINUTES: 'Execution in {minutes}m',
+
     PROPOSAL_VOTING: 'Voting',
 
     PROPOSAL_MANAGEMENT_TITLE: 'Proposal management',
@@ -561,10 +569,13 @@ export default {
     PROPOSAL_SUMMARY_EXECUTED: 'Successfully executed proposal',
     PROPOSAL_SUMMARY_UNKNOWN: 'Unknown proposal type',
 
-    PROPOSAL_ACTION_DAYS: 'Action in {days} days',
-    PROPOSAL_ACTION_HOURS: 'Action in {hours} hours',
-    PROPOSAL_ACTION_MINUTES: 'Action in {minutes} mins',
-    PROPOSAL_ACTION_EXPIRED: 'Expired',
+    PROPOSAL_DATE_START_DAYS: 'Starts in {days}d {hours}h',
+    PROPOSAL_DATE_START_HOURS: 'Starts in {hours}h {minutes}m',
+    PROPOSAL_DATE_START_MINUTES: 'Starts in {minutes}m',
+    PROPOSAL_DATE_END_DAYS: 'Ends in {days}d {hours}h',
+    PROPOSAL_DATE_END_HOURS: 'Ends in {hours}h {minutes}m',
+    PROPOSAL_DATE_END_MINUTES: 'Ends in {minutes}m',
+    PROPOSAL_DATE_ENDED: 'Ended',
 
     PROPOSAL_UNKNOWN_TITLE: 'Unknown proposal',
     PROPOSAL_NO_DESCRIPTION: 'No description',
