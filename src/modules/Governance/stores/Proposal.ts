@@ -51,15 +51,11 @@ export class ProposalStore {
     }
 
     public async cancel(): Promise<void> {
-        this.setCancelLoading(true)
+        this.setState('cancelLoading', true)
 
         const subscriber = new Subscriber(ton)
 
         try {
-            if (!this.id) {
-                throwException('Proposal id must be defined in data')
-            }
-
             if (!this.tonWallet.account?.address) {
                 throwException('Wallet must be connected')
             }
@@ -102,11 +98,106 @@ export class ProposalStore {
             error(e)
         }
 
-        this.setCancelLoading(false)
+        this.setState('cancelLoading', false)
     }
 
-    protected setCancelLoading(loading: boolean): void {
-        this._state.cancelLoading = loading
+    public async queue(): Promise<void> {
+        this.setState('queueLoading', true)
+
+        const subscriber = new Subscriber(ton)
+
+        try {
+            if (!this.tonWallet.account?.address) {
+                throwException('Wallet must be connected')
+            }
+
+            if (!this.proposalAddress) {
+                throwException('Contract address must be defined in data')
+            }
+
+            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
+
+            const successStream = subscriber
+                .transactions(proposalContract.address)
+                .flatMap(item => item.transactions)
+                .flatMap(transaction => proposalContract.decodeTransactionEvents({
+                    transaction,
+                }))
+                .filterMap(result => {
+                    if (result.event === 'Queued') {
+                        return true
+                    }
+                    return undefined
+                })
+                .first()
+
+            await proposalContract.methods.queue({}).sendExternal({
+                publicKey: this.tonWallet.account.publicKey,
+            })
+
+            await successStream
+            while (this.state !== 'Queued') {
+                await this.sync()
+                await new Promise(r => setTimeout(r, 2000))
+            }
+        }
+        catch (e) {
+            error(e)
+        }
+
+        this.setState('queueLoading', false)
+    }
+
+    public async execute(): Promise<void> {
+        this.setState('executeLoading', true)
+
+        const subscriber = new Subscriber(ton)
+
+        try {
+            if (!this.tonWallet.account?.address) {
+                throwException('Wallet must be connected')
+            }
+
+            if (!this.proposalAddress) {
+                throwException('Contract address must be defined in data')
+            }
+
+            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
+
+            const successStream = subscriber
+                .transactions(proposalContract.address)
+                .flatMap(item => item.transactions)
+                .flatMap(transaction => proposalContract.decodeTransactionEvents({
+                    transaction,
+                }))
+                .filterMap(result => {
+                    if (result.event === 'Executed') {
+                        return true
+                    }
+                    return undefined
+                })
+                .first()
+
+            await proposalContract.methods.execute({}).sendExternal({
+                publicKey: this.tonWallet.account.publicKey,
+            })
+
+            await successStream
+            while (this.state !== 'Executed') {
+                await this.sync()
+                await new Promise(r => setTimeout(r, 2000))
+            }
+        }
+        catch (e) {
+
+        }
+
+        this.setState('executeLoading', false)
+
+    }
+
+    protected setState<K extends keyof ProposalStoreState>(key: K, value: ProposalStoreState[K]): void {
+        this._state[key] = value
     }
 
     protected setResponse(response: ProposalsResponse): void {
@@ -129,6 +220,14 @@ export class ProposalStore {
 
     public get cancelLoading(): boolean {
         return !!this._state.cancelLoading
+    }
+
+    public get queueLoading(): boolean {
+        return !!this._state.queueLoading
+    }
+
+    public get executeLoading(): boolean {
+        return !!this._state.executeLoading
     }
 
     public get id(): number | undefined {
@@ -256,6 +355,14 @@ export class ProposalStore {
 
     public get votingPower(): string | undefined {
         return this.userData.tokenBalance
+    }
+
+    public get executionTime(): number | undefined {
+        if (!this.proposal?.executionTime) {
+            return undefined
+        }
+
+        return this.proposal.executionTime * 1000
     }
 
 }
