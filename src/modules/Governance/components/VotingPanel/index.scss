@@ -1,0 +1,58 @@
+.voting-panel {
+    display: flex;
+    flex-direction: column;
+
+    &__head {
+        align-items: center;
+        display: flex;
+        font-size: 18px;
+        font-weight: 700;
+        justify-content: space-between;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 16px;
+    }
+
+    &__total {
+        color: rgba(255, 255, 255, 0.48);
+    }
+
+    &__progress {
+        margin: 0 0 18px;
+    }
+
+    &__loading {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+        justify-content: center;
+    }
+
+    &__table {
+        flex-grow: 1;
+
+        &.list {
+            --list-grid-template: minmax(180px, 60%) minmax(120px, 40%);
+        }
+    }
+
+    &__empty {
+        flex-grow: 1;
+        font-size: 14px;
+        letter-spacing: 0.6px;
+    }
+
+    &__footer {
+        margin: 20px 0 0;
+        text-align: center;
+    }
+
+    &__more {
+        color: #c5e4f3;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        line-height: 20px;
+    }
+}

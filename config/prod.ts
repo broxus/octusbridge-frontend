@@ -74,6 +74,12 @@ export const DepositToFactoryMinSlippageDenominator = '100'
 
 export const GasToStaking = '11500000000'
 
+export const GasToCastVote = '11500000000'
+
+export const MinGasToUnlockCastedVotes = '11000000000'
+
+export const GasToUnlockCastedVote = '200000000'
+
 export const HiddenBridgeStrategyGas = '2500000000'
 
 export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92ce088cbb68659d3d8a2aa1bc546899d42abf46cc16132cd591')
@@ -81,6 +87,8 @@ export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92c
 export const RelayEvmNetworkChainId = '1'
 
 export const StakingAccountAddress = new AddressLiteral('0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075')
+
+export const DaoRootContractAddress = new AddressLiteral('0:3c33153078ea2b94144ad058812563f4896cadbb84e7cc55c08e24e0a394fb3e')
 
 export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 

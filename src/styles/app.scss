@@ -130,7 +130,7 @@
 .explorer-link {
     align-items: center;
     display: inline-flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 ul.summary {
@@ -163,6 +163,33 @@ ul.summary {
         &:last-child {
             margin-bottom: 0;
         }
+    }
+
+    &_space {
+        &_sm {
+            li {
+                margin-bottom: 8px;
+            }
+        }
+    }
+
+    &_compact {
+        li {
+            column-gap: 16px;
+            justify-content: flex-start;
+        }
+
+        .summary__key {
+            flex-grow: 1;
+            flex-shrink: 0;
+            max-width: 200px;
+            width: 100%;
+        }
+    }
+
+    .summary__value {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 

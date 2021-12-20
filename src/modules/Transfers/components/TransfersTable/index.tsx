@@ -28,7 +28,7 @@ export function TransfersTable({
     const intl = useIntl()
     const tokensCache = useTokensCache()
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -74,17 +74,17 @@ export function TransfersTable({
                             symbol={tokensCache.get(item.currencyAddress)?.symbol}
                             amount={item.volumeExec}
                         />
-                    ) : nullMessage,
-                    getFromNetwork(item.transferKind, item.chainId) || nullMessage,
-                    getToNetwork(item.transferKind, item.chainId) || nullMessage,
+                    ) : noValue,
+                    getFromNetwork(item.transferKind, item.chainId) || noValue,
+                    getToNetwork(item.transferKind, item.chainId) || noValue,
                     item.status ? (
                         <Badge status={mapStatusToBadge(item.status)}>
                             {intl.formatMessage({
                                 id: mapStatusToIntl(item.status),
                             })}
                         </Badge>
-                    ) : nullMessage,
-                    item.createdAt ? dateFormat(item.createdAt) : nullMessage,
+                    ) : noValue,
+                    item.createdAt ? dateFormat(item.createdAt) : noValue,
                 ],
             }))}
         />

@@ -20,7 +20,7 @@ export function CommonStats(): JSX.Element | null {
     }
 
     const intl = useIntl()
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -73,7 +73,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_TVL',
                                 })}
-                                value={explorer.tvl ? formattedAmount(explorer.tvl) : nullMessage}
+                                value={explorer.tvl ? formattedAmount(explorer.tvl) : noValue}
                             >
                                 {explorer.tvlChange && (
                                     <TvlChange
@@ -92,7 +92,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_REWARD',
                                 })}
-                                value={explorer.reward30d ? formattedAmount(explorer.reward30d) : nullMessage}
+                                value={explorer.reward30d ? formattedAmount(explorer.reward30d) : noValue}
                             >
                                 {explorer.reward30dChange && (
                                     <TvlChange
@@ -111,7 +111,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_APR',
                                 })}
-                                value={explorer.averageApr ? `${explorer.averageApr}%` : nullMessage}
+                                value={explorer.averageApr ? `${explorer.averageApr}%` : noValue}
                             />
                         )}
                     </Observer>
@@ -122,7 +122,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_STAKEHOLDERS',
                                 })}
-                                value={explorer.stakeholders !== undefined ? explorer.stakeholders : nullMessage}
+                                value={explorer.stakeholders !== undefined ? explorer.stakeholders : noValue}
                             />
                         )}
                     </Observer>

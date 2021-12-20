@@ -1,0 +1,41 @@
+.proposals-user-table {
+    &.list {
+        --list-grid-template: 30px minmax(330px, 50%) minmax(110px, 10%) minmax(110px, 10%) minmax(190px, 10%) minmax(180px, 20%) 100px;
+    }
+}
+
+.proposals-table.list {
+    --list-grid-template: 30px minmax(500px, 58%) minmax(110px, 14%) minmax(190px, 14%) minmax(180px, 14%);
+}
+
+.proposal-layout-content {
+    align-items: flex-start;
+    column-gap: 40px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    margin: 0 0 40px;
+
+    @media only screen and (max-width: 1169px) {
+        display: flex;
+        row-gap: 40px;
+        flex-direction: column-reverse;
+        align-items: initial;
+    }
+}
+
+.proposal-layout-sidebar {
+    position: sticky;
+    top: 40px;
+
+    @media only screen and (max-width: 1169px) {
+        position: static;
+    }
+}
+
+.votes-table {
+    &.list {
+        --list-grid-template: minmax(150px, 15%) minmax(300px, 70%) minmax(100px, 10%) minmax(150px, 15%);
+
+        letter-spacing: 0.5px;
+    }
+}

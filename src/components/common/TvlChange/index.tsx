@@ -7,12 +7,14 @@ export type TvlChangeProps = {
     changesDirection: number;
     priceChange: string;
     size?: 'small';
+    showPercent?: boolean;
 }
 
 export function TvlChange({
     changesDirection,
     priceChange,
     size,
+    showPercent = true,
 }: TvlChangeProps): JSX.Element {
     return (
         <div
@@ -23,7 +25,7 @@ export function TvlChange({
             })}
         >
             {priceChange}
-            %
+            {showPercent && '%'}
         </div>
     )
 }

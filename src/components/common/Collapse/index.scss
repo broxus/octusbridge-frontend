@@ -1,0 +1,21 @@
+.collapse {
+    margin: 0 0 16px;
+
+    &__name {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        font-size: 14px;
+        justify-content: space-between;
+        letter-spacing: 0.6px;
+        line-height: 20px;
+    }
+
+    &__icon {
+        color: rgba(255, 255, 255, 0.48);
+    }
+
+    &__data {
+        margin: 16px 0 0;
+    }
+}

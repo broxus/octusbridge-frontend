@@ -12,6 +12,7 @@ type Props = {
     page: number;
     label?: string;
     size?: 'lg';
+    className?: string;
     onSubmit: (page: number) => void;
 }
 
@@ -20,6 +21,7 @@ export function Pagination({
     page,
     label,
     size,
+    className,
     onSubmit,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -59,7 +61,7 @@ export function Pagination({
     }, [page])
 
     return (
-        <form className="pagination" onSubmit={onSubmitForm}>
+        <form className={`pagination ${className}`} onSubmit={onSubmitForm}>
             <div className="pagination-pages">
                 {label || intl.formatMessage({
                     id: 'PAGINATION_PAGE',

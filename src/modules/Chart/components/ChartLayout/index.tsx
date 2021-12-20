@@ -74,7 +74,7 @@ export function ChartLayout<T extends string>({
                     'chart-layout__spinner_visible': loading,
                 })}
             >
-                <ContentLoader slim />
+                <ContentLoader transparent slim />
             </div>
         </div>
     )

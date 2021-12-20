@@ -23,6 +23,9 @@ import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
+import Proposals from '@/pages/governance/proposals'
+import Proposal from '@/pages/governance/proposals/item'
+import ProposalCreate from '@/pages/governance/proposals/create'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
 import { noop } from '@/utils'
@@ -88,6 +91,15 @@ export function App(): JSX.Element {
                             </Route>
                             <Route exact path="/relayers/create/keys">
                                 <RelayersKeys />
+                            </Route>
+                            <Route exact path="/governance/proposals">
+                                <Proposals />
+                            </Route>
+                            <Route exact path="/governance/proposals/create">
+                                <ProposalCreate />
+                            </Route>
+                            <Route exact path="/governance/proposals/:id">
+                                <Proposal />
                             </Route>
                         </Switch>
                     </div>

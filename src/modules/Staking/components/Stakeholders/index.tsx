@@ -47,7 +47,7 @@ export function StakeholdersInner(): JSX.Element | null {
         'stakeholder', ['ordinary', 'relay'],
     )
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -294,7 +294,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                             address={item.userAddress}
                                             link={`/staking/explorer/${item.userAddress}`}
                                         />
-                                    ) : nullMessage,
+                                    ) : noValue,
                                     intl.formatMessage({
                                         id: mapStakeholderKindToIntlId(item.userType),
                                     }),
@@ -302,7 +302,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                     <Amount value={item.frozenStakeBalance} />,
                                     <Amount value={item.lastReward} />,
                                     <Amount value={item.totalReward} />,
-                                    item.createdAt ? dateFormat(item.createdAt) : nullMessage,
+                                    item.createdAt ? dateFormat(item.createdAt) : noValue,
                                 ],
                             }))}
                         />

@@ -36,7 +36,7 @@ export function TransactionsInner({
     const tableOrder = useTableOrder<TransactionOrdering>('timestampblockatdescending')
     const [transactionKind, setTransactionKind] = React.useState<TransactionKindApiRequest>()
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -163,11 +163,11 @@ export function TransactionsInner({
                                     }),
                                     item.transactionHash
                                         ? <TransactionExplorerLink withIcon id={item.transactionHash} />
-                                        : nullMessage,
+                                        : noValue,
                                     item.amountExec
                                         ? <Amount value={new BigNumber(item.amountExec).abs().toFixed()} />
-                                        : nullMessage,
-                                    item.timestampBlock ? dateFormat(item.timestampBlock) : nullMessage,
+                                        : noValue,
+                                    item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
                                 ],
                             }))}
                         />
