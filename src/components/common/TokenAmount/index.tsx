@@ -24,7 +24,7 @@ export function TokenAmount({
     const intl = useIntl()
 
     return (
-        <div className="token-amount">
+        <span className="token-amount">
             <TokenIcon
                 address={address}
                 uri={uri}
@@ -38,6 +38,6 @@ export function TokenAmount({
                     symbol,
                 })}
             </span>
-        </div>
+        </span>
     )
 }

@@ -10,16 +10,18 @@ type Props = {
     items: Item[];
     compact?: boolean;
     space?: 'sm';
+    className?: string;
 }
 
 export function Summary({
     items,
     compact,
     space,
+    className,
 }: Props): JSX.Element {
     return (
         <ul
-            className={classNames('summary', {
+            className={classNames('summary', className, {
                 summary_compact: compact,
                 [`summary_space_${space}`]: space !== undefined,
             })}
@@ -30,9 +32,7 @@ export function Summary({
                         {key}
                     </span>
 
-                    <div className="summary__value">
-                        {value}
-                    </div>
+                    {value}
                 </li>
             ))}
         </ul>

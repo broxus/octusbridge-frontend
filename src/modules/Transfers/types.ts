@@ -1,27 +1,29 @@
-export type TransferKind = 'TonToEth' | 'EthToTon'
+export type TransferKind =
+    | 'TonToEth'
+    | 'EthToTon'
+    | 'EthToEth'
+    | 'CreditEthToTon'
 
-export type TransfersApiStatus =
+export type TransferStatus =
     | 'Pending'
     | 'Rejected'
     | 'Confirmed'
 
-export type TransfersApiRequestStatus = Lowercase<TransfersApiStatus>
+export type TransfersRequestStatus = Lowercase<TransferStatus>
 
-export type TransfersApiOrdering =
-    | 'volumeexecascending'
-    | 'volumeexecdescending'
+export type TransfersOrdering =
     | 'updateatascending'
     | 'updateatdescending'
     | 'createdatascending'
-    | 'createdatdescending';
+    | 'createdatdescending'
 
-export type TransfersApiTransfer = {
+export type TransferOld = {
     confirmVotes?: number;
     createdAt?: number;
     currencyAddress?: string;
     rejectVotes?: number;
     requiredVotes?: number;
-    status?: TransfersApiStatus;
+    status?: TransferStatus;
     volumeExec?: string;
     transferKind?: TransferKind;
     chainId?: number;
@@ -30,32 +32,62 @@ export type TransfersApiTransfer = {
     tonTransactionHash?: string;
 }
 
-export type TransfersApiParams = {
+export type Transfer = {
+    ethTonChainId?: number;
+    ethTonContractAddress?: string;
+    ethTonEthTokenAddress?: string;
+    ethTonEthUserAddress?: string;
+    ethTonProxyAddress?: string;
+    ethTonRequiredVotes?: number;
+    ethTonStatus?: TransferStatus;
+    ethTonTonTokenAddress?: string;
+    ethTonTransactionHashEth?: string;
+    ethTonVolumeExec: string;
+
+    tonEthChainId?: number;
+    tonEthContractAddress?: string;
+    tonEthEthTokenAddress?: string;
+    tonEthEthUserAddress?: string;
+    tonEthProxyAddress?: string;
+    tonEthRequiredVotes?: number;
+    tonEthStatus?: TransferStatus;
+    tonEthTonTokenAddress?: string;
+    tonEthVolumeExec: string;
+
+    createdAt: number;
+    creditProcessorAddress?: string;
+    tonUserAddress: string;
+    transferKind: TransferKind;
+    transferStatus: TransferStatus;
+    updatedAt: number;
+}
+
+export type TransfersParams = {
     limit?: number;
     offset?: number;
-    ordering?: TransfersApiOrdering;
+    ordering?: TransfersOrdering;
     userAddress: string;
 }
 
-export type TransfersApiFilters = {
+export type TransfersFilters = {
     createdAtGe?: number;
     createdAtLe?: number;
-    status?: TransfersApiRequestStatus;
+    status?: TransfersRequestStatus;
     volumeExecGe?: string;
     volumeExecLe?: string;
     chainId?: number;
     tonTokenAddress?: string;
 }
 
-export type TransfersApiRequest = TransfersApiParams & TransfersApiFilters
+export type TransfersRequest = TransfersParams & TransfersFilters
 
-export type TransfersApiResponse = {
+export type TransfersResponse = {
     totalCount: number;
-    transfers: TransfersApiTransfer[];
+    transfers: Transfer[];
 }
 
 export type TransfersStoreData = {
-    apiResponse?: TransfersApiResponse;
+    apiResponse?: TransfersResponse;
 }
 
 export type TransfersStoreState = {

@@ -1,0 +1,40 @@
+.transfers-table {
+    &__amount {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__toggler {
+        cursor: pointer;
+        opacity: 0.48;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        svg {
+            fill: currentColor;
+        }
+    }
+
+    &__info {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 0;
+    }
+
+    &__link {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__summary {
+        &.summary {
+            .summary__key {
+                max-width: 250px;
+            }
+        }
+    }
+}

@@ -3,8 +3,7 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import {
-    DateFilter, FilterField, Filters, NetworkFilter,
-    NUM_REGEXP, RadioFilter, TextFilter, TokenFilter,
+    DateFilter, FilterField, Filters, NetworkFilter, RadioFilter, TokenFilter,
 } from '@/components/common/Filters'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
@@ -17,9 +16,9 @@ import { useDateParam } from '@/hooks/useDateParam'
 import { useTextParam } from '@/hooks/useTextParam'
 import { useDictParam } from '@/hooks/useDictParam'
 import { useNumParam } from '@/hooks/useNumParam'
-import { useBNParam } from '@/hooks/useBNParam'
+// import { useBNParam } from '@/hooks/useBNParam'
 import {
-    TransfersApiFilters, TransfersApiOrdering, TransfersApiRequestStatus,
+    TransfersFilters, TransfersOrdering, TransfersRequestStatus,
 } from '@/modules/Transfers/types'
 import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
@@ -44,8 +43,8 @@ function TransfersInner({
     const pagination = usePagination(transfers.totalCount)
     const pendingPagination = usePagination(pendingTransfers.totalCount)
 
-    const tableOrder = useTableOrder<TransfersApiOrdering>('createdatdescending')
-    const pendingTableOrder = useTableOrder<TransfersApiOrdering>('createdatdescending')
+    const tableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
+    const pendingTableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
 
     const evmNetworks = React.useMemo(() => (
         networks.filter(item => item.type === 'evm')
@@ -64,10 +63,13 @@ function TransfersInner({
     const [chainId, setChainId] = useNumParam('chain')
     const [createdAtGe, setCreatedAtGe] = useDateParam('created-ge')
     const [createdAtLe, setCreatedAtLe] = useDateParam('created-le')
-    const [volumeExecGe, setVolumeExecGe] = useBNParam('volume-ge')
-    const [volumeExecLe, setVolumeExecLe] = useBNParam('volume-le')
+
+    // TODO: Enable when api will support filtering by volumeExec
+    // const [volumeExecGe, setVolumeExecGe] = useBNParam('volume-ge')
+    // const [volumeExecLe, setVolumeExecLe] = useBNParam('volume-le')
+
     const [tonTokenAddress, setTonTokenAddress] = useTextParam('token')
-    const [status, setStatus] = useDictParam<TransfersApiRequestStatus>(
+    const [status, setStatus] = useDictParam<TransfersRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
     )
 
@@ -81,8 +83,8 @@ function TransfersInner({
                 status,
                 createdAtGe,
                 createdAtLe,
-                volumeExecGe,
-                volumeExecLe,
+                // volumeExecGe,
+                // volumeExecLe,
                 userAddress,
                 tonTokenAddress,
                 limit: pagination.limit,
@@ -113,15 +115,15 @@ function TransfersInner({
         }
     }
 
-    const changeFilters = (filters: TransfersApiFilters) => {
+    const changeFilters = (filters: TransfersFilters) => {
         pagination.submit(1)
         setStatus(filters.status)
         setChainId(filters.chainId)
         setTonTokenAddress(filters.tonTokenAddress)
         setCreatedAtGe(filters.createdAtGe)
         setCreatedAtLe(filters.createdAtLe)
-        setVolumeExecGe(filters.volumeExecGe)
-        setVolumeExecLe(filters.volumeExecLe)
+        // setVolumeExecGe(filters.volumeExecGe)
+        // setVolumeExecLe(filters.volumeExecLe)
     }
 
     React.useEffect(() => {
@@ -131,8 +133,8 @@ function TransfersInner({
         chainId,
         createdAtGe,
         createdAtLe,
-        volumeExecGe,
-        volumeExecLe,
+        // volumeExecGe,
+        // volumeExecLe,
         tonTokenAddress,
         userAddress,
         pagination.limit,
@@ -198,14 +200,14 @@ function TransfersInner({
                 <Header size="lg">
                     <Title size="lg">{title}</Title>
 
-                    <Filters<TransfersApiFilters>
+                    <Filters<TransfersFilters>
                         filters={{
                             chainId,
                             status,
                             createdAtGe,
                             createdAtLe,
-                            volumeExecGe,
-                            volumeExecLe,
+                            // volumeExecGe,
+                            // volumeExecLe,
                             tonTokenAddress,
                         }}
                         onChange={changeFilters}
@@ -226,7 +228,7 @@ function TransfersInner({
                                         onChange={changeFilter('createdAtLe')}
                                     />
                                 </FilterField>
-                                <FilterField
+                                {/* <FilterField
                                     title={intl.formatMessage({
                                         id: 'TRANSFERS_AMOUNT',
                                     })}
@@ -247,7 +249,7 @@ function TransfersInner({
                                             id: 'FILTERS_TO',
                                         })}
                                     />
-                                </FilterField>
+                                </FilterField> */}
                                 <FilterField
                                     title={intl.formatMessage({
                                         id: 'TRANSFERS_BC',
@@ -277,7 +279,7 @@ function TransfersInner({
                                         id: 'TRANSFERS_STATUS',
                                     })}
                                 >
-                                    <RadioFilter<TransfersApiRequestStatus>
+                                    <RadioFilter<TransfersRequestStatus>
                                         value={filters.status}
                                         onChange={changeFilter('status')}
                                         labels={[{
