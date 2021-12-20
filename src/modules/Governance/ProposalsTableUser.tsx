@@ -153,6 +153,7 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                                 ) : noValue,
                                 vote?.support !== undefined ? (
                                     <VoteType
+                                        badge
                                         type={vote.support === true ? 1 : 0}
                                         value={vote.votes
                                             ? formattedAmount(vote.votes, DexConstants.TONDecimals)
@@ -164,7 +165,12 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                                     againstVotes={proposal.againstVotes}
                                     forVotes={proposal.forVotes}
                                 />,
-                                proposal.endTime ? <DateCard timestamp={proposal.endTime * 1000} /> : noValue,
+                                proposal.startTime && proposal.endTime ? (
+                                    <DateCard
+                                        startTime={proposal.startTime * 1000}
+                                        endTime={proposal.endTime * 1000}
+                                    />
+                                ) : noValue,
                                 proposal.proposalId && proposal.state ? (
                                     <UnlockButton
                                         proposalId={proposal.proposalId}

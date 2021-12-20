@@ -120,7 +120,12 @@ export function ProposalsTableInner(): JSX.Element {
                                 againstVotes={item.againstVotes}
                                 forVotes={item.forVotes}
                             />,
-                            item.endTime ? <DateCard timestamp={item.endTime * 1000} /> : noValue,
+                            item.endTime && item.startTime ? (
+                                <DateCard
+                                    startTime={item.startTime * 1000}
+                                    endTime={item.endTime * 1000}
+                                />
+                            ) : noValue,
                         ],
                     }))}
                 />

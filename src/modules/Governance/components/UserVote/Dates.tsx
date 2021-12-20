@@ -21,8 +21,8 @@ export function ProposalDatesInner(): JSX.Element | null {
     if (currentTime < proposal.startTime) {
         duration = proposal.startTime - currentTime
     }
-    if (currentTime > proposal.endTime * 1000) {
-        duration = currentTime - (proposal.endTime * 1000)
+    if (currentTime > proposal.endTime) {
+        duration = currentTime - (proposal.endTime)
     }
 
     if (!duration) {
@@ -42,7 +42,7 @@ export function ProposalDatesInner(): JSX.Element | null {
             intlId = 'PROPOSAL_DATES_START_MINS'
         }
     }
-    if (currentTime > proposal.endTime * 1000) {
+    if (currentTime > proposal.endTime) {
         if (hours > 0) {
             intlId = 'PROPOSAL_DATES_END_HOURS'
         }

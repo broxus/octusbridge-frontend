@@ -41,7 +41,7 @@ export function ProposalInfoInner(): JSX.Element | null {
                     key: intl.formatMessage({
                         id: 'PROPOSAL_INFO_VOTING_END',
                     }),
-                    value: proposal.endTime ? dateFormat(proposal.endTime * 1000) : noValue,
+                    value: proposal.endTime ? dateFormat(proposal.endTime) : noValue,
                 }]}
             />
         </>

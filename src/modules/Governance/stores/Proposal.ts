@@ -148,9 +148,12 @@ export class ProposalStore {
         return link && validateUrl(link) ? link : undefined
     }
 
-    // TODO: Convert to milliseconds
     public get endTime(): number | undefined {
-        return this.proposal?.endTime
+        if (!this.proposal?.endTime) {
+            return undefined
+        }
+
+        return this.proposal.endTime * 1000
     }
 
     public get state(): ProposalState | undefined {
