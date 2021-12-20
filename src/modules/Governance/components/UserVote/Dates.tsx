@@ -16,51 +16,42 @@ export function ProposalDatesInner(): JSX.Element | null {
         return null
     }
 
-    let duration
-
     if (currentTime < proposal.startTime) {
-        duration = proposal.startTime - currentTime
-    }
-    if (currentTime > proposal.endTime) {
-        duration = currentTime - (proposal.endTime)
-    }
+        const duration = proposal.startTime - currentTime
+        const { hours, minutes } = Duration.fromMillis(duration)
+            .shiftTo('hours', 'minutes', 'seconds')
 
-    if (!duration) {
-        return null
-    }
-
-    let intlId = 'PROPOSAL_DATES_NOW'
-
-    const { hours, minutes } = Duration.fromMillis(duration)
-        .shiftTo('hours', 'minutes', 'seconds')
-
-    if (currentTime < proposal.startTime) {
+        let intlId
         if (hours > 0) {
             intlId = 'PROPOSAL_DATES_START_HOURS'
         }
         else if (minutes > 0) {
             intlId = 'PROPOSAL_DATES_START_MINS'
         }
-    }
-    if (currentTime > proposal.endTime) {
-        if (hours > 0) {
-            intlId = 'PROPOSAL_DATES_END_HOURS'
-        }
-        else if (minutes > 0) {
-            intlId = 'PROPOSAL_DATES_END_MINS'
-        }
+
+        return (
+            <div className="user-vote__message text-muted">
+                {intl.formatMessage({
+                    id: intlId,
+                }, {
+                    hours,
+                    minutes,
+                })}
+            </div>
+        )
     }
 
-    return (
-        <div className="user-vote__message text-muted">
-            {intl.formatMessage({
-                id: intlId,
-            }, {
-                hours,
-                minutes,
-            })}
-        </div>
-    )
+    if (currentTime > proposal.endTime) {
+        return (
+            <div className="user-vote__message text-muted">
+                {intl.formatMessage({
+                    id: 'PROPOSAL_DATES_END',
+                })}
+            </div>
+        )
+    }
+
+    return null
 }
 
 export const ProposalDates = observer(ProposalDatesInner)

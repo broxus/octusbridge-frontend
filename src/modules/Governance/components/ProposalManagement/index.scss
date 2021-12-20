@@ -21,6 +21,10 @@
             margin-bottom: 0;
         }
     }
+
+    &__button {
+        column-gap: 8px;
+    }
 }
 
 .cancel-popup {

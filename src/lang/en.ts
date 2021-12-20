@@ -499,6 +499,7 @@ export default {
     PROPOSAL_MANAGEMENT_TITLE: 'Proposal management',
     PROPOSAL_MANAGEMENT_CANCEL: 'Cancel proposal',
     PROPOSAL_MANAGEMENT_EXECUTE: 'Execute proposal',
+    PROPOSAL_MANAGEMENT_QUEUE: 'Queue proposal',
 
     PROPOSAL_CANCEL_POPUP_TITLE: 'Are you sure?',
     PROPOSAL_CANCEL_POPUP_TEXT: 'Canceling the proposal will permanently delete all progress and the result of it',
@@ -639,10 +640,7 @@ export default {
 
     PROPOSAL_DATES_START_HOURS: 'Voting start in {hours}h {minutes}m',
     PROPOSAL_DATES_START_MINS: 'Voting start in {minutes}m',
-    PROPOSAL_DATES_NOW: 'Voting started',
-
-    PROPOSAL_DATES_END_HOURS: 'Voting ended {hours}h {minutes}m ago',
-    PROPOSAL_DATES_END_MINS: 'Voting ended {minutes}m ago',
+    PROPOSAL_DATES_END: 'Voting ended',
 
     VOTES_TABLE_TITLE: 'All votes',
     VOTES_TABLE_VOTER: 'Voter',

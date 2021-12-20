@@ -177,8 +177,9 @@ export type ProposalStoreData = {
 }
 
 export type ProposalStoreState = {
-    loading?: boolean;
     cancelLoading?: boolean;
+    queueLoading?: boolean;
+    executeLoading?: boolean;
 }
 
 export type VotesStoreData = {

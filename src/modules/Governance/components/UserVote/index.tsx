@@ -11,7 +11,6 @@ import { TonButtonConnector } from '@/modules/TonWalletConnector/Button'
 import { useProposalContext, useVotingContext } from '@/modules/Governance/providers'
 import { VotingForm } from '@/modules/Governance/components/VotingForm'
 import { ProposalDates } from '@/modules/Governance/components/UserVote/Dates'
-import { useMounted } from '@/hooks'
 import { DexConstants } from '@/misc'
 import { error, formattedAmount } from '@/utils'
 
@@ -20,7 +19,6 @@ import './index.scss'
 // TODO: Voting weight
 export function UserVoteInner(): JSX.Element {
     const intl = useIntl()
-    const mounted = useMounted()
     const proposal = useProposalContext()
     const voting = useVotingContext()
     const [formVisible, setFormVisible] = React.useState(false)
