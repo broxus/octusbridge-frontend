@@ -26,7 +26,13 @@ export function Day({
                 {DateTime.fromMillis(timestamp).toFormat('ccc')}
             </span>
             <span className="timeline-day__date">
-                {DateTime.fromMillis(timestamp).toFormat('d.L')}
+                <span className="timeline-day__day">
+                    {DateTime.fromMillis(timestamp).toFormat('d')}
+                </span>
+                <span className="timeline-day__month">
+                    .
+                    {DateTime.fromMillis(timestamp).toFormat('L')}
+                </span>
             </span>
         </div>
     )

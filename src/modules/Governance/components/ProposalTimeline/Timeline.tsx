@@ -35,6 +35,15 @@ export function Timeline({
                 <Interval
                     timelineStart={timelineStart}
                     timelineEnd={timelineEnd}
+                    intervalEnd={createdAt}
+                >
+                    <Block disabled />
+                </Interval>
+
+                <Interval
+                    timelineStart={timelineStart}
+                    timelineEnd={timelineEnd}
+                    intervalStart={createdAt}
                     intervalEnd={startTime}
                 >
                     <Block>
@@ -74,12 +83,21 @@ export function Timeline({
                     timelineStart={timelineStart}
                     timelineEnd={timelineEnd}
                     intervalStart={executedAt}
+                    intervalEnd={timelineEnd}
                 >
                     <Block status="success">
                         {intl.formatMessage({
                             id: 'PROPOSAL_TIMELINE_EXECUTION',
                         })}
                     </Block>
+                </Interval>
+
+                <Interval
+                    timelineStart={timelineStart}
+                    timelineEnd={timelineEnd}
+                    intervalStart={timelineEnd}
+                >
+                    <Block disabled />
                 </Interval>
             </Line>
         </Container>

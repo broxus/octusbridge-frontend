@@ -8,7 +8,7 @@
 
     &__line {
         align-items: center;
-        column-gap: 8px;
+        column-gap: 3px;
         display: flex;
 
         &_border {
@@ -47,6 +47,12 @@
     &__date {
         color: #ffffff;
         margin: 6px 0 0;
+    }
+
+    &__month {
+        @media only screen and (max-width: 767px) {
+            display: none;
+        }
     }
 
     &__cursor {
@@ -117,6 +123,7 @@
     padding: 6px 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-height: 30px;
 
     &_active {
         color: #ffffff;
@@ -132,5 +139,9 @@
         background: linear-gradient(180deg, rgba(74, 180, 74, 0.16) 0%, rgba(74, 180, 74, 0) 100%);
         border-color: #4ab44a;
         color: #4ab44a;
+    }
+
+    &_disabled {
+        opacity: 0.2;
     }
 }
