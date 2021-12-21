@@ -7,6 +7,8 @@ import { Summary } from '@/components/common/Summary'
 import { TonAction } from '@/modules/Governance/types'
 import { formattedAmount } from '@/utils'
 
+import './index.scss'
+
 type Props = TonAction
 
 export function TonActionData({
@@ -19,12 +21,17 @@ export function TonActionData({
     return (
         <Summary
             compact
+            adaptive
             space="sm"
             items={[{
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_PAYLOAD',
                 }),
-                value: payload,
+                value: (
+                    <div className="action-data">
+                        {payload}
+                    </div>
+                ),
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_TARGET',
