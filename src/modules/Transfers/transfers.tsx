@@ -10,15 +10,11 @@ import { Pagination } from '@/components/common/Pagination'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { useTransfers } from '@/modules/Transfers/hooks/useTransfers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
-import { usePagination } from '@/hooks/usePagination'
-import { useTableOrder } from '@/hooks/useTableOrder'
-import { useDateParam } from '@/hooks/useDateParam'
-import { useTextParam } from '@/hooks/useTextParam'
-import { useDictParam } from '@/hooks/useDictParam'
-import { useNumParam } from '@/hooks/useNumParam'
-// import { useBNParam } from '@/hooks/useBNParam'
 import {
-    TransfersFilters, TransfersOrdering, TransfersRequestStatus,
+    useDateParam, useDictParam, usePagination, useTableOrder, useTextParam,
+} from '@/hooks'
+import {
+    TransferKindFilter, TransfersFilters, TransfersOrdering, TransfersRequestStatus, TransferType,
 } from '@/modules/Transfers/types'
 import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
@@ -58,36 +54,132 @@ function TransfersInner({
             ), [])
     ), [tokensCache.tokens, evmNetworks])
 
-    const [chainId, setChainId] = useNumParam('chain')
     const [createdAtGe, setCreatedAtGe] = useDateParam('created-ge')
     const [createdAtLe, setCreatedAtLe] = useDateParam('created-le')
-
-    // TODO: Enable when api will support filtering by volumeExec
-    // const [volumeExecGe, setVolumeExecGe] = useBNParam('volume-ge')
-    // const [volumeExecLe, setVolumeExecLe] = useBNParam('volume-le')
 
     const [tonTokenAddress, setTonTokenAddress] = useTextParam('token')
     const [status, setStatus] = useDictParam<TransfersRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
     )
+    const [transferType, setTransferType] = useDictParam<TransferType>(
+        'type', ['Credit', 'Default', 'Transit'],
+    )
+
+    const [fromId, setFromId] = useTextParam('from')
+    const [toId, setToId] = useTextParam('to')
+
+    const validTypes: TransferType[] = (() => {
+        const from = networks.find(item => item.id === fromId)
+        const to = networks.find(item => item.id === toId)
+
+        if (from && to && from.type === 'evm' && to.type === 'evm') {
+            return ['Transit']
+        }
+        if (from && to && from.type === 'evm' && to.type === 'ton') {
+            return ['Default', 'Credit']
+        }
+        if (from && to && from.type === 'ton' && to.type === 'evm') {
+            return ['Default']
+        }
+        if (from && from.type === 'evm') {
+            return ['Default', 'Credit', 'Transit']
+        }
+        if (to && to.type === 'evm') {
+            return ['Default', 'Transit']
+        }
+        if (from && from.type === 'ton') {
+            return ['Default']
+        }
+        if (to && to.type === 'ton') {
+            return ['Credit', 'Default']
+        }
+        return ['Default', 'Credit', 'Transit']
+    })()
+
+    const mapTransferTypeToFilter = (): TransferKindFilter[] => {
+        switch (transferType) {
+            case 'Credit':
+                return ['creditethtoton']
+            case 'Transit':
+                return ['ethtoeth']
+            case 'Default':
+                return ['tontoeth', 'ethtoton']
+            default:
+                return []
+        }
+    }
+
+    const mapExtraFilters = () => {
+        const from = networks.find(item => item.id === fromId)
+        const to = networks.find(item => item.id === toId)
+        const selectedKinds = mapTransferTypeToFilter()
+
+        let ethTonChainId,
+            tonEthChainId,
+            transferKinds: TransferKindFilter[] | undefined
+
+        if (from && to && from.type === 'evm' && to.type === 'evm') {
+            ethTonChainId = parseInt(from.chainId, 10)
+            tonEthChainId = parseInt(to.chainId, 10)
+            transferKinds = ['ethtoeth']
+        }
+        else if (from && to && from.type === 'evm' && to.type === 'ton') {
+            const validKinds = ['ethtoton', 'creditethtoton'] as TransferKindFilter[]
+            const selected = selectedKinds.filter(item => validKinds.includes(item))
+
+            ethTonChainId = parseInt(from.chainId, 10)
+            transferKinds = selected.length ? selected : validKinds
+        }
+        else if (from && to && from.type === 'ton' && to.type === 'evm') {
+            tonEthChainId = parseInt(to.chainId, 10)
+            transferKinds = ['tontoeth']
+        }
+        else if (from && from.type === 'evm') {
+            const validKinds = ['ethtoton', 'creditethtoton', 'ethtoeth'] as TransferKindFilter[]
+            const selected = selectedKinds.filter(item => validKinds.includes(item))
+
+            ethTonChainId = parseInt(from.chainId, 10)
+            transferKinds = selected.length ? selected : []
+        }
+        else if (to && to.type === 'evm') {
+            const validKinds = ['tontoeth', 'ethtoeth'] as TransferKindFilter[]
+            const selected = selectedKinds.filter(item => validKinds.includes(item))
+
+            tonEthChainId = parseInt(to.chainId, 10)
+            transferKinds = selected.length ? selected : []
+        }
+        else if (from && from.type === 'ton') {
+            transferKinds = ['tontoeth']
+        }
+        else if (to && to.type === 'ton') {
+            const validKinds = ['creditethtoton', 'ethtoton'] as TransferKindFilter[]
+            const selected = selectedKinds.filter(item => validKinds.includes(item))
+
+            transferKinds = selected.length ? selected : validKinds
+        }
+        else {
+            transferKinds = selectedKinds
+        }
+
+        return { ethTonChainId, tonEthChainId, transferKinds }
+    }
 
     const fetchAll = async () => {
         if (!tokensCache.isInitialized) {
             return
         }
+
         try {
             await transfers.fetch({
-                chainId,
                 status,
                 createdAtGe,
                 createdAtLe,
-                // volumeExecGe,
-                // volumeExecLe,
                 userAddress,
                 tonTokenAddress,
                 limit: pagination.limit,
                 offset: pagination.offset,
                 ordering: tableOrder.order,
+                ...mapExtraFilters(),
             })
         }
         catch (e) {
@@ -116,23 +208,23 @@ function TransfersInner({
     const changeFilters = (filters: TransfersFilters) => {
         pagination.submit(1)
         setStatus(filters.status)
-        setChainId(filters.chainId)
+        setTransferType(filters.transferType)
+        setFromId(filters.fromId)
+        setToId(filters.toId)
         setTonTokenAddress(filters.tonTokenAddress)
         setCreatedAtGe(filters.createdAtGe)
         setCreatedAtLe(filters.createdAtLe)
-        // setVolumeExecGe(filters.volumeExecGe)
-        // setVolumeExecLe(filters.volumeExecLe)
     }
 
     React.useEffect(() => {
         fetchAll()
     }, [
         status,
-        chainId,
+        transferType,
+        fromId,
+        toId,
         createdAtGe,
         createdAtLe,
-        // volumeExecGe,
-        // volumeExecLe,
         tonTokenAddress,
         userAddress,
         pagination.limit,
@@ -201,12 +293,12 @@ function TransfersInner({
 
                     <Filters<TransfersFilters>
                         filters={{
-                            chainId,
+                            fromId,
+                            toId,
                             status,
+                            transferType,
                             createdAtGe,
                             createdAtLe,
-                            // volumeExecGe,
-                            // volumeExecLe,
                             tonTokenAddress,
                         }}
                         onChange={changeFilters}
@@ -227,39 +319,30 @@ function TransfersInner({
                                         onChange={changeFilter('createdAtLe')}
                                     />
                                 </FilterField>
-                                {/* <FilterField
-                                    title={intl.formatMessage({
-                                        id: 'TRANSFERS_AMOUNT',
-                                    })}
-                                >
-                                    <TextFilter
-                                        value={filters.volumeExecGe}
-                                        onChange={changeFilter('volumeExecGe')}
-                                        regexp={NUM_REGEXP}
-                                        placeholder={intl.formatMessage({
-                                            id: 'FILTERS_FROM',
-                                        })}
-                                    />
-                                    <TextFilter
-                                        value={filters.volumeExecLe}
-                                        onChange={changeFilter('volumeExecLe')}
-                                        regexp={NUM_REGEXP}
-                                        placeholder={intl.formatMessage({
-                                            id: 'FILTERS_TO',
-                                        })}
-                                    />
-                                </FilterField> */}
                                 <FilterField
                                     title={intl.formatMessage({
-                                        id: 'TRANSFERS_BC',
+                                        id: 'TRANSFERS_BC_FROM',
                                     })}
                                 >
                                     <NetworkFilter
-                                        networks={evmNetworks}
-                                        chainId={filters.chainId}
-                                        onChange={changeFilter('chainId')}
+                                        id={filters.fromId}
+                                        networks={networks}
+                                        onChange={changeFilter('fromId')}
                                     />
                                 </FilterField>
+
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_BC_TO',
+                                    })}
+                                >
+                                    <NetworkFilter
+                                        id={filters.toId}
+                                        networks={networks}
+                                        onChange={changeFilter('toId')}
+                                    />
+                                </FilterField>
+
                                 {tokens && (
                                     <FilterField
                                         title={intl.formatMessage({
@@ -296,6 +379,35 @@ function TransfersInner({
                                             name: intl.formatMessage({
                                                 id: 'TRANSFERS_STATUS_REJECTED',
                                             }),
+                                        }]}
+                                    />
+                                </FilterField>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_TYPE',
+                                    })}
+                                >
+                                    <RadioFilter<TransferType>
+                                        value={filters.transferType}
+                                        onChange={changeFilter('transferType')}
+                                        labels={[{
+                                            id: 'Default',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_DEFAULT',
+                                            }),
+                                            disabled: !validTypes.includes('Default'),
+                                        }, {
+                                            id: 'Credit',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_CREDIT',
+                                            }),
+                                            disabled: !validTypes.includes('Credit'),
+                                        }, {
+                                            id: 'Transit',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_TRANSIT',
+                                            }),
+                                            disabled: !validTypes.includes('Transit'),
                                         }]}
                                     />
                                 </FilterField>

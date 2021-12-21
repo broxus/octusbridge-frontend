@@ -1,8 +1,12 @@
+export type TransferType = 'Default' | 'Credit' | 'Transit'
+
 export type TransferKind =
     | 'TonToEth'
     | 'EthToTon'
-    | 'EthToEth'
     | 'CreditEthToTon'
+    | 'EthToEth'
+
+export type TransferKindFilter = Lowercase<TransferKind>
 
 export type TransferStatus =
     | 'Pending'
@@ -67,19 +71,30 @@ export type TransfersParams = {
     offset?: number;
     ordering?: TransfersOrdering;
     userAddress: string;
+    createdAtGe?: number;
+    createdAtLe?: number;
+    status?: TransfersRequestStatus;
+    transferKinds?: TransferKindFilter[];
+    volumeExecGe?: string;
+    volumeExecLe?: string;
+    tonTokenAddress?: string;
+    ethTonChainId?: number;
+    tonEthChainId?: number;
 }
 
 export type TransfersFilters = {
     createdAtGe?: number;
     createdAtLe?: number;
     status?: TransfersRequestStatus;
+    transferType?: TransferType;
     volumeExecGe?: string;
     volumeExecLe?: string;
-    chainId?: number;
     tonTokenAddress?: string;
+    fromId?: string;
+    toId?: string;
 }
 
-export type TransfersRequest = TransfersParams & TransfersFilters
+export type TransfersRequest = TransfersParams
 
 export type TransfersResponse = {
     totalCount: number;

@@ -444,7 +444,8 @@ export default {
     TRANSFERS_STATUS: 'Status',
     TRANSFERS_TYPE: 'Type',
     TRANSFERS_DATE: 'Date',
-    TRANSFERS_BC: 'Blockchain',
+    TRANSFERS_BC_FROM: 'From',
+    TRANSFERS_BC_TO: 'To',
     TRANSFERS_TOKEN: 'Token',
     TRANSFERS_ETH_TO_TON: '{network} to Everscale',
     TRANSFERS_TON_TO_ETH: 'Everscale to {network}',
@@ -454,10 +455,9 @@ export default {
     TRANSFERS_STATUS_REJECTED: 'Canceled',
     TRANSFERS_STATUS_UNKNOWN: 'Unknown',
 
-    TRANSFERS_TYPE_TON_TO_ETH: 'EVER — ETH',
-    TRANSFERS_TYPE_ETH_TO_TON: 'ETH — EVER',
-    TRANSFERS_TYPE_CREDIT_ETH_TO_TON: 'ETH — EVER Credit',
-    TRANSFERS_TYPE_ETH_TO_ETH: 'ETH — ETH',
+    TRANSFERS_TYPE_DEFAULT: 'Default',
+    TRANSFERS_TYPE_CREDIT: 'Credit',
+    TRANSFERS_TYPE_TRANSIT: 'Transit',
 
     PROPOSALS_TITLE: 'Proposals',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',
