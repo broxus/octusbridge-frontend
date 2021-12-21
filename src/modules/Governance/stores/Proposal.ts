@@ -133,6 +133,7 @@ export class ProposalStore {
 
             await proposalContract.methods.queue({}).sendExternal({
                 publicKey: this.tonWallet.account.publicKey,
+                withoutSignature: true,
             })
 
             await successStream
@@ -180,6 +181,7 @@ export class ProposalStore {
 
             await proposalContract.methods.execute({}).sendExternal({
                 publicKey: this.tonWallet.account.publicKey,
+                withoutSignature: true,
             })
 
             await successStream
