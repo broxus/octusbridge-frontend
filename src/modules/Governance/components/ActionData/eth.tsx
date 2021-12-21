@@ -7,6 +7,8 @@ import { Copy } from '@/components/common/Copy'
 import { EthAction } from '@/modules/Governance/types'
 import { sliceAddress } from '@/utils'
 
+import './index.scss'
+
 type Props = EthAction
 
 export function EthActionData({
@@ -21,12 +23,17 @@ export function EthActionData({
     return (
         <Summary
             compact
+            adaptive
             space="sm"
             items={[{
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_CALL_DATA',
                 }),
-                value: callData,
+                value: (
+                    <div className="action-data">
+                        {callData}
+                    </div>
+                ),
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_CHAIN_ID',
@@ -36,7 +43,11 @@ export function EthActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_SIGNATURE',
                 }),
-                value: signature,
+                value: (
+                    <div className="action-data">
+                        {signature}
+                    </div>
+                ),
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_TARGET',

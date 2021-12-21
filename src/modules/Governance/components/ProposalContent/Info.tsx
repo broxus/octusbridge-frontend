@@ -24,6 +24,7 @@ export function ProposalInfoInner(): JSX.Element | null {
 
             <Summary
                 compact
+                adaptive
                 space="sm"
                 items={[{
                     key: intl.formatMessage({

@@ -187,6 +187,16 @@ ul.summary {
         }
     }
 
+    &_adaptive {
+        @media only screen and (max-width: 959px) {
+            li {
+                flex-direction: column;
+                row-gap: 4px;
+                margin-bottom: 16px;
+            }
+        }
+    }
+
     .summary__value {
         overflow: hidden;
         text-overflow: ellipsis;

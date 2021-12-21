@@ -16,7 +16,10 @@ export function Nav(): JSX.Element {
         <nav className="main-nav">
             <ul>
                 <li>
-                    <NavLink to="/bridge">
+                    <NavLink
+                        to="/bridge"
+                        isActive={() => splitLocation[1] === 'bridge' || splitLocation[1] === 'transfers'}
+                    >
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_BRIDGE',
                         })}
@@ -26,6 +29,13 @@ export function Nav(): JSX.Element {
 
                     <div className="main-nav__sub">
                         <ul>
+                            <li>
+                                <NavLink to="/bridge">
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_CREATE_TRANSFER',
+                                    })}
+                                </NavLink>
+                            </li>
                             <li>
                                 <NavLink to="/transfers/my">
                                     {intl.formatMessage({
@@ -48,9 +58,16 @@ export function Nav(): JSX.Element {
                     <div className="main-nav__sub">
                         <ul>
                             <li>
+                                <NavLink to="/staking" exact>
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_STAKING_ACCOUNT',
+                                    })}
+                                </NavLink>
+                            </li>
+                            <li>
                                 <NavLink to="/staking/explorer" exact>
                                     {intl.formatMessage({
-                                        id: 'NAV_LINK_TEXT_MY_STAKING_EXPLORER',
+                                        id: 'NAV_LINK_TEXT_STAKING_EXPLORER',
                                     })}
                                 </NavLink>
                             </li>

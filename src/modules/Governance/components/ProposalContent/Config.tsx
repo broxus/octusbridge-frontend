@@ -39,6 +39,7 @@ export function ProposalConfigInner(): JSX.Element | null {
             </div>
             <Summary
                 compact
+                adaptive
                 space="sm"
                 items={[{
                     key: intl.formatMessage({
