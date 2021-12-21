@@ -442,6 +442,7 @@ export default {
     TRANSFERS_FROM: 'From',
     TRANSFERS_TO: 'To',
     TRANSFERS_STATUS: 'Status',
+    TRANSFERS_TYPE: 'Type',
     TRANSFERS_DATE: 'Date',
     TRANSFERS_BC: 'Blockchain',
     TRANSFERS_TOKEN: 'Token',
@@ -452,6 +453,11 @@ export default {
     TRANSFERS_STATUS_PENDING: 'Pending',
     TRANSFERS_STATUS_REJECTED: 'Canceled',
     TRANSFERS_STATUS_UNKNOWN: 'Unknown',
+
+    TRANSFERS_TYPE_TON_TO_ETH: 'EVER — ETH',
+    TRANSFERS_TYPE_ETH_TO_TON: 'ETH — EVER',
+    TRANSFERS_TYPE_CREDIT_ETH_TO_TON: 'ETH — EVER Credit',
+    TRANSFERS_TYPE_ETH_TO_ETH: 'ETH — ETH',
 
     PROPOSALS_TITLE: 'Proposals',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',

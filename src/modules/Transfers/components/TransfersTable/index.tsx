@@ -36,15 +36,15 @@ export function TransfersTableInner({
                 }),
             }, {
                 name: intl.formatMessage({
+                    id: 'TRANSFERS_TYPE',
+                }),
+            }, {
+                name: intl.formatMessage({
                     id: 'TRANSFERS_FROM',
                 }),
             }, {
                 name: intl.formatMessage({
                     id: 'TRANSFERS_TO',
-                }),
-            }, {
-                name: intl.formatMessage({
-                    id: 'TRANSFERS_STATUS',
                 }),
             }, {
                 name: intl.formatMessage({

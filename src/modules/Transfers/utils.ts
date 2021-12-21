@@ -1,6 +1,6 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
-    Transfer, TransfersRequest, TransfersResponse, TransferStatus,
+    Transfer, TransferKind, TransfersRequest, TransfersResponse, TransferStatus,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
 import { findNetwork } from '@/utils'
@@ -86,10 +86,10 @@ export function getFromNetwork(transfer: Transfer): string | undefined {
         case 'CreditEthToTon':
         case 'EthToEth':
             return transfer.ethTonChainId
-                ? findNetwork(`${transfer.ethTonChainId}`, 'evm')?.label
+                ? findNetwork(`${transfer.ethTonChainId}`, 'evm')?.name
                 : undefined
         case 'TonToEth':
-            return findNetwork('1', 'ton')?.label
+            return findNetwork('1', 'ton')?.name
         default:
             return undefined
     }
@@ -99,11 +99,11 @@ export function getToNetwork(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
         case 'CreditEthToTon':
-            return findNetwork('1', 'ton')?.label
+            return findNetwork('1', 'ton')?.name
         case 'EthToEth':
         case 'TonToEth':
             return transfer.tonEthChainId
-                ? findNetwork(`${transfer.tonEthChainId}`, 'evm')?.label
+                ? findNetwork(`${transfer.tonEthChainId}`, 'evm')?.name
                 : undefined
         default:
             return undefined
@@ -112,13 +112,13 @@ export function getToNetwork(transfer: Transfer): string | undefined {
 
 export function getTransferLink(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
-        case 'EthToTon':
-            return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}`
-                : undefined
         case 'TonToEth':
             return transfer.tonEthChainId && transfer.tonEthContractAddress
                 ? `/transfer/ton-1/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
+                : undefined
+        case 'EthToTon':
+            return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
+                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}/default`
                 : undefined
         case 'CreditEthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
@@ -126,8 +126,23 @@ export function getTransferLink(transfer: Transfer): string | undefined {
                 : undefined
         case 'EthToEth':
             return transfer.ethTonChainId && transfer.tonEthChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/evm-${transfer.tonEthChainId}/${transfer.ethTonTransactionHashEth}`
+                ? `/transfer/evm-${transfer.ethTonChainId}/evm-${transfer.tonEthChainId}/${transfer.ethTonTransactionHashEth}/credit`
                 : undefined
+        default:
+            return undefined
+    }
+}
+
+export function getType(transferKind: TransferKind): string | undefined {
+    switch (transferKind) {
+        case 'TonToEth':
+            return 'EVER — ETH'
+        case 'EthToTon':
+            return 'ETH — EVER'
+        case 'CreditEthToTon':
+            return 'ETH — EVER Credit'
+        case 'EthToEth':
+            return 'ETH — ETH'
         default:
             return undefined
     }
