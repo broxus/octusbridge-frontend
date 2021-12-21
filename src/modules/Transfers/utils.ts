@@ -133,16 +133,16 @@ export function getTransferLink(transfer: Transfer): string | undefined {
     }
 }
 
-export function getType(transferKind: TransferKind): string | undefined {
+export function getTypeIntlId(transferKind: TransferKind): string | undefined {
     switch (transferKind) {
         case 'TonToEth':
-            return 'EVER — ETH'
+            return 'TRANSFERS_TYPE_DEFAULT'
         case 'EthToTon':
-            return 'ETH — EVER'
+            return 'TRANSFERS_TYPE_DEFAULT'
         case 'CreditEthToTon':
-            return 'ETH — EVER Credit'
+            return 'TRANSFERS_TYPE_CREDIT'
         case 'EthToEth':
-            return 'ETH — ETH'
+            return 'TRANSFERS_TYPE_TRANSIT'
         default:
             return undefined
     }

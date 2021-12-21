@@ -8,7 +8,7 @@ import { Amount } from '@/modules/Transfers/components/Amount'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import {
     getFromNetwork, getToNetwork, getTransferLink,
-    getType,
+    getTypeIntlId,
 } from '@/modules/Transfers/utils'
 import { Transfer } from '@/modules/Transfers/types'
 import { dateFormat } from '@/utils'
@@ -52,7 +52,9 @@ export function ItemInner({
                 </div>
             </Cell>
             <Cell>
-                {transfer.transferKind ? getType(transfer.transferKind) : noValue}
+                {transfer.transferKind ? intl.formatMessage({
+                    id: getTypeIntlId(transfer.transferKind),
+                }) : noValue}
             </Cell>
             <Cell>
                 <div className="transfers-table-status-wrapper">

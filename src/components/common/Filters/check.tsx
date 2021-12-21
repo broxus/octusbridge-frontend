@@ -4,9 +4,9 @@ import { Checkbox } from '@/components/common/Checkbox'
 
 import './index.scss'
 
-export type RadioFilter = {
-    type: 'radio';
-    value?: string;
+export type CheckFilter = {
+    type: 'check';
+    value: string[];
     labels: {
         name: string;
         id: string;
@@ -14,22 +14,30 @@ export type RadioFilter = {
 }
 
 type Props<T> = {
-    value?: T;
+    value: T[];
     labels: {
         name: string;
-        disabled?: boolean;
         id: T;
     }[]
-    onChange: (value?: T) => void;
+    onChange: (value?: T[]) => void;
 }
 
-export function RadioFilter<T>({
+export function CheckFilter<T>({
     value,
     labels,
     onChange,
 }: Props<T>): JSX.Element {
     const changeFn = (id: T) => (checked: boolean) => {
-        onChange(checked ? id : undefined)
+        let result = [...value]
+
+        if (checked) {
+            result.push(id)
+        }
+        else {
+            result = result.filter(i => i !== id)
+        }
+
+        onChange(result)
     }
 
     return (
@@ -39,8 +47,7 @@ export function RadioFilter<T>({
                 <Checkbox
                     key={index}
                     label={label.name}
-                    checked={value === label.id}
-                    disabled={label.disabled}
+                    checked={value.includes(label.id)}
                     onChange={changeFn(label.id)}
                 />
             ))}
