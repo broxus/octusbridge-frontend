@@ -24,8 +24,6 @@ import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
 import { networks } from '@/config'
 
-import './index.scss'
-
 type Props = {
     title: string;
     userAddress: string;
@@ -180,6 +178,7 @@ function TransfersInner({
 
                     <div className="card card--flat card--small">
                         <TransfersTable
+                            loading={pendingTransfers.loading}
                             items={pendingTransfers.items}
                             order={pendingTableOrder.order}
                             onSort={pendingTableOrder.onSort}
