@@ -24,9 +24,13 @@ export function ProposalCreateStoreProvider({
 }: Props): JSX.Element {
     const proposalCreate = useProposalCreate()
 
-    React.useEffect(() => () => (
-        proposalCreate.dispose()
-    ), [])
+    React.useEffect(() => {
+        proposalCreate.init()
+
+        return () => {
+            proposalCreate.dispose()
+        }
+    }, [])
 
     return (
         <ProposalCreateContext.Provider value={proposalCreate}>

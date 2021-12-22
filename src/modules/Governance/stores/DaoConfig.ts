@@ -1,6 +1,6 @@
 import { Contract } from 'ton-inpage-provider'
 import {
-    IReactionDisposer, makeAutoObservable, runInAction, when,
+    IReactionDisposer, makeAutoObservable, reaction, runInAction,
 } from 'mobx'
 
 import { TonWalletService } from '@/stores/TonWalletService'
@@ -17,21 +17,31 @@ export class DaoConfigStore {
 
     protected data: Data = {}
 
-    protected syncDisposer: IReactionDisposer
+    protected syncDisposer?: IReactionDisposer
 
     constructor(
         protected tonWallet: TonWalletService,
     ) {
         makeAutoObservable(this)
+    }
 
-        this.syncDisposer = when(
+    public init(): void {
+        this.syncDisposer = reaction(
             () => this.tonWallet.isConnected,
-            () => this.sync(),
+            isConnected => (isConnected ? this.sync() : this.reset()),
+            {
+                fireImmediately: true,
+            },
         )
     }
 
     public dispose(): void {
-        this.syncDisposer()
+        this.syncDisposer?.()
+        this.reset()
+    }
+
+    public reset(): void {
+        this.data = {}
     }
 
     public async sync(): Promise<void> {
