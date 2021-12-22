@@ -16,7 +16,7 @@ import { ProposalsFilters } from '@/modules/Governance/components/ProposalsFilte
 import { UnlockButton } from '@/modules/Governance/components/UnlockButton'
 import { UnlockAllButton } from '@/modules/Governance/components/UnlockAllButton'
 import { ProposalsFilters as Filters } from '@/modules/Governance/types'
-import { useProposalsFilters, useUserProposal } from '@/modules/Governance/hooks'
+import { useProposalsFilters, useUserProposals } from '@/modules/Governance/hooks'
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { useTonWallet } from '@/stores/TonWalletService'
 import { usePagination } from '@/hooks'
@@ -29,7 +29,7 @@ import './index.scss'
 export function ProposalsTableUserInner(): JSX.Element | null {
     const intl = useIntl()
     const tonWallet = useTonWallet()
-    const userProposal = useUserProposal()
+    const userProposal = useUserProposals()
     const pagination = usePagination(userProposal.totalCount)
     const [filters, setFilters] = useProposalsFilters('my')
 
@@ -94,9 +94,7 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                 </Title>
 
                 <Actions>
-                    <UnlockAllButton
-                        onSuccess={fetch}
-                    />
+                    <UnlockAllButton onSuccess={fetch} />
 
                     <ProposalsFilters
                         filters={filters}
@@ -173,6 +171,7 @@ export function ProposalsTableUserInner(): JSX.Element | null {
                                 ) : noValue,
                                 proposal.proposalId && proposal.state ? (
                                     <UnlockButton
+                                        showSuccessIcon
                                         proposalId={proposal.proposalId}
                                         state={proposal.state}
                                     />

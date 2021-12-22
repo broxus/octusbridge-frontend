@@ -54,7 +54,7 @@ export class UserProposalsStore {
     }
 
     public get totalCount(): number {
-        return this.data.response?.totalCount || 1
+        return this.data.response?.totalCount || 0
     }
 
     public get items(): ProposalWithVote[] {

@@ -6,7 +6,7 @@ import {
 } from '@/misc'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokenCache } from '@/stores/TokensCacheService'
-import { Proposal, VotingStoreState } from '@/modules/Governance/types'
+import { VotingStoreState } from '@/modules/Governance/types'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { error, throwException } from '@/utils'
@@ -23,8 +23,17 @@ export class VotingStore {
         makeAutoObservable(this)
     }
 
+    public init(): void {
+        this.userData.init()
+    }
+
     public dispose(): void {
         this.userData.dispose()
+        this.reset()
+    }
+
+    public reset(): void {
+        this.state = {}
     }
 
     public async castVote(proposalId: number, support: boolean, reason?: string): Promise<void> {
@@ -94,7 +103,7 @@ export class VotingStore {
     }
 
     public async unlockCastedVote(proposalIds: number[]): Promise<boolean> {
-        this.setState('unlockVoteLoading', true)
+        this.setState('unlockLoading', true)
 
         let success = false
         const subscriber = new Subscriber(ton)
@@ -120,7 +129,10 @@ export class VotingStore {
                 }))
                 .filterMap(result => {
                     if (result.event === 'UnlockCastedVotes') {
-                        testIds = testIds.filter(id => id !== result.data.proposal_id)
+                        if (testIds.includes(result.data.proposal_id)) {
+                            testIds = testIds.filter(id => id !== result.data.proposal_id)
+                            this.addUnlockedId(parseInt(result.data.proposal_id, 10))
+                        }
                     }
                     if (testIds.length === 0) {
                         return true
@@ -146,41 +158,33 @@ export class VotingStore {
             error(e)
         }
 
-        this.setState('unlockVoteLoading', false)
+        this.setState('unlockLoading', false)
 
         return success
+    }
+
+    public addUnlockedId(id: number): void {
+        this.setState('unlockedIds', [...this.unlockedIds, id])
     }
 
     protected setState<K extends keyof VotingStoreState>(key: K, value: VotingStoreState[K]): void {
         this.state[key] = value
     }
 
-    protected setLoading(loading: boolean): void {
-        this.state.loading = loading
-    }
-
-    protected setCastLoading(loading: boolean): void {
-        this.state.castLoading = loading
-    }
-
-    protected setUnlockVoteLoading(loading: boolean): void {
-        this.state.unlockVoteLoading = loading
-    }
-
-    public get connected(): boolean {
-        return this.userData.connected && this.tonWallet.isConnected
+    public get isConnected(): boolean {
+        return this.userData.isConnected && this.tonWallet.isConnected
     }
 
     public get loading(): boolean {
-        return !!this.state.loading || this.userData.hasAccount === undefined
+        return this.userData.hasAccount === undefined
     }
 
     public get castLoading(): boolean {
         return !!this.state.castLoading
     }
 
-    public get unlockVoteLoading(): boolean {
-        return !!this.state.unlockVoteLoading
+    public get unlockLoading(): boolean {
+        return !!this.state.unlockLoading
     }
 
     public get tokenBalance(): string | undefined {
@@ -189,10 +193,6 @@ export class VotingStore {
 
     public get castedVotes(): CastedVotes | undefined {
         return toJS(this.userData.castedVotes)
-    }
-
-    public get castedProposals(): Proposal[] | undefined {
-        return toJS(this.userData.castedProposals)
     }
 
     public get lockedTokens(): string | undefined {
@@ -205,6 +205,10 @@ export class VotingStore {
 
     public get tokenDecimals(): number | undefined {
         return this.token?.decimals
+    }
+
+    public get unlockedIds(): number[] {
+        return this.state.unlockedIds || []
     }
 
 }

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
+import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/common/Button'
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { useVotingContext } from '@/modules/Governance/providers'
@@ -13,11 +14,13 @@ import './index.scss'
 type Props = {
     proposalId: number;
     state: ProposalState;
+    showSuccessIcon?: boolean;
 }
 
 export function UnlockButtonInner({
     proposalId,
     state,
+    showSuccessIcon,
 }: Props): JSX.Element | null {
     const intl = useIntl()
     const voting = useVotingContext()
@@ -37,14 +40,15 @@ export function UnlockButtonInner({
 
     return (
         <div className="unlock-button">
+            {/* eslint-disable no-nested-ternary */}
             {voting.loading ? (
                 <ContentLoader slim transparent iconRation={0.8} />
             ) : (
-                locked && (
+                locked ? (
                     <Button
                         onClick={unlock}
                         type="secondary"
-                        disabled={loading || voting.loading || voting.unlockVoteLoading || state === 'Active'}
+                        disabled={loading || voting.loading || voting.unlockLoading || state === 'Active'}
                         className="unlock-button__button"
                     >
                         {intl.formatMessage({
@@ -54,6 +58,13 @@ export function UnlockButtonInner({
                             <ContentLoader slim transparent iconRation={0.8} />
                         )}
                     </Button>
+                ) : (
+                    showSuccessIcon ? (
+                        <Icon
+                            icon="success"
+                            className="unlock-button__icon"
+                        />
+                    ) : null
                 )
             )}
         </div>

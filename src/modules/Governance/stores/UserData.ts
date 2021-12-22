@@ -1,10 +1,9 @@
 import { Address, Contract } from 'ton-inpage-provider'
 import {
-    IReactionDisposer, makeAutoObservable, toJS, when,
+    IReactionDisposer, makeAutoObservable, reaction, toJS,
 } from 'mobx'
 
-import { Proposal, UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
-import { handleProposalsByIds } from '@/modules/Governance/utils'
+import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import {
     BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
@@ -18,42 +17,33 @@ export class UserDataStore {
 
     protected state: UserDataStoreState = {}
 
-    protected syncDisposer: IReactionDisposer
+    protected syncDisposer?: IReactionDisposer
 
     constructor(
         protected tonWallet: TonWalletService,
         protected tokensCache: TokensCacheService,
     ) {
         makeAutoObservable(this)
+    }
 
-        this.syncDisposer = when(
-            () => this.tonWallet.isConnected && this.tokensCache.isInitialized,
-            () => this.sync(),
+    public init(): void {
+        this.syncDisposer = reaction(
+            () => this.isConnected,
+            isConnected => (isConnected ? this.sync() : this.reset()),
+            {
+                fireImmediately: true,
+            },
         )
     }
 
     public dispose(): void {
-        this.syncDisposer()
+        this.syncDisposer?.()
+        this.reset()
     }
 
-    protected async syncCastedProposals(): Promise<void> {
-        try {
-            if (!this.castedVotes) {
-                throwException('Casted votes must be defined in data')
-            }
-
-            if (this.castedVotes.length === 0) {
-                return
-            }
-
-            const proposalIds = this.castedVotes.map(([id]) => parseInt(id, 10))
-            const proposals = await handleProposalsByIds(proposalIds)
-
-            this.setData('castedProposals', proposals)
-        }
-        catch (e) {
-            error(e)
-        }
+    public reset(): void {
+        this.data = {}
+        this.state = {}
     }
 
     protected async syncStaking(): Promise<void> {
@@ -85,7 +75,7 @@ export class UserDataStore {
         }
     }
 
-    protected async syncUserData(): Promise<void> {
+    public async syncUserData(): Promise<void> {
         try {
             if (!this.data.userDataAddress) {
                 throwException('userDataAddress must be defined in data')
@@ -123,7 +113,6 @@ export class UserDataStore {
             if (!this.data.stakingDetails?.tokenRoot) {
                 throwException('Staking details must be defined in data')
             }
-
             await this.tokensCache.syncTonToken(this.data.stakingDetails.tokenRoot.toString())
         }
         catch (e) {
@@ -136,7 +125,6 @@ export class UserDataStore {
             await this.syncStaking()
             await this.syncUserData()
             await this.syncToken()
-            // await this.syncCastedProposals()
         }
         catch (e) {
             error(e)
@@ -151,7 +139,7 @@ export class UserDataStore {
         this.state[key] = value
     }
 
-    public get connected(): boolean {
+    public get isConnected(): boolean {
         return this.tokensCache.isInitialized && this.tonWallet.isConnected
     }
 
@@ -177,10 +165,6 @@ export class UserDataStore {
 
     public get userDataAddress(): Address | undefined {
         return this.data.userDataAddress
-    }
-
-    public get castedProposals(): Proposal[] | undefined {
-        return this.data.castedProposals
     }
 
     public get hasAccount(): boolean | undefined {

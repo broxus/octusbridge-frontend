@@ -21,12 +21,16 @@ type Props = {
 
 export function VotingStoreProvider({
     children,
-}: Props): JSX.Element {
+}: Props): JSX.Element | null {
     const voting = useVoting()
 
-    React.useEffect(() => () => (
-        voting.dispose()
-    ), [])
+    React.useEffect(() => {
+        voting.init()
+
+        return () => {
+            voting.dispose()
+        }
+    })
 
     return (
         <VotingContext.Provider value={voting}>

@@ -25,6 +25,11 @@ export class ProposalCreateStore {
         makeAutoObservable(this)
     }
 
+    public init(): void {
+        this.userData.init()
+        this.daoConfig.init()
+    }
+
     public dispose(): void {
         this.daoConfig.dispose()
         this.userData.dispose()
@@ -114,8 +119,8 @@ export class ProposalCreateStore {
         this.state[key] = value
     }
 
-    public get connected(): boolean {
-        return this.userData.connected && this.tonWallet.isConnected
+    public get isConnected(): boolean {
+        return this.userData.isConnected && this.tonWallet.isConnected
     }
 
     public get createLoading(): boolean {

@@ -1,15 +1,17 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { NavLink, useLocation } from 'react-router-dom'
+import { Observer } from 'mobx-react-lite'
 
 import { Icon } from '@/components/common/Icon'
+import { useTonWallet } from '@/stores/TonWalletService'
 
 import './index.scss'
-
 
 export function Nav(): JSX.Element {
     const intl = useIntl()
     const location = useLocation()
+    const tonWallet = useTonWallet()
     const splitLocation = location.pathname.split('/')
 
     return (
@@ -32,17 +34,23 @@ export function Nav(): JSX.Element {
                             <li>
                                 <NavLink to="/bridge">
                                     {intl.formatMessage({
-                                        id: 'NAV_LINK_TEXT_CREATE_TRANSFER',
+                                        id: 'NAV_LINK_TEXT_NEW_TRANSFER',
                                     })}
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink to="/transfers/my">
-                                    {intl.formatMessage({
-                                        id: 'NAV_LINK_TEXT_MY_TRANSFERS',
-                                    })}
-                                </NavLink>
-                            </li>
+                            <Observer>
+                                {() => (
+                                    tonWallet.address ? (
+                                        <li>
+                                            <NavLink to={`/transfers/${tonWallet.address}`}>
+                                                {intl.formatMessage({
+                                                    id: 'NAV_LINK_TEXT_HISTORY',
+                                                })}
+                                            </NavLink>
+                                        </li>
+                                    ) : null
+                                )}
+                            </Observer>
                         </ul>
                     </div>
                 </li>

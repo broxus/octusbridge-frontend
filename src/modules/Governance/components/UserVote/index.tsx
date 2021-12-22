@@ -114,10 +114,10 @@ export function UserVoteInner(): JSX.Element {
                                     block
                                     size="md"
                                     type="secondary"
-                                    disabled={proposal.state === 'Active' || voting.unlockVoteLoading}
+                                    disabled={proposal.state === 'Active' || voting.unlockLoading}
                                     onClick={unlockTokens}
                                 >
-                                    {voting.unlockVoteLoading ? (
+                                    {voting.unlockLoading ? (
                                         <ContentLoader slim transparent />
                                     ) : (
                                         intl.formatMessage({

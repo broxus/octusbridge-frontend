@@ -28,10 +28,18 @@ export class ProposalStore {
         protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)
-
         this.handleProposals = lastOfCalls(handleProposals)
+    }
 
+    public init(): void {
+        this.userData.init()
         this.sync()
+    }
+
+    public dispose(): void {
+        this.userData.dispose()
+        this.data = {}
+        this._state = {}
     }
 
     public async sync(): Promise<void> {

@@ -1,44 +1,105 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
+import { Icon } from '@/components/common/Icon'
 import { Popup } from '@/components/common/Popup'
+import { Pagination } from '@/components/common/Pagination'
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { Summary } from '@/components/common/Summary'
 import { Button } from '@/components/common/Button'
 import { Table } from '@/components/common/Table'
 import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary'
+import { useUserProposals } from '@/modules/Governance/hooks'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
-import { Proposal } from '@/modules/Governance/types'
+import { useVotingContext } from '@/modules/Governance/providers'
+import { useTonWallet } from '@/stores/TonWalletService'
+import { usePagination } from '@/hooks'
 import { DexConstants } from '@/misc'
-import { formattedAmount } from '@/utils'
+import { error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
 type Props = {
-    tokens?: string;
-    loading?: boolean;
-    proposals: Proposal[];
     onDismiss: () => void;
-    onSubmit: () => void;
+    onSuccess?: () => void;
 }
 
 // TODO: VotingPower
-export function UnlockForm({
-    tokens,
-    loading,
-    proposals,
+export function UnlockFormInner({
     onDismiss,
-    onSubmit,
+    onSuccess,
 }: Props): JSX.Element {
     const intl = useIntl()
+    const tonWallet = useTonWallet()
+    const voting = useVotingContext()
+    const userProposals = useUserProposals()
+    const pagination = usePagination(userProposals.totalCount)
+
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
+    const hasLockedTokens = userProposals.items
+        .filter(({ proposal }) => !voting.unlockedIds.includes(proposal.proposalId))
+        .length > 0
+
+    const fetch = async () => {
+        if (!tonWallet.address) {
+            return
+        }
+
+        try {
+            await userProposals.fetch(tonWallet.address, {
+                locked: true,
+                limit: pagination.limit,
+                offset: pagination.offset,
+                availableForUnlock: true,
+                ordering: {
+                    column: 'createdAt',
+                    direction: 'DESC',
+                },
+            })
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    const onSubmit = async () => {
+        try {
+            const success = await voting.unlockCastedVote(
+                userProposals.items.map(item => item.proposal.proposalId),
+            )
+
+            if (success) {
+                onSuccess?.()
+
+                if (pagination.totalPages > 1) {
+                    if (pagination.page === 1) {
+                        fetch()
+                    }
+                    else {
+                        pagination.submit(1)
+                    }
+                }
+            }
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    React.useEffect(() => {
+        fetch()
+    }, [
+        pagination.page,
+    ])
+
     return (
         <Popup
-            disabled={loading}
             className="unlock-form"
+            disabled={voting.unlockLoading}
             onDismiss={onDismiss}
         >
             <h2 className="unlock-form__title">
@@ -47,10 +108,11 @@ export function UnlockForm({
                 })}
             </h2>
 
-            {proposals.length > 0 ? (
+            {userProposals.items.length > 0 ? (
                 <>
                     <Table
                         className="unlock-form__table"
+                        loading={userProposals.loading}
                         cols={[{
                             name: intl.formatMessage({
                                 id: 'UNLOCK_FORM_ID',
@@ -65,17 +127,24 @@ export function UnlockForm({
                             }),
                             align: 'right',
                         }]}
-                        rows={proposals.map(item => ({
+                        rows={userProposals.items.map(({ proposal }) => ({
                             cells: [
-                                item.proposalId,
-                                item.state ? (
+                                proposal.proposalId,
+                                proposal.state ? (
                                     <ProposalSummary
-                                        state={item.state}
-                                        id={item.proposalId}
-                                        description={item.description}
+                                        id={proposal.proposalId}
+                                        state={proposal.state}
+                                        description={proposal.description}
                                     />
                                 ) : noValue,
-                                tokens || noValue,
+                                /* eslint-disable no-nested-ternary */
+                                voting.unlockedIds.includes(proposal.proposalId) ? (
+                                    <Icon icon="success" />
+                                ) : (
+                                    voting.lockedTokens && voting.token?.decimals ? (
+                                        formattedAmount(voting.lockedTokens, voting.token.decimals)
+                                    ) : noValue
+                                ),
                             ],
                         }))}
                     />
@@ -89,13 +158,21 @@ export function UnlockForm({
                                 id: 'AMOUNT',
                             }, {
                                 value: formattedAmount(
-                                    calcGazToUnlockVotes(proposals.length),
+                                    calcGazToUnlockVotes(userProposals.items.length),
                                     DexConstants.TONDecimals,
                                 ),
-                                symbol: 'TON',
+                                symbol: DexConstants.TONSymbol,
                             }),
                         }]}
                     />
+
+                    {pagination.totalPages > 1 && (
+                        <Pagination
+                            page={pagination.page}
+                            totalPages={pagination.totalPages}
+                            onSubmit={pagination.submit}
+                        />
+                    )}
                 </>
             ) : (
                 <div className="unlock-form__empty">
@@ -109,20 +186,21 @@ export function UnlockForm({
                 <Button
                     block
                     type="secondary"
-                    disabled={loading}
+                    disabled={voting.unlockLoading}
                     onClick={onDismiss}
                 >
                     {intl.formatMessage({
                         id: 'UNLOCK_FORM_CANCEL',
                     })}
                 </Button>
+
                 <Button
                     block
                     type="primary"
-                    disabled={proposals.length === 0 || loading}
+                    disabled={userProposals.loading || voting.unlockLoading || !hasLockedTokens}
                     onClick={onSubmit}
                 >
-                    {loading ? (
+                    {voting.unlockLoading ? (
                         <ContentLoader slim transparent />
                     ) : (
                         intl.formatMessage({
@@ -134,3 +212,5 @@ export function UnlockForm({
         </Popup>
     )
 }
+
+export const UnlockForm = observer(UnlockFormInner)

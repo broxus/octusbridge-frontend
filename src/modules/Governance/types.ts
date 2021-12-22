@@ -24,6 +24,7 @@ export type ProposalVote = {
     transactionHash?: string;
     voter?: string;
     votes?: string;
+    locked?: boolean;
 }
 
 export type EthAction = {
@@ -85,7 +86,7 @@ export type Proposal = {
 
 export type ProposalWithVote = {
     proposal: Proposal;
-    vote?: ProposalVote;
+    vote: ProposalVote;
 }
 
 export type ProposalsParams = {
@@ -102,6 +103,8 @@ export type ProposalsFilters = {
     startTimeGe?: number;
     startTimeLe?: number;
     state?: ProposalState;
+    locked?: boolean;
+    availableForUnlock?: true;
 }
 
 export type ProposalsRequest = ProposalsParams & ProposalsFilters
@@ -199,9 +202,9 @@ export type ConfigStoreState = {
 }
 
 export type VotingStoreState = {
-    loading?: boolean;
     castLoading?: boolean;
-    unlockVoteLoading?: boolean;
+    unlockLoading?: boolean;
+    unlockedIds?: number[];
 }
 
 export type ProposalCreateStoreState = {
@@ -214,7 +217,6 @@ export type UserDataStoreData = {
     lockedTokens?: string;
     castedVotes?: CastedVotes;
     stakingDetails?: StackingDetails;
-    castedProposals?: Proposal[];
 }
 
 export type UserDataStoreState = {
