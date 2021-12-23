@@ -1,48 +1,67 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { observer } from 'mobx-react-lite'
+import { Observer, observer } from 'mobx-react-lite'
 
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
-import { Container } from '@/components/common/Section'
+import { Container, Title } from '@/components/common/Section'
 import { ProposalForm } from '@/modules/Governance/components/ProposalForm'
 import { ProposalFormWarning } from '@/modules/Governance/components/ProposalFormWarning'
-import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
+import { WalletConnector } from '@/modules/TonWalletConnector'
 import { useProposalCreateContext } from '@/modules/Governance/providers'
+import { useTonWallet } from '@/stores/TonWalletService'
+import { useDebounce } from '@/hooks'
 
 import './index.scss'
 
-export function ProposalCreateInner(): JSX.Element {
+export function ProposalCreateInner(): JSX.Element | null {
     const intl = useIntl()
+    const wallet = useTonWallet()
     const proposalCreate = useProposalCreateContext()
+    const isInitializing = useDebounce(wallet.isInitializing, 100)
+
+    if (isInitializing) {
+        return null
+    }
 
     return (
         <Container size="lg">
-            <WalletConnector>
-                {proposalCreate.canCreate === undefined ? (
-                    <ContentLoader transparent />
-                ) : (
-                    <>
-                        <Breadcrumb
-                            items={[{
-                                title: intl.formatMessage({
-                                    id: 'GOVERNANCE_BREADCRUMB_PROPOSALS',
-                                }),
-                                link: '/governance/proposals',
-                            }, {
-                                title: intl.formatMessage({
-                                    id: 'GOVERNANCE_BREADCRUMB_CREATE',
-                                }),
-                            }]}
-                        />
+            <Breadcrumb
+                items={[{
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_PROPOSALS',
+                    }),
+                    link: '/governance/proposals',
+                }, {
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_CREATE',
+                    }),
+                }]}
+            />
 
-                        {proposalCreate.canCreate === true ? (
-                            <ProposalForm />
+            <Title size="lg">
+                {intl.formatMessage({
+                    id: 'PROPOSAL_FORM_TITLE',
+                })}
+            </Title>
+
+            <WalletConnector>
+                <Observer>
+                    {() => (
+                        /* eslint-disable no-nested-ternary */
+                        proposalCreate.canCreate === undefined ? (
+                            <div className="card card--flat card--small">
+                                <ContentLoader transparent />
+                            </div>
                         ) : (
-                            <ProposalFormWarning />
-                        )}
-                    </>
-                )}
+                            proposalCreate.canCreate === true ? (
+                                <ProposalForm />
+                            ) : (
+                                <ProposalFormWarning />
+                            )
+                        )
+                    )}
+                </Observer>
             </WalletConnector>
         </Container>
     )

@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom'
 import { Observer } from 'mobx-react-lite'
 
 import { ContentLoader } from '@/components/common/ContentLoader'
-import { Section, Title } from '@/components/common/Section'
+import { Section } from '@/components/common/Section'
 import { Button } from '@/components/common/Button'
 import { Action, ActionPopup } from '@/modules/Governance/components/ProposalForm/ActionPopup'
 import { Description } from '@/modules/Governance/components/ProposalForm/Description'
@@ -99,12 +99,6 @@ export function ProposalForm(): JSX.Element {
                     onSubmit={changeAction}
                 />
             )}
-
-            <Title size="lg">
-                {intl.formatMessage({
-                    id: 'PROPOSAL_FORM_TITLE',
-                })}
-            </Title>
 
             <div className="proposal-form__layout">
                 <div className="card card--flat card--small">

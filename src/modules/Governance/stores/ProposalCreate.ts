@@ -132,16 +132,17 @@ export class ProposalCreateStore {
     }
 
     public get canCreate(): boolean | undefined {
-        if (!this.userData.hasAccount) {
-            return false
-        }
-
         if (
-            !this.userData.tokenBalance
-            || !this.userData.lockedTokens
-            || !this.daoConfig.threshold
+            this.userData.hasAccount === undefined
+            || this.userData.tokenBalance === undefined
+            || this.userData.lockedTokens === undefined
+            || this.daoConfig.threshold === undefined
         ) {
             return undefined
+        }
+
+        if (this.userData.hasAccount === false) {
+            return false
         }
 
         return new BigNumber(this.userData.tokenBalance)
