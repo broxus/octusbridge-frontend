@@ -437,6 +437,7 @@ export default {
 
     TRANSFERS_BREADCRUMB_BRIDGE: 'Bridge',
     TRANSFERS_BREADCRUMB_ADDRESS: 'Transfers {address}',
+    TRANSFERS_TITLE: 'Transfers',
     TRANSFERS_MY_TITLE: 'My transfers',
     TRANSFERS_ALL_TITLE: 'All transfers',
     TRANSFERS_USER_TITLE: 'User transfers',
@@ -447,6 +448,8 @@ export default {
     TRANSFERS_STATUS: 'Status',
     TRANSFERS_TYPE: 'Type',
     TRANSFERS_DATE: 'Date',
+    TRANSFERS_USER: 'User',
+    TRANSFERS_USER_ADDRESS: 'Input address',
     TRANSFERS_BC_FROM: 'From',
     TRANSFERS_BC_TO: 'To',
     TRANSFERS_TOKEN: 'Token',

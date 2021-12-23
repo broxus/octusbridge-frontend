@@ -70,7 +70,7 @@ export type TransfersParams = {
     limit?: number;
     offset?: number;
     ordering?: TransfersOrdering;
-    userAddress: string;
+    userAddress?: string;
     createdAtGe?: number;
     createdAtLe?: number;
     status?: TransfersRequestStatus;
@@ -92,6 +92,7 @@ export type TransfersFilters = {
     tonTokenAddress?: string;
     fromId?: string;
     toId?: string;
+    userAddress?: string;
 }
 
 export type TransfersRequest = TransfersParams

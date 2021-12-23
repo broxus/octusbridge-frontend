@@ -20,7 +20,7 @@ export function Nav(): JSX.Element {
                 <li>
                     <NavLink
                         to="/bridge"
-                        isActive={() => splitLocation[1] === 'bridge' || splitLocation[1] === 'transfers'}
+                        isActive={() => ['bridge', 'transfers', 'transfer'].includes(splitLocation[1])}
                     >
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_BRIDGE',
@@ -40,15 +40,21 @@ export function Nav(): JSX.Element {
                             </li>
                             <Observer>
                                 {() => (
-                                    tonWallet.address ? (
-                                        <li>
-                                            <NavLink to={`/transfers/${tonWallet.address}`}>
+                                    <li>
+                                        {tonWallet.address ? (
+                                            <NavLink to={`/transfers?user=${encodeURIComponent(tonWallet.address)}`}>
                                                 {intl.formatMessage({
                                                     id: 'NAV_LINK_TEXT_HISTORY',
                                                 })}
                                             </NavLink>
-                                        </li>
-                                    ) : null
+                                        ) : (
+                                            <NavLink to="/transfers">
+                                                {intl.formatMessage({
+                                                    id: 'NAV_LINK_TEXT_HISTORY',
+                                                })}
+                                            </NavLink>
+                                        )}
+                                    </li>
                                 )}
                             </Observer>
                         </ul>

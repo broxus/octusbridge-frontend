@@ -1,5 +1,7 @@
 import * as React from 'react'
+import classNames from 'classnames'
 
+import { Icon } from '@/components/common/Icon'
 import './index.scss'
 
 export const NUM_REGEXP = /^\d*\.?\d*$/
@@ -31,13 +33,33 @@ export function TextFilter({
         onChange(e.currentTarget.value)
     }
 
+    const clear = () => {
+        onChange(undefined)
+    }
+
     return (
-        <input
-            type="text"
-            className="form-input"
-            placeholder={placeholder}
-            onChange={change}
-            value={value || ''}
-        />
+        <div
+            className={classNames('filters-text-field', {
+                'filters-text-field_dirty': value && value.length > 0,
+            })}
+        >
+            <input
+                type="text"
+                className="form-input filters-text-field__input"
+                placeholder={placeholder}
+                onChange={change}
+                value={value || ''}
+            />
+
+            {value && value.length > 0 && (
+                <button
+                    className="clear-input"
+                    type="button"
+                    onClick={clear}
+                >
+                    <Icon icon="remove" ratio={0.6} />
+                </button>
+            )}
+        </div>
     )
 }
