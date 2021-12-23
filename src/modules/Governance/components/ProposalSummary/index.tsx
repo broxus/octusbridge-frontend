@@ -2,7 +2,6 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 
-import { Icon } from '@/components/common/Icon'
 import { ProposalState } from '@/modules/Governance/types'
 import { parseDescription } from '@/modules/Governance/utils'
 import './index.scss'
@@ -47,7 +46,6 @@ export function ProposalSummary({
         return (
             <Link className="proposal-summary" to={`/governance/proposals/${id}`}>
                 {summary || intl.formatMessage({ id: intlId })}
-                <Icon icon="link" />
             </Link>
         )
     }

@@ -12,6 +12,7 @@
 
 .main {
     padding: 32px 0;
+    flex-grow: 1;
 
     @media only screen and (min-width: 768px) {
         padding: 72px 0;
