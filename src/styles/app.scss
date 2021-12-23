@@ -251,6 +251,21 @@ ul.summary {
     }
 }
 
+.clear-input {
+    @include btn-reset;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 36px;
+    height: 100%;
+    opacity: 0.48;
+    color: #fff;
+}
+
 @keyframes checking {
     from {
         border: 1px solid rgba(255, 255, 255, 0.16);

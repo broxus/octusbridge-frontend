@@ -3,36 +3,34 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import {
-    DateFilter, FilterField, Filters, NetworkFilter, RadioFilter, TokenFilter,
+    DateFilter, FilterField, Filters, NetworkFilter, RadioFilter,
+    TextFilter, TokenFilter,
 } from '@/components/common/Filters'
-import { Header, Section, Title } from '@/components/common/Section'
+import {
+    Container, Header, Section, Title,
+} from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { useTransfers } from '@/modules/Transfers/hooks/useTransfers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import {
-    useDateParam, useDictParam, usePagination, useTableOrder, useTextParam,
+    useDateParam, useDictParam, usePagination, useTableOrder,
+    useTextParam, useUrlParams,
 } from '@/hooks'
 import {
     TransferKindFilter, TransfersFilters, TransfersOrdering, TransfersRequestStatus, TransferType,
 } from '@/modules/Transfers/types'
+import { useTonWallet } from '@/stores/TonWalletService'
 import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
 import { networks } from '@/config'
 
-type Props = {
-    title: string;
-    userAddress: string;
-}
-
-function TransfersInner({
-    title,
-    userAddress,
-}: Props): JSX.Element {
+function TransfersInner(): JSX.Element {
     const intl = useIntl()
     const transfers = useTransfers()
     const pendingTransfers = useTransfers()
     const tokensCache = useTokensCache()
+    const tonWallet = useTonWallet()
 
     const pagination = usePagination(transfers.totalCount)
     const pendingPagination = usePagination(pendingTransfers.totalCount)
@@ -54,19 +52,32 @@ function TransfersInner({
             ), [])
     ), [tokensCache.tokens, evmNetworks])
 
-    const [createdAtGe, setCreatedAtGe] = useDateParam('created-ge')
-    const [createdAtLe, setCreatedAtLe] = useDateParam('created-le')
+    const urlParams = useUrlParams()
 
-    const [tonTokenAddress, setTonTokenAddress] = useTextParam('token')
-    const [status, setStatus] = useDictParam<TransfersRequestStatus>(
+    const [userAddress] = useTextParam('user')
+
+    const [createdAtGe] = useDateParam('createdge')
+    const [createdAtLe] = useDateParam('createdle')
+
+    const [tonTokenAddress] = useTextParam('token')
+    const [status] = useDictParam<TransfersRequestStatus>(
         'status', ['confirmed', 'pending', 'rejected'],
     )
-    const [transferType, setTransferType] = useDictParam<TransferType>(
+    const [transferType] = useDictParam<TransferType>(
         'type', ['Credit', 'Default', 'Transit'],
     )
 
-    const [fromId, setFromId] = useTextParam('from')
-    const [toId, setToId] = useTextParam('to')
+    const [fromId] = useTextParam('from')
+    const [toId] = useTextParam('to')
+
+    let titleId = 'TRANSFERS_ALL_TITLE'
+
+    if (tonWallet.address && tonWallet.address === userAddress) {
+        titleId = 'TRANSFERS_MY_TITLE'
+    }
+    else if (userAddress) {
+        titleId = 'TRANSFERS_USER_TITLE'
+    }
 
     const validTypes: TransferType[] = (() => {
         const from = networks.find(item => item.id === fromId)
@@ -207,13 +218,17 @@ function TransfersInner({
 
     const changeFilters = (filters: TransfersFilters) => {
         pagination.submit(1)
-        setStatus(filters.status)
-        setTransferType(filters.transferType)
-        setFromId(filters.fromId)
-        setToId(filters.toId)
-        setTonTokenAddress(filters.tonTokenAddress)
-        setCreatedAtGe(filters.createdAtGe)
-        setCreatedAtLe(filters.createdAtLe)
+
+        urlParams.set({
+            status: filters.status,
+            type: filters.transferType,
+            from: filters.fromId,
+            to: filters.toId,
+            token: filters.tonTokenAddress,
+            createdge: filters.createdAtGe?.toString(),
+            createdle: filters.createdAtLe?.toString(),
+            user: filters.userAddress,
+        })
     }
 
     React.useEffect(() => {
@@ -244,7 +259,7 @@ function TransfersInner({
     ])
 
     return (
-        <>
+        <Container size="lg">
             <Breadcrumb
                 items={[{
                     title: intl.formatMessage({
@@ -289,7 +304,11 @@ function TransfersInner({
 
             <Section>
                 <Header size="lg">
-                    <Title size="lg">{title}</Title>
+                    <Title size="lg">
+                        {intl.formatMessage({
+                            id: titleId,
+                        })}
+                    </Title>
 
                     <Filters<TransfersFilters>
                         filters={{
@@ -300,11 +319,25 @@ function TransfersInner({
                             createdAtGe,
                             createdAtLe,
                             tonTokenAddress,
+                            userAddress,
                         }}
                         onChange={changeFilters}
                     >
                         {(filters, changeFilter) => (
                             <>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_USER',
+                                    })}
+                                >
+                                    <TextFilter
+                                        value={filters.userAddress}
+                                        onChange={changeFilter('userAddress')}
+                                        placeholder={intl.formatMessage({
+                                            id: 'TRANSFERS_USER_ADDRESS',
+                                        })}
+                                    />
+                                </FilterField>
                                 <FilterField
                                     title={intl.formatMessage({
                                         id: 'TRANSFERS_DATE',
@@ -431,7 +464,7 @@ function TransfersInner({
                     />
                 </div>
             </Section>
-        </>
+        </Container>
     )
 }
 
