@@ -27,11 +27,11 @@ export function Day({
             </span>
             <span className="timeline-day__date">
                 <span className="timeline-day__day">
-                    {DateTime.fromMillis(timestamp).toFormat('d')}
+                    {DateTime.fromMillis(timestamp).toFormat('dd')}
                 </span>
                 <span className="timeline-day__month">
                     .
-                    {DateTime.fromMillis(timestamp).toFormat('L')}
+                    {DateTime.fromMillis(timestamp).toFormat('LL')}
                 </span>
             </span>
         </div>
