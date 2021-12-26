@@ -9,7 +9,7 @@ import { TokenCache } from '@/stores/TokensCacheService'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { DaoAbi } from '@/misc'
+import { DaoAbi, DexConstants } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
 
@@ -56,6 +56,10 @@ export class ProposalCreateStore {
             const tonActions = _tonActions.map(item => ({
                 ...item,
                 payload: item.payload,
+                value: new BigNumber(item.value)
+                    .shiftedBy(DexConstants.TONDecimals)
+                    .decimalPlaces(0)
+                    .toFixed(),
                 target: new Address(item.target),
             }))
 
