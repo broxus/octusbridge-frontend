@@ -40,6 +40,7 @@ export function UserVoteInner(): JSX.Element {
         }
         try {
             await voting.castVote(proposal.id, support, reason)
+            await proposal.sync()
             hideForm()
         }
         catch (e) {
