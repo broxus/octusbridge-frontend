@@ -8,6 +8,7 @@ import {
 } from '@/modules/Governance/types'
 import { handleProposals, parseDescription } from '@/modules/Governance/utils'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
+import { VotesStore } from '@/modules/Governance/stores/Votes'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { ProposalAbi } from '@/misc'
 import {
@@ -21,6 +22,10 @@ export class ProposalStore {
     protected _state: ProposalStoreState = {}
 
     protected handleProposals: (params: ProposalsRequest) => Promise<ProposalsResponse | undefined>
+
+    public readonly forVotesPreview = new VotesStore()
+
+    public readonly againstVotesPreview = new VotesStore()
 
     constructor(
         protected proposalId: number,
@@ -49,9 +54,42 @@ export class ProposalStore {
                 limit: 1,
                 offset: 0,
             })
+
+            this.syncVotes()
+
             if (response) {
                 this.setResponse(response)
             }
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async syncVotes(): Promise<void> {
+        try {
+            await Promise.all([
+                this.forVotesPreview.fetch({
+                    limit: 3,
+                    offset: 0,
+                    proposalId: this.proposalId,
+                    support: true,
+                    ordering: {
+                        column: 'createdAt',
+                        direction: 'DESC',
+                    },
+                }),
+                this.againstVotesPreview.fetch({
+                    limit: 3,
+                    offset: 0,
+                    proposalId: this.proposalId,
+                    support: false,
+                    ordering: {
+                        column: 'createdAt',
+                        direction: 'DESC',
+                    },
+                }),
+            ])
         }
         catch (e) {
             error(e)
