@@ -1,0 +1,58 @@
+.proposal-management {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    margin: 0 0 16px;
+    padding: 24px;
+
+    &__title {
+        align-items: center;
+        display: flex;
+        font-size: 18px;
+        font-weight: 700;
+        justify-content: space-between;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 16px;
+    }
+
+    &__action {
+        margin: 0 0 20px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__button {
+        column-gap: 8px;
+    }
+}
+
+.cancel-popup {
+    &__title {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.15px;
+        line-height: 28px;
+        margin: 0 0 20px;
+    }
+
+    &__text {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+
+    &__actions {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+        justify-content: flex-end;
+        margin: 40px 0 0;
+    }
+
+    &__submit {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+}

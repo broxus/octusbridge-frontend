@@ -1,0 +1,15 @@
+.unlock-button {
+    display: inline-flex;
+    height: 36px;
+    vertical-align: top;
+
+    &__button {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__icon {
+        align-self: center;
+    }
+}

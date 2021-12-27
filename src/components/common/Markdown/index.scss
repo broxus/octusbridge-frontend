@@ -1,0 +1,46 @@
+.markdown {
+    hr {
+        margin: 1em 0;
+        opacity: 0.08;
+    }
+
+    p {
+        margin: 0 0 1em;
+    }
+
+    ul,
+    ol {
+        margin: 0 0 1em;
+        padding: 0 0 0 1.9em;
+    }
+
+    ul li {
+        list-style: disc;
+    }
+
+    ol li {
+        list-style: decimal;
+    }
+
+    h1, h2, h3, h4, h5 {
+        margin: 1em 0 0.5em 0;
+    }
+
+    blockquote {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0 0 0 1em;
+    }
+
+    pre {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 1em;
+    }
+
+    code {
+        font-size: inherit;
+    }
+
+    img {
+        max-width: 500px;
+    }
+}

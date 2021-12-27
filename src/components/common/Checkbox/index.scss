@@ -21,6 +21,14 @@
                 }
             }
         }
+
+        &:disabled {
+            cursor: not-allowed;
+
+            + .checkbox__icon {
+                opacity: 0.1;
+            }
+        }
     }
 
     &__icon {

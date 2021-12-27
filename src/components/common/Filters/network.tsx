@@ -7,32 +7,30 @@ import { NetworkShape } from '@/types'
 import './index.scss'
 
 type Props = {
+    id?: string;
     networks: NetworkShape[];
-    chainId?: number;
-    onChange: (value: number | undefined) => void;
+    onChange: (value: string | undefined) => void;
 }
 
 export function NetworkFilter({
+    id,
     networks,
-    chainId,
     onChange,
 }: Props): JSX.Element {
-    const chainIdStr = chainId?.toString()
     const intl = useIntl()
 
-    const change = (value: string) => {
-        const num = parseInt(value, 10)
-        onChange(Number.isNaN(num) ? undefined : num)
+    const change = (value: string | undefined) => {
+        onChange(value)
     }
 
     return (
         <Select
             allowClear
             options={networks.map(item => ({
-                value: item.chainId,
+                value: item.id,
                 label: item.label,
             }))}
-            value={chainIdStr}
+            value={id}
             onChange={change}
             placeholder={intl.formatMessage({
                 id: 'FILTERS_BC',

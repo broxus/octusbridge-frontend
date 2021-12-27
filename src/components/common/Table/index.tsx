@@ -8,6 +8,9 @@ import { Align, Cell } from '@/components/common/Table/cell'
 
 import './index.scss'
 
+export * from '@/components/common/Table/cell'
+export * from '@/components/common/Table/row'
+
 type Col<O> = {
     name?: string;
     align?: Align;
@@ -25,6 +28,7 @@ type Row = {
 type Props<O> = {
     cols: Col<O>[];
     rows?: Row[];
+    rawRows?: React.ReactNode[];
     order?: O;
     className?: string;
     loading?: boolean;
@@ -34,12 +38,21 @@ type Props<O> = {
 export function Table<O>({
     cols,
     rows,
+    rawRows,
     order,
     className,
     loading,
     onSort,
 }: Props<O>): JSX.Element {
     const intl = useIntl()
+
+    const emptyMsg = (
+        <div className="table__empty">
+            {intl.formatMessage({
+                id: 'EMPTY_LIST',
+            })}
+        </div>
+    )
 
     return (
         <div className={classNames('list table', className)}>
@@ -60,25 +73,29 @@ export function Table<O>({
             </div>
 
             <div className="table__body">
-                {(!rows || rows.length === 0) && !loading && (
-                    <div className="table__empty">
-                        {intl.formatMessage({
-                            id: 'EMPTY_LIST',
-                        })}
-                    </div>
+                {!loading && (
+                    <>
+                        {!rows && !rawRows && emptyMsg}
+                        {rows && rows.length === 0 && emptyMsg}
+                        {rawRows && rawRows.length === 0 && emptyMsg}
+                    </>
                 )}
 
-                {rows && rows.length > 0 && (
-                    rows.map((row, i) => (
-                        /* eslint-disable react/no-array-index-key */
-                        <Row key={i} link={row.link}>
-                            {row.cells.map((cell, j) => (
-                                <Cell align={cols[j].align} key={j}>
-                                    {cell}
-                                </Cell>
-                            ))}
-                        </Row>
-                    ))
+                {rawRows ? (
+                    rawRows.map(item => item)
+                ) : (
+                    rows && rows.length > 0 && (
+                        rows.map((row, i) => (
+                            /* eslint-disable react/no-array-index-key */
+                            <Row key={i} link={row.link}>
+                                {row.cells.map((cell, j) => (
+                                    <Cell align={cols[j].align} key={j}>
+                                        {cell}
+                                    </Cell>
+                                ))}
+                            </Row>
+                        ))
+                    )
                 )}
 
                 <div
@@ -86,7 +103,7 @@ export function Table<O>({
                         table__loader_active: loading,
                     })}
                 >
-                    <ContentLoader slim />
+                    <ContentLoader transparent slim />
                 </div>
             </div>
         </div>

@@ -1,8 +1,6 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 
-import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
+import { Popup } from '@/components/common/Popup'
 
 import './index.scss'
 
@@ -19,27 +17,14 @@ export function CreateRelayerPopupLayout({
     dismissEnabled = true,
     onDismiss,
 }: Props): JSX.Element {
-    return ReactDOM.createPortal(
-        <div className="popup">
-            <div
-                className="popup-overlay"
-                onClick={dismissEnabled ? onDismiss : undefined}
-            />
-            <div className="popup__wrap create-relayer-popup-layout">
-                <Button
-                    className="popup-close"
-                    disabled={!dismissEnabled}
-                    type="icon"
-                    onClick={onDismiss}
-                >
-                    <Icon icon="close" />
-                </Button>
-
-                <h2 className="create-relayer-popup-layout__title">{title}</h2>
-
-                {children}
-            </div>
-        </div>,
-        document.body,
+    return (
+        <Popup
+            disabled={!dismissEnabled}
+            onDismiss={onDismiss}
+            className="create-relayer-popup-layout"
+        >
+            <h2 className="create-relayer-popup-layout__title">{title}</h2>
+            {children}
+        </Popup>
     )
 }

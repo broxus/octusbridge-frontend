@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom'
 import './index.scss'
 
 
-interface Props extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
     block?: boolean;
     size?: 'sm' | 'md' | 'lg';
-    type?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'dark' | 'link' | 'icon';
+    type?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'dark' | 'link' | 'icon' | 'accept';
     link?: string;
+    href?: string;
 }
 
 
@@ -20,8 +21,9 @@ export function Button({
     size,
     type,
     link,
+    href,
     ...props
-}: Props): JSX.Element {
+}: ButtonProps): JSX.Element {
     const _className = classNames('btn', {
         [`btn--${size}`]: size !== undefined,
         [`btn--${type}`]: type !== undefined,
@@ -36,6 +38,19 @@ export function Button({
             >
                 {children}
             </Link>
+        )
+    }
+
+    if (href) {
+        return (
+            <a
+                className={_className}
+                href={href}
+                target="_blank"
+                rel="nofollow noopener noreferrer"
+            >
+                {children}
+            </a>
         )
     }
 

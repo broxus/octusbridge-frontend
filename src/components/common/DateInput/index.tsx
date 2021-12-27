@@ -10,6 +10,7 @@ import './index.scss'
 type Props = {
     value?: Date | null;
     minDate?: Date | null;
+    showClear?: boolean;
     placeholder?: string;
     onChange: (value: Date | null) => void;
 }
@@ -17,10 +18,15 @@ type Props = {
 export function DateInput({
     value,
     minDate,
+    showClear,
     placeholder,
     onChange,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const clear = () => {
+        onChange(null)
+    }
 
     return (
         <div className="date-input">
@@ -64,6 +70,16 @@ export function DateInput({
                     </div>
                 )}
             />
+
+            {showClear && value && (
+                <button
+                    type="button"
+                    className="clear-input"
+                    onClick={clear}
+                >
+                    <Icon icon="remove" ratio={0.6} />
+                </button>
+            )}
         </div>
     )
 }

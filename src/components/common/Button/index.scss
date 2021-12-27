@@ -189,6 +189,28 @@
     }
 }
 
+.btn--accept {
+    background-color: #4ab44a;
+    color: #ffffff;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(74, 180, 74, 0.8);
+        color: #ffffff;
+    }
+
+    &:active {
+        background-color: rgba(74, 180, 74, 0.64);
+        color: #ffffff;
+    }
+
+    &[disabled],
+    &:disabled {
+        background-color: rgba(74, 180, 74, 0.48);
+        color: rgba(255, 255, 255, 0.48);
+    }
+}
+
 .btn--dark {
     background-color: #050a2e;
     color: #c5e4f3;

@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import { Transfers } from '@/modules/Transfers/transfers'
-import { WalletConnector } from '@/modules/TonWalletConnector'
+import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { useTonWallet } from '@/stores/TonWalletService'
 
 function PageInner(): JSX.Element {

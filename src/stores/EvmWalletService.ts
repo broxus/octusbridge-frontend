@@ -257,6 +257,8 @@ export class EvmWalletService {
                 this.data.address = address
                 this.state.isConnecting = false
                 this.state.isConnected = address !== undefined
+                this.state.isInitialized = true
+                this.state.isInitializing = false
             })
             log(`Sync EVM address: ${address}`)
         }
@@ -337,13 +339,16 @@ export class EvmWalletService {
 
         try {
             await this.syncChainId()
-            await this.syncAccountData()
-            await this.syncBalance()
 
             runInAction(() => {
                 this.state.isInitialized = this.cachedProvider === 'injected'
                 this.state.isInitializing = false
             })
+
+            console.log(this.cachedProvider)
+
+            await this.syncAccountData()
+            await this.syncBalance()
         }
         catch (e) {
             error('Fetch account data error', e)

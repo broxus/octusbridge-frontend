@@ -1,0 +1,22 @@
+.connect-panel {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 500px;
+    text-align: center;
+
+    &_size {
+        &_md {
+            min-height: 200px;
+        }
+    }
+
+    p {
+        margin: 0 0 1em;
+    }
+}
+
+.connect-panel-text {
+    opacity: 0.64;
+}

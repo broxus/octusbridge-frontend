@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx'
 
 import {
-    TransfersApiRequest, TransfersApiResponse, TransfersApiTransfer,
+    Transfer, TransfersRequest, TransfersResponse,
     TransfersStoreData, TransfersStoreState,
 } from '@/modules/Transfers/types'
 import { handleTransfersApi } from '@/modules/Transfers/utils'
@@ -16,7 +16,7 @@ export class TransfersStore {
         limit: 10,
     }
 
-    protected apiHandle: (params: TransfersApiRequest) => Promise<TransfersApiResponse | undefined>
+    protected apiHandle: (params: TransfersRequest) => Promise<TransfersResponse | undefined>
 
     constructor() {
         makeAutoObservable(this)
@@ -24,7 +24,7 @@ export class TransfersStore {
         this.apiHandle = lastOfCalls(handleTransfersApi)
     }
 
-    public async fetch(params: TransfersApiRequest): Promise<void> {
+    public async fetch(params: TransfersRequest): Promise<void> {
         this.setLoading(true)
 
         try {
@@ -41,7 +41,7 @@ export class TransfersStore {
         }
     }
 
-    protected setApiResponse(apiResponse: TransfersApiResponse): void {
+    protected setApiResponse(apiResponse: TransfersResponse): void {
         this.data.apiResponse = apiResponse
     }
 
@@ -49,7 +49,7 @@ export class TransfersStore {
         this.state.loading = loading
     }
 
-    public get items(): TransfersApiTransfer[] {
+    public get items(): Transfer[] {
         return this.data.apiResponse?.transfers || []
     }
 

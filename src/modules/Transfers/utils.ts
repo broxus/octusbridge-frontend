@@ -1,12 +1,11 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
-    TransferKind, TransfersApiRequest, TransfersApiResponse,
-    TransfersApiStatus, TransfersApiTransfer,
+    Transfer, TransferKind, TransfersRequest, TransfersResponse, TransferStatus,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
 import { findNetwork } from '@/utils'
 
-export async function handleTransfersApi(params: TransfersApiRequest): Promise<TransfersApiResponse> {
+export async function handleTransfersApi(params: TransfersRequest): Promise<TransfersResponse> {
     const url = `${IndexerApiBaseUrl}/transfers/search`
     const response = await fetch(url, {
         method: 'POST',
@@ -22,70 +21,128 @@ export async function handleTransfersApi(params: TransfersApiRequest): Promise<T
         throw response
     }
 
-    const result: TransfersApiResponse = await response.json()
+    const result: TransfersResponse = await response.json()
 
     return result
 }
 
-export function mapStatusToIntl(status: TransfersApiStatus): string {
-    const map: Record<TransfersApiStatus, string> = {
-        Pending: 'TRANSFERS_STATUS_PENDING',
-        Rejected: 'TRANSFERS_STATUS_REJECTED',
-        Confirmed: 'TRANSFERS_STATUS_CONFIRMED',
-    }
-    return map[status]
-}
-
-export function mapStatusToBadge(status: TransfersApiStatus): BadgeStatus {
-    const map: Record<TransfersApiStatus, BadgeStatus> = {
-        Pending: 'warning',
-        Rejected: 'disabled',
-        Confirmed: 'success',
-    }
-
-    return map[status]
-}
-
-export function getFromNetwork(transferKind?: TransferKind, chainId?: number): string | undefined {
-    if (!chainId || !transferKind) {
-        return undefined
-    }
-
-    switch (transferKind) {
-        case 'EthToTon':
-            return findNetwork(chainId.toString(), 'evm')?.label
-        case 'TonToEth':
-            return findNetwork('1', 'ton')?.label
+export function mapStatusToIntl(status?: TransferStatus): string {
+    switch (status) {
+        case 'Pending':
+            return 'TRANSFERS_STATUS_PENDING'
+        case 'Rejected':
+            return 'TRANSFERS_STATUS_REJECTED'
+        case 'Confirmed':
+            return 'TRANSFERS_STATUS_CONFIRMED'
         default:
-            return undefined
+            return 'TRANSFERS_STATUS_UNKNOWN'
     }
 }
 
-export function getToNetwork(transferKind?: TransferKind, chainId?: number): string | undefined {
-    if (!chainId || !transferKind) {
-        return undefined
-    }
-
-    switch (transferKind) {
-        case 'EthToTon':
-            return findNetwork('1', 'ton')?.label
-        case 'TonToEth':
-            return findNetwork(chainId.toString(), 'evm')?.label
+export function mapStatusToBadge(status?: TransferStatus): BadgeStatus {
+    switch (status) {
+        case 'Pending':
+            return 'warning'
+        case 'Rejected':
+            return 'disabled'
+        case 'Confirmed':
+            return 'success'
         default:
-            return undefined
+            return 'disabled'
     }
 }
 
-export function getTransferLink(transfer: TransfersApiTransfer): string | undefined {
+export function getCurrencyAddress(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
-            return transfer.chainId && transfer.ethTransactionHash
-                ? `/transfer/evm-${transfer.chainId}/ton-1/${transfer.ethTransactionHash}`
+        case 'CreditEthToTon': {
+            return transfer.ethTonTonTokenAddress
+        }
+        case 'TonToEth':
+        case 'EthToEth': {
+            return transfer.tonEthTonTokenAddress
+        }
+        default:
+            return undefined
+    }
+}
+
+export function getAmount(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'EthToTon':
+        case 'CreditEthToTon':
+            return transfer.ethTonVolumeExec
+        case 'TonToEth':
+        case 'EthToEth':
+            return transfer.tonEthVolumeExec
+        default:
+            return undefined
+    }
+}
+
+export function getFromNetwork(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'EthToTon':
+        case 'CreditEthToTon':
+        case 'EthToEth':
+            return transfer.ethTonChainId
+                ? findNetwork(`${transfer.ethTonChainId}`, 'evm')?.name
                 : undefined
         case 'TonToEth':
-            return transfer.chainId && transfer.contractAddress
-                ? `/transfer/ton-1/evm-${transfer.chainId}/${transfer.contractAddress}`
+            return findNetwork('1', 'ton')?.name
+        default:
+            return undefined
+    }
+}
+
+export function getToNetwork(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'EthToTon':
+        case 'CreditEthToTon':
+            return findNetwork('1', 'ton')?.name
+        case 'EthToEth':
+        case 'TonToEth':
+            return transfer.tonEthChainId
+                ? findNetwork(`${transfer.tonEthChainId}`, 'evm')?.name
                 : undefined
+        default:
+            return undefined
+    }
+}
+
+export function getTransferLink(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'TonToEth':
+            return transfer.tonEthChainId && transfer.tonEthContractAddress
+                ? `/transfer/ton-1/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
+                : undefined
+        case 'EthToTon':
+            return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
+                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}/default`
+                : undefined
+        case 'CreditEthToTon':
+            return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
+                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}/credit`
+                : undefined
+        case 'EthToEth':
+            return transfer.ethTonChainId && transfer.tonEthChainId && transfer.ethTonTransactionHashEth
+                ? `/transfer/evm-${transfer.ethTonChainId}/evm-${transfer.tonEthChainId}/${transfer.ethTonTransactionHashEth}/credit`
+                : undefined
+        default:
+            return undefined
+    }
+}
+
+export function getTypeIntlId(transferKind: TransferKind): string | undefined {
+    switch (transferKind) {
+        case 'TonToEth':
+            return 'TRANSFERS_TYPE_DEFAULT'
+        case 'EthToTon':
+            return 'TRANSFERS_TYPE_DEFAULT'
+        case 'CreditEthToTon':
+            return 'TRANSFERS_TYPE_CREDIT'
+        case 'EthToEth':
+            return 'TRANSFERS_TYPE_TRANSIT'
         default:
             return undefined
     }

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Section, Title } from '@/components/common/Section'
+import { Line, Section, Title } from '@/components/common/Section'
 import { Day } from '@/modules/Relayers/components/RoundsCalendar/day'
 import { Round } from '@/modules/Relayers/components/RoundsCalendar/round'
 import { Block } from '@/modules/Relayers/components/RoundsCalendar/block'
@@ -35,7 +35,7 @@ export function RoundsCalendar(): JSX.Element {
                         <Day maxLength={11} />
                     </div>
 
-                    <hr />
+                    <Line />
 
                     <div className="rounds-calendar__line">
                         <Round

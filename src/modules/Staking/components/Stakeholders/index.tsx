@@ -13,11 +13,10 @@ import { Pagination } from '@/components/common/Pagination'
 import { mapStakeholderKindToIntlId } from '@/modules/Staking/utils'
 import { StakeholderApiOrdering, StakeholderKindApiRequest, StakeholdersApiFilters } from '@/modules/Staking/types'
 import { ExplorerStoreContext } from '@/modules/Staking/providers/ExplorerStoreProvider'
-import { usePagination } from '@/hooks/usePagination'
-import { useTableOrder } from '@/hooks/useTableOrder'
-import { useDateParam } from '@/hooks/useDateParam'
-import { useBNParam } from '@/hooks/useBNParam'
-import { useDictParam } from '@/hooks/useDictParam'
+import {
+    useBNParam, useDateParam, useDictParam, usePagination,
+    useTableOrder, useUrlParams,
+} from '@/hooks'
 import { dateFormat, error } from '@/utils'
 
 import './index.scss'
@@ -30,24 +29,25 @@ export function StakeholdersInner(): JSX.Element | null {
     }
 
     const intl = useIntl()
+    const urlParams = useUrlParams()
     const pagination = usePagination(explorer?.stakeholderTotalCount)
     const tableOrder = useTableOrder<StakeholderApiOrdering>('createdatdescending')
 
-    const [createdAtGe, setCreatedAtGe] = useDateParam('created-ge')
-    const [createdAtLe, setCreatedAtLe] = useDateParam('created-le')
-    const [frozenStakeGe, setFrozenStakeGe] = useBNParam('frozen-ge')
-    const [frozenStakeLe, setFrozenStakeLe] = useBNParam('frozen-le')
-    const [lastRewardGe, setLastRewardGe] = useBNParam('last-reward-ge')
-    const [lastRewardLe, setLastRewardLe] = useBNParam('last-reward-le')
-    const [totalRewardGe, setTotalRewardGe] = useBNParam('total-reward-ge')
-    const [totalRewardLe, setTotalRewardLe] = useBNParam('total-reward-le')
-    const [userBalanceGe, setUserBalanceGe] = useBNParam('user-balance-ge')
-    const [userBalanceLe, setUserBalanceLe] = useBNParam('user-balance-le')
-    const [stakeholderKind, setStakeholderKind] = useDictParam<StakeholderKindApiRequest>(
+    const [createdAtGe] = useDateParam('created-ge')
+    const [createdAtLe] = useDateParam('created-le')
+    const [frozenStakeGe] = useBNParam('frozen-ge')
+    const [frozenStakeLe] = useBNParam('frozen-le')
+    const [lastRewardGe] = useBNParam('last-reward-ge')
+    const [lastRewardLe] = useBNParam('last-reward-le')
+    const [totalRewardGe] = useBNParam('total-reward-ge')
+    const [totalRewardLe] = useBNParam('total-reward-le')
+    const [userBalanceGe] = useBNParam('user-balance-ge')
+    const [userBalanceLe] = useBNParam('user-balance-le')
+    const [stakeholderKind] = useDictParam<StakeholderKindApiRequest>(
         'stakeholder', ['ordinary', 'relay'],
     )
 
-    const nullMessage = intl.formatMessage({
+    const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
@@ -77,17 +77,20 @@ export function StakeholdersInner(): JSX.Element | null {
 
     const changeFilters = (localFilters: StakeholdersApiFilters) => {
         pagination.submit(1)
-        setCreatedAtGe(localFilters.createdAtGe)
-        setCreatedAtLe(localFilters.createdAtLe)
-        setFrozenStakeGe(localFilters.frozenStakeGe)
-        setFrozenStakeLe(localFilters.frozenStakeLe)
-        setLastRewardGe(localFilters.lastRewardGe)
-        setLastRewardLe(localFilters.lastRewardLe)
-        setTotalRewardGe(localFilters.totalRewardGe)
-        setTotalRewardLe(localFilters.totalRewardLe)
-        setUserBalanceGe(localFilters.userBalanceGe)
-        setUserBalanceLe(localFilters.userBalanceLe)
-        setStakeholderKind(localFilters.stakeholderKind)
+
+        urlParams.set({
+            'created-ge': localFilters.createdAtGe?.toString(),
+            'created-le': localFilters.createdAtLe?.toString(),
+            'frozen-ge': localFilters.frozenStakeGe?.toString(),
+            'frozen-le': localFilters.frozenStakeLe?.toString(),
+            'last-reward-ge': localFilters.lastRewardGe?.toString(),
+            'last-reward-le': localFilters.lastRewardLe?.toString(),
+            'total-reward-ge': localFilters.totalRewardGe?.toString(),
+            'total-reward-le': localFilters.totalRewardLe?.toString(),
+            'user-balance-ge': localFilters.userBalanceGe?.toString(),
+            'user-balance-le': localFilters.userBalanceLe?.toString(),
+            stakeholder: localFilters.stakeholderKind,
+        })
     }
 
     React.useEffect(() => {
@@ -294,7 +297,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                             address={item.userAddress}
                                             link={`/staking/explorer/${item.userAddress}`}
                                         />
-                                    ) : nullMessage,
+                                    ) : noValue,
                                     intl.formatMessage({
                                         id: mapStakeholderKindToIntlId(item.userType),
                                     }),
@@ -302,7 +305,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                     <Amount value={item.frozenStakeBalance} />,
                                     <Amount value={item.lastReward} />,
                                     <Amount value={item.totalReward} />,
-                                    item.createdAt ? dateFormat(item.createdAt) : nullMessage,
+                                    item.createdAt ? dateFormat(item.createdAt) : noValue,
                                 ],
                             }))}
                         />
