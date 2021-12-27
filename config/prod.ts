@@ -98,4 +98,4 @@ export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa44
 
 export const IndexerApiBaseUrl = 'https://bridge-indexer.broxus.com/v1'
 
-export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer-test.broxus.com/v1'
+export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer.broxus.com/v1'
