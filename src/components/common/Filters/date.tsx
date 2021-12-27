@@ -21,6 +21,7 @@ export function DateFilter({
 
     return (
         <BaseDateInput
+            showClear
             value={date}
             onChange={change}
         />

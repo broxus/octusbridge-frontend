@@ -18,10 +18,6 @@ export function AccountFee({
 }: Props): JSX.Element {
     const intl = useIntl()
 
-    const nullMessage = intl.formatMessage({
-        id: 'NO_VALUE',
-    })
-
     return (
         <div className="staking-account-fee">
             <div className="staking-account-fee__stats">
@@ -39,7 +35,9 @@ export function AccountFee({
                                 value: formattedAmount(feeAmount, tokenDecimals),
                                 symbol: tokenSymbol,
                             })
-                            : nullMessage
+                            : intl.formatMessage({
+                                id: 'NO_VALUE',
+                            })
                     }
                 </span>
             </div>

@@ -1,0 +1,34 @@
+.user-vote {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 24px;
+
+    &__title {
+        align-items: center;
+        display: flex;
+        font-size: 18px;
+        font-weight: 700;
+        justify-content: space-between;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+    }
+
+    &__actions {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__hint {
+        color: rgba(255, 255, 255, 0.48);
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        line-height: 16px;
+        margin: 16px 0 0;
+    }
+
+    &__message {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+}

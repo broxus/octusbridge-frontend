@@ -1,0 +1,49 @@
+.transfers-table {
+    &.list {
+        --list-grid-template: minmax(270px, 20%) minmax(130px, 20%) minmax(160px, 20%) minmax(120px, 20%) minmax(80px, 20%);
+    }
+
+    &__amount {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__info {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 0;
+    }
+
+    &__summary {
+        &.summary {
+            .summary__key {
+                max-width: 250px;
+            }
+        }
+    }
+
+    &-status {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+
+        &.success {
+            background: #4AB44A;
+        }
+
+        &.pending {
+            background: #e6ac00;
+        }
+
+        &.rejected {
+            background: #eb4361;
+        }
+
+        &-wrapper {
+            align-items: center;
+            column-gap: 12px;
+            display: flex;
+        }
+    }
+}

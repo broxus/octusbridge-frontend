@@ -14,6 +14,7 @@ export * from '@/components/common/Filters/text'
 export * from '@/components/common/Filters/field'
 export * from '@/components/common/Filters/network'
 export * from '@/components/common/Filters/token'
+export * from '@/components/common/Filters/check'
 
 type Props<T> = {
     filters: T;

@@ -1,0 +1,23 @@
+.proposal-header {
+    &__title {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.25px;
+        line-height: 32px;
+        margin: 0 0 8px;
+    }
+
+    &__id {
+        color: rgba(255, 255, 255, 0.48);
+        margin: 0 5px 0 0;
+    }
+
+    &__info {
+        align-items: center;
+        column-gap: 16px;
+        display: flex;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+}

@@ -6,7 +6,6 @@ import { Nav } from '@/components/layout/Nav'
 
 import './index.scss'
 
-
 export function Header(): JSX.Element {
     return (
         <header className="header">

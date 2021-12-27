@@ -12,6 +12,8 @@ type Props = {
     symbol?: string;
     amount?: string;
     decimals?: number;
+    truncate?: boolean;
+    roundIfThousand?: boolean;
 }
 
 export function TokenAmount({
@@ -20,11 +22,13 @@ export function TokenAmount({
     symbol,
     amount,
     decimals,
+    truncate,
+    roundIfThousand,
 }: Props): JSX.Element {
     const intl = useIntl()
 
     return (
-        <div className="token-amount">
+        <span className="token-amount">
             <TokenIcon
                 address={address}
                 uri={uri}
@@ -34,10 +38,10 @@ export function TokenAmount({
                 {intl.formatMessage({
                     id: 'AMOUNT',
                 }, {
-                    value: formattedAmount(amount, decimals),
+                    value: formattedAmount(amount, decimals, truncate, roundIfThousand),
                     symbol,
                 })}
             </span>
-        </div>
+        </span>
     )
 }

@@ -1,40 +1,17 @@
 import { Contract } from 'ton-inpage-provider'
 
-import { BridgeConstants, StackingAbi, StackingContract } from '@/misc'
 import {
     GraphRequest, GraphResponse, StakeholderKindApiResponse, StakeholdersApiRequest,
     StakeholdersApiResponse, StakingMainApiResponse, StakingUserApiRequest,
     StakingUserApiResponse, TransactionKindApiResponse, TransactionsApiRequest,
     TransactionsApiResponse,
 } from '@/modules/Staking/types'
+import { BridgeConstants, StackingAbi, StackingContract } from '@/misc'
 import { IndexerApiBaseUrl } from '@/config'
+import { handleApi } from '@/utils'
 
 export function getStackingContract(): StackingContract {
     return new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
-}
-
-async function handleApi<R>(params: {
-    url: string;
-    data?: object;
-    method?: 'POST' | 'GET';
-}): Promise<R> {
-    const response = await fetch(params.url, {
-        method: params.method || 'POST',
-        mode: 'cors',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: params.data ? JSON.stringify(params.data) : undefined,
-    })
-
-    if (!response.ok) {
-        throw response
-    }
-
-    const result: R = await response.json()
-
-    return result
 }
 
 export async function handleMainInfoApi(): Promise<StakingMainApiResponse> {

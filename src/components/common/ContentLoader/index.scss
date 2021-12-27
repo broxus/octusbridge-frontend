@@ -15,4 +15,8 @@
         height: auto;
         min-height: auto;
     }
+
+    &_transparent {
+        opacity: 0.2;
+    }
 }

@@ -1,0 +1,19 @@
+.voting-form {
+    &.popup__wrap {
+        padding: 20px;
+    }
+
+    &__title {
+        font-size: 24px;
+        letter-spacing: 0.15px;
+        line-height: 28px;
+        margin: 0 0 20px;
+    }
+
+    &__actions {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+        margin: 20px 0 0;
+    }
+}

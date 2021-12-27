@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite'
 
 import { User } from '@/modules/Staking/User'
 import { UserStoreProvider } from '@/modules/Staking/providers/UserStoreProvider'
-import { WalletConnector } from '@/modules/TonWalletConnector'
+import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { useTonWallet } from '@/stores/TonWalletService'
 
 function PageInner(): JSX.Element {

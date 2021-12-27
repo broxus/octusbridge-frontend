@@ -1,0 +1,23 @@
+.vote-reason {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @supports (-webkit-line-clamp: 2) {
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: initial;
+    }
+
+    &_active {
+        white-space: normal;
+
+        @supports (-webkit-line-clamp: 2) {
+            display: block;
+        }
+    }
+}

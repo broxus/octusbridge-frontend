@@ -1,0 +1,11 @@
+.textarea {
+    &__input {
+        &.form-input {
+            height: auto;
+            min-height: 84px;
+            overflow: auto;
+            padding: 6px 12px;
+            white-space: normal;
+        }
+    }
+}

@@ -17,6 +17,7 @@ type Props<T> = {
     value?: T;
     labels: {
         name: string;
+        disabled?: boolean;
         id: T;
     }[]
     onChange: (value?: T) => void;
@@ -39,6 +40,7 @@ export function RadioFilter<T>({
                     key={index}
                     label={label.name}
                     checked={value === label.id}
+                    disabled={label.disabled}
                     onChange={changeFn(label.id)}
                 />
             ))}
