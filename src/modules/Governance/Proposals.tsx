@@ -3,10 +3,10 @@ import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
 import { Container, Title } from '@/components/common/Section'
-import { ProposalsTable } from '@/modules/Governance/ProposalsTable'
-import { ProposalsTableUser } from '@/modules/Governance/ProposalsTableUser'
+import { AllProposals } from '@/modules/Governance/AllProposals'
+import { UserProposals } from '@/modules/Governance/UserProposals'
 import { useTonWallet } from '@/stores/TonWalletService'
-// import { UserVotes } from '@/modules/Governance/UserVotes'
+import { UserStats } from '@/modules/Governance/UserStats'
 
 import './index.scss'
 
@@ -22,17 +22,23 @@ export function Proposals(): JSX.Element {
                 })}
             </Title>
 
-            {/* <UserVotes /> */}
-
             <Observer>
                 {() => (
                     tonWallet.isConnected
-                        ? <ProposalsTableUser />
+                        ? <UserStats />
                         : null
                 )}
             </Observer>
 
-            <ProposalsTable />
+            <Observer>
+                {() => (
+                    tonWallet.isConnected
+                        ? <UserProposals />
+                        : null
+                )}
+            </Observer>
+
+            <AllProposals />
         </Container>
     )
 }

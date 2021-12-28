@@ -26,7 +26,7 @@ import { DexConstants } from '@/misc'
 import './index.scss'
 
 // TODO: Vote power
-export function ProposalsTableUserInner(): JSX.Element | null {
+export function UserProposalsInner(): JSX.Element | null {
     const intl = useIntl()
     const tonWallet = useTonWallet()
     const userProposal = useUserProposals()
@@ -192,4 +192,4 @@ export function ProposalsTableUserInner(): JSX.Element | null {
     )
 }
 
-export const ProposalsTableUser = observer(ProposalsTableUserInner)
+export const UserProposals = observer(UserProposalsInner)

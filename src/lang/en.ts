@@ -13,6 +13,7 @@ export default {
     NAV_LINK_TEXT_STAKING_EXPLORER: 'Explorer',
     NAV_LINK_TEXT_STAKING_ACCOUNT: 'Account',
     NAV_LINK_TEXT_PROPOSALS: 'Proposals',
+    NAV_LINK_TEXT_GOVERNANCE_OVERVIEW: 'Overview',
     NAV_LINK_TEXT_PROPOSALS_CREATE: 'Create proposal',
     NAV_LINK_SOON_HINT: 'Soon',
 
@@ -471,6 +472,7 @@ export default {
     PROPOSALS_UNLOCK: 'Unlock',
     PROPOSALS_UNLOCKED: 'Unlocked',
     PROPOSALS_ALL_TITLE: 'Governance proposals',
+    PROPOSALS_VIEW_ALL: 'View all proposals',
 
     PROPOSALS_TABLE_NO: '#',
     PROPOSALS_TABLE_SUMMARY: 'Summary',
@@ -662,6 +664,23 @@ export default {
     VOTES_TABLE_VOTING: 'Voting',
     VOTES_TABLE_REASON: 'Reason',
     VOTES_TABLE_DATE: 'Date',
+
+    GOVERNANCE_OVERVIEW: 'Overview',
+    GOVERNANCE_DAO_OVERVIEW: 'DAO overview',
+    GOVERNANCE_RECENT_PROPOSALS: 'Recent proposals',
+
+    DAO_STATS_RESERVES: 'BRIDGE reserves',
+    DAO_STATS_DELEGATED: 'Delegated votes',
+    DAO_STATS_VOTING_ADDRESSES: 'Voting addresses',
+    DAO_STATS_PROPOSALS: 'Proposals',
+
+    TOP_VOTERS_TITLE: 'TOP voters by voting power',
+    TOP_VOTERS_LINK: 'View leaderboard',
+    TOP_VOTERS_RANK: 'Rank',
+    TOP_VOTERS_ADDRESS: 'Address',
+    TOP_VOTERS_VOTES: 'Votes',
+    TOP_VOTERS_VOTE_WEIGHT: 'Vote weight',
+    TOP_VOTERS_PROPOSALS_VOTED: 'Proposals voted',
 
     DATE_INPUT_PLACEHOLDER: 'YYYY.MM.DD',
 

@@ -96,17 +96,25 @@ export function Nav(): JSX.Element {
                     </div>
                 </li>
                 <li>
-                    <span
+                    <NavLink
+                        to="/governance"
                         className={splitLocation[1] === 'governance' ? 'active' : undefined}
                     >
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_GOVERNANCE',
                         })}
                         <Icon icon="arrowDown" className="main-nav__arrow" />
-                    </span>
+                    </NavLink>
 
                     <div className="main-nav__sub">
                         <ul>
+                            <li>
+                                <NavLink to="/governance" exact>
+                                    {intl.formatMessage({
+                                        id: 'NAV_LINK_TEXT_GOVERNANCE_OVERVIEW',
+                                    })}
+                                </NavLink>
+                            </li>
                             <li>
                                 <NavLink to="/governance/proposals" exact>
                                     {intl.formatMessage({
