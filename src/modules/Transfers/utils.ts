@@ -4,6 +4,7 @@ import {
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
 import { findNetwork } from '@/utils'
+import { NetworkShape } from '@/types'
 
 export async function handleTransfersApi(params: TransfersRequest): Promise<TransfersResponse> {
     const url = `${IndexerApiBaseUrl}/transfers/search`
@@ -80,30 +81,30 @@ export function getAmount(transfer: Transfer): string | undefined {
     }
 }
 
-export function getFromNetwork(transfer: Transfer): string | undefined {
+export function getFromNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
         case 'CreditEthToTon':
         case 'EthToEth':
             return transfer.ethTonChainId
-                ? findNetwork(`${transfer.ethTonChainId}`, 'evm')?.name
+                ? findNetwork(`${transfer.ethTonChainId}`, 'evm')
                 : undefined
         case 'TonToEth':
-            return findNetwork('1', 'ton')?.name
+            return findNetwork('1', 'ton')
         default:
             return undefined
     }
 }
 
-export function getToNetwork(transfer: Transfer): string | undefined {
+export function getToNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
         case 'CreditEthToTon':
-            return findNetwork('1', 'ton')?.name
+            return findNetwork('1', 'ton')
         case 'EthToEth':
         case 'TonToEth':
             return transfer.tonEthChainId
-                ? findNetwork(`${transfer.tonEthChainId}`, 'evm')?.name
+                ? findNetwork(`${transfer.tonEthChainId}`, 'evm')
                 : undefined
         default:
             return undefined
@@ -143,6 +144,36 @@ export function getTypeIntlId(transferKind: TransferKind): string | undefined {
             return 'TRANSFERS_TYPE_CREDIT'
         case 'EthToEth':
             return 'TRANSFERS_TYPE_TRANSIT'
+        default:
+            return undefined
+    }
+}
+
+export function getFromAddress(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'TonToEth':
+            return transfer.tonUserAddress
+        case 'EthToTon':
+            return transfer.ethTonEthUserAddress
+        case 'CreditEthToTon':
+            return transfer.ethTonEthUserAddress
+        case 'EthToEth':
+            return transfer.ethTonEthUserAddress
+        default:
+            return undefined
+    }
+}
+
+export function getToAddress(transfer: Transfer): string | undefined {
+    switch (transfer.transferKind) {
+        case 'TonToEth':
+            return transfer.tonEthEthUserAddress
+        case 'EthToTon':
+            return transfer.tonUserAddress
+        case 'CreditEthToTon':
+            return transfer.tonUserAddress
+        case 'EthToEth':
+            return transfer.tonEthEthUserAddress
         default:
             return undefined
     }
