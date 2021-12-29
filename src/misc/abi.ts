@@ -6582,12 +6582,86 @@ export class EthAbi {
             type: 'event',
         },
         {
-            name: 'PendingWithdrawalUpdate',
+            name: 'NewDeposit',
+            inputs: [
+                {
+                    name: 'sender',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'recipientWid',
+                    type: 'int128',
+                    indexed: false,
+                },
+                {
+                    name: 'recipientAddr',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'pendingWithdrawalRecipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'pendingWithdrawalId',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'sendTransferToTon',
+                    type: 'bool',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'InstantWithdrawal',
             inputs: [
                 {
                     name: 'recipient',
                     type: 'address',
-                    indexed: true,
+                    indexed: false,
+                },
+                {
+                    name: 'payloadId',
+                    type: 'bytes32',
+                    indexed: false,
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'CreatePendingWithdrawal',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'payloadId',
+                    type: 'bytes32',
+                    indexed: false,
                 },
                 {
                     name: 'amount',
@@ -6599,9 +6673,92 @@ export class EthAbi {
                     type: 'uint256',
                     indexed: false,
                 },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdatePendingWithdrawalBounty',
+            inputs: [
                 {
-                    name: 'open',
-                    type: 'bool',
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'bounty',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'CancelPendingWithdrawal',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'WithdrawPendingWithdrawal',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'requestedAmount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'redeemedAmount',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'FillPendingWithdrawal',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -6614,7 +6771,7 @@ export class EthAbi {
                 {
                     name: 'bridge',
                     type: 'address',
-                    indexed: true,
+                    indexed: false,
                 },
             ],
             anonymous: false,
@@ -6626,7 +6783,7 @@ export class EthAbi {
                 {
                     name: 'wrapper',
                     type: 'address',
-                    indexed: true,
+                    indexed: false,
                 },
             ],
             anonymous: false,
@@ -6636,8 +6793,42 @@ export class EthAbi {
             name: 'UpdateConfiguration',
             inputs: [
                 {
-                    name: 'configuration',
-                    type: '(int128,uint256)',
+                    name: 'wid',
+                    type: 'int128',
+                    indexed: false,
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'UpdateTargetDecimals',
+            inputs: [
+                {
+                    name: 'targetDecimals',
+                    type: 'uint256',
+                    indexed: false,
+                },
+            ],
+            anonymous: false,
+            type: 'event',
+        },
+        {
+            name: 'ForceWithdraw',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                    indexed: false,
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -6648,8 +6839,13 @@ export class EthAbi {
             name: 'UpdateRewards',
             inputs: [
                 {
-                    name: 'rewards',
-                    type: '(int128,uint256)',
+                    name: 'wid',
+                    type: 'int128',
+                    indexed: false,
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -6662,11 +6858,16 @@ export class EthAbi {
                 {
                     name: 'strategy',
                     type: 'address',
-                    indexed: true,
+                    indexed: false,
                 },
                 {
-                    name: 'rewards',
-                    type: '(int128,uint256)',
+                    name: 'wid',
+                    type: 'int128',
+                    indexed: false,
+                },
+                {
+                    name: 'addr',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -6677,8 +6878,13 @@ export class EthAbi {
             name: 'UpdateDepositFee',
             inputs: [
                 {
-                    name: 'fee',
-                    type: '(uint256,uint256)',
+                    name: 'step',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'size',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -6689,8 +6895,13 @@ export class EthAbi {
             name: 'UpdateWithdrawFee',
             inputs: [
                 {
-                    name: 'fee',
-                    type: '(uint256,uint256)',
+                    name: 'step',
+                    type: 'uint256',
+                    indexed: false,
+                },
+                {
+                    name: 'size',
+                    type: 'uint256',
                     indexed: false,
                 },
             ],
@@ -7044,9 +7255,13 @@ export class EthAbi {
                     name: 'management',
                     type: 'address',
                 },
+                {
+                    name: 'targetDecimals',
+                    type: 'uint256',
+                },
             ],
             outputs: [],
-            gas: 367155,
+            gas: 439965,
         },
         {
             stateMutability: 'pure',
@@ -7060,6 +7275,19 @@ export class EthAbi {
                 },
             ],
             gas: 5946,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
+            name: 'setTargetDecimals',
+            inputs: [
+                {
+                    name: 'targetDecimals',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 37505,
         },
         {
             stateMutability: 'nonpayable',
@@ -7082,7 +7310,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 76514,
+            gas: 77144,
         },
         {
             stateMutability: 'nonpayable',
@@ -7105,7 +7333,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 76544,
+            gas: 77174,
         },
         {
             stateMutability: 'nonpayable',
@@ -7118,7 +7346,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 38805,
+            gas: 39045,
         },
         {
             stateMutability: 'nonpayable',
@@ -7141,7 +7369,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 74089,
+            gas: 74719,
         },
         {
             stateMutability: 'nonpayable',
@@ -7154,7 +7382,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 39071,
+            gas: 39101,
         },
         {
             stateMutability: 'nonpayable',
@@ -7162,7 +7390,7 @@ export class EthAbi {
             name: 'acceptGovernance',
             inputs: [],
             outputs: [],
-            gas: 38997,
+            gas: 39027,
         },
         {
             stateMutability: 'nonpayable',
@@ -7175,7 +7403,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 39135,
+            gas: 39165,
         },
         {
             stateMutability: 'nonpayable',
@@ -7202,7 +7430,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 82246,
+            gas: 83083,
         },
         {
             stateMutability: 'nonpayable',
@@ -7225,7 +7453,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 74239,
+            gas: 74869,
         },
         {
             stateMutability: 'nonpayable',
@@ -7238,7 +7466,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 37879,
+            gas: 37909,
         },
         {
             stateMutability: 'nonpayable',
@@ -7251,7 +7479,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 39155,
+            gas: 39185,
         },
         {
             stateMutability: 'nonpayable',
@@ -7264,7 +7492,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 39289,
+            gas: 39319,
         },
         {
             stateMutability: 'nonpayable',
@@ -7277,7 +7505,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 39319,
+            gas: 39349,
         },
         {
             stateMutability: 'nonpayable',
@@ -7290,7 +7518,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 41863,
+            gas: 41893,
         },
         {
             stateMutability: 'nonpayable',
@@ -7303,7 +7531,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 41934,
+            gas: 41964,
         },
         {
             stateMutability: 'nonpayable',
@@ -7316,7 +7544,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 1348979,
+            gas: 1349009,
         },
         {
             stateMutability: 'nonpayable',
@@ -7333,7 +7561,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 49722,
+            gas: 41166,
         },
         {
             stateMutability: 'view',
@@ -7346,7 +7574,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 8578,
+            gas: 8638,
         },
         {
             stateMutability: 'nonpayable',
@@ -7395,7 +7623,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 196701,
+            gas: 304743,
         },
         {
             stateMutability: 'nonpayable',
@@ -7420,7 +7648,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 246913,
+            gas: 346478,
         },
         {
             stateMutability: 'nonpayable',
@@ -7429,6 +7657,10 @@ export class EthAbi {
             inputs: [
                 {
                     name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: 'amount',
                     type: 'uint256',
                 },
                 {
@@ -7447,7 +7679,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 80444,
+            gas: 151644,
         },
         {
             stateMutability: 'nonpayable',
@@ -7456,6 +7688,10 @@ export class EthAbi {
             inputs: [
                 {
                     name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: '_value',
                     type: 'uint256',
                 },
             ],
@@ -7473,6 +7709,10 @@ export class EthAbi {
             inputs: [
                 {
                     name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: '_value',
                     type: 'uint256',
                 },
                 {
@@ -7494,6 +7734,10 @@ export class EthAbi {
             inputs: [
                 {
                     name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    name: '_value',
                     type: 'uint256',
                 },
                 {
@@ -7539,7 +7783,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 1638399,
+            gas: 1638459,
         },
         {
             stateMutability: 'nonpayable',
@@ -7556,7 +7800,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 121685,
+            gas: 121715,
         },
         {
             stateMutability: 'nonpayable',
@@ -7573,7 +7817,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 47551,
+            gas: 47581,
         },
         {
             stateMutability: 'nonpayable',
@@ -7590,7 +7834,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 47581,
+            gas: 47611,
         },
         {
             stateMutability: 'nonpayable',
@@ -7607,7 +7851,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 42794,
+            gas: 42824,
         },
         {
             stateMutability: 'nonpayable',
@@ -7624,7 +7868,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 1324247,
+            gas: 1324307,
         },
         {
             stateMutability: 'nonpayable',
@@ -7656,7 +7900,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 1255524,
+            gas: 1255584,
         },
         {
             stateMutability: 'nonpayable',
@@ -7669,7 +7913,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 23635413,
+            gas: 23636043,
         },
         {
             stateMutability: 'view',
@@ -7740,7 +7984,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 21201,
+            gas: 21291,
         },
         {
             stateMutability: 'view',
@@ -7795,7 +8039,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 660170,
+            gas: 810204,
         },
         {
             stateMutability: 'nonpayable',
@@ -7856,6 +8100,23 @@ export class EthAbi {
         {
             stateMutability: 'nonpayable',
             type: 'function',
+            name: 'forceWithdraw',
+            inputs: [
+                {
+                    name: 'recipient',
+                    type: 'address',
+                },
+                {
+                    name: 'id',
+                    type: 'uint256',
+                },
+            ],
+            outputs: [],
+            gas: 103515,
+        },
+        {
+            stateMutability: 'nonpayable',
+            type: 'function',
             name: 'skim',
             inputs: [
                 {
@@ -7864,7 +8125,7 @@ export class EthAbi {
                 },
             ],
             outputs: [],
-            gas: 59036,
+            gas: 96522,
         },
         {
             stateMutability: 'view',
@@ -7877,7 +8138,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3618,
+            gas: 3678,
         },
         {
             stateMutability: 'view',
@@ -7890,7 +8151,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3648,
+            gas: 3708,
         },
         {
             stateMutability: 'view',
@@ -7903,7 +8164,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3678,
+            gas: 3738,
         },
         {
             stateMutability: 'view',
@@ -7916,7 +8177,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3708,
+            gas: 3768,
         },
         {
             stateMutability: 'view',
@@ -7934,7 +8195,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 3953,
+            gas: 4013,
         },
         {
             stateMutability: 'view',
@@ -7964,7 +8225,7 @@ export class EthAbi {
                     type: 'bool',
                 },
             ],
-            gas: 8914,
+            gas: 8974,
         },
         {
             stateMutability: 'view',
@@ -7977,7 +8238,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 3798,
+            gas: 3858,
         },
         {
             stateMutability: 'view',
@@ -7995,7 +8256,7 @@ export class EthAbi {
                     type: 'bool',
                 },
             ],
-            gas: 3943,
+            gas: 4003,
         },
         {
             stateMutability: 'view',
@@ -8008,7 +8269,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3858,
+            gas: 3918,
         },
         {
             stateMutability: 'view',
@@ -8021,7 +8282,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 3888,
+            gas: 3948,
         },
         {
             stateMutability: 'view',
@@ -8038,7 +8299,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 6452,
+            gas: 6512,
         },
         {
             stateMutability: 'view',
@@ -8055,7 +8316,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 6482,
+            gas: 6542,
         },
         {
             stateMutability: 'view',
@@ -8072,7 +8333,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 6512,
+            gas: 6572,
         },
         {
             stateMutability: 'view',
@@ -8089,7 +8350,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 6542,
+            gas: 6602,
         },
         {
             stateMutability: 'view',
@@ -8161,7 +8422,7 @@ export class EthAbi {
                     ],
                 },
             ],
-            gas: 32100,
+            gas: 32160,
         },
         {
             stateMutability: 'view',
@@ -8179,7 +8440,7 @@ export class EthAbi {
                     type: 'address',
                 },
             ],
-            gas: 4177,
+            gas: 4237,
         },
         {
             stateMutability: 'view',
@@ -8192,7 +8453,7 @@ export class EthAbi {
                     type: 'bool',
                 },
             ],
-            gas: 4098,
+            gas: 4158,
         },
         {
             stateMutability: 'view',
@@ -8205,7 +8466,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4128,
+            gas: 4188,
         },
         {
             stateMutability: 'view',
@@ -8218,7 +8479,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4158,
+            gas: 4218,
         },
         {
             stateMutability: 'view',
@@ -8231,7 +8492,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4188,
+            gas: 4248,
         },
         {
             stateMutability: 'view',
@@ -8244,7 +8505,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4218,
+            gas: 4278,
         },
         {
             stateMutability: 'view',
@@ -8257,7 +8518,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4248,
+            gas: 4308,
         },
         {
             stateMutability: 'view',
@@ -8270,7 +8531,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4278,
+            gas: 4338,
         },
         {
             stateMutability: 'view',
@@ -8283,7 +8544,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4308,
+            gas: 4368,
         },
         {
             stateMutability: 'view',
@@ -8296,7 +8557,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4338,
+            gas: 4398,
         },
         {
             stateMutability: 'view',
@@ -8309,7 +8570,33 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            gas: 4368,
+            gas: 4428,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'tokenDecimals',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4458,
+        },
+        {
+            stateMutability: 'view',
+            type: 'function',
+            name: 'targetDecimals',
+            inputs: [],
+            outputs: [
+                {
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            gas: 4488,
         },
     ]
 
@@ -8581,6 +8868,31 @@ export class EthAbi {
                 },
             ],
             name: 'depositWithFillings',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IVault.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalsIdsToWithdraw',
+                    type: 'tuple[]',
+                },
+            ],
+            name: 'forceWithdraw',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
