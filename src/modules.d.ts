@@ -39,7 +39,7 @@ declare module 'abi-decoder' {
 
     export interface DecodeLogs {
         address: string;
-        events: unknown[];
+        events: any[];
         name: string;
     }
 

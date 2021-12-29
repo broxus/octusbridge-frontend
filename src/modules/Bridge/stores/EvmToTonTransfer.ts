@@ -160,13 +160,14 @@ export class EvmToTonTransfer {
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
-            // @ts-ignore
-            this.changeData('amount', depositLog.events[0].value)
+            const amount = new BigNumber(depositLog.events[0].value || 0)
+                .shiftedBy(-token.decimals)
+                .shiftedBy(this.tokensCache.getTokenVault(token.root, this.leftNetwork.chainId)?.decimals ?? 0)
+
+            this.changeData('amount', amount.toFixed())
             this.changeData('leftAddress', tx.from.toLowerCase())
 
-            // @ts-ignore
             const targetWid = depositLog.events[1].value
-            // @ts-ignore
             const targetAddress = depositLog.events[2].value
             this.changeData(
                 'rightAddress',
