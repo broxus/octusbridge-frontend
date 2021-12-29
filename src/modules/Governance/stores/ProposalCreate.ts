@@ -138,14 +138,19 @@ export class ProposalCreateStore {
     public get canCreate(): boolean | undefined {
         if (
             this.userData.hasAccount === undefined
-            || this.userData.tokenBalance === undefined
-            || this.userData.lockedTokens === undefined
             || this.daoConfig.threshold === undefined
         ) {
             return undefined
         }
 
         if (this.userData.hasAccount === false) {
+            return false
+        }
+
+        if (
+            this.userData.tokenBalance === undefined
+            || this.userData.lockedTokens === undefined
+        ) {
             return false
         }
 
