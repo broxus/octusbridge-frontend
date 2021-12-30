@@ -11,9 +11,7 @@ export class ProposalsStore {
 
     protected data: ProposalsStoreData = {}
 
-    protected state: ProposalsStoreState = {
-        loading: false,
-    }
+    protected state: ProposalsStoreState = {}
 
     protected handleProposals: (params: ProposalsRequest) => Promise<ProposalsResponse | undefined>
 
@@ -47,8 +45,8 @@ export class ProposalsStore {
         this.data.response = response
     }
 
-    public get totalCount(): number {
-        return this.data.response?.totalCount || 1
+    public get totalCount(): number | undefined {
+        return this.data.response?.totalCount
     }
 
     public get items(): Proposal[] {
@@ -56,7 +54,7 @@ export class ProposalsStore {
     }
 
     public get loading(): boolean {
-        return this.state.loading
+        return !!this.state.loading
     }
 
 }

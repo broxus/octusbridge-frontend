@@ -2,7 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { useIntl } from 'react-intl'
 
-import { sliceAddress } from '@/utils'
+import { sliceAddress, uniqueId } from '@/utils'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
 
@@ -33,7 +33,7 @@ export function TonscanAccountLink({
                 {children || sliceAddress(address)}
             </a>
             {copy && (
-                <Copy text={address} id={`copy-${address}`}>
+                <Copy text={address} id={`copy-${address}-${uniqueId()}`}>
                     <Icon icon="copy" />
                 </Copy>
             )}
