@@ -13,6 +13,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
+import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
 import TransferList from '@/pages/transfer/list'
@@ -23,6 +24,7 @@ import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
+import Overview from '@/pages/governance'
 import Proposals from '@/pages/governance/proposals'
 import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
@@ -71,6 +73,9 @@ export function App(): JSX.Element {
                             <Route path="/bridge">
                                 <Bridge />
                             </Route>
+                            <Route exact path="/airdrop">
+                                <Airdrop />
+                            </Route>
                             <Route exact path="/staking">
                                 <StakingAccount />
                             </Route>
@@ -91,6 +96,9 @@ export function App(): JSX.Element {
                             </Route>
                             <Route exact path="/relayers/create/keys">
                                 <RelayersKeys />
+                            </Route>
+                            <Route exact path="/governance">
+                                <Overview />
                             </Route>
                             <Route exact path="/governance/proposals">
                                 <Proposals />

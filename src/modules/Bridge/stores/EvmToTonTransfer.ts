@@ -1,7 +1,6 @@
 import {
     addABI,
     decodeLogs,
-    decodeMethod,
     keepNonDecodedLogs,
 } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
@@ -120,27 +119,26 @@ export class EvmToTonTransfer {
                 return
             }
 
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tx.to)
+            addABI(EthAbi.Vault)
 
-            const vaultAddress: string = await wrapper.methods.vault().call()
-            const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
-            const vaultWrapperAddress: string = await vaultContract.methods.wrapper().call()
+            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+
+            const depositLog = decodeLogs(txReceipt.logs).find(log => log?.name === 'Deposit')
+
+            if (depositLog == null) {
+                return
+            }
+
+            const vaultAddress: string = depositLog.address
             const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
 
-            if (vaultWrapperAddress !== tx.to || token === undefined) {
+            if (token === undefined) {
                 return
             }
 
             await this.tokensCache.syncEvmToken(token.root, this.leftNetwork.chainId)
 
             this.changeData('token', token)
-
-            addABI(EthAbi.VaultWrapper)
-            const methodCall = decodeMethod(tx.input)
-
-            if (methodCall?.name !== 'deposit') {
-                return
-            }
 
             const ethereumConfiguration = token.vaults.find(
                 vault => (
@@ -162,11 +160,15 @@ export class EvmToTonTransfer {
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
-            this.changeData('amount', methodCall.params[1].value)
+            const amount = new BigNumber(depositLog.events[0].value || 0)
+                .shiftedBy(-token.decimals)
+                .shiftedBy(this.tokensCache.getTokenVault(token.root, this.leftNetwork.chainId)?.decimals ?? 0)
+
+            this.changeData('amount', amount.toFixed())
             this.changeData('leftAddress', tx.from.toLowerCase())
 
-            const targetWid = methodCall.params[0].value[0]
-            const targetAddress = methodCall.params[0].value[1]
+            const targetWid = depositLog.events[1].value
+            const targetAddress = depositLog.events[2].value
             this.changeData(
                 'rightAddress',
                 `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),

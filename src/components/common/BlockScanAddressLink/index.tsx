@@ -3,9 +3,8 @@ import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
 import { Copy } from '@/components/common/Copy'
-import { sliceAddress } from '@/utils'
+import { sliceAddress, uniqueId } from '@/utils'
 import { Icon } from '@/components/common/Icon'
-
 
 type Props = {
     address: string;
@@ -36,7 +35,7 @@ export function BlockScanAddressLink({
                 {children || sliceAddress(address)}
             </a>
             {copy && (
-                <Copy text={address} id={`copy-${address}`}>
+                <Copy text={address} id={`copy-${address}-${uniqueId()}`}>
                     <Icon icon="copy" />
                 </Copy>
             )}

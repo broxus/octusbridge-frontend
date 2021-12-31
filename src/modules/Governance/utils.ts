@@ -1,11 +1,14 @@
 import BigNumber from 'bignumber.js'
 
 import {
-    Description, Proposal, ProposalsRequest, ProposalsResponse,
-    UserProposalsResponse, VotesRequest, VotesResponse,
+    Description, Proposal, ProposalsCountResponse, ProposalsRequest,
+    ProposalsResponse, Stakeholder, StakeholdersRequest,
+    StakeholdersResponse, UserProposalsResponse, VotesRequest,
+    VotesResponse,
 } from '@/modules/Governance/types'
 import {
-    DaoIndexerApiBaseUrl, GasToUnlockCastedVote, MinGasToUnlockCastedVotes,
+    DaoIndexerApiBaseUrl, GasToUnlockCastedVote, IndexerApiBaseUrl,
+    MinGasToUnlockCastedVotes,
 } from '@/config'
 import { handleApi, isGoodBignumber } from '@/utils'
 
@@ -35,6 +38,24 @@ export async function handleProposalsByIds(
 ): Promise<Proposal[]> {
     const url = `${DaoIndexerApiBaseUrl}/proposals`
     const result = await handleApi<Proposal[]>({ url, data: { ids }})
+    return result
+}
+
+export async function handleStakeholders(data: StakeholdersRequest): Promise<StakeholdersResponse> {
+    const url = `${IndexerApiBaseUrl}/dao/search/stakeholders`
+    const result = await handleApi<StakeholdersResponse>({ url, data })
+    return result
+}
+
+export async function handleStakeholder(userAddress: string): Promise<Stakeholder> {
+    const url = `${IndexerApiBaseUrl}/dao/user/${userAddress}`
+    const result = await handleApi<Stakeholder>({ url, method: 'GET' })
+    return result
+}
+
+export async function handleProposalsCount(voters: string[]): Promise<ProposalsCountResponse> {
+    const url = `${DaoIndexerApiBaseUrl}/voters/proposals/count`
+    const result = await handleApi<ProposalsCountResponse>({ url, data: { voters }})
     return result
 }
 

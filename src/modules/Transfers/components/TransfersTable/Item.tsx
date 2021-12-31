@@ -6,10 +6,9 @@ import { observer } from 'mobx-react-lite'
 import { Cell, Row } from '@/components/common/Table'
 import { Amount } from '@/modules/Transfers/components/Amount'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
-import {
-    getFromNetwork, getToNetwork, getTransferLink,
-    getTypeIntlId,
-} from '@/modules/Transfers/utils'
+import { From } from '@/modules/Transfers/components/TransfersTable/From'
+import { To } from '@/modules/Transfers/components/TransfersTable/To'
+import { getTransferLink, getTypeIntlId } from '@/modules/Transfers/utils'
 import { Transfer } from '@/modules/Transfers/types'
 import { dateFormat } from '@/utils'
 
@@ -29,22 +28,19 @@ export function ItemInner({
     })
 
     const link = getTransferLink(transfer)
-    const from = getFromNetwork(transfer)
-    const to = getToNetwork(transfer)
-    const needToShowPartStatus = transfer.transferKind === 'EthToEth'
-        && (transfer.ethTonStatus !== 'Confirmed' || transfer.tonEthStatus !== 'Confirmed')
+    const typeIntlId = getTypeIntlId(transfer.transferKind)
 
     return (
         <Row>
             <Cell>
                 <div className="transfers-table__amount">
                     {link ? (
-                        <Link to={link} className="transfers-table-status-wrapper">
+                        <Link to={link} className="transfers-table-data">
                             <Status status={transfer.transferStatus} />
                             <Amount transfer={transfer} />
                         </Link>
                     ) : (
-                        <div className="transfers-table-status-wrapper">
+                        <div className="transfers-table-data">
                             <Status status={transfer.transferStatus} />
                             <Amount transfer={transfer} />
                         </div>
@@ -52,27 +48,15 @@ export function ItemInner({
                 </div>
             </Cell>
             <Cell>
-                {transfer.transferKind ? intl.formatMessage({
-                    id: getTypeIntlId(transfer.transferKind),
-                }) : noValue}
+                {typeIntlId
+                    ? intl.formatMessage({ id: typeIntlId })
+                    : noValue}
             </Cell>
             <Cell>
-                <div className="transfers-table-status-wrapper">
-                    {from || noValue}
-
-                    {needToShowPartStatus && (
-                        <Status status={transfer.ethTonStatus} />
-                    )}
-                </div>
+                <From transfer={transfer} />
             </Cell>
             <Cell>
-                <div className="transfers-table-status-wrapper">
-                    {to || noValue}
-
-                    {needToShowPartStatus && (
-                        <Status status={transfer.tonEthStatus} />
-                    )}
-                </div>
+                <To transfer={transfer} />
             </Cell>
             <Cell align="right">
                 {transfer.createdAt ? dateFormat(transfer.createdAt) : noValue}

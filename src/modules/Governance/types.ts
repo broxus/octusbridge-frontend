@@ -159,12 +159,41 @@ export type VotesResponse = {
     votes: Vote[];
 }
 
+export type Stakeholder = {
+    proposalVotesCount: number;
+    userAddress: string;
+    voteWeight: string;
+    votes: string;
+}
+
+export type StakeholdersOrdering =
+    | 'voteweightascending'
+    | 'voteweightdescending'
+    | 'votesascending'
+    | 'votesdescending'
+
+export type StakeholdersRequest = {
+    limit: number;
+    offset: number;
+    ordering: StakeholdersOrdering;
+}
+
+export type StakeholdersResponse = {
+    stakeholders: Stakeholder[];
+    totalCount: number;
+}
+
+export type ProposalsCountResponse = {
+    count: number;
+    voter: string;
+}[]
+
 export type ProposalsStoreData = {
     response?: ProposalsResponse;
 }
 
 export type ProposalsStoreState = {
-    loading: boolean;
+    loading?: boolean;
 }
 
 export type UserProposalsStoreData = {
@@ -221,4 +250,17 @@ export type UserDataStoreData = {
 
 export type UserDataStoreState = {
     hasAccount?: boolean;
+}
+
+export type StakeholdersStoreData = {
+    response?: StakeholdersResponse;
+}
+
+export type StakeholdersStoreState = {
+    loading?: boolean;
+}
+
+export type UserStatsStoreData = {
+    stakeholder?: Stakeholder;
+    count?: number;
 }

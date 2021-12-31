@@ -3,6 +3,10 @@
         --list-grid-template: minmax(270px, 20%) minmax(130px, 20%) minmax(160px, 20%) minmax(120px, 20%) minmax(80px, 20%);
     }
 
+    .copy {
+        opacity: 0.33;
+    }
+
     &__amount {
         align-items: center;
         column-gap: 8px;
@@ -40,10 +44,17 @@
             background: #eb4361;
         }
 
-        &-wrapper {
-            align-items: center;
-            column-gap: 12px;
-            display: flex;
-        }
+    }
+
+    &-data {
+        align-items: center;
+        column-gap: 12px;
+        display: flex;
+    }
+
+    &-name {
+        font-size: 12px;
+        opacity: 0.33;
+        margin: 0 0 2px;
     }
 }
