@@ -30,6 +30,7 @@ export function Airdrop(): JSX.Element {
                                 disabled
                                 label="Amount to claim"
                                 readOnly
+                                token={airdrop.token}
                                 value={airdrop.amount}
                             />
                         )}

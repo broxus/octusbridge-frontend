@@ -8,11 +8,13 @@ import { AirdropContractAddress } from '@/config'
 import { TokenWallet, TonAirdrop } from '@/misc'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { error, isGoodBignumber } from '@/utils'
+import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 
 
 export type AirdropStoreData = {
     amount: string;
     decimals: number;
+    tokenRoot?: string;
 }
 
 export type AirdropStoreState = {
@@ -28,7 +30,8 @@ export class AirdropStore {
     protected state: AirdropStoreState
 
     constructor(
-        protected readonly tonWallet = useTonWallet(),
+        protected readonly tonWallet: TonWalletService,
+        protected readonly tokenCache: TokensCacheService,
     ) {
         this.data = {
             amount: '0',
@@ -110,6 +113,7 @@ export class AirdropStore {
             runInAction(() => {
                 this.data.amount = response[0]?._amount ?? '0'
                 this.data.decimals = parseInt(response[1].value0.decimals, 10)
+                this.data.tokenRoot = _token.toString()
             })
         }
         catch (e) {
@@ -120,6 +124,10 @@ export class AirdropStore {
                 this.state.isFetching = false
             })
         }
+    }
+
+    public get token(): TokenCache | undefined {
+        return this.data.tokenRoot ? this.tokenCache.get(this.data.tokenRoot) : undefined
     }
 
     public get amount(): AirdropStoreData['amount'] {
@@ -149,7 +157,10 @@ export class AirdropStore {
 }
 
 
-const AirdropStoreSingleton = new AirdropStore()
+const AirdropStoreSingleton = new AirdropStore(
+    useTonWallet(),
+    useTokensCache(),
+)
 
 export function useAirdropStore(): AirdropStore {
     return AirdropStoreSingleton

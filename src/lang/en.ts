@@ -16,6 +16,7 @@ export default {
     NAV_LINK_TEXT_GOVERNANCE_OVERVIEW: 'Overview',
     NAV_LINK_TEXT_PROPOSALS_CREATE: 'Create proposal',
     NAV_LINK_SOON_HINT: 'Soon',
+    NAV_LINK_TEXT_AIRDROP: 'Airdrop',
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
@@ -694,4 +695,5 @@ export default {
     AIRDROP_FORM_TITLE: 'Airdrop',
     AIRDROP_BTN_TEXT_SUBMIT: 'Submit',
     AIRDROP_BTN_TEXT_CLAIM: 'Claim',
+    AIRDROP_FIELD_TOKEN_WALLET_BALANCE: 'Balance: {balance}',
 }

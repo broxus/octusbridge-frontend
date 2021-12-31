@@ -1,6 +1,5 @@
 import * as React from 'react'
 import classNames from 'classnames'
-import { useIntl } from 'react-intl'
 
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { TokenCache } from '@/stores/TokensCacheService'
@@ -23,7 +22,6 @@ export function AirdropField({
     token,
     ...props
 }: Props): JSX.Element {
-    const intl = useIntl()
     return (
         <label className="form-label" htmlFor={props.id}>
             <fieldset
@@ -33,15 +31,6 @@ export function AirdropField({
             >
                 <div className="form-fieldset-composable__header">
                     <div>{props.label}</div>
-                    {token !== undefined && (
-                        <div>
-                            {intl.formatMessage({
-                                id: 'AIRDROP_FIELD_TOKEN_WALLET_BALANCE',
-                            }, {
-                                balance: 0,
-                            })}
-                        </div>
-                    )}
                 </div>
                 <div className="form-fieldset-composable__main">
                     <input
@@ -55,18 +44,13 @@ export function AirdropField({
                         disabled
                         value={props.value}
                     />
-                    <div>
-                        <span className="form-drop__logo">
-                            <TokenIcon
-                                address={token?.root}
-                                name={token?.symbol}
-                                size="small"
-                                uri={token?.icon}
-                            />
-                        </span>
-                        <span className="form-drop__name">
-                            {token?.symbol}
-                        </span>
+                    <div className="staking-account-field__token">
+                        <TokenIcon
+                            size="small"
+                            address={token?.root}
+                            uri={token?.icon}
+                        />
+                        {token?.symbol}
                     </div>
                 </div>
             </fieldset>
