@@ -690,4 +690,8 @@ export default {
     NO_VALUE: '–',
     AMOUNT: '{value} {symbol}',
     PERCENT: '{value}%',
+
+    AIRDROP_FORM_TITLE: 'Airdrop',
+    AIRDROP_BTN_TEXT_SUBMIT: 'Submit',
+    AIRDROP_BTN_TEXT_CLAIM: 'Claim',
 }

@@ -13,6 +13,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
 import { EvmWallet, TonWallet } from '@/modules/Accounts'
+import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
 import TransferList from '@/pages/transfer/list'
@@ -71,6 +72,9 @@ export function App(): JSX.Element {
                             </Route>
                             <Route path="/bridge">
                                 <Bridge />
+                            </Route>
+                            <Route exact path="/airdrop">
+                                <Airdrop />
                             </Route>
                             <Route exact path="/staking">
                                 <StakingAccount />

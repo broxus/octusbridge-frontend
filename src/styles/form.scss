@@ -91,3 +91,109 @@
         -webkit-text-fill-color: #ffffff !important;
     }
 }
+
+.form-fieldset-composable {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    display: block;
+    height: 78px;
+    margin-bottom: 5px;
+    outline: none;
+    padding: 10px 16px 10px 20px;
+
+    &--small {
+        height: 72px;
+    }
+
+    &--dark {
+        background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    &.checking {
+        animation: 1.5s linear 0s infinite alternate checking;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        box-shadow: 0 0 2px 0 rgba(255, 255, 255, 0.16);
+    }
+
+    &.caution {
+        border-color: #e6ac00;
+        box-shadow: 0 0 2px 0 #e6ac00;
+    }
+
+    &.invalid {
+        border-color: #eb4361;
+        box-shadow: 0 0 2px 0 #eb4361;
+    }
+
+    &__header {
+        align-items: center;
+        color: #ffffff;
+        display: flex;
+        font-size: 14px;
+        justify-content: space-between;
+        letter-spacing: 0.75px;
+        line-height: 20px;
+        margin-bottom: 4px;
+        opacity: 0.64;
+    }
+
+    &__main {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .form-input {
+        @include input-reset;
+
+        color: #ffffff;
+        cursor: text;
+        font-size: 24px;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &::-webkit-input-placeholder {
+            color: #ffffff;
+            opacity: 0.32;
+        }
+
+        &::-moz-placeholder {
+            color: #ffffff;
+            opacity: 0.32;
+        }
+
+        &:-moz-placeholder {
+            color: #ffffff;
+            opacity: 0.32;
+        }
+
+        &:-ms-input-placeholder {
+            color: #ffffff;
+            opacity: 0.32;
+        }
+
+        &::placeholder {
+            color: #ffffff;
+            opacity: 0.32;
+        }
+
+        &:-webkit-autofill {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+    }
+
+    .frame {
+        margin: 4px 0 0 -10px;
+        width: calc(100% + 20px);
+    }
+
+    @media only screen and (max-width: 767px) {
+        padding-left: 10px;
+        .frame {
+            margin: 4px 0 0;
+            width: 100%;
+        }
+    }
+}

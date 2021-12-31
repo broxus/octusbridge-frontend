@@ -60,6 +60,8 @@ export const networks: NetworkShape[] = [
     },
 ]
 
+export const AirdropContractAddress = new AddressLiteral('0:b321058503889a78fe0954cfb67564b218cff1eac1467dc48e4c80118dd6719f')
+
 export const CreditBody = '5800000000'
 
 export const EmptyWalletMinTonsAmount = '10000000000'
