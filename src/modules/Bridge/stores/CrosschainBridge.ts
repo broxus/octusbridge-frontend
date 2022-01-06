@@ -664,6 +664,8 @@ export class CrosschainBridge {
         }
 
         try {
+            this.changeState('isCalculating', true)
+
             await this.syncMaxTonsAmount()
 
             if (!this.amount || this.amountNumber.isZero()) {
@@ -688,6 +690,9 @@ export class CrosschainBridge {
         catch (e) {
             error('Change amount recalculate error', e)
         }
+        finally {
+            this.changeState('isCalculating', false)
+        }
     }
 
     /**
@@ -704,6 +709,8 @@ export class CrosschainBridge {
         }
 
         try {
+            this.changeState('isCalculating', true)
+
             const {
                 expected_amount: maxTotalTonsAmount,
             } = await this.pairContract.methods.expectedExchange({
@@ -800,6 +807,9 @@ export class CrosschainBridge {
         catch (e) {
             error('Change tokens amount recalculate error', e)
         }
+        finally {
+            this.changeState('isCalculating', false)
+        }
     }
 
     /**
@@ -816,6 +826,8 @@ export class CrosschainBridge {
         }
 
         try {
+            this.changeState('isCalculating', true)
+
             const {
                 expected_amount: maxSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
@@ -873,6 +885,9 @@ export class CrosschainBridge {
         catch (e) {
             error('Change tons amount recalculate error', e)
         }
+        finally {
+            this.changeState('isCalculating', false)
+        }
     }
 
     /**
@@ -919,6 +934,9 @@ export class CrosschainBridge {
         }
         this.state = {
             ...this.state,
+            isCalculating: false,
+            isFetching: false,
+            isLocked: false,
             isPendingAllowance: false,
             isSwapEnabled: false,
         }
@@ -944,32 +962,40 @@ export class CrosschainBridge {
 
         this.resetAsset()
 
-        if (this.isFromEvm && this.isCreditAvailable) {
-            if (this.isEvmToEvm) {
-                await Promise.all([
-                    this.syncToken(),
-                    this.tonWallet.isConnected ? this.syncPair() : undefined,
-                    this.syncCreditFactoryFee(),
-                ])
-                await this.syncTransferFees()
-                return
-            }
+        try {
+            this.changeState('isFetching', true)
 
-            this.checkSwapCredit()
-            this.checkMinTons()
+            if (this.isFromEvm && this.isCreditAvailable) {
+                if (this.isEvmToEvm) {
+                    await Promise.all([
+                        this.syncToken(),
+                        this.tonWallet.isConnected ? this.syncPair() : undefined,
+                        this.syncCreditFactoryFee(),
+                    ])
+                    await this.syncTransferFees()
+                    return
+                }
 
-            await this.syncToken()
-            await this.syncCreditFactoryFee()
+                this.checkSwapCredit()
+                this.checkMinTons()
 
-            if (this.tonWallet.isConnected) {
-                await this.syncPair()
-                if (this.isSwapEnabled) {
-                    await this.syncMinAmount()
+                await this.syncToken()
+                await this.syncCreditFactoryFee()
+
+                if (this.tonWallet.isConnected) {
+                    await this.syncPair()
+                    if (this.isSwapEnabled) {
+                        await this.syncMinAmount()
+                    }
                 }
             }
+            else {
+                await this.syncToken()
+            }
         }
-        else {
-            await this.syncToken()
+        catch (e) {}
+        finally {
+            this.changeState('isFetching', false)
         }
     }
 
@@ -1460,6 +1486,7 @@ export class CrosschainBridge {
             }
         }
         catch (e) {
+            this.changeState('isLocked', true)
             error('Sync token error', e)
         }
     }
@@ -1563,6 +1590,18 @@ export class CrosschainBridge {
 
     public get approvalStrategy(): CrosschainBridgeStoreState['approvalStrategy'] {
         return this.state.approvalStrategy
+    }
+
+    public get isCalculating(): CrosschainBridgeStoreState['isCalculating'] {
+        return this.state.isCalculating
+    }
+
+    public get isFetching(): CrosschainBridgeStoreState['isFetching'] {
+        return this.state.isFetching
+    }
+
+    public get isLocked(): CrosschainBridgeStoreState['isLocked'] {
+        return this.state.isLocked
     }
 
     public get isPendingAllowance(): CrosschainBridgeStoreState['isPendingAllowance'] {

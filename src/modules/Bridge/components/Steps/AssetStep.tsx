@@ -3,6 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
+import { Icon } from '@/components/common/Icon'
 import { AssetForm } from '@/modules/Bridge/components/AssetForm'
 import { SwapForm } from '@/modules/Bridge/components/SwapForm'
 import { useBridge } from '@/modules/Bridge/providers'
@@ -14,7 +15,13 @@ export function AssetStep(): JSX.Element {
     const bridge = useBridge()
 
     const nextStep = async () => {
-        if (bridge.isPendingAllowance || !bridge.isAssetValid) {
+        if (
+            bridge.isPendingAllowance
+            || bridge.isFetching
+            || bridge.isCalculating
+            || bridge.isLocked
+            || !bridge.isAssetValid
+        ) {
             return
         }
 
@@ -74,12 +81,20 @@ export function AssetStep(): JSX.Element {
                     {() => (
                         <Button
                             className="crosschain-transfer__btn-next"
-                            disabled={bridge.isPendingAllowance || !bridge.isAssetValid}
+                            disabled={(
+                                bridge.isPendingAllowance
+                                || bridge.isFetching
+                                || bridge.isCalculating
+                                || bridge.isLocked
+                                || !bridge.isAssetValid
+                            )}
                             size="lg"
                             type="primary"
                             onClick={nextStep}
                         >
-                            {intl.formatMessage({
+                            {(bridge.isPendingAllowance || bridge.isFetching || bridge.isCalculating) ? (
+                                <Icon icon="loader" className="spin" />
+                            ) : intl.formatMessage({
                                 id: bridge.isEvmToTon
                                     ? 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT'
                                     : 'CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT',

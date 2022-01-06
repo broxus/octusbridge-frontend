@@ -44,6 +44,9 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
 
 export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState = {
     approvalStrategy: 'infinity',
+    isCalculating: false,
+    isFetching: false,
+    isLocked: false,
     isSwapEnabled: false,
     isPendingAllowance: false,
     isPendingApproval: false,

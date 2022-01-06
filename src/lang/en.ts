@@ -24,6 +24,8 @@ export default {
     WALLET_CONNECT_MSG: 'To continue, you need to connect the wallet',
 
     TON_WALLET_INSTALLATION_NOTE: '<p>At the moment, only Crystal Wallet supports EVER Bridge.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
+    CONNECTION_TROUBLE_TITLE: 'Connection troubles',
+    CONNECTION_TROUBLE_NOTE: 'At the moment we have found some problems with the network connection. Try again later or change your RPC settings',
 
     FOOTER_NAV_HEADER_BRIDGE: 'Bridge',
     FOOTER_NAV_ETH_TO_TON_LINK_TEXT: 'ETH to EVER',

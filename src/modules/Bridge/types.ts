@@ -41,6 +41,9 @@ export type CrosschainBridgeStoreData = {
 
 export type CrosschainBridgeStoreState = {
     approvalStrategy: ApprovalStrategies;
+    isCalculating: boolean;
+    isFetching: boolean;
+    isLocked: boolean;
     isPendingAllowance: boolean;
     isPendingApproval: boolean;
     isProcessing: boolean;
