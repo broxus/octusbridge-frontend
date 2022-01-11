@@ -92,3 +92,16 @@ export const histogramStyles: HistogramSeriesPartialOptions = {
     },
 }
 
+export const ethTonHistogramStyles: HistogramSeriesPartialOptions = {
+    color: 'rgba(74, 180, 74, 1)',
+    priceFormat: {
+        type: 'volume',
+    },
+}
+
+export const tonEthHistogramStyles: HistogramSeriesPartialOptions = {
+    color: 'rgba(235, 67, 97, 1)',
+    priceFormat: {
+        type: 'volume',
+    },
+}

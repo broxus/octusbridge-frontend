@@ -20,6 +20,7 @@ import {
 import {
     TransferKindFilter, TransfersFilters, TransfersOrdering, TransfersRequestStatus, TransferType,
 } from '@/modules/Transfers/types'
+import { TransfersChart } from '@/modules/Transfers/TransfersChart'
 import { useTonWallet } from '@/stores/TonWalletService'
 import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error, sliceAddress } from '@/utils'
@@ -275,6 +276,8 @@ function TransfersInner(): JSX.Element {
                     }),
                 }]}
             />
+
+            <TransfersChart />
 
             {pendingTransfers.totalCount !== undefined && pendingTransfers.totalCount > 0 && (
                 <Section>

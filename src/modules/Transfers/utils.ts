@@ -1,30 +1,26 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
-    Transfer, TransferKind, TransfersRequest, TransfersResponse, TransferStatus,
+    Transfer, TransferKind, TransfersGraphVolumeRequest, TransfersGraphVolumeResponse, TransfersRequest,
+    TransfersResponse, TransferStatus,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
-import { findNetwork } from '@/utils'
+import { findNetwork, handleApi } from '@/utils'
 import { NetworkShape } from '@/types'
 
-export async function handleTransfersApi(params: TransfersRequest): Promise<TransfersResponse> {
-    const url = `${IndexerApiBaseUrl}/transfers/search`
-    const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
+export async function handleTransfers(params: TransfersRequest): Promise<TransfersResponse> {
+    return handleApi<TransfersResponse>({
+        url: `${IndexerApiBaseUrl}/transfers/search`,
+        data: params,
     })
+}
 
-    if (!response.ok) {
-        throw response
-    }
-
-    const result: TransfersResponse = await response.json()
-
-    return result
+export async function handleTransfersVolume(
+    params: TransfersGraphVolumeRequest,
+): Promise<TransfersGraphVolumeResponse> {
+    return handleApi<TransfersGraphVolumeResponse>({
+        url: `${IndexerApiBaseUrl}/transfers/graph/volume`,
+        data: params,
+    })
 }
 
 export function mapStatusToIntl(status?: TransferStatus): string {

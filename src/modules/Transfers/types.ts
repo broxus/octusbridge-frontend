@@ -102,6 +102,22 @@ export type TransfersResponse = {
     transfers: Transfer[];
 }
 
+export type TransfersGraphTimeframe = 'H1' | 'D1'
+
+export type TransfersGraphVolumeRequest = {
+    from: number;
+    to: number;
+    timeframe: TransfersGraphTimeframe;
+}
+
+export type TransfersGraphVolumeModel = {
+    ethTonVolume: string;
+    tonEthVolume: string;
+    timestamp: number;
+}
+
+export type TransfersGraphVolumeResponse = TransfersGraphVolumeModel[]
+
 export type TransfersStoreData = {
     apiResponse?: TransfersResponse;
 }
@@ -110,4 +126,13 @@ export type TransfersStoreState = {
     loading?: boolean;
     page: number;
     limit: number;
+}
+
+export type TransfersChartStoreData = {
+    volumeGraph?: TransfersGraphVolumeModel[];
+}
+
+export type TransfersChartStoreState = {
+    loading?: boolean;
+    timeframe?: TransfersGraphTimeframe;
 }

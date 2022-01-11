@@ -469,6 +469,8 @@ export default {
     TRANSFERS_TYPE_CREDIT: 'Credit',
     TRANSFERS_TYPE_TRANSIT: 'Transit',
 
+    TRANSFERS_CHART_TITLE: 'Transfers volume',
+
     PROPOSALS_TITLE: 'Proposals',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',
     PROPOSALS_UNLOCK_ALL: 'Unlock all tokens',
@@ -619,6 +621,7 @@ export default {
     UNLOCK_FORM_UNLOCK: 'Unlock',
     UNLOCK_FORM_NO_PROPOSALS: 'No proposals',
 
+    GOVERNANCE_BREADCRUMB_OVERVIEW: 'Overview',
     GOVERNANCE_BREADCRUMB_PROPOSALS: 'Proposals',
     GOVERNANCE_BREADCRUMB_PROPOSAL: '#{id} {title}',
     GOVERNANCE_BREADCRUMB_CREATE: 'Make new proposal',
@@ -698,4 +701,8 @@ export default {
     AIRDROP_BTN_TEXT_SUBMIT: 'Submit',
     AIRDROP_BTN_TEXT_CLAIM: 'Claim',
     AIRDROP_FIELD_TOKEN_WALLET_BALANCE: 'Balance: {balance}',
+
+    CHART_LAYOUT_DAY: 'D',
+    CHART_LAYOUT_HOURS: 'H',
+    CHART_LAYOUT_NO_DATA: 'No data for chart',
 }

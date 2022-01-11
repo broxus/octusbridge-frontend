@@ -29,6 +29,11 @@ export function ProposalCreateInner(): JSX.Element | null {
             <Breadcrumb
                 items={[{
                     title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_OVERVIEW',
+                    }),
+                    link: '/governance',
+                }, {
+                    title: intl.formatMessage({
                         id: 'GOVERNANCE_BREADCRUMB_PROPOSALS',
                     }),
                     link: '/governance/proposals',

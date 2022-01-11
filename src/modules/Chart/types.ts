@@ -1,4 +1,4 @@
-import { BarData, LineData } from 'lightweight-charts'
+import { BarData, LineData, Time } from 'lightweight-charts'
 
 export type Timeframe = 'H1' | 'D1'
 
@@ -28,3 +28,9 @@ export type VolumeGraphModel = {
 export type CandlestickGraphShape = BarData
 
 export type CommonGraphShape = LineData
+
+export type TransfersChartData = {
+    ethTonValue: number;
+    tonEthValue: number;
+    time: Time;
+}[]

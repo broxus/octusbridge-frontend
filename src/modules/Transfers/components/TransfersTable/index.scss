@@ -27,13 +27,13 @@
     }
 
     &-status {
-        display: inline-block;
-        width: 7px;
-        height: 7px;
         border-radius: 50%;
+        display: inline-block;
+        height: 7px;
+        width: 7px;
 
         &.success {
-            background: #4AB44A;
+            background: #4ab44a;
         }
 
         &.pending {
@@ -54,7 +54,7 @@
 
     &-name {
         font-size: 12px;
-        opacity: 0.33;
         margin: 0 0 2px;
+        opacity: 0.33;
     }
 }

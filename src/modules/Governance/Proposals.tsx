@@ -3,6 +3,7 @@ import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
 import { Container, Title } from '@/components/common/Section'
+import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { AllProposals } from '@/modules/Governance/AllProposals'
 import { UserProposals } from '@/modules/Governance/UserProposals'
 import { useTonWallet } from '@/stores/TonWalletService'
@@ -16,6 +17,19 @@ export function Proposals(): JSX.Element {
 
     return (
         <Container size="lg">
+            <Breadcrumb
+                items={[{
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_OVERVIEW',
+                    }),
+                    link: '/governance',
+                }, {
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_PROPOSALS',
+                    }),
+                }]}
+            />
+
             <Title size="lg">
                 {intl.formatMessage({
                     id: 'PROPOSALS_TITLE',

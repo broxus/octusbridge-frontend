@@ -119,11 +119,11 @@
     letter-spacing: 0.75px;
     line-height: 16px;
     margin: 8px 0 0;
+    min-height: 30px;
     overflow: hidden;
     padding: 6px 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    min-height: 30px;
 
     &_active {
         color: #ffffff;

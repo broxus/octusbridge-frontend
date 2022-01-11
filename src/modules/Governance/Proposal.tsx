@@ -1,10 +1,11 @@
 import * as React from 'react'
+import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { Container } from '@/components/common/Section'
 import { ProposalHeader } from '@/modules/Governance/components/ProposalHeader'
-import { ProposalBreadcrumb } from '@/modules/Governance/components/ProposalBreadcrumb'
+import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { ProposalVoting } from '@/modules/Governance/components/ProposalVoting'
 import { ProposalContent } from '@/modules/Governance/components/ProposalContent'
 import { VotesTable } from '@/modules/Governance/VotesTable'
@@ -16,6 +17,7 @@ import { useProposalContext } from '@/modules/Governance/providers'
 import './index.scss'
 
 export function ProposalInner(): JSX.Element | null {
+    const intl = useIntl()
     const proposal = useProposalContext()
 
     if (proposal.loading) {
@@ -26,7 +28,29 @@ export function ProposalInner(): JSX.Element | null {
 
     return (
         <Container size="lg">
-            <ProposalBreadcrumb />
+            <Breadcrumb
+                items={[{
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_OVERVIEW',
+                    }),
+                    link: '/governance',
+                }, {
+                    title: intl.formatMessage({
+                        id: 'GOVERNANCE_BREADCRUMB_PROPOSALS',
+                    }),
+                    link: '/governance/proposals',
+                }, {
+                    title: intl.formatMessage({
+                        id: proposal.id && proposal.title
+                            ? 'GOVERNANCE_BREADCRUMB_PROPOSAL'
+                            : 'PROPOSAL_UNKNOWN_TITLE',
+                    }, {
+                        id: proposal.id,
+                        title: proposal.title,
+                    }),
+                }]}
+            />
+
             <ProposalHeader />
 
             <div className="proposal-layout-content">

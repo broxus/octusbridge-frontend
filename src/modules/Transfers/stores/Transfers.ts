@@ -4,7 +4,7 @@ import {
     Transfer, TransfersRequest, TransfersResponse,
     TransfersStoreData, TransfersStoreState,
 } from '@/modules/Transfers/types'
-import { handleTransfersApi } from '@/modules/Transfers/utils'
+import { handleTransfers } from '@/modules/Transfers/utils'
 import { error, lastOfCalls } from '@/utils'
 
 export class TransfersStore {
@@ -16,19 +16,19 @@ export class TransfersStore {
         limit: 10,
     }
 
-    protected apiHandle: (params: TransfersRequest) => Promise<TransfersResponse | undefined>
+    protected handleTransfers: (params: TransfersRequest) => Promise<TransfersResponse | undefined>
 
     constructor() {
         makeAutoObservable(this)
 
-        this.apiHandle = lastOfCalls(handleTransfersApi)
+        this.handleTransfers = lastOfCalls(handleTransfers)
     }
 
     public async fetch(params: TransfersRequest): Promise<void> {
         this.setLoading(true)
 
         try {
-            const apiResponse = await this.apiHandle(params)
+            const apiResponse = await this.handleTransfers(params)
 
             if (apiResponse) {
                 this.setApiResponse(apiResponse)

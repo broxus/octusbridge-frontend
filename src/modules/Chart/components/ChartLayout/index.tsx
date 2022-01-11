@@ -1,5 +1,6 @@
 import * as React from 'react'
 import classNames from 'classnames'
+import { useIntl } from 'react-intl'
 
 import { Tab, Tabs } from '@/components/common/Tabs'
 import { ContentLoader } from '@/components/common/ContentLoader'
@@ -15,17 +16,21 @@ type Props<T> = {
     onChangeTimeframe?: (timeframe: Timeframe) => void;
     loading?: boolean;
     children?: React.ReactNode;
+    showNoData?: boolean;
 }
 
 export function ChartLayout<T extends string>({
     types = [],
-    activeType,
     timeframe = 'H1',
+    activeType,
     onChangeType,
     onChangeTimeframe,
     loading,
     children,
+    showNoData,
 }: Props<T>): JSX.Element {
+    const intl = useIntl()
+
     const clickTabFn = (value: T) => () => {
         onChangeType?.(value)
     }
@@ -54,16 +59,28 @@ export function ChartLayout<T extends string>({
                         active={timeframe === 'H1'}
                         onClick={clickScaleFn('H1')}
                     >
-                        H
+                        {intl.formatMessage({
+                            id: 'CHART_LAYOUT_HOURS',
+                        })}
                     </Tab>
                     <Tab
                         active={timeframe === 'D1'}
                         onClick={clickScaleFn('D1')}
                     >
-                        D
+                        {intl.formatMessage({
+                            id: 'CHART_LAYOUT_DAY',
+                        })}
                     </Tab>
                 </Tabs>
             </div>
+
+            {showNoData && (
+                <div className="chart-layout__no-data">
+                    {intl.formatMessage({
+                        id: 'CHART_LAYOUT_NO_DATA',
+                    })}
+                </div>
+            )}
 
             <div className="chart-layout__chart">
                 {children}
