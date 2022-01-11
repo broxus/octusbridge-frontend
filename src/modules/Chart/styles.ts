@@ -1,11 +1,15 @@
+import { DateTime } from 'luxon'
 import {
     AreaSeriesPartialOptions,
+    BarPrice,
     CandlestickSeriesPartialOptions,
     ChartOptions,
     DeepPartial,
     HistogramSeriesPartialOptions,
+    UTCTimestamp,
 } from 'lightweight-charts'
 
+import { abbrNumber } from '@/utils'
 
 export const chartOptions: DeepPartial<ChartOptions> = {
     crosshair: {
@@ -28,7 +32,8 @@ export const chartOptions: DeepPartial<ChartOptions> = {
     },
     layout: {
         backgroundColor: 'rgba(0, 0, 0, 0)',
-        textColor: '#d9d9d9',
+        textColor: 'rgba(255,255,255,0.32)',
+        fontSize: 12,
     },
     rightPriceScale: {
         borderColor: 'rgba(0, 0, 0, 0)',
@@ -37,6 +42,9 @@ export const chartOptions: DeepPartial<ChartOptions> = {
         borderColor: 'rgba(0, 0, 0, 0)',
         secondsVisible: false,
         timeVisible: true,
+        tickMarkFormatter: (time: UTCTimestamp) => (
+            DateTime.fromSeconds(time).toFormat('dd.MM')
+        ),
     },
 }
 
@@ -103,5 +111,11 @@ export const tonEthHistogramStyles: HistogramSeriesPartialOptions = {
     color: 'rgba(235, 67, 97, 1)',
     priceFormat: {
         type: 'volume',
+    },
+}
+
+export const transfersHistogramOptions: DeepPartial<ChartOptions> = {
+    localization: {
+        priceFormatter: (price: BarPrice) => `$${abbrNumber(price.valueOf()).toLowerCase()}`,
     },
 }

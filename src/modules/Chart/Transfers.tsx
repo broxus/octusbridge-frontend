@@ -12,6 +12,7 @@ import {
     ethTonHistogramStyles,
     histogramOptions,
     tonEthHistogramStyles,
+    transfersHistogramOptions,
 } from '@/modules/Chart/styles'
 import {
     Timeframe,
@@ -24,29 +25,33 @@ import './index.scss'
 type Props = {
     data: TransfersChartData;
     timeframe: Timeframe;
+    showEvmTon?: boolean;
+    showTonEvm?: boolean;
     load: (from?: number, to?: number) => Promise<void>;
 }
 
 export function Chart({
-    timeframe,
     data,
+    timeframe,
+    showEvmTon = true,
+    showTonEvm = true,
     load,
 }: Props): JSX.Element {
     const chartRef = React.useRef<HTMLDivElement | null>(null)
     const chart = React.useRef<IChartApi>()
 
-    const [ethTonSeries, setEthTonSeries] = React.useState<ISeriesApi<SeriesType>>()
-    const [tonEthSeries, setTonEthSeries] = React.useState<ISeriesApi<SeriesType>>()
+    const [tonEvmSeries, setTonEvmSeries] = React.useState<ISeriesApi<SeriesType>>()
+    const [evmTonSeries, setEvmTonSeries] = React.useState<ISeriesApi<SeriesType>>()
 
-    const [tonEthData, ethTonData] = data
+    const [evmTonData, tonEvmData] = data
         .reduce<[HistogramData[], HistogramData[]]>((acc, item) => {
             acc[0].push({
                 time: item.time,
-                value: item.tonEthValue,
+                value: item.ethTonValue,
             })
             acc[1].push({
                 time: item.time,
-                value: item.ethTonValue,
+                value: showEvmTon ? -item.tonEthValue : item.tonEthValue,
             })
             return acc
         }, [[], []])
@@ -55,7 +60,7 @@ export function Chart({
         const lr = chart.current?.timeScale().getVisibleLogicalRange()
 
         if (lr) {
-            const barsInfo = ethTonSeries?.barsInLogicalRange(lr)
+            const barsInfo = (evmTonSeries || tonEvmSeries)?.barsInLogicalRange(lr)
 
             if (
                 barsInfo?.barsBefore !== undefined
@@ -73,7 +78,7 @@ export function Chart({
                 )
             }
         }
-    }, 50), [chart.current, ethTonSeries, timeframe, load])
+    }, 50), [chart.current, evmTonSeries, tonEvmSeries, timeframe, load])
 
     const listener = React.useRef<typeof handler>()
 
@@ -105,10 +110,13 @@ export function Chart({
                 ...chartOptions,
             })
 
-            chart.current.applyOptions(histogramOptions)
+            chart.current.applyOptions({
+                ...histogramOptions,
+                ...transfersHistogramOptions,
+            })
 
-            setEthTonSeries(chart.current.addHistogramSeries(ethTonHistogramStyles))
-            setTonEthSeries(chart.current.addHistogramSeries(tonEthHistogramStyles))
+            setTonEvmSeries(chart.current.addHistogramSeries(tonEthHistogramStyles))
+            setEvmTonSeries(chart.current.addHistogramSeries(ethTonHistogramStyles))
 
             chart.current.timeScale().resetTimeScale()
             chart.current.timeScale().fitContent()
@@ -132,18 +140,18 @@ export function Chart({
                 listener.current = undefined
             }
 
-            tonEthSeries?.setData(tonEthData)
-            ethTonSeries?.setData(ethTonData)
+            evmTonSeries?.setData(evmTonData)
+            tonEvmSeries?.setData(tonEvmData)
+
+            evmTonSeries?.applyOptions({ visible: showEvmTon })
+            tonEvmSeries?.applyOptions({ visible: showTonEvm })
 
             listener.current = handler
             chart.current?.timeScale().subscribeVisibleTimeRangeChange(listener.current)
         }
-    }, [data, tonEthSeries, ethTonSeries, timeframe, handler])
+    }, [showEvmTon, showTonEvm, evmTonData, tonEvmData, tonEvmSeries, evmTonSeries, timeframe, handler])
 
-    React.useEffect(() => {
-        tonEthSeries?.setData(tonEthData)
-        ethTonSeries?.setData(ethTonData)
-    }, [data])
-
-    return <div ref={chartRef} className="chart" />
+    return (
+        <div ref={chartRef} className="chart" />
+    )
 }

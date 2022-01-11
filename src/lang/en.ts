@@ -470,6 +470,8 @@ export default {
     TRANSFERS_TYPE_TRANSIT: 'Transit',
 
     TRANSFERS_CHART_TITLE: 'Transfers volume',
+    TRANSFERS_CHART_EVM_EVER: 'EVM to EVER',
+    TRANSFERS_CHART_EVER_EVM: 'EVER to EVM',
 
     PROPOSALS_TITLE: 'Proposals',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',
@@ -704,5 +706,5 @@ export default {
 
     CHART_LAYOUT_DAY: 'D',
     CHART_LAYOUT_HOURS: 'H',
-    CHART_LAYOUT_NO_DATA: 'No data for chart',
+    CHART_LAYOUT_NO_DATA: 'No data',
 }

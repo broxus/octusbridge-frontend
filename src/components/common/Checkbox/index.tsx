@@ -8,6 +8,7 @@ type Props = {
     checked?: boolean;
     label?: string;
     disabled?: boolean;
+    color?: string;
     onChange?: (checked: boolean) => void;
 }
 
@@ -15,6 +16,7 @@ export function Checkbox({
     checked,
     label,
     disabled,
+    color,
     onChange,
 }: Props): JSX.Element {
     return (
@@ -25,7 +27,13 @@ export function Checkbox({
                 onChange={() => onChange && onChange(!checked)}
                 disabled={disabled}
             />
-            <div className="checkbox__icon">
+            <div
+                className="checkbox__icon"
+                style={{
+                    background: color,
+                    borderColor: color,
+                }}
+            >
                 <Icon icon="check" />
             </div>
             {label && (

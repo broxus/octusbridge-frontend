@@ -77,12 +77,12 @@ export class TransfersChartStore {
             .map(item => ({
                 time: (item.timestamp / 1000) as Time,
                 ethTonValue: parseFloat(item.ethTonVolume),
-                tonEthValue: -parseFloat(item.tonEthVolume),
+                tonEthValue: parseFloat(item.tonEthVolume),
             }))
     }
 
     public get timeframe(): TransfersGraphTimeframe {
-        return this.state.timeframe || 'H1'
+        return this.state.timeframe || 'D1'
     }
 
     public get loading(): boolean {
