@@ -44,11 +44,8 @@ export function Chart({
                             })}
                         </div>
                         <div>
-                            {intl.formatMessage({
-                                id: 'PERCENT',
-                            }, {
-                                value: percent,
-                            })}
+                            {percent}
+                            %
                         </div>
 
                     </div>

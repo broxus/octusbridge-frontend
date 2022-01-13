@@ -72,9 +72,9 @@ export function Nav(): JSX.Element {
                     <div className="main-nav__sub">
                         <ul>
                             <li>
-                                <NavLink to="/staking" exact>
+                                <NavLink to="/staking/explorer/my">
                                     {intl.formatMessage({
-                                        id: 'NAV_LINK_TEXT_STAKING_ACCOUNT',
+                                        id: 'NAV_LINK_TEXT_MY_STAKING_MY',
                                     })}
                                 </NavLink>
                             </li>
@@ -82,13 +82,6 @@ export function Nav(): JSX.Element {
                                 <NavLink to="/staking/explorer" exact>
                                     {intl.formatMessage({
                                         id: 'NAV_LINK_TEXT_STAKING_EXPLORER',
-                                    })}
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/staking/explorer/my">
-                                    {intl.formatMessage({
-                                        id: 'NAV_LINK_TEXT_MY_STAKING_MY',
                                     })}
                                 </NavLink>
                             </li>

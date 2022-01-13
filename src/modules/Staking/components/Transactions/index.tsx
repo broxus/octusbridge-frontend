@@ -7,14 +7,13 @@ import { TransactionExplorerLink } from '@/components/common/TransactionExplorer
 import { Header, Section, Title } from '@/components/common/Section'
 import { Tab, Tabs } from '@/components/common/Tabs'
 import { Table } from '@/components/common/Table'
-import { Amount } from '@/components/common/Amount'
 import { Pagination } from '@/components/common/Pagination'
 import { mapTransactionKindToIntlId } from '@/modules/Staking/utils'
 import { TransactionKindApiRequest, TransactionOrdering } from '@/modules/Staking/types'
 import { UserStoreContext } from '@/modules/Staking/providers/UserStoreProvider'
 import { usePagination } from '@/hooks/usePagination'
 import { useTableOrder } from '@/hooks/useTableOrder'
-import { dateFormat, error } from '@/utils'
+import { dateFormat, error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -165,7 +164,7 @@ export function TransactionsInner({
                                         ? <TransactionExplorerLink withIcon id={item.transactionHash} />
                                         : noValue,
                                     item.amountExec
-                                        ? <Amount value={new BigNumber(item.amountExec).abs().toFixed()} />
+                                        ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), 0, true, true)
                                         : noValue,
                                     item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
                                 ],

@@ -57,24 +57,16 @@ export function EventsDistribution(): JSX.Element {
                     cells: [
                         <Checkbox />,
                         'EVER to ETH',
-                        '949 080.00',
-                        intl.formatMessage({
-                            id: 'PERCENT',
-                        }, {
-                            value: '67.28',
-                        }),
+                        '949 080.00',
+                        '67.28%',
                     ],
                 }, {
                     link: '/',
                     cells: [
                         <Checkbox />,
                         'ETH to EVER',
-                        '370 920.00',
-                        intl.formatMessage({
-                            id: 'PERCENT',
-                        }, {
-                            value: '32.72',
-                        }),
+                        '370 920.00',
+                        '32.72%',
                     ],
                 }]}
             />

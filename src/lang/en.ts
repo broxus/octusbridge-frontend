@@ -15,7 +15,6 @@ export default {
     NAV_LINK_TEXT_PROPOSALS: 'Proposals',
     NAV_LINK_TEXT_GOVERNANCE_OVERVIEW: 'Overview',
     NAV_LINK_TEXT_PROPOSALS_CREATE: 'Create proposal',
-    NAV_LINK_SOON_HINT: 'Soon',
     NAV_LINK_TEXT_AIRDROP: 'Airdrop',
 
     WALLET_BALANCE_HINT: '{value} {currency}',
@@ -406,6 +405,7 @@ export default {
     STAKING_STATS_REDEEM: 'Redeem',
     STAKING_STATS_CREATE: 'Become relayer',
     STAKING_STATS_STAKE: 'Stake',
+    STAKING_STATS_CLAIM: 'Claim',
     STAKING_STATS_TVL: 'TVL, BRIDGE',
     STAKING_STATS_FROZEN: 'Frozen stake, BRIDGE',
     STAKING_STATS_REWARD: '30d reward, BRIDGE',
@@ -457,8 +457,6 @@ export default {
     TRANSFERS_BC_FROM: 'From',
     TRANSFERS_BC_TO: 'To',
     TRANSFERS_TOKEN: 'Token',
-    TRANSFERS_ETH_TO_TON: '{network} to Everscale',
-    TRANSFERS_TON_TO_ETH: 'Everscale to {network}',
 
     TRANSFERS_STATUS_CONFIRMED: 'Executed',
     TRANSFERS_STATUS_PENDING: 'Pending',
@@ -469,7 +467,13 @@ export default {
     TRANSFERS_TYPE_CREDIT: 'Credit',
     TRANSFERS_TYPE_TRANSIT: 'Transit',
 
-    TRANSFERS_CHART_TITLE: 'Transfers volume',
+    TRANSFERS_STATS_TITLE: 'Transfers',
+    TRANSFERS_STATS_COUNT: 'Transfers',
+    TRANSFERS_STATS_VOLUME_24H: 'Volume 24h',
+    TRANSFERS_STATS_VOLUME_7D: 'Volume 7d',
+    TRANSFERS_STATS_FROM: 'From Everscale',
+    TRANSFERS_STATS_TO: 'To Everscale',
+
     TRANSFERS_CHART_EVM_EVER: 'EVM to EVER',
     TRANSFERS_CHART_EVER_EVM: 'EVER to EVM',
 
@@ -697,7 +701,7 @@ export default {
     NA: 'N/A',
     NO_VALUE: '–',
     AMOUNT: '{value} {symbol}',
-    PERCENT: '{value}%',
+    SOON: 'Soon',
 
     AIRDROP_FORM_TITLE: 'Airdrop',
     AIRDROP_BTN_TEXT_SUBMIT: 'Submit',

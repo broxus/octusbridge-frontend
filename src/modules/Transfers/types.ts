@@ -136,3 +136,7 @@ export type TransfersChartStoreState = {
     loading?: boolean;
     timeframe?: TransfersGraphTimeframe;
 }
+
+export type TransfersStatsStoreData = {
+    totalCount?: number;
+}

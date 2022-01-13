@@ -6,11 +6,10 @@ import { useIntl } from 'react-intl'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
-import { Amount } from '@/components/common/Amount'
 import { UserCard } from '@/components/common/UserCard'
 import { Status } from '@/modules/Relayers/components/Relayers/status'
 import { Rounds } from '@/modules/Relayers/components/Relayers/rounds'
-import { dateFormat } from '@/utils'
+import { dateFormat, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -57,10 +56,7 @@ export function Relayers(): JSX.Element {
                         cells: [
                             1,
                             <UserCard address="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1" />,
-                            <Amount
-                                value="12040000000"
-                                decimals={9}
-                            />,
+                            formattedAmount(12040000000, 9, true, true),
                             <Status
                                 state="success"
                                 status="active"

@@ -75,13 +75,7 @@ export function RelayerPerformance(): JSX.Element | null {
                             })
                             : null}
                     >
-                        {relayer.successRoundsRate && (
-                            intl.formatMessage({
-                                id: 'PERCENT',
-                            }, {
-                                value: relayer.successRoundsRate,
-                            })
-                        )}
+                        {relayer.successRoundsRate && `${relayer.successRoundsRate}%`}
                     </DataCard>
 
                     <DataCard

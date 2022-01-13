@@ -9,7 +9,7 @@ import './index.scss'
 type Props = {
     title?: string;
     hint?: string;
-    value?: number | string | null;
+    value?: React.ReactNode | number | string | null;
     linkUrl?: string;
     linkTitle?: string;
     children?: React.ReactNode | React.ReactNode[];
@@ -48,27 +48,29 @@ export function DataCard({
                 </div>
             )}
 
-            <div className="data-card__body">
-                {children && (
-                    <div className="data-card__content">
-                        {children}
-                        {!hint && _link}
-                    </div>
-                )}
+            {(children || hint || _link) && (
+                <div className="data-card__body">
+                    {children && (
+                        <div className="data-card__content">
+                            {children}
+                            {!hint && _link}
+                        </div>
+                    )}
 
-                {hint && (
-                    <div className="data-card__content data-card__content_hint">
-                        {hint}
-                        {_link}
-                    </div>
-                )}
+                    {hint && (
+                        <div className="data-card__content data-card__content_hint">
+                            {hint}
+                            {_link}
+                        </div>
+                    )}
 
-                {!children && !hint && _link && (
-                    <div className="data-card__content data-card__content_link">
-                        {_link}
-                    </div>
-                )}
-            </div>
+                    {!children && !hint && _link && (
+                        <div className="data-card__content data-card__content_link">
+                            {_link}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

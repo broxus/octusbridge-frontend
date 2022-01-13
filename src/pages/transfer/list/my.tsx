@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
-import { Transfers } from '@/modules/Transfers/transfers'
+import { Transfers } from '@/modules/Transfers'
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { useTonWallet } from '@/stores/TonWalletService'
 
@@ -20,12 +20,7 @@ function PageInner(): JSX.Element {
                 })}
             >
                 {tonWallet.address && (
-                    <Transfers
-                        userAddress={tonWallet.address}
-                        title={intl.formatMessage({
-                            id: 'TRANSFERS_MY_TITLE',
-                        })}
-                    />
+                    <Transfers />
                 )}
             </WalletConnector>
         </div>

@@ -25,11 +25,8 @@ export function Rounds({
                 })}
             </div>
             <div className="relayers-rounds__percent">
-                {intl.formatMessage({
-                    id: 'PERCENT',
-                }, {
-                    value: ((100 * amount) / total).toFixed(2),
-                })}
+                {((100 * amount) / total).toFixed(2)}
+                %
             </div>
         </div>
     )

@@ -104,7 +104,7 @@ export function VotesTableInner({
                                 badge
                                 type={item.support === true ? 1 : 0}
                                 value={item.votes
-                                    ? formattedAmount(item.votes, DexConstants.TONDecimals)
+                                    ? formattedAmount(item.votes, DexConstants.TONDecimals, true, true)
                                     : undefined}
                             />,
                             dateFormat(item.createdAt * 1000),

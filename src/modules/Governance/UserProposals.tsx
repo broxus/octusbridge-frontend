@@ -25,7 +25,6 @@ import { DexConstants } from '@/misc'
 
 import './index.scss'
 
-// TODO: Vote power
 export function UserProposalsInner(): JSX.Element | null {
     const intl = useIntl()
     const tonWallet = useTonWallet()
@@ -154,7 +153,7 @@ export function UserProposalsInner(): JSX.Element | null {
                                         badge
                                         type={vote.support === true ? 1 : 0}
                                         value={vote.votes
-                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals)
+                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals, true, true)
                                             : undefined}
                                     />
                                 ) : noValue,

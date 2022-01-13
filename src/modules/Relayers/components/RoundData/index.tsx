@@ -39,11 +39,7 @@ export function RoundData(): JSX.Element | null {
                     })}
                     value={null}
                 >
-                    {intl.formatMessage({
-                        id: 'PERCENT',
-                    }, {
-                        value: '0.0',
-                    })}
+                    0%
                 </DataCard>
 
                 <DataCard

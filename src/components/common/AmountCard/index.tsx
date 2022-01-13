@@ -1,7 +1,8 @@
 import * as React from 'react'
+import { useIntl } from 'react-intl'
 
-import { Amount } from '@/components/common/Amount'
 import { TvlChange } from '@/components/common/TvlChange'
+import { formattedAmount } from '@/utils'
 import './index.scss'
 
 type Props = {
@@ -17,13 +18,16 @@ export function AmountCard({
     changesDirection = 0,
     priceChange = '0',
 }: Props): JSX.Element {
+    const intl = useIntl()
+
     return (
         <div className="amount-card">
             <div>
-                <Amount
-                    value={value}
-                    decimals={decimals}
-                />
+                {value
+                    ? formattedAmount(value, decimals, true, true)
+                    : intl.formatMessage({
+                        id: 'NO_VALUE',
+                    })}
             </div>
             <TvlChange
                 changesDirection={changesDirection}

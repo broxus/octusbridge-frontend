@@ -8,7 +8,6 @@ import {
 import { Table } from '@/components/common/Table'
 import { Header, Section, Title } from '@/components/common/Section'
 import { UserCard } from '@/components/common/UserCard'
-import { Amount } from '@/components/common/Amount'
 import { Pagination } from '@/components/common/Pagination'
 import { mapStakeholderKindToIntlId } from '@/modules/Staking/utils'
 import { StakeholderApiOrdering, StakeholderKindApiRequest, StakeholdersApiFilters } from '@/modules/Staking/types'
@@ -17,7 +16,7 @@ import {
     useBNParam, useDateParam, useDictParam, usePagination,
     useTableOrder, useUrlParams,
 } from '@/hooks'
-import { dateFormat, error } from '@/utils'
+import { dateFormat, error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -301,10 +300,12 @@ export function StakeholdersInner(): JSX.Element | null {
                                     intl.formatMessage({
                                         id: mapStakeholderKindToIntlId(item.userType),
                                     }),
-                                    <Amount value={item.stakeBalance} />,
-                                    <Amount value={item.frozenStakeBalance} />,
-                                    <Amount value={item.lastReward} />,
-                                    <Amount value={item.totalReward} />,
+                                    item.stakeBalance ? formattedAmount(item.stakeBalance, 0, true, true) : noValue,
+                                    item.frozenStakeBalance
+                                        ? formattedAmount(item.frozenStakeBalance, 0, true, true)
+                                        : noValue,
+                                    item.lastReward ? formattedAmount(item.lastReward, 0, true, true) : noValue,
+                                    item.totalReward ? formattedAmount(item.totalReward, 0, true, true) : noValue,
                                     item.createdAt ? dateFormat(item.createdAt) : noValue,
                                 ],
                             }))}

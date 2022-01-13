@@ -4,11 +4,10 @@ import { useIntl } from 'react-intl'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Token } from '@/components/common/Token'
 import { Table } from '@/components/common/Table'
-import { Amount } from '@/components/common/Amount'
 import { Pagination } from '@/components/common/Pagination'
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { EventType } from '@/modules/Relayers/components/Events/type'
-import { dateFormat } from '@/utils'
+import { dateFormat, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -72,10 +71,7 @@ export function Events(): JSX.Element {
                                 symbol="EVER"
                                 size="small"
                             />,
-                            <Amount
-                                value="12300000000000"
-                                decimals={9}
-                            />,
+                            formattedAmount(12300000000000, 9, true, true),
                             dateFormat(new Date().getTime()),
                         ],
                     }]}

@@ -12,22 +12,22 @@ type Props<T> = {
     types?: T[];
     activeType?: T;
     timeframe?: Timeframe;
+    loading?: boolean;
+    showNoData?: boolean;
+    children?: React.ReactNode;
     onChangeType?: (type: T) => void;
     onChangeTimeframe?: (timeframe: Timeframe) => void;
-    loading?: boolean;
-    children?: React.ReactNode;
-    showNoData?: boolean;
 }
 
 export function ChartLayout<T extends string>({
     types = [],
     timeframe = 'H1',
     activeType,
+    loading,
+    showNoData,
+    children,
     onChangeType,
     onChangeTimeframe,
-    loading,
-    children,
-    showNoData,
 }: Props<T>): JSX.Element {
     const intl = useIntl()
 

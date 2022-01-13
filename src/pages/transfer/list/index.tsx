@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Transfers } from '@/modules/Transfers/transfers'
+import { Transfers } from '@/modules/Transfers'
 
 export default function PageInner(): JSX.Element {
     return (

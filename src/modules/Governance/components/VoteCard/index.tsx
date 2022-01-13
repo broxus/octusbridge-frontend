@@ -20,9 +20,11 @@ export function VoteCard({
     return (
         <div className="vote-card">
             <div className="vote-card__value">
-                {value ? formattedAmount(value, DexConstants.TONDecimals) : intl.formatMessage({
-                    id: 'NO_VALUE',
-                })}
+                {value
+                    ? formattedAmount(value, DexConstants.TONDecimals, true, true)
+                    : intl.formatMessage({
+                        id: 'NO_VALUE',
+                    })}
             </div>
             {percent && (
                 <div className="vote-card__percent">

@@ -52,6 +52,11 @@ export function CommonStats(): JSX.Element | null {
                             id: 'STAKING_STATS_CREATE',
                         })}
                     </Button>
+                    <Button size="md" type="secondary" link="/airdrop">
+                        {intl.formatMessage({
+                            id: 'STAKING_STATS_CLAIM',
+                        })}
+                    </Button>
                     <Button size="md" type="secondary" link="/staking/redeem">
                         {intl.formatMessage({
                             id: 'STAKING_STATS_REDEEM',
@@ -73,7 +78,9 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_TVL',
                                 })}
-                                value={explorer.tvl ? formattedAmount(explorer.tvl) : noValue}
+                                value={explorer.tvl
+                                    ? formattedAmount(explorer.tvl, 0, true, true)
+                                    : noValue}
                             >
                                 {explorer.tvlChange && (
                                     <TvlChange
@@ -92,15 +99,18 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_REWARD',
                                 })}
-                                value={explorer.reward30d ? formattedAmount(explorer.reward30d) : noValue}
+                                // value={explorer.reward30d ? formattedAmount(explorer.reward30d) : noValue}
                             >
-                                {explorer.reward30dChange && (
+                                {intl.formatMessage({
+                                    id: 'SOON',
+                                })}
+                                {/* {explorer.reward30dChange && (
                                     <TvlChange
                                         changesDirection={parseInt(explorer.reward30dChange, 10)}
                                         priceChange={formattedAmount(explorer.reward30dChange)}
                                         size="small"
                                     />
-                                )}
+                                )} */}
                             </DataCard>
                         )}
                     </Observer>
@@ -111,8 +121,12 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_APR',
                                 })}
-                                value={explorer.averageApr ? `${explorer.averageApr}%` : noValue}
-                            />
+                                // value={explorer.averageApr ? `${explorer.averageApr}%` : noValue}
+                            >
+                                {intl.formatMessage({
+                                    id: 'SOON',
+                                })}
+                            </DataCard>
                         )}
                     </Observer>
 

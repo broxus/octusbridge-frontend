@@ -69,8 +69,11 @@ export function DaoStats(): JSX.Element | null {
                         title={intl.formatMessage({
                             id: 'DAO_STATS_DELEGATED',
                         })}
-                        value={noValue}
-                    />
+                    >
+                        {intl.formatMessage({
+                            id: 'SOON',
+                        })}
+                    </DataCard>
 
                     <Observer>
                         {() => (

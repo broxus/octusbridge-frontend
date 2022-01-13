@@ -6,7 +6,7 @@ import {
     Actions, Header, Section, Title,
 } from '@/components/common/Section'
 import { Button } from '@/components/common/Button'
-import { TvlChange } from '@/components/common/TvlChange'
+// import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
 import { UserStoreContext } from '@/modules/Staking/providers/UserStoreProvider'
 import { error, formattedAmount } from '@/utils'
@@ -56,6 +56,12 @@ export function UserStats({
                         })}
                     </Button>
 
+                    <Button size="md" type="secondary" link="/airdrop">
+                        {intl.formatMessage({
+                            id: 'STAKING_STATS_CLAIM',
+                        })}
+                    </Button>
+
                     <Button size="md" type="secondary" link="/staking/redeem">
                         {intl.formatMessage({
                             id: 'STAKING_STATS_REDEEM',
@@ -77,15 +83,15 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_TVL',
                             })}
-                            value={user.userTvl ? formattedAmount(user.userTvl) : noValue}
+                            value={user.userTvl ? formattedAmount(user.userTvl, 0, true, true) : noValue}
                         >
-                            {user.userTvlChange && (
+                            {/* {user.userTvlChange && (
                                 <TvlChange
                                     changesDirection={parseInt(user.userTvlChange, 10)}
                                     priceChange={formattedAmount(user.userTvlChange)}
                                     size="small"
                                 />
-                            )}
+                            )} */}
                         </DataCard>
                     )}
                 </Observer>
@@ -96,7 +102,9 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_FROZEN',
                             })}
-                            value={user.userFrozenStake ? formattedAmount(user.userFrozenStake) : noValue}
+                            value={user.userFrozenStake
+                                ? formattedAmount(user.userFrozenStake, 0, true, true)
+                                : noValue}
                         />
                     )}
                 </Observer>
@@ -107,15 +115,20 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_REWARD',
                             })}
-                            value={user.user30dReward ? formattedAmount(user.user30dReward) : noValue}
+                            // value={user.user30dReward
+                            //     ? formattedAmount(user.user30dReward, 0, true, true)
+                            //     : noValue}
                         >
-                            {user.user30dRewardChange && (
+                            {intl.formatMessage({
+                                id: 'SOON',
+                            })}
+                            {/* {user.user30dRewardChange && (
                                 <TvlChange
                                     changesDirection={parseInt(user.user30dRewardChange, 10)}
                                     priceChange={formattedAmount(user.user30dRewardChange)}
                                     size="small"
                                 />
-                            )}
+                            )} */}
                         </DataCard>
                     )}
                 </Observer>
@@ -126,8 +139,12 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_APR',
                             })}
-                            value={user.averageApr ? `${user.averageApr}%` : noValue}
-                        />
+                            // value={user.averageApr ? `${formattedAmount(user.averageApr)}%` : noValue}
+                        >
+                            {intl.formatMessage({
+                                id: 'SOON',
+                            })}
+                        </DataCard>
                     )}
                 </Observer>
             </div>

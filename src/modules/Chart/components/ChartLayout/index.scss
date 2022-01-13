@@ -11,10 +11,13 @@
     }
 
     &__chart {
+        display: flex;
         flex: 1;
+        flex-direction: column;
         min-height: 320px;
 
         .chart {
+            height: initial;
             min-height: 320px;
         }
     }
