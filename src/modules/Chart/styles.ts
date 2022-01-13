@@ -116,6 +116,6 @@ export const tonEthHistogramStyles: HistogramSeriesPartialOptions = {
 
 export const transfersHistogramOptions: DeepPartial<ChartOptions> = {
     localization: {
-        priceFormatter: (price: BarPrice) => `$${abbrNumber(price.valueOf()).toLowerCase()}`,
+        priceFormatter: (price: BarPrice) => `$${abbrNumber(price.toFixed()).toLowerCase()}`,
     },
 }

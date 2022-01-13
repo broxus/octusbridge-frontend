@@ -49,7 +49,13 @@ export class TransfersChartStore {
                 }).toMillis(),
             })
 
-            this.setData('volumeGraph', result.concat(this.data.volumeGraph || []))
+            const data = result.map(item => ({
+                timestamp: item.timestamp,
+                ethTonVolume: Math.round(parseFloat(item.ethTonVolume)).toString(),
+                tonEthVolume: Math.round(parseFloat(item.tonEthVolume)).toString(),
+            }))
+
+            this.setData('volumeGraph', data.concat(this.data.volumeGraph || []))
         }
         catch (e) {
             error(e)
