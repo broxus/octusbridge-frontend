@@ -18,7 +18,7 @@ export function TopVotersInner(): JSX.Element {
     const intl = useIntl()
     const stakeholders = useStakeholders()
     const pagination = usePagination(stakeholders.totalCount)
-    const tableOrder = useTableOrder<StakeholdersOrdering>('votesdescending')
+    const tableOrder = useTableOrder<StakeholdersOrdering>('voteweightdescending')
 
     const fetch = async () => {
         try {
@@ -37,6 +37,7 @@ export function TopVotersInner(): JSX.Element {
         fetch()
     }, [
         pagination.page,
+        pagination.limit,
         tableOrder.order,
     ])
 
@@ -106,6 +107,7 @@ export function TopVotersInner(): JSX.Element {
                 <Pagination
                     page={pagination.page}
                     totalPages={pagination.totalPages}
+                    totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}
                 />
             </div>

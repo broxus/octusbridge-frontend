@@ -65,7 +65,7 @@ export function ProposalInner(): JSX.Element | null {
                 </div>
             </div>
 
-            <VotesTable proposalId={proposal.id} />
+            <VotesTable />
         </Container>
     )
 }

@@ -182,6 +182,7 @@ export function UserProposalsInner(): JSX.Element | null {
                     <Pagination
                         page={pagination.page}
                         totalPages={pagination.totalPages}
+                        totalCount={pagination.totalCount}
                         onSubmit={pagination.submit}
                     />
                 </div>

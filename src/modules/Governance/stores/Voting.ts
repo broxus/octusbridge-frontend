@@ -211,4 +211,16 @@ export class VotingStore {
         return this.state.unlockedIds || []
     }
 
+    public get votingWeight(): string | undefined {
+        return this.userData.votingWeight
+    }
+
+    public get votingPower(): string | undefined {
+        return this.userData.tokenBalance
+    }
+
+    public get votesCount(): number | undefined {
+        return this.userData.votesCount
+    }
+
 }

@@ -54,6 +54,7 @@ export function AllProposalsInner(): JSX.Element {
         filters.startTimeGe,
         filters.startTimeLe,
         pagination.page,
+        pagination.limit,
     ])
 
     return (
@@ -80,6 +81,7 @@ export function AllProposalsInner(): JSX.Element {
                 <Pagination
                     page={pagination.page}
                     totalPages={pagination.totalPages}
+                    totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}
                 />
             </div>

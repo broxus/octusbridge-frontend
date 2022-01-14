@@ -8,23 +8,17 @@ import { Pagination } from '@/components/common/Pagination'
 import { UserCard } from '@/components/common/UserCard'
 import { VoteType } from '@/modules/Governance/components/VoteType'
 import { VoteReason } from '@/modules/Governance/components/VoteReason'
-import { useVotesStore } from '@/modules/Governance/hooks'
+import { useProposalContext } from '@/modules/Governance/providers'
 import { dateFormat, error, formattedAmount } from '@/utils'
 import { usePagination } from '@/hooks'
 import { DexConstants } from '@/misc'
 
 import './index.scss'
 
-type Props = {
-    proposalId?: number;
-}
-
-export function VotesTableInner({
-    proposalId,
-}: Props): JSX.Element {
+export function VotesTableInner(): JSX.Element {
     const intl = useIntl()
-    const votes = useVotesStore()
-    const pagination = usePagination(votes.totalCount)
+    const proposal = useProposalContext()
+    const pagination = usePagination(proposal.allVotes.totalCount)
 
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
@@ -32,9 +26,9 @@ export function VotesTableInner({
 
     const fetch = async () => {
         try {
-            await votes.fetch({
-                proposalId,
-                limit: 10,
+            await proposal.allVotes.fetch({
+                proposalId: proposal.id,
+                limit: pagination.limit,
                 offset: pagination.offset,
                 ordering: {
                     column: 'createdAt',
@@ -48,15 +42,16 @@ export function VotesTableInner({
     }
 
     React.useEffect(() => {
-        if (proposalId) {
+        if (proposal.id) {
             fetch()
         }
         else {
-            votes.dispose()
+            proposal.allVotes.dispose()
         }
     }, [
-        proposalId,
+        proposal.id,
         pagination.page,
+        pagination.limit,
     ])
 
     return (
@@ -71,7 +66,7 @@ export function VotesTableInner({
 
             <div className="card card--flat card--small">
                 <Table
-                    loading={votes.loading}
+                    loading={proposal.allVotes.loading}
                     className="votes-table"
                     cols={[{
                         name: intl.formatMessage({
@@ -92,7 +87,7 @@ export function VotesTableInner({
                         }),
                         align: 'right',
                     }]}
-                    rows={votes.items.map(item => ({
+                    rows={proposal.allVotes.items.map(item => ({
                         cells: [
                             <UserCard
                                 copy
@@ -115,6 +110,7 @@ export function VotesTableInner({
                 <Pagination
                     page={pagination.page}
                     totalPages={pagination.totalPages}
+                    totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}
                 />
             </div>

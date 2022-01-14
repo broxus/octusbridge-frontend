@@ -5,12 +5,13 @@ type UrlPagination = {
     offset: number;
     page: number;
     totalPages: number;
+    totalCount?: number;
     submit: (page: number) => void;
 }
 
 const LIMIT = 10
 
-export function usePagination(totalCount: number = 1): UrlPagination {
+export function usePagination(totalCount?: number): UrlPagination {
     const [params, setParams] = React.useState({
         page: 1,
         limit: LIMIT,
@@ -24,11 +25,12 @@ export function usePagination(totalCount: number = 1): UrlPagination {
     }
 
     const offset = (params.page - 1) * params.limit
-    const totalPages = Math.ceil(totalCount / params.limit)
+    const totalPages = Math.ceil((totalCount || 1) / params.limit)
 
     return {
         offset,
         totalPages,
+        totalCount,
         page: params.page,
         limit: params.limit,
         submit,

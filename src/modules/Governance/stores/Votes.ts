@@ -4,7 +4,7 @@ import {
     Vote, VotesRequest, VotesResponse, VotesStoreData, VotesStoreState,
 } from '@/modules/Governance/types'
 import { handleVotes } from '@/modules/Governance/utils'
-import { error, lastOfCalls } from '@/utils'
+import { error, lastOfCalls, throwException } from '@/utils'
 
 export class VotesStore {
 
@@ -25,28 +25,44 @@ export class VotesStore {
         this.state = {}
     }
 
+    protected setState<K extends keyof VotesStoreState>(key: K, value: VotesStoreState[K]): void {
+        this.state[key] = value
+    }
+
+    protected setData<K extends keyof VotesStoreData>(key: K, value: VotesStoreData[K]): void {
+        this.data[key] = value
+    }
+
     public async fetch(params: VotesRequest): Promise<void> {
-        this.setLoading(true)
+        this.setState('loading', true)
 
         try {
+            this.setState('params', params)
+
             const response = await this.handleVotes(params)
+
             if (response) {
-                this.setResponse(response)
-                this.setLoading(false)
+                this.setData('response', response)
+                this.setState('loading', false)
             }
         }
         catch (e) {
             error(e)
-            this.setLoading(false)
+            this.setState('loading', false)
         }
     }
 
-    protected setLoading(loading: boolean): void {
-        this.state.loading = loading
-    }
+    public async sync(): Promise<void> {
+        try {
+            if (!this.state.params) {
+                throwException('Params must be defined in state')
+            }
 
-    protected setResponse(response: VotesResponse): void {
-        this.data.response = response
+            this.fetch(this.state.params)
+        }
+        catch (e) {
+            error(e)
+        }
     }
 
     public get totalCount(): number {

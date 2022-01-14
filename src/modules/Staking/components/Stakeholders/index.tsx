@@ -315,6 +315,7 @@ export function StakeholdersInner(): JSX.Element | null {
 
                 <Pagination
                     totalPages={pagination.totalPages}
+                    totalCount={pagination.totalCount}
                     page={pagination.page}
                     onSubmit={pagination.submit}
                 />

@@ -2,7 +2,7 @@
 
 .pagination {
     align-items: center;
-    column-gap: 16px;
+    column-gap: 32px;
     display: flex;
     justify-content: flex-end;
     margin: 32px 0 0;
@@ -49,6 +49,18 @@
             line-height: 1;
             padding: 0 12px 0 0;
             pointer-events: none;
+            white-space: nowrap;
+        }
+    }
+
+    &-count {
+        display: flex;
+        align-items: center;
+        column-gap: 8px;
+        font-size: 14px;
+        letter-spacing: 0.6px;
+
+        &__total {
             white-space: nowrap;
         }
     }

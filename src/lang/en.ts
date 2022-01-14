@@ -371,6 +371,8 @@ export default {
 
     PAGINATION_PAGE: 'Page',
     PAGINATION_LIMIT: 'of {value}',
+    PAGINATION_COUNT: 'Showing',
+    PAGINATION_TOTAL: 'items of {value}',
 
     FILTERS_SEARCH: 'Search...',
     FILTERS_FILTER: 'Filter',
@@ -478,6 +480,7 @@ export default {
     TRANSFERS_CHART_EVER_EVM: 'EVER to EVM',
 
     PROPOSALS_TITLE: 'Proposals',
+    PROPOSALS_CREATE: 'Create proposal',
     PROPOSALS_USER_TITLE: 'Proposals with my votes',
     PROPOSALS_UNLOCK_ALL: 'Unlock all tokens',
     PROPOSALS_UNLOCK: 'Unlock',
@@ -659,6 +662,7 @@ export default {
     ACTION_POPUP_VALUE: 'Value',
 
     PROPOSAL_FORM_WARNING_TITLE: 'Insufficient stake',
+    PROPOSAL_FORM_LOCKED_TEXT: 'You have {locked} locked tokens in stake. Please increase your stake to at least {amount} BRIDGE tokens.',
     PROPOSAL_FORM_WARNING_TEXT: 'Your current stake is not big enough to create a proposal. Please increase your stake to at least {amount} BRIDGE tokens.',
     PROPOSAL_FORM_LINK: 'Increase stake',
 

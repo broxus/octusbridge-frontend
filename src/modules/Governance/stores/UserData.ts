@@ -3,10 +3,11 @@ import {
     IReactionDisposer, makeAutoObservable, reaction, toJS,
 } from 'mobx'
 
-import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import {
     BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
+import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
+import { handleProposalsCount, handleStakeholder } from '@/modules/Governance/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
@@ -121,8 +122,40 @@ export class UserDataStore {
         }
     }
 
+    public async syncStakeholder(): Promise<void> {
+        if (!this.tonWallet.address) {
+            return
+        }
+
+        try {
+            const stakeholder = await handleStakeholder(this.tonWallet.address)
+            this.setData('stakeholder', stakeholder)
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    public async syncVotesCount(): Promise<void> {
+        if (!this.tonWallet.address) {
+            return
+        }
+
+        try {
+            const count = await handleProposalsCount([this.tonWallet.address])
+            if (count && count[0]) {
+                this.setData('votesCount', count[0].count)
+            }
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
     public async sync(): Promise<void> {
         try {
+            this.syncStakeholder()
+            this.syncVotesCount()
             await this.syncStaking()
             await this.syncUserData()
             await this.syncToken()
@@ -170,6 +203,14 @@ export class UserDataStore {
 
     public get hasAccount(): boolean | undefined {
         return this.state.hasAccount
+    }
+
+    public get votingWeight(): string | undefined {
+        return this.data.stakeholder?.voteWeight
+    }
+
+    public get votesCount(): number | undefined {
+        return this.data.votesCount
     }
 
 }

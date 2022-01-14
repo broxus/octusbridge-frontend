@@ -68,7 +68,7 @@
         ul {
             background: #313551;
             box-shadow: 0 8px 16px rgba(43, 51, 56, 0.08);
-            padding: 20px;
+            padding: 8px 0;
 
             @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
                 -webkit-backdrop-filter: blur(80px);
@@ -77,13 +77,15 @@
             }
 
             li {
-                margin: 0 0 20px;
+                margin: 0;
 
                 &:last-child {
                     margin-bottom: 0;
                 }
 
                 a {
+                    display: block;
+                    padding: 12px 20px;
                     font-weight: 400;
                     opacity: 1;
 

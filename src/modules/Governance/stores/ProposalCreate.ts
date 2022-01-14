@@ -66,7 +66,7 @@ export class ProposalCreateStore {
 
             const ethActions = _ethActions.map(item => ({
                 ...item,
-                callData: item.callData, // TODO: Encode
+                callData: item.callData,
             }))
 
             const daoContract = rpc.createContract(DaoAbi.Root, DaoRootContractAddress)
@@ -180,6 +180,18 @@ export class ProposalCreateStore {
 
     public get threshold(): string | undefined {
         return this.daoConfig.threshold
+    }
+
+    public get hasLockedTokens(): boolean | undefined {
+        if (!this.userData.lockedTokens) {
+            return undefined
+        }
+
+        return new BigNumber(this.userData.lockedTokens).gt(0)
+    }
+
+    public get lockedTokens(): string | undefined {
+        return this.userData.lockedTokens
     }
 
 }

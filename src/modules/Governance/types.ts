@@ -212,6 +212,7 @@ export type ProposalStoreState = {
     cancelLoading?: boolean;
     queueLoading?: boolean;
     executeLoading?: boolean;
+    proposalLoading?: boolean;
 }
 
 export type VotesStoreData = {
@@ -220,6 +221,7 @@ export type VotesStoreData = {
 
 export type VotesStoreState = {
     loading?: boolean;
+    params?: VotesParams;
 }
 
 export type ConfigStoreData = {
@@ -246,6 +248,8 @@ export type UserDataStoreData = {
     lockedTokens?: string;
     castedVotes?: CastedVotes;
     stakingDetails?: StackingDetails;
+    stakeholder?: Stakeholder;
+    votesCount?: number;
 }
 
 export type UserDataStoreState = {
@@ -258,9 +262,4 @@ export type StakeholdersStoreData = {
 
 export type StakeholdersStoreState = {
     loading?: boolean;
-}
-
-export type UserStatsStoreData = {
-    stakeholder?: Stakeholder;
-    count?: number;
 }

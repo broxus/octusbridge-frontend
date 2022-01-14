@@ -28,6 +28,8 @@ export class ProposalStore {
 
     public readonly againstVotesPreview = new VotesStore()
 
+    public readonly allVotes = new VotesStore()
+
     constructor(
         protected proposalId: number,
         protected tonWallet: TonWalletService,
@@ -39,7 +41,7 @@ export class ProposalStore {
 
     public init(): void {
         this.userData.init()
-        this.sync()
+        this.fetch()
     }
 
     public dispose(): void {
@@ -48,15 +50,42 @@ export class ProposalStore {
         this._state = {}
     }
 
+    public async fetch(): Promise<void> {
+        this.setState('proposalLoading', true)
+
+        try {
+            await Promise.all([
+                this.syncProposal(),
+                this.syncVotes(),
+            ])
+        }
+        catch (e) {
+            error(e)
+        }
+
+        this.setState('proposalLoading', false)
+    }
+
     public async sync(): Promise<void> {
+        try {
+            await Promise.all([
+                this.syncProposal(),
+                this.syncVotes(),
+                this.allVotes.sync(),
+            ])
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async syncProposal(): Promise<void> {
         try {
             const response = await this.handleProposals({
                 proposalId: this.proposalId,
                 limit: 1,
                 offset: 0,
             })
-
-            this.syncVotes()
 
             if (response) {
                 this.setResponse(response)
@@ -264,7 +293,7 @@ export class ProposalStore {
     }
 
     public get loading(): boolean {
-        return this.proposalAddress === undefined
+        return Boolean(this.proposalAddress === undefined || this._state.proposalLoading)
     }
 
     public get cancelLoading(): boolean {
@@ -400,10 +429,6 @@ export class ProposalStore {
         }
 
         return (this.proposal.endTime - this.proposal.startTime) * 1000
-    }
-
-    public get votingPower(): string | undefined {
-        return this.userData.tokenBalance
     }
 
     public get executionTime(): number | undefined {

@@ -176,6 +176,7 @@ export function TransactionsInner({
                 <Pagination
                     page={pagination.page}
                     totalPages={pagination.totalPages}
+                    totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}
                 />
             </div>

@@ -70,6 +70,7 @@ function PendingTransfersListInner(): JSX.Element {
                             <Pagination
                                 page={pendingPagination.page}
                                 totalPages={pendingPagination.totalPages}
+                                totalCount={pendingPagination.totalCount}
                                 onSubmit={pendingPagination.submit}
                             />
                         )}

@@ -4,25 +4,25 @@ import { Observer } from 'mobx-react-lite'
 
 import { Description, Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
-import { useUserStats } from '@/modules/Governance/hooks'
+import { useVotingContext } from '@/modules/Governance/providers'
 import { formattedAmount } from '@/utils'
 
 export function UserStats(): JSX.Element {
     const intl = useIntl()
-    const userStats = useUserStats()
+    const voting = useVotingContext()
 
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
     React.useEffect(() => {
-        if (userStats.isConnected) {
-            userStats.init()
+        if (voting.isConnected) {
+            voting.init()
         }
         else {
-            userStats.dispose()
+            voting.dispose()
         }
-    }, [userStats.isConnected])
+    }, [voting.isConnected])
 
     return (
         <Section>
@@ -44,23 +44,23 @@ export function UserStats(): JSX.Element {
                             title={intl.formatMessage({
                                 id: 'USER_VOTES_POWER',
                             })}
-                            value={userStats.votingPower && userStats.tokenDecimals
-                                ? formattedAmount(userStats.votingPower, userStats.tokenDecimals, true, true)
+                            value={voting.votingPower && voting.tokenDecimals
+                                ? formattedAmount(voting.votingPower, voting.tokenDecimals, true, true)
                                 : noValue}
                         />
                         <DataCard
                             title={intl.formatMessage({
                                 id: 'USER_VOTES_WEIGHT',
                             })}
-                            value={userStats.votingWeight
-                                ? `${userStats.votingWeight}%`
+                            value={voting.votingWeight
+                                ? `${formattedAmount(voting.votingWeight, 0)}%`
                                 : noValue}
                         />
                         <DataCard
                             title={intl.formatMessage({
                                 id: 'USER_VOTES_VOTED',
                             })}
-                            value={userStats.proposalsVotedCount || noValue}
+                            value={voting.votesCount || noValue}
                         />
                     </div>
                 )}

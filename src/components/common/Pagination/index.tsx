@@ -3,21 +3,28 @@ import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
 import { Button } from '@/components/common/Button'
+import { Select } from '@/components/common/Select'
 import { Icon } from '@/components/common/Icon'
+import { formatDigits } from '@/utils'
 
 import './index.scss'
 
 type Props = {
     totalPages?: number;
+    totalCount?: number;
     page: number;
     label?: string;
     size?: 'lg';
     className?: string;
-    onSubmit: (page: number) => void;
+    onSubmit: (page: number, count?: number) => void;
 }
+
+const COUNTS = [10, 20, 30, 40]
+const DEFAULT_COUNT = 10
 
 export function Pagination({
     totalPages = 1,
+    totalCount,
     page,
     label,
     size,
@@ -26,29 +33,30 @@ export function Pagination({
 }: Props): JSX.Element {
     const intl = useIntl()
     const [localPage, setLocalPage] = React.useState(page.toString())
+    const [count, setCount] = React.useState(DEFAULT_COUNT)
 
     const next = () => {
-        onSubmit(page + 1)
+        onSubmit(page + 1, count)
     }
 
     const prev = () => {
-        onSubmit(page - 1)
+        onSubmit(page - 1, count)
     }
 
     const submit = () => {
         const num = parseInt(localPage, 10)
 
         if (num > 0 && num <= totalPages && num !== page) {
-            onSubmit(num)
+            onSubmit(num, count)
         }
-    }
-
-    const onChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
-        setLocalPage(e.currentTarget.value)
     }
 
     const onBlurInput = () => {
         submit()
+    }
+
+    const onChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
+        setLocalPage(e.currentTarget.value)
     }
 
     const onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,12 +64,39 @@ export function Pagination({
         submit()
     }
 
+    const onChangeCount = (value: number) => {
+        setCount(value)
+        onSubmit(page, value)
+    }
+
     React.useEffect(() => {
         setLocalPage(page.toString())
     }, [page])
 
     return (
-        <form className={`pagination ${className}`} onSubmit={onSubmitForm}>
+        <form className={classNames('pagination', className)} onSubmit={onSubmitForm}>
+            {totalCount && (
+                <div className="pagination-count">
+                    {intl.formatMessage({
+                        id: 'PAGINATION_COUNT',
+                    })}
+
+                    <Select
+                        value={count}
+                        options={COUNTS.map(value => ({ value }))}
+                        onChange={onChangeCount}
+                    />
+
+                    <span className="pagination-count__total">
+                        {intl.formatMessage({
+                            id: 'PAGINATION_TOTAL',
+                        }, {
+                            value: formatDigits(totalCount.toString()),
+                        })}
+                    </span>
+                </div>
+            )}
+
             <div className="pagination-pages">
                 {label || intl.formatMessage({
                     id: 'PAGINATION_PAGE',
@@ -69,44 +104,44 @@ export function Pagination({
 
                 <div className="pagination-pages__field">
                     <input
-                        className={classNames('form-input', {
-                            [`form-input--${size}`]: size !== undefined,
-                        })}
                         type="text"
                         value={localPage}
                         onChange={onChangeInput}
                         onBlur={onBlurInput}
+                        className={classNames('form-input', {
+                            [`form-input--${size}`]: size !== undefined,
+                        })}
                     />
                     <div className="pagination-pages__limit">
                         {intl.formatMessage({
                             id: 'PAGINATION_LIMIT',
                         }, {
-                            value: totalPages,
+                            value: formatDigits(totalPages.toString()),
                         })}
                     </div>
                 </div>
-            </div>
 
-            <div className="pagination-nav">
-                <Button
-                    type="secondary"
-                    className="pagination-nav__btn"
-                    disabled={page <= 1}
-                    onClick={prev}
-                    size={size === 'lg' ? 'md' : undefined}
-                >
-                    <Icon icon="arrowLeft" className="pagination-nav__icon" />
-                </Button>
+                <div className="pagination-nav">
+                    <Button
+                        type="secondary"
+                        className="pagination-nav__btn"
+                        disabled={page <= 1}
+                        onClick={prev}
+                        size={size === 'lg' ? 'md' : undefined}
+                    >
+                        <Icon icon="arrowLeft" className="pagination-nav__icon" />
+                    </Button>
 
-                <Button
-                    type="secondary"
-                    className="pagination-nav__btn"
-                    disabled={page >= totalPages}
-                    onClick={next}
-                    size={size === 'lg' ? 'md' : undefined}
-                >
-                    <Icon icon="arrowRight" className="pagination-nav__icon" />
-                </Button>
+                    <Button
+                        type="secondary"
+                        className="pagination-nav__btn"
+                        disabled={page >= totalPages}
+                        onClick={next}
+                        size={size === 'lg' ? 'md' : undefined}
+                    >
+                        <Icon icon="arrowRight" className="pagination-nav__icon" />
+                    </Button>
+                </div>
             </div>
         </form>
     )

@@ -33,14 +33,29 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                 </h2>
 
                 <div className="proposal-form-warning__text text-muted">
-                    {intl.formatMessage({
-                        id: 'PROPOSAL_FORM_WARNING_TEXT',
-                    }, {
-                        amount: formattedAmount(
-                            proposalCreate.tokenMissing || proposalCreate.threshold,
-                            proposalCreate.token.decimals,
-                        ),
-                    })}
+                    {proposalCreate.hasLockedTokens && proposalCreate.lockedTokens ? (
+                        intl.formatMessage({
+                            id: 'PROPOSAL_FORM_LOCKED_TEXT',
+                        }, {
+                            locked: formattedAmount(
+                                proposalCreate.lockedTokens,
+                                proposalCreate.token.decimals,
+                            ),
+                            amount: formattedAmount(
+                                proposalCreate.tokenMissing || proposalCreate.threshold,
+                                proposalCreate.token.decimals,
+                            ),
+                        })
+                    ) : (
+                        intl.formatMessage({
+                            id: 'PROPOSAL_FORM_WARNING_TEXT',
+                        }, {
+                            amount: formattedAmount(
+                                proposalCreate.tokenMissing || proposalCreate.threshold,
+                                proposalCreate.token.decimals,
+                            ),
+                        })
+                    )}
                 </div>
 
                 <Button type="primary" size="md" link="/staking">

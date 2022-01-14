@@ -13,7 +13,6 @@ import { useProposalContext } from '@/modules/Governance/providers'
 
 import './index.scss'
 
-// TODO: Loading
 export function ProposalContentInner(): JSX.Element | null {
     const proposal = useProposalContext()
     const intl = useIntl()

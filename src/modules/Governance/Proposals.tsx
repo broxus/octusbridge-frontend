@@ -2,7 +2,8 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
-import { Container, Title } from '@/components/common/Section'
+import { Button } from '@/components/common/Button'
+import { Container, Header, Title } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { AllProposals } from '@/modules/Governance/AllProposals'
 import { UserProposals } from '@/modules/Governance/UserProposals'
@@ -30,11 +31,19 @@ export function Proposals(): JSX.Element {
                 }]}
             />
 
-            <Title size="lg">
-                {intl.formatMessage({
-                    id: 'PROPOSALS_TITLE',
-                })}
-            </Title>
+            <Header size="lg">
+                <Title size="lg">
+                    {intl.formatMessage({
+                        id: 'PROPOSALS_TITLE',
+                    })}
+                </Title>
+
+                <Button size="md" type="primary" link="/governance/proposals/create">
+                    {intl.formatMessage({
+                        id: 'PROPOSALS_CREATE',
+                    })}
+                </Button>
+            </Header>
 
             <Observer>
                 {() => (

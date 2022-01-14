@@ -16,7 +16,6 @@ import { error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
-// TODO: Voting weight
 export function UserVoteInner(): JSX.Element {
     const intl = useIntl()
     const proposal = useProposalContext()
@@ -82,18 +81,20 @@ export function UserVoteInner(): JSX.Element {
                     key: intl.formatMessage({
                         id: 'USER_VOTE_VOTING_POWER',
                     }),
-                    value: proposal.votingPower
-                        ? formattedAmount(proposal.votingPower, DexConstants.TONDecimals)
+                    value: voting.votingPower
+                        ? formattedAmount(voting.votingPower, DexConstants.TONDecimals)
                         : intl.formatMessage({
                             id: 'NO_VALUE',
                         }),
-                // }, {
-                //     key: intl.formatMessage({
-                //         id: 'USER_VOTE_VOTING_WEIGHT',
-                //     }),
-                //     value: intl.formatMessage({
-                //         id: 'NO_VALUE',
-                //     }),
+                }, {
+                    key: intl.formatMessage({
+                        id: 'USER_VOTE_VOTING_WEIGHT',
+                    }),
+                    value: voting.votingWeight
+                        ? `${formattedAmount(voting.votingWeight, 0)}%`
+                        : intl.formatMessage({
+                            id: 'NO_VALUE',
+                        }),
                 }]}
             />
 
