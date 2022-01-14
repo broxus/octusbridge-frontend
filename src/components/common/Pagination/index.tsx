@@ -75,7 +75,7 @@ export function Pagination({
 
     return (
         <form className={classNames('pagination', className)} onSubmit={onSubmitForm}>
-            {totalCount && totalPages > 1 && (
+            {totalCount !== undefined && totalPages > 1 && (
                 <div className="pagination-count">
                     {intl.formatMessage({
                         id: 'PAGINATION_COUNT',
