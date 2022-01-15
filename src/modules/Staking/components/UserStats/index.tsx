@@ -8,24 +8,19 @@ import {
 import { Button } from '@/components/common/Button'
 // import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
-import { UserStoreContext } from '@/modules/Staking/providers/UserStoreProvider'
+import { useUserContext } from '@/modules/Staking/providers/UserProvider'
 import { error, formattedAmount } from '@/utils'
 
 type Props = {
-    title: string;
     userAddress: string;
+    showActions?: boolean;
 }
 
 export function UserStats({
-    title,
     userAddress,
+    showActions = true,
 }: Props): JSX.Element | null {
-    const user = React.useContext(UserStoreContext)
-
-    if (!user) {
-        return null
-    }
-
+    const { userInfo } = useUserContext()
     const intl = useIntl()
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
@@ -33,7 +28,7 @@ export function UserStats({
 
     const fetch = async () => {
         try {
-            await user.fetchUserInfo({ userAddress })
+            await userInfo.fetch({ userAddress })
         }
         catch (e) {
             error(e)
@@ -47,27 +42,21 @@ export function UserStats({
     return (
         <Section>
             <Header size="lg">
-                <Title size="lg">{title}</Title>
+                <Title size="lg">
+                    {intl.formatMessage({
+                        id: 'STAKING_USER_STATS_USER',
+                    })}
+                </Title>
 
-                <Actions>
-                    <Button size="md" type="secondary" link="/relayers/create">
-                        {intl.formatMessage({
-                            id: 'STAKING_STATS_CREATE',
-                        })}
-                    </Button>
-
-                    <Button size="md" type="secondary" link="/staking/redeem">
-                        {intl.formatMessage({
-                            id: 'STAKING_STATS_REDEEM',
-                        })}
-                    </Button>
-
-                    <Button size="md" type="primary" link="/staking">
-                        {intl.formatMessage({
-                            id: 'STAKING_STATS_STAKE',
-                        })}
-                    </Button>
-                </Actions>
+                {showActions && (
+                    <Actions>
+                        <Button size="md" type="secondary" link="/relayers/create">
+                            {intl.formatMessage({
+                                id: 'STAKING_STATS_CREATE',
+                            })}
+                        </Button>
+                    </Actions>
+                )}
             </Header>
 
             <div className="tiles tiles_fourth">
@@ -77,12 +66,14 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_TVL',
                             })}
-                            value={user.userTvl ? formattedAmount(user.userTvl, 0, true, true) : noValue}
+                            value={userInfo.userTvl
+                                ? formattedAmount(userInfo.userTvl, 0, true, true)
+                                : noValue}
                         >
-                            {/* {user.userTvlChange && (
+                            {/* {userInfo.userTvlChange && (
                                 <TvlChange
-                                    changesDirection={parseInt(user.userTvlChange, 10)}
-                                    priceChange={formattedAmount(user.userTvlChange)}
+                                    changesDirection={parseInt(userInfo.userTvlChange, 10)}
+                                    priceChange={formattedAmount(userInfo.userTvlChange)}
                                     size="small"
                                 />
                             )} */}
@@ -96,8 +87,8 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_FROZEN',
                             })}
-                            value={user.userFrozenStake
-                                ? formattedAmount(user.userFrozenStake, 0, true, true)
+                            value={userInfo.userFrozenStake
+                                ? formattedAmount(userInfo.userFrozenStake, 0, true, true)
                                 : noValue}
                         />
                     )}
@@ -109,17 +100,17 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_REWARD',
                             })}
-                            // value={user.user30dReward
-                            //     ? formattedAmount(user.user30dReward, 0, true, true)
+                            // value={userInfo.user30dReward
+                            //     ? formattedAmount(userInfo.user30dReward, 0, true, true)
                             //     : noValue}
                         >
                             {intl.formatMessage({
                                 id: 'SOON',
                             })}
-                            {/* {user.user30dRewardChange && (
+                            {/* {userInfo.user30dRewardChange && (
                                 <TvlChange
-                                    changesDirection={parseInt(user.user30dRewardChange, 10)}
-                                    priceChange={formattedAmount(user.user30dRewardChange)}
+                                    changesDirection={parseInt(userInfo.user30dRewardChange, 10)}
+                                    priceChange={formattedAmount(userInfo.user30dRewardChange)}
                                     size="small"
                                 />
                             )} */}
@@ -133,7 +124,9 @@ export function UserStats({
                             title={intl.formatMessage({
                                 id: 'STAKING_STATS_APR',
                             })}
-                            // value={user.averageApr ? `${formattedAmount(user.averageApr)}%` : noValue}
+                            // value={userInfo.averageApr
+                            //     ? `${formattedAmount(userInfo.averageApr)}%`
+                            //     : noValue}
                         >
                             {intl.formatMessage({
                                 id: 'SOON',

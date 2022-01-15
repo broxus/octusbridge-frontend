@@ -6,6 +6,8 @@ import {
 
 export type StackingDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getDetails'>['value0']
 
+export type PendingReward = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'pendingReward'>['value0']
+
 export type UserDetails = DecodedAbiFunctionOutputs<typeof UserDataAbi.Root, 'getDetails'>['value0']
 
 export type RelayConfig = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getRelayConfig'>['value0']

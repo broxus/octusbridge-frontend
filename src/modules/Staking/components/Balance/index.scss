@@ -1,0 +1,62 @@
+.staking-card-layout {
+    font-size: 14px;
+    line-height: 20px;
+    padding: 24px;
+
+    &.green {
+        background: radial-gradient(100% 100% at 100% 0%, rgba(74, 180, 74, 0.32) 0%, rgba(255, 255, 255, 0.08) 100%);
+    }
+
+    &.red {
+        background: radial-gradient(100% 100% at 100% 0%, rgba(237, 28, 120, 0.32) 0%, rgba(255, 255, 255, 0.08) 100%);
+    }
+
+    &__title {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        line-height: 24px;
+        margin: 0 0 16px;
+    }
+
+    &__desc {
+        letter-spacing: 0.6px;
+        margin: 0 0 25px;
+        min-height: 40px;
+
+        @media only screen and (max-width: 767px) {
+            min-height: auto;
+        }
+    }
+}
+
+.staking-form-layout {
+    &__field {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+    }
+
+    &__input {
+        flex-grow: 1;
+    }
+
+    &__hint {
+        color: rgba(255, 255, 255, 0.48);
+        font-size: 12px;
+        line-height: 16px;
+        margin-top: 4px;
+    }
+
+    &__button {
+        align-items: center;
+        column-gap: 8px;
+        display: flex;
+        justify-content: center;
+
+        svg {
+            height: 16px;
+            width: 16px;
+        }
+    }
+}

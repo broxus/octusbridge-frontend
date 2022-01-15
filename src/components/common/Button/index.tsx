@@ -11,6 +11,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
     type?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'dark' | 'link' | 'icon' | 'accept';
     link?: string;
     href?: string;
+    submit?: boolean;
 }
 
 
@@ -22,6 +23,7 @@ export function Button({
     type,
     link,
     href,
+    submit,
     ...props
 }: ButtonProps): JSX.Element {
     const _className = classNames('btn', {
@@ -58,7 +60,7 @@ export function Button({
         <button
             className={_className}
             {...props}
-            type="button"
+            type={submit ? 'submit' : 'button'}
         >
             {children}
         </button>

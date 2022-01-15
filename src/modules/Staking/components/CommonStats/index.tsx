@@ -52,16 +52,6 @@ export function CommonStats(): JSX.Element | null {
                             id: 'STAKING_STATS_CREATE',
                         })}
                     </Button>
-                    <Button size="md" type="secondary" link="/staking/redeem">
-                        {intl.formatMessage({
-                            id: 'STAKING_STATS_REDEEM',
-                        })}
-                    </Button>
-                    <Button size="md" type="primary" link="/staking">
-                        {intl.formatMessage({
-                            id: 'STAKING_STATS_STAKE',
-                        })}
-                    </Button>
                 </Actions>
             </Header>
 

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { Container } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { UserStats } from '@/modules/Staking/components/UserStats'
 import { Transactions } from '@/modules/Staking/components/Transactions'
@@ -8,12 +9,10 @@ import { useScrollTop } from '@/hooks/useScrollTop'
 import { sliceAddress } from '@/utils'
 
 type Props = {
-    title: string,
     userAddress: string;
 }
 
 export function User({
-    title,
     userAddress,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -21,18 +20,13 @@ export function User({
     useScrollTop()
 
     return (
-        <>
+        <Container size="lg">
             <Breadcrumb
                 items={[{
                     title: intl.formatMessage({
                         id: 'STAKING_BREADCRUMB_ROOT',
                     }),
                     link: '/staking',
-                }, {
-                    title: intl.formatMessage({
-                        id: 'STAKING_BREADCRUMB_EXPLORER',
-                    }),
-                    link: '/staking/explorer',
                 }, {
                     title: intl.formatMessage({
                         id: 'STAKING_BREADCRUMB_USER',
@@ -43,13 +37,12 @@ export function User({
             />
 
             <UserStats
-                title={title}
                 userAddress={userAddress}
             />
 
             <Transactions
                 userAddress={userAddress}
             />
-        </>
+        </Container>
     )
 }

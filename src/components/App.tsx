@@ -18,8 +18,7 @@ import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
 import TransferList from '@/pages/transfer/list'
 import MyTransferList from '@/pages/transfer/list/my'
-import StakingAccount from '@/pages/staking/account'
-import StakingSelf from '@/pages/staking/explorer/my'
+import StakingSelf from '@/pages/staking/my'
 import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
 import RelayersStatus from '@/pages/relayers/create'
@@ -77,19 +76,13 @@ export function App(): JSX.Element {
                                 <Airdrop />
                             </Route>
                             <Route exact path="/staking">
-                                <StakingAccount />
-                            </Route>
-                            <Route exact path="/staking/redeem">
-                                <StakingAccount />
-                            </Route>
-                            <Route exact path="/staking/explorer">
                                 <StakingExplorer />
-                            </Route>
-                            <Route exact path="/staking/explorer/my">
-                                <StakingSelf />
                             </Route>
                             <Route exact path="/staking/explorer/:userAddress(0:[A-Fa-f0-9]{64})">
                                 <StakingUser />
+                            </Route>
+                            <Route exact path="/staking/my">
+                                <StakingSelf />
                             </Route>
                             <Route exact path="/relayers/create">
                                 <RelayersStatus />

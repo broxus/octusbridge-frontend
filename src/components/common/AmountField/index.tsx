@@ -20,7 +20,7 @@ type Props = {
     size?: 'sm' | 'md' | 'lg';
     suffix?: React.ReactNode;
     value?: string;
-    onClickMax?: () => void;
+    onClickMax?: (maxValue: string) => void;
     onChange?: (value: string) => void;
 }
 
@@ -71,6 +71,10 @@ export function AmountField({
         props.onChange?.(value)
     }
 
+    const clickMax = () => {
+        onClickMax?.(maxValue || '')
+    }
+
     return (
         <label
             className={classNames('amount-field', className, {
@@ -101,7 +105,7 @@ export function AmountField({
                         })}
                         disabled={disabled}
                         type="button"
-                        onClick={onClickMax}
+                        onClick={clickMax}
                     >
                         {maxButtonLabel}
                     </button>

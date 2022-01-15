@@ -398,11 +398,21 @@ export default {
     EVENT_INFORMATION_TARGET_ETH_TRANSACTION: 'Ethereum transfer transaction',
 
     STAKING_BREADCRUMB_ROOT: 'Staking',
-    STAKING_BREADCRUMB_EXPLORER: 'Explorer',
     STAKING_BREADCRUMB_USER: 'User {address}',
+    STAKING_BREADCRUMB_MY_STAKE: 'My stake',
+
+    STAKING_BALANCE_TITLE: 'Staking balance',
+    STAKING_BALANCE_STAKE: 'Stake',
+    STAKING_BALANCE_STAKE_DESC: 'If the staking contract uses a smaller amount than fee, it will return the change to your wallet.',
+    STAKING_BALANCE_REDEEM: 'Redeem',
+    STAKING_BALANCE_CLAIM: 'Claim',
+    STAKING_BALANCE_AMOUNT: 'Amount',
+    STAKING_BALANCE_WALLET_BALANCE: 'Wallet balance: {amount} {symbol}',
+    STAKING_BALANCE_STAKE_BALANCE: 'Available balance: {amount} {symbol}',
+
+    STAKING_CONNECT_WALLET_MSG: 'Connect Crystal Wallet to see your staking and balance information',
 
     STAKING_COMMON_STATS_TITLE: 'Explorer',
-    STAKING_USER_STATS_SELF: 'My stake',
     STAKING_USER_STATS_USER: 'User stake',
     STAKING_STATS_REDEEM: 'Redeem',
     STAKING_STATS_CREATE: 'Become relayer',

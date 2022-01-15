@@ -30,6 +30,7 @@ export class StakingFormStore {
     ) {
         makeAutoObservable(this, {
             setAmount: action.bound,
+            setAmountShifted: action.bound,
             submit: action.bound,
         })
     }
@@ -71,6 +72,7 @@ export class StakingFormStore {
             }
 
             const ownerAddress = new Address(this.tonWallet.address)
+            const { tokenStakingBalance } = this.accountData
             const stackingContract = getStackingContract()
 
             const successStream = subscriber
@@ -104,7 +106,12 @@ export class StakingFormStore {
                 })
 
             await successStream
-            await this.accountData.sync()
+
+            while (this.accountData.tokenStakingBalance === tokenStakingBalance) {
+                await this.accountData.sync()
+                await new Promise(r => setTimeout(r, 1000))
+            }
+
             this.setAmount('')
         }
         catch (e) {
@@ -124,11 +131,23 @@ export class StakingFormStore {
         this.data.amount = value
     }
 
+    public setAmountShifted(value: string): void {
+        if (!this.accountData.tokenDecimals || !value) {
+            return
+        }
+
+        const amount = new BigNumber(value)
+            .shiftedBy(-this.accountData.tokenDecimals)
+            .toFixed()
+
+        this.setAmount(amount)
+    }
+
     public get isLoading(): boolean {
         return this.state.isLoading
     }
 
-    public get balance(): string {
+    public get balance(): string | undefined {
         return this.accountData.tokenWalletBalance
     }
 
@@ -147,6 +166,10 @@ export class StakingFormStore {
     }
 
     public get isValid(): boolean {
+        if (!this.tonWallet.balance || !this.balance) {
+            return false
+        }
+
         if (new BigNumber(this.tonWallet.balance).lt(this.tonDepositAmount)) {
             return false
         }

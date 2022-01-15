@@ -1,22 +1,25 @@
-import { action, makeAutoObservable } from 'mobx'
+import {
+    action, IReactionDisposer, makeAutoObservable, reaction, runInAction,
+} from 'mobx'
 import { Address } from 'everscale-inpage-provider'
 
 import { AccountDataStoreData, AccountDataStoreState } from '@/modules/Staking/types'
-import {
-    ACCOUNT_DATA_STORE_DEFAULT_DATA, ACCOUNT_DATA_STORE_DEFAULT_STATE,
-} from '@/modules/Staking/constants'
 import { getStackingContract } from '@/modules/Staking/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { StackingDetails, UserDataAbi, UserDetails } from '@/misc'
+import {
+    PendingReward, StackingDetails, UserDataAbi, UserDetails,
+} from '@/misc'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 
 export class AccountDataStore {
 
-    protected state: AccountDataStoreState = ACCOUNT_DATA_STORE_DEFAULT_STATE
+    protected syncDisposer?: IReactionDisposer
 
-    protected data: AccountDataStoreData = ACCOUNT_DATA_STORE_DEFAULT_DATA
+    protected state: AccountDataStoreState = {}
+
+    protected data: AccountDataStoreData = {}
 
     protected stackingContract = getStackingContract()
 
@@ -27,6 +30,26 @@ export class AccountDataStore {
         makeAutoObservable(this, {
             connectToTonWallet: action.bound,
         })
+    }
+
+    public init(): void {
+        this.syncDisposer = reaction(
+            () => this.isConnected,
+            isConnected => (isConnected ? this.sync() : this.reset()),
+            {
+                fireImmediately: true,
+            },
+        )
+    }
+
+    public dispose(): void {
+        this.syncDisposer?.()
+        this.reset()
+    }
+
+    public reset(): void {
+        this.state = {}
+        this.data = {}
     }
 
     protected async fetchStackingDetails(): Promise<StackingDetails | undefined> {
@@ -68,38 +91,51 @@ export class AccountDataStore {
         }
     }
 
+    protected async fetchPendingReward(userDetails: UserDetails): Promise<PendingReward | undefined> {
+        try {
+            const { value0: pendingReward } = await this.stackingContract.methods.pendingReward({
+                answerId: 0,
+                user_token_balance: userDetails.token_balance,
+                user_reward_data: userDetails.rewardRounds,
+            }).call()
+
+            return pendingReward
+        }
+        catch (e) {
+            error(e)
+            return undefined
+        }
+    }
+
     public async sync(): Promise<void> {
-        this.setIsLoading(true)
+        runInAction(() => {
+            this.state.isLoading = true
+        })
 
         try {
+            let pendingReward: PendingReward | undefined
             const stackingDetails = await this.fetchStackingDetails()
             const userDetails = await this.fetchUserDetails()
+
+            if (userDetails) {
+                pendingReward = await this.fetchPendingReward(userDetails)
+            }
 
             if (stackingDetails) {
                 await this.tokensCache.syncTonToken(stackingDetails.tokenRoot.toString())
             }
 
-            this.setData({ stackingDetails, userDetails })
+            runInAction(() => {
+                this.data = { stackingDetails, userDetails, pendingReward }
+            })
         }
         catch (e) {
             error(e)
         }
-        finally {
-            this.setIsLoading(false)
-        }
-    }
 
-    protected setData(data: AccountDataStoreData): void {
-        this.data = data
-    }
-
-    protected setIsLoading(value: boolean): void {
-        this.state.isLoading = value
-    }
-
-    public dispose(): void {
-        this.state = ACCOUNT_DATA_STORE_DEFAULT_STATE
-        this.data = ACCOUNT_DATA_STORE_DEFAULT_DATA
+        runInAction(() => {
+            this.state.isLoading = false
+        })
     }
 
     public connectToTonWallet(): void {
@@ -110,12 +146,8 @@ export class AccountDataStore {
         return this.state.isLoading || this.tonWallet.isConnecting || this.tonWallet.isInitializing
     }
 
-    public get isInitialized(): boolean {
-        return this.tonWallet.isInitialized && this.tokensCache.isInitialized
-    }
-
     public get isConnected(): boolean {
-        return this.isInitialized && this.tonWallet.isConnected
+        return this.tokensCache.isInitialized && this.tonWallet.isConnected
     }
 
     public get token(): TokenCache | undefined {
@@ -141,16 +173,20 @@ export class AccountDataStore {
         return this.token?.icon || undefined
     }
 
-    public get tokenWalletBalance(): string {
-        return this.token?.balance || '0'
+    public get tokenWalletBalance(): string | undefined {
+        return this.token?.balance
     }
 
-    public get tokenStakingBalance(): string {
-        return this.data.userDetails?.token_balance || '0'
+    public get tokenStakingBalance(): string | undefined {
+        return this.data.userDetails?.token_balance
     }
 
     public get stakingTokenWallet(): Address | undefined {
         return this.data.stackingDetails?.tokenWallet
+    }
+
+    public get pendingReward(): string | undefined {
+        return this.data.pendingReward
     }
 
 }

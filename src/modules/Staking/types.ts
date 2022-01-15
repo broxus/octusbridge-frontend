@@ -1,4 +1,4 @@
-import { StackingDetails, UserDetails } from '@/misc/types'
+import { PendingReward, StackingDetails, UserDetails } from '@/misc/types'
 import { CommonGraphShape } from '@/modules/Chart/types'
 
 export enum ActionType {
@@ -7,12 +7,13 @@ export enum ActionType {
 }
 
 export type AccountDataStoreState = {
-    isLoading: boolean;
+    isLoading?: boolean;
 }
 
 export type AccountDataStoreData = {
     stackingDetails?: StackingDetails;
     userDetails?: UserDetails;
+    pendingReward?: PendingReward;
 }
 
 export type RedeemFormStoreState = {
@@ -175,10 +176,16 @@ export type ExplorerStoreState = {
 
 export type UserStakingStoreData = {
     userInfo?: StakingUserApiResponse;
+}
+
+export type ClaimFormState = {
+    isLoading?: boolean;
+}
+
+export type TransactionsStoreData = {
     transactions?: TransactionsApiResponse;
 }
 
-export type UserStakingStoreState = {
-    userLoading?: boolean;
-    transactionsLoading?: boolean;
+export type TransactionsStoreState = {
+    isLoading?: boolean;
 }

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { Observer, observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react-lite'
 import BigNumber from 'bignumber.js'
 
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
@@ -9,8 +9,8 @@ import { Tab, Tabs } from '@/components/common/Tabs'
 import { Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { mapTransactionKindToIntlId } from '@/modules/Staking/utils'
+import { useTransactionsContext } from '@/modules/Staking/providers/TransactionsProvider'
 import { TransactionKindApiRequest, TransactionOrdering } from '@/modules/Staking/types'
-import { UserStoreContext } from '@/modules/Staking/providers/UserStoreProvider'
 import { usePagination } from '@/hooks/usePagination'
 import { useTableOrder } from '@/hooks/useTableOrder'
 import { dateFormat, error, formattedAmount } from '@/utils'
@@ -18,20 +18,15 @@ import { dateFormat, error, formattedAmount } from '@/utils'
 import './index.scss'
 
 type Props = {
-    userAddress: string;
+    userAddress?: string;
 }
 
 export function TransactionsInner({
     userAddress,
 }: Props): JSX.Element | null {
-    const user = React.useContext(UserStoreContext)
-
-    if (!user) {
-        return null
-    }
-
     const intl = useIntl()
-    const pagination = usePagination(user.transactionsTotalCount)
+    const transactions = useTransactionsContext()
+    const pagination = usePagination(transactions.totalCount)
     const tableOrder = useTableOrder<TransactionOrdering>('timestampblockatdescending')
     const [transactionKind, setTransactionKind] = React.useState<TransactionKindApiRequest>()
 
@@ -39,9 +34,14 @@ export function TransactionsInner({
         id: 'NO_VALUE',
     })
 
+    const changeKindFn = (value?: TransactionKindApiRequest) => () => {
+        pagination.submit(1)
+        setTransactionKind(value)
+    }
+
     const fetch = async () => {
         try {
-            await user.fetchTransactions({
+            await transactions.fetch({
                 userAddress,
                 transactionKind,
                 limit: pagination.limit,
@@ -52,14 +52,8 @@ export function TransactionsInner({
         catch (e) {
             error(e)
         }
-    }
 
-    const changeKindFn = (value?: TransactionKindApiRequest) => (
-        () => {
-            pagination.submit(1)
-            setTransactionKind(value)
-        }
-    )
+    }
 
     React.useEffect(() => {
         fetch()
@@ -124,54 +118,50 @@ export function TransactionsInner({
             </Header>
 
             <div className="card card--flat card--small">
-                <Observer>
-                    {() => (
-                        <Table<TransactionOrdering>
-                            loading={user.transactionsLoading}
-                            className="staking-transactions"
-                            onSort={tableOrder.onSort}
-                            order={tableOrder.order}
-                            cols={[{
-                                name: intl.formatMessage({
-                                    id: 'STAKING_TRANSACTIONS_COL_TYPE',
-                                }),
-                            }, {
-                                name: intl.formatMessage({
-                                    id: 'STAKING_TRANSACTIONS_COL_TRS',
-                                }),
-                                align: 'right',
-                            }, {
-                                name: intl.formatMessage({
-                                    id: 'STAKING_TRANSACTIONS_COL_AMOUNT',
-                                }),
-                                align: 'right',
-                                ascending: 'amountascending',
-                                descending: 'amountdescending',
-                            }, {
-                                name: intl.formatMessage({
-                                    id: 'STAKING_TRANSACTIONS_COL_DATE',
-                                }),
-                                align: 'right',
-                                ascending: 'timestampblockascending',
-                                descending: 'timestampblockatdescending',
-                            }]}
-                            rows={user.transactionsItems.map(item => ({
-                                cells: [
-                                    intl.formatMessage({
-                                        id: mapTransactionKindToIntlId(item.transactionKind),
-                                    }),
-                                    item.transactionHash
-                                        ? <TransactionExplorerLink withIcon id={item.transactionHash} />
-                                        : noValue,
-                                    item.amountExec
-                                        ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), 0, true, true)
-                                        : noValue,
-                                    item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
-                                ],
-                            }))}
-                        />
-                    )}
-                </Observer>
+                <Table<TransactionOrdering>
+                    loading={transactions.isLoading}
+                    className="staking-transactions"
+                    onSort={tableOrder.onSort}
+                    order={tableOrder.order}
+                    cols={[{
+                        name: intl.formatMessage({
+                            id: 'STAKING_TRANSACTIONS_COL_TYPE',
+                        }),
+                    }, {
+                        name: intl.formatMessage({
+                            id: 'STAKING_TRANSACTIONS_COL_TRS',
+                        }),
+                        align: 'right',
+                    }, {
+                        name: intl.formatMessage({
+                            id: 'STAKING_TRANSACTIONS_COL_AMOUNT',
+                        }),
+                        align: 'right',
+                        ascending: 'amountascending',
+                        descending: 'amountdescending',
+                    }, {
+                        name: intl.formatMessage({
+                            id: 'STAKING_TRANSACTIONS_COL_DATE',
+                        }),
+                        align: 'right',
+                        ascending: 'timestampblockascending',
+                        descending: 'timestampblockatdescending',
+                    }]}
+                    rows={transactions.items.map(item => ({
+                        cells: [
+                            intl.formatMessage({
+                                id: mapTransactionKindToIntlId(item.transactionKind),
+                            }),
+                            item.transactionHash
+                                ? <TransactionExplorerLink withIcon id={item.transactionHash} />
+                                : noValue,
+                            item.amountExec
+                                ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), 0, true, true)
+                                : noValue,
+                            item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
+                        ],
+                    }))}
+                />
 
                 <Pagination
                     page={pagination.page}

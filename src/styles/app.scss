@@ -257,6 +257,10 @@ ul.summary {
     grid-row-gap: 8px;
     grid-template-columns: repeat(3, 1fr);
 
+    &_twice {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     &_fourth {
         grid-template-columns: repeat(4, 1fr);
 

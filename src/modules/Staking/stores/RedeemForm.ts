@@ -1,6 +1,5 @@
 import { action, makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
-import { Address } from 'everscale-inpage-provider'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import { getStackingContract } from '@/modules/Staking/utils'
@@ -25,6 +24,7 @@ export class RedeemFormStore {
     ) {
         makeAutoObservable(this, {
             setAmount: action.bound,
+            setAmountShifted: action.bound,
             submit: action.bound,
         })
     }
@@ -45,11 +45,11 @@ export class RedeemFormStore {
                 throwException('Shifted amount must be defined in state')
             }
 
-            if (!this.tonWallet.address) {
+            if (!this.tonWallet.account?.address) {
                 throwException('Ton wallet must be connected')
             }
 
-            const ownerAddress = new Address(this.tonWallet.address)
+            const { tokenWalletBalance } = this.accountData
             const stackingContract = getStackingContract()
 
             const successStream = subscriber
@@ -61,7 +61,7 @@ export class RedeemFormStore {
                 }))
                 .filterMap(result => {
                     if (result?.method === 'finishWithdraw') {
-                        if (result.input.user.toString() === ownerAddress.toString()) {
+                        if (result.input.user.toString() === this.tonWallet.address) {
                             return true
                         }
                     }
@@ -72,16 +72,21 @@ export class RedeemFormStore {
 
             await stackingContract.methods.withdraw({
                 amount: this.shiftedAmountBN.toFixed(),
-                send_gas_to: ownerAddress,
+                send_gas_to: this.tonWallet.account.address,
             })
                 .send({
-                    from: ownerAddress,
                     bounce: true,
+                    from: this.tonWallet.account.address,
                     amount: this.tonDepositAmount,
                 })
 
             await successStream
-            await this.accountData.sync()
+
+            while (this.accountData.tokenWalletBalance === tokenWalletBalance) {
+                await this.accountData.sync()
+                await new Promise(r => setTimeout(r, 1000))
+            }
+
             this.setAmount('')
         }
         catch (e) {
@@ -101,11 +106,23 @@ export class RedeemFormStore {
         this.data.amount = value
     }
 
+    public setAmountShifted(value: string): void {
+        if (!this.accountData.tokenDecimals || !value) {
+            return
+        }
+
+        const amount = new BigNumber(value)
+            .shiftedBy(-this.accountData.tokenDecimals)
+            .toFixed()
+
+        this.setAmount(amount)
+    }
+
     public get isLoading(): boolean {
         return this.state.isLoading
     }
 
-    public get balance(): string {
+    public get balance(): string | undefined {
         return this.accountData.tokenStakingBalance
     }
 
@@ -124,6 +141,10 @@ export class RedeemFormStore {
     }
 
     public get isValid(): boolean {
+        if (!this.tonWallet.balance || !this.balance) {
+            return false
+        }
+
         if (new BigNumber(this.tonWallet.balance).lt(this.tonDepositAmount)) {
             return false
         }

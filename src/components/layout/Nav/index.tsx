@@ -72,14 +72,14 @@ export function Nav(): JSX.Element {
                     <div className="main-nav__sub">
                         <ul>
                             <li>
-                                <NavLink to="/staking/explorer/my">
+                                <NavLink to="/staking/my">
                                     {intl.formatMessage({
                                         id: 'NAV_LINK_TEXT_MY_STAKING_MY',
                                     })}
                                 </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/staking/explorer" exact>
+                                <NavLink to="/staking" exact>
                                     {intl.formatMessage({
                                         id: 'NAV_LINK_TEXT_STAKING_EXPLORER',
                                     })}
