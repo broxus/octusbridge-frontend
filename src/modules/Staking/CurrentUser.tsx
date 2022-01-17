@@ -7,6 +7,8 @@ import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { Transactions } from '@/modules/Staking/components/Transactions'
 import { UserStats } from '@/modules/Staking/components/UserStats'
 import { StakingBalance } from '@/modules/Staking/components/Balance'
+import { StakingPerformance } from '@/modules/Staking/components/Performance'
+import { StakingRounds } from '@/modules/Staking/components/Rounds'
 import { WalletConnector } from '@/modules/TonWalletConnector'
 import { useTonWallet } from '@/stores/TonWalletService'
 
@@ -34,6 +36,8 @@ export function CurrentUser(): JSX.Element {
                     id: 'STAKING_CONNECT_WALLET_MSG',
                 })}
             >
+                <StakingPerformance />
+
                 <StakingBalance />
 
                 <Observer>
@@ -46,6 +50,8 @@ export function CurrentUser(): JSX.Element {
                         ) : null
                     )}
                 </Observer>
+
+                <StakingRounds />
 
                 <Observer>
                     {() => (

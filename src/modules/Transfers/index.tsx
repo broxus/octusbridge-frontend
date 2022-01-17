@@ -5,9 +5,10 @@ import { observer } from 'mobx-react-lite'
 import { Container } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { useTextParam } from '@/hooks'
-import { TransfersStats } from '@/modules/Transfers/TransfersStats'
-import { TransfersList } from '@/modules/Transfers/TransfersList'
-import { PendingTransfersList } from '@/modules/Transfers/PendingTransfersList'
+import { PendingTransfers } from '@/modules/Transfers/components/PendingTransfers'
+import { TransfersStats } from '@/modules/Transfers/components/Stats'
+import { TransfersList } from '@/modules/Transfers/components/Transfers'
+import { TransfersProvider } from '@/modules/Transfers/providers'
 import { sliceAddress } from '@/utils'
 
 function TransfersInner(): JSX.Element {
@@ -33,9 +34,13 @@ function TransfersInner(): JSX.Element {
 
             <TransfersStats />
 
-            <PendingTransfersList />
+            <TransfersProvider>
+                <PendingTransfers />
+            </TransfersProvider>
 
-            <TransfersList />
+            <TransfersProvider>
+                <TransfersList />
+            </TransfersProvider>
         </Container>
     )
 }

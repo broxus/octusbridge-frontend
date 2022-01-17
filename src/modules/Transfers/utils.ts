@@ -1,7 +1,7 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
-    Transfer, TransferKind, TransfersGraphVolumeRequest, TransfersGraphVolumeResponse, TransfersRequest,
-    TransfersResponse, TransferStatus,
+    Transfer, TransferKind, TransfersGraphVolumeRequest, TransfersGraphVolumeResponse,
+    TransfersMainInfoResponse, TransfersRequest, TransfersResponse, TransferStatus,
 } from '@/modules/Transfers/types'
 import { BadgeStatus } from '@/components/common/Badge'
 import { findNetwork, handleApi } from '@/utils'
@@ -20,6 +20,13 @@ export async function handleTransfersVolume(
     return handleApi<TransfersGraphVolumeResponse>({
         url: `${IndexerApiBaseUrl}/transfers/graph/volume`,
         data: params,
+    })
+}
+
+export async function handleMainInfo(): Promise<TransfersMainInfoResponse> {
+    return handleApi<TransfersMainInfoResponse>({
+        method: 'GET',
+        url: `${IndexerApiBaseUrl}/transfers/main_page`,
     })
 }
 

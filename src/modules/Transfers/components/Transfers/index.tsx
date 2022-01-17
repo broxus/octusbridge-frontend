@@ -8,7 +8,7 @@ import {
 } from '@/components/common/Filters'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
-import { useTransfers } from '@/modules/Transfers/hooks/useTransfers'
+import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import {
     useDateParam, useDictParam, usePagination, useTableOrder,
@@ -25,7 +25,7 @@ import { networks } from '@/config'
 
 function TransfersListInner(): JSX.Element {
     const intl = useIntl()
-    const transfers = useTransfers()
+    const transfers = useTransfersContext()
     const tokensCache = useTokensCache()
     const tonWallet = useTonWallet()
 

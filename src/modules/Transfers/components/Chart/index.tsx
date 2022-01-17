@@ -5,27 +5,27 @@ import { useIntl } from 'react-intl'
 import { Checkbox } from '@/components/common/Checkbox'
 import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { Chart } from '@/modules/Chart/Transfers'
-import { useTransfersChart } from '@/modules/Transfers/hooks'
+import { useTransfersStatsContext } from '@/modules/Transfers/providers'
 
 import './index.scss'
 
 export function TransfersChartInner(): JSX.Element {
     const intl = useIntl()
-    const transfersChart = useTransfersChart()
+    const { chart } = useTransfersStatsContext()
     const [showEvmTon, setShowEvmTon] = React.useState(true)
     const [showTonEvm, setShowTonEvm] = React.useState(true)
 
     return (
         <ChartLayout
-            loading={transfersChart.loading}
-            timeframe={transfersChart.timeframe}
-            onChangeTimeframe={transfersChart.changeTimeframe}
-            showNoData={!transfersChart.loading && transfersChart.chartData.length === 0}
+            loading={chart.loading}
+            timeframe={chart.timeframe}
+            onChangeTimeframe={chart.changeTimeframe}
+            showNoData={!chart.loading && chart.chartData.length === 0}
         >
             <Chart
-                timeframe={transfersChart.timeframe}
-                data={transfersChart.chartData}
-                load={transfersChart.fetch}
+                timeframe={chart.timeframe}
+                data={chart.chartData}
+                load={chart.fetch}
                 showEvmTon={showEvmTon}
                 showTonEvm={showTonEvm}
             />

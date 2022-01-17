@@ -1,15 +1,15 @@
 import {
-    GraphRequest, GraphResponse, StakeholderKindApiResponse, StakeholdersApiRequest,
-    StakeholdersApiResponse, StakingMainApiResponse, StakingUserApiRequest,
-    StakingUserApiResponse, TransactionKindApiResponse, TransactionsApiRequest,
-    TransactionsApiResponse,
+    CurrencyResponse, GraphRequest, GraphResponse, StakeholderKindApiResponse,
+    StakeholdersApiRequest, StakeholdersApiResponse, StakingMainApiResponse,
+    StakingUserApiRequest, StakingUserApiResponse, TransactionKindApiResponse,
+    TransactionsApiRequest, TransactionsApiResponse,
 } from '@/modules/Staking/types'
 import { BridgeConstants, StackingAbi, StackingContract } from '@/misc'
-import { IndexerApiBaseUrl } from '@/config'
+import { IndexerApiBaseUrl, TonSwapIndexerApiBaseUrl } from '@/config'
 import { handleApi } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 
-export function getStackingContract(): StackingContract {
+export function getStakingContract(): StackingContract {
     return rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 }
 
@@ -46,6 +46,12 @@ export async function handleTvlApi(data: GraphRequest): Promise<GraphResponse> {
 export async function handleAprApi(data: GraphRequest): Promise<GraphResponse> {
     const url = `${IndexerApiBaseUrl}/staking/search/graph/apr`
     const result = await handleApi<GraphResponse>({ url, data })
+    return result
+}
+
+export async function handleCurrency(address: string): Promise<CurrencyResponse> {
+    const url = `${TonSwapIndexerApiBaseUrl}/currencies/${address}`
+    const result = await handleApi<CurrencyResponse>({ url })
     return result
 }
 

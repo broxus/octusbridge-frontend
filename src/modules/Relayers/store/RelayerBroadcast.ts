@@ -4,7 +4,7 @@ import { action, makeAutoObservable } from 'mobx'
 import { RELAYER_BROADCAST_STORE_DATA, RELAYER_BROADCAST_STORE_STATE } from '@/modules/Relayers/constants'
 import { ConfirmationStatus, RelayerBroadcastStoreData, RelayerBroadcastStoreState } from '@/modules/Relayers/types'
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { TokenAbi } from '@/misc'
@@ -16,7 +16,7 @@ export class RelayerBroadcastStore {
 
     protected data: RelayerBroadcastStoreData = RELAYER_BROADCAST_STORE_DATA
 
-    protected stackingContract = getStackingContract()
+    protected stackingContract = getStakingContract()
 
     constructor(
         protected tonWallet: TonWalletService,

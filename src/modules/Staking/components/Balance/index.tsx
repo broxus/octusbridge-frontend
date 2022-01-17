@@ -4,10 +4,7 @@ import { Observer } from 'mobx-react-lite'
 import BigNumber from 'bignumber.js'
 
 import { Tab, Tabs } from '@/components/common/Tabs'
-import { Button } from '@/components/common/Button'
-import {
-    Actions, Header, Section, Title,
-} from '@/components/common/Section'
+import { Section, Title } from '@/components/common/Section'
 import { AmountField } from '@/components/common/AmountField'
 import { CardLayout } from '@/modules/Staking/components/Balance/CardLayout'
 import { FormLayout } from '@/modules/Staking/components/Balance/FormLayout'
@@ -16,13 +13,7 @@ import { formattedAmount } from '@/utils'
 
 type Tabs = 'redeem' | 'claim'
 
-type Props = {
-    showActions?: boolean;
-}
-
-export function StakingBalance({
-    showActions = true,
-}: Props): JSX.Element {
+export function StakingBalance(): JSX.Element {
     const intl = useIntl()
     const {
         accountData, redeemForm, stakingForm, claimForm,
@@ -34,23 +25,11 @@ export function StakingBalance({
 
     return (
         <Section>
-            <Header size="lg">
-                <Title size="lg">
-                    {intl.formatMessage({
-                        id: 'STAKING_BALANCE_TITLE',
-                    })}
-                </Title>
-
-                {showActions && (
-                    <Actions>
-                        <Button size="md" type="secondary" link="/relayers/create">
-                            {intl.formatMessage({
-                                id: 'STAKING_STATS_CREATE',
-                            })}
-                        </Button>
-                    </Actions>
-                )}
-            </Header>
+            <Title size="lg">
+                {intl.formatMessage({
+                    id: 'STAKING_BALANCE_TITLE',
+                })}
+            </Title>
 
             <div className="tiles tiles_twice">
                 <CardLayout
@@ -71,10 +50,15 @@ export function StakingBalance({
                                 hint={intl.formatMessage({
                                     id: 'STAKING_BALANCE_WALLET_BALANCE',
                                 }, {
-                                    amount: stakingForm.balance && accountData.tokenDecimals
-                                        ? formattedAmount(stakingForm.balance, accountData.tokenDecimals)
-                                        : '',
-                                    symbol: accountData.tokenSymbol,
+                                    /* eslint-disable no-nested-ternary */
+                                    amount: accountData.hasAccount === undefined
+                                        ? ''
+                                        : accountData.hasAccount === false
+                                            ? '0'
+                                            : formattedAmount(stakingForm.balance, accountData.tokenDecimals),
+                                    symbol: accountData.hasAccount === undefined
+                                        ? ''
+                                        : accountData.tokenSymbol,
                                 })}
                                 action={intl.formatMessage({
                                     id: 'STAKING_BALANCE_STAKE',
@@ -135,10 +119,15 @@ export function StakingBalance({
                                     hint={intl.formatMessage({
                                         id: 'STAKING_BALANCE_STAKE_BALANCE',
                                     }, {
-                                        amount: redeemForm.balance && accountData.tokenDecimals
-                                            ? formattedAmount(redeemForm.balance, accountData.tokenDecimals)
-                                            : '',
-                                        symbol: accountData.tokenSymbol,
+                                        /* eslint-disable no-nested-ternary */
+                                        amount: accountData.hasAccount === undefined
+                                            ? ''
+                                            : accountData.hasAccount === false
+                                                ? '0'
+                                                : formattedAmount(redeemForm.balance, accountData.tokenDecimals),
+                                        symbol: accountData.hasAccount === undefined
+                                            ? ''
+                                            : accountData.tokenSymbol,
                                     })}
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_REDEEM',
@@ -170,6 +159,18 @@ export function StakingBalance({
                                     loading={claimForm.isLoading}
                                     disabled={!claimForm.isValid || claimForm.isLoading}
                                     onSubmit={claimForm.submit}
+                                    hint={accountData.lockedReward && accountData.tokenDecimals
+                                        && new BigNumber(accountData.lockedReward).gt(0)
+                                        ? intl.formatMessage({
+                                            id: 'STAKING_BALANCE_LOCKED_REWARD',
+                                        }, {
+                                            amount: formattedAmount(
+                                                accountData.lockedReward,
+                                                accountData.tokenDecimals,
+                                            ),
+                                            symbol: accountData.tokenSymbol,
+                                        })
+                                        : undefined}
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_CLAIM',
                                     })}

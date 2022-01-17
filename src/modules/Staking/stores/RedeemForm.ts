@@ -2,7 +2,7 @@ import { action, makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { RedeemFormStoreData, RedeemFormStoreState } from '@/modules/Staking/types'
 import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
 import { TonWalletService } from '@/stores/TonWalletService'
@@ -50,7 +50,7 @@ export class RedeemFormStore {
             }
 
             const { tokenWalletBalance } = this.accountData
-            const stackingContract = getStackingContract()
+            const stackingContract = getStakingContract()
 
             const successStream = subscriber
                 .transactions(stackingContract.address)

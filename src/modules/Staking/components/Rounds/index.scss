@@ -1,0 +1,15 @@
+.staking-rounds {
+    letter-spacing: 0.5px;
+
+    &.list {
+        --list-grid-template: 30px minmax(150px, 25%) minmax(150px, 25%) minmax(150px, 25%) minmax(150px, 25%);
+    }
+
+    &__soon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+        font-size: 14px;
+    }
+}

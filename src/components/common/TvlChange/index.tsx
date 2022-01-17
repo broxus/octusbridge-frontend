@@ -4,14 +4,14 @@ import classNames from 'classnames'
 import './style.scss'
 
 export type TvlChangeProps = {
-    changesDirection: number;
+    changesDirection?: number | string;
     priceChange: string;
     size?: 'small';
     showPercent?: boolean;
 }
 
 export function TvlChange({
-    changesDirection,
+    changesDirection = 0,
     priceChange,
     size,
     showPercent = true,

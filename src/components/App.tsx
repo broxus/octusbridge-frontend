@@ -17,7 +17,6 @@ import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
 import TransferList from '@/pages/transfer/list'
-import MyTransferList from '@/pages/transfer/list/my'
 import StakingSelf from '@/pages/staking/my'
 import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
@@ -56,9 +55,6 @@ export function App(): JSX.Element {
                             </Route>
                             <Route exact path="/transfers">
                                 <TransferList />
-                            </Route>
-                            <Route path="/transfers/my">
-                                <MyTransferList />
                             </Route>
                             <Route path="/transfers">
                                 <TransferList />

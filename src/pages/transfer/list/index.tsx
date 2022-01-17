@@ -1,9 +1,12 @@
 import * as React from 'react'
 
+import { TransfersStatsProvider } from '@/modules/Transfers/providers'
 import { Transfers } from '@/modules/Transfers'
 
-export default function PageInner(): JSX.Element {
+export default function Page(): JSX.Element {
     return (
-        <Transfers />
+        <TransfersStatsProvider>
+            <Transfers />
+        </TransfersStatsProvider>
     )
 }

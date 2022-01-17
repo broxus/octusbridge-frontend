@@ -401,7 +401,7 @@ export default {
     STAKING_BREADCRUMB_USER: 'User {address}',
     STAKING_BREADCRUMB_MY_STAKE: 'My stake',
 
-    STAKING_BALANCE_TITLE: 'Staking balance',
+    STAKING_BALANCE_TITLE: 'My staking balance',
     STAKING_BALANCE_STAKE: 'Stake',
     STAKING_BALANCE_STAKE_DESC: 'If the staking contract uses a smaller amount than fee, it will return the change to your wallet.',
     STAKING_BALANCE_REDEEM: 'Redeem',
@@ -409,8 +409,27 @@ export default {
     STAKING_BALANCE_AMOUNT: 'Amount',
     STAKING_BALANCE_WALLET_BALANCE: 'Wallet balance: {amount} {symbol}',
     STAKING_BALANCE_STAKE_BALANCE: 'Available balance: {amount} {symbol}',
+    STAKING_BALANCE_LOCKED_REWARD: '{amount} {symbol} can be claimed after the end of the reward round',
+
+    STAKING_REWARD_ROUNDS_TITLE: 'Reward rounds',
+    STAKING_REWARD_ROUNDS_ID: 'Id',
+    STAKING_REWARD_ROUNDS_START: 'Date start',
+    STAKING_REWARD_ROUNDS_END: 'Date end',
+    STAKING_REWARD_ROUNDS_SHARE: 'Share',
+    STAKING_REWARD_ROUNDS_REWARD: 'Reward',
 
     STAKING_CONNECT_WALLET_MSG: 'Connect Crystal Wallet to see your staking and balance information',
+
+    STAKING_PERFORMANCE_TITLE: 'My staking performance',
+    STAKING_PERFORMANCE_BALANCE: 'Balance',
+    STAKING_PERFORMANCE_TOKEN_BALANCE: 'Balance, BRIDGE',
+    STAKING_PERFORMANCE_SHARE: 'Share',
+    STAKING_PERFORMANCE_HISTORY_BALANCE: 'History balance',
+    STAKING_PERFORMANCE_HISTORY_BALANCE_TOKEN: 'History balance, BRIDGE',
+    STAKING_PERFORMANCE_LAST_UPDATE: 'Last update, UTC',
+    STAKING_PERFORMANCE_REWARD_BALANCE: 'Reward balance',
+    STAKING_PERFORMANCE_REWARD_TOKEN: 'Reward tokens, BRIDGE',
+    STAKING_PERFORMANCE_ROUND_END: 'Round end date',
 
     STAKING_COMMON_STATS_TITLE: 'Explorer',
     STAKING_USER_STATS_USER: 'User stake',

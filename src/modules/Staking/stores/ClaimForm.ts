@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import { ClaimFormState } from '@/modules/Staking/types'
 import { TonWalletService } from '@/stores/TonWalletService'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
 
@@ -44,7 +44,7 @@ export class ClaimFormStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = getStackingContract()
+            const stackingContract = getStakingContract()
             const { tokenWalletBalance } = this.accountData
 
             const successStream = subscriber

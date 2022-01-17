@@ -9,7 +9,7 @@ import {
 import { RelayerLinkStoreData, RelayerLinkStoreState } from '@/modules/Relayers/types'
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 
@@ -19,7 +19,7 @@ export class RelayerLinkStore {
 
     protected data: RelayerLinkStoreData = RELAYER_LINK_STORE_DATA
 
-    protected stackingContract = getStackingContract()
+    protected stackingContract = getStakingContract()
 
     constructor(
         protected tonWallet: TonWalletService,

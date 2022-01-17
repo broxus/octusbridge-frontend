@@ -10,7 +10,7 @@ import { TonWalletService } from '@/stores/TonWalletService'
 import { StakingDataStoreData, StakingDataStoreState } from '@/modules/Relayers/types'
 import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import {
     EventVoteData, RelayConfig, StackingDetails, UserDetails,
@@ -27,7 +27,7 @@ export class StakingDataStore {
 
     protected data: StakingDataStoreData = STAKING_DATA_STORE_DEFAULT_DATA
 
-    protected stackingContract = getStackingContract()
+    protected stackingContract = getStakingContract()
 
     protected syncTimeoutId?: number
 

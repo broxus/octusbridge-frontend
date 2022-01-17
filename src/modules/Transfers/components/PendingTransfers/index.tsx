@@ -4,19 +4,19 @@ import { observer } from 'mobx-react-lite'
 
 import { Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
-import { useTransfers } from '@/modules/Transfers/hooks/useTransfers'
+import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import { usePagination, useTableOrder, useTextParam } from '@/hooks'
 import { TransfersOrdering } from '@/modules/Transfers/types'
 import { useTokensCache } from '@/stores/TokensCacheService'
 import { error } from '@/utils'
 
-function PendingTransfersListInner(): JSX.Element {
+function PendingTransfersInner(): JSX.Element {
     const intl = useIntl()
-    const pendingTransfers = useTransfers()
+    const transfers = useTransfersContext()
     const tokensCache = useTokensCache()
-    const pendingPagination = usePagination(pendingTransfers.totalCount)
-    const pendingTableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
+    const pagination = usePagination(transfers.totalCount)
+    const tableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
 
     const [userAddress] = useTextParam('user')
 
@@ -25,12 +25,12 @@ function PendingTransfersListInner(): JSX.Element {
             return
         }
         try {
-            await pendingTransfers.fetch({
+            await transfers.fetch({
                 status: 'pending',
                 userAddress,
-                limit: pendingPagination.limit,
-                offset: pendingPagination.offset,
-                ordering: pendingTableOrder.order,
+                limit: pagination.limit,
+                offset: pagination.offset,
+                ordering: tableOrder.order,
             })
         }
         catch (e) {
@@ -42,15 +42,15 @@ function PendingTransfersListInner(): JSX.Element {
         fetchPending()
     }, [
         userAddress,
-        pendingPagination.limit,
-        pendingPagination.offset,
-        pendingTableOrder.order,
+        pagination.limit,
+        pagination.offset,
+        tableOrder.order,
         tokensCache.isInitialized,
     ])
 
     return (
         <>
-            {pendingTransfers.totalCount !== undefined && pendingTransfers.totalCount > 0 && (
+            {transfers.totalCount !== undefined && transfers.totalCount > 0 && (
                 <Section>
                     <Title>
                         {intl.formatMessage({
@@ -60,18 +60,18 @@ function PendingTransfersListInner(): JSX.Element {
 
                     <div className="card card--flat card--small">
                         <TransfersTable
-                            loading={pendingTransfers.loading}
-                            items={pendingTransfers.items}
-                            order={pendingTableOrder.order}
-                            onSort={pendingTableOrder.onSort}
+                            loading={transfers.loading}
+                            items={transfers.items}
+                            order={tableOrder.order}
+                            onSort={tableOrder.onSort}
                         />
 
-                        {pendingPagination.totalPages > 1 && (
+                        {pagination.totalPages > 1 && (
                             <Pagination
-                                page={pendingPagination.page}
-                                totalPages={pendingPagination.totalPages}
-                                totalCount={pendingPagination.totalCount}
-                                onSubmit={pendingPagination.submit}
+                                page={pagination.page}
+                                totalPages={pagination.totalPages}
+                                totalCount={pagination.totalCount}
+                                onSubmit={pagination.submit}
                             />
                         )}
                     </div>
@@ -81,4 +81,4 @@ function PendingTransfersListInner(): JSX.Element {
     )
 }
 
-export const PendingTransfersList = observer(PendingTransfersListInner)
+export const PendingTransfers = observer(PendingTransfersInner)

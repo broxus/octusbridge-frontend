@@ -118,6 +118,15 @@ export type TransfersGraphVolumeModel = {
 
 export type TransfersGraphVolumeResponse = TransfersGraphVolumeModel[]
 
+export type TransfersMainInfoResponse = {
+    fromEverscaleUsdt?: string;
+    toEverscaleUsdt?: string;
+    volume7dUsdt?: string;
+    volume7dUsdtChange?: string;
+    volume24hUsdt?: string;
+    volume24hUsdtChange?: string;
+}
+
 export type TransfersStoreData = {
     apiResponse?: TransfersResponse;
 }
@@ -139,4 +148,5 @@ export type TransfersChartStoreState = {
 
 export type TransfersStatsStoreData = {
     totalCount?: number;
+    mainInfo?: TransfersMainInfoResponse;
 }

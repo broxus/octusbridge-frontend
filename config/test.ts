@@ -103,6 +103,8 @@ export const IndexerApiBaseUrl = 'https://bridge-indexer-test.broxus.com/v1'
 
 export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer-test.broxus.com/v1'
 
+export const TonSwapIndexerApiBaseUrl = 'https://ton-swap-indexer-test.broxus.com/v1'
+
 
 // export const networks: NetworkShape[] = [
 //     {

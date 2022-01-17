@@ -7,7 +7,7 @@ import {
     STAKING_FORM_STORE_DEFAULT_DATA, STAKING_FORM_STORE_DEFAULT_STATE,
     STAKING_PAYLOAD,
 } from '@/modules/Staking/constants'
-import { getStackingContract } from '@/modules/Staking/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
 import { StakingFormStoreData, StakingFormStoreState } from '@/modules/Staking/types'
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
@@ -73,7 +73,7 @@ export class StakingFormStore {
 
             const ownerAddress = new Address(this.tonWallet.address)
             const { tokenStakingBalance } = this.accountData
-            const stackingContract = getStackingContract()
+            const stackingContract = getStakingContract()
 
             const successStream = subscriber
                 .transactions(stackingContract.address)
