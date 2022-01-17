@@ -1,14 +1,15 @@
 import * as React from 'react'
 
 import { Explorer } from '@/modules/Staking/Explorer'
-import { ExplorerStoreProvider } from '@/modules/Staking/providers/ExplorerStoreProvider'
+import { StakeholdersProvider } from '@/modules/Staking/providers/StakeholdersProvider'
+import { ExplorerProvider } from '@/modules/Staking/providers/ExplorerProvider'
 
 export default function Page(): JSX.Element {
     return (
-        <div className="container container--large">
-            <ExplorerStoreProvider>
+        <StakeholdersProvider>
+            <ExplorerProvider>
                 <Explorer />
-            </ExplorerStoreProvider>
-        </div>
+            </ExplorerProvider>
+        </StakeholdersProvider>
     )
 }

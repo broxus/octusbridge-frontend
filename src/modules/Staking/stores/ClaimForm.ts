@@ -45,6 +45,7 @@ export class ClaimFormStore {
             }
 
             const stackingContract = getStackingContract()
+            const { tokenWalletBalance } = this.accountData
 
             const successStream = subscriber
                 .transactions(stackingContract.address)
@@ -73,7 +74,11 @@ export class ClaimFormStore {
                 })
 
             await successStream
-            await this.accountData.sync()
+
+            while (this.accountData.tokenWalletBalance === tokenWalletBalance) {
+                await this.accountData.sync()
+                await new Promise(r => setTimeout(r, 1000))
+            }
         }
         catch (e) {
             error(e)

@@ -5,13 +5,13 @@ import { Observer } from 'mobx-react-lite'
 import { DataCard } from '@/components/common/DataCard'
 import { Section, Title } from '@/components/common/Section'
 import { CommonCharts } from '@/modules/Staking/components/CommonCharts'
-import { ExplorerStoreContext } from '@/modules/Staking/providers/ExplorerStoreProvider'
+import { useExplorerContext } from '@/modules/Staking/providers/ExplorerProvider'
 import { useProposals } from '@/modules/Governance/hooks'
 import { error, formattedAmount } from '@/utils'
 
 export function DaoStats(): JSX.Element | null {
     const intl = useIntl()
-    const explorer = React.useContext(ExplorerStoreContext)
+    const { mainInfo } = useExplorerContext()
     const proposals = useProposals()
 
     const noValue = intl.formatMessage({
@@ -25,12 +25,7 @@ export function DaoStats(): JSX.Element | null {
                     limit: 1,
                     offset: 0,
                 }),
-                explorer?.fetchMainInfo(),
-                explorer?.fetchStakeholders({
-                    limit: 1,
-                    offset: 0,
-                    ordering: 'createdatascending',
-                }),
+                mainInfo.fetch(),
             ])
         }
         catch (e) {
@@ -58,8 +53,8 @@ export function DaoStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'DAO_STATS_RESERVES',
                                 })}
-                                value={explorer?.tvl
-                                    ? formattedAmount(explorer.tvl, 0, true, true)
+                                value={mainInfo.tvl
+                                    ? formattedAmount(mainInfo.tvl, 0, true, true)
                                     : noValue}
                             />
                         )}
@@ -81,8 +76,8 @@ export function DaoStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'DAO_STATS_VOTING_ADDRESSES',
                                 })}
-                                value={explorer?.stakeholderTotalCount
-                                    ? formattedAmount(explorer.stakeholderTotalCount)
+                                value={mainInfo.stakeholders
+                                    ? formattedAmount(mainInfo.stakeholders)
                                     : noValue}
                             />
                         )}

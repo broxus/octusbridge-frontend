@@ -1,12 +1,12 @@
 import * as React from 'react'
 
 import { Overview } from '@/modules/Governance/Overview'
-import { ExplorerStoreProvider } from '@/modules/Staking/providers/ExplorerStoreProvider'
+import { ExplorerProvider } from '@/modules/Staking/providers/ExplorerProvider'
 
 export default function Page(): JSX.Element {
     return (
-        <ExplorerStoreProvider>
+        <ExplorerProvider>
             <Overview />
-        </ExplorerStoreProvider>
+        </ExplorerProvider>
     )
 }

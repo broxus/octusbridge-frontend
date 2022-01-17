@@ -11,7 +11,7 @@ import { UserCard } from '@/components/common/UserCard'
 import { Pagination } from '@/components/common/Pagination'
 import { mapStakeholderKindToIntlId } from '@/modules/Staking/utils'
 import { StakeholderApiOrdering, StakeholderKindApiRequest, StakeholdersApiFilters } from '@/modules/Staking/types'
-import { ExplorerStoreContext } from '@/modules/Staking/providers/ExplorerStoreProvider'
+import { useStakeholdersContext } from '@/modules/Staking/providers/StakeholdersProvider'
 import {
     useBNParam, useDateParam, useDictParam, usePagination,
     useTableOrder, useUrlParams,
@@ -21,15 +21,10 @@ import { dateFormat, error, formattedAmount } from '@/utils'
 import './index.scss'
 
 export function StakeholdersInner(): JSX.Element | null {
-    const explorer = React.useContext(ExplorerStoreContext)
-
-    if (!explorer) {
-        return null
-    }
-
+    const stakeholders = useStakeholdersContext()
     const intl = useIntl()
     const urlParams = useUrlParams()
-    const pagination = usePagination(explorer?.stakeholderTotalCount)
+    const pagination = usePagination(stakeholders.totalCount)
     const tableOrder = useTableOrder<StakeholderApiOrdering>('createdatdescending')
 
     const [createdAtGe] = useDateParam('created-ge')
@@ -52,7 +47,7 @@ export function StakeholdersInner(): JSX.Element | null {
 
     const fetch = async () => {
         try {
-            await explorer.fetchStakeholders({
+            await stakeholders.fetch({
                 createdAtGe,
                 createdAtLe,
                 frozenStakeGe,
@@ -238,7 +233,7 @@ export function StakeholdersInner(): JSX.Element | null {
                 <Observer>
                     {() => (
                         <Table
-                            loading={explorer.stakeholdersLoading}
+                            loading={stakeholders.isLoading}
                             className="stakeholders-table"
                             onSort={tableOrder.onSort}
                             order={tableOrder.order}
@@ -287,7 +282,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                 ascending: 'createdatascending',
                                 descending: 'createdatdescending',
                             }]}
-                            rows={explorer.stakeholdersItems.map(item => ({
+                            rows={stakeholders.items.map(item => ({
                                 cells: [
                                     item.userAddress ? (
                                         <UserCard

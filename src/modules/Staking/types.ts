@@ -161,17 +161,12 @@ export type GraphResponse = {
     timestamp: number;
 }[]
 
-export type ExplorerStoreData = {
-    mainInfo?: StakingMainApiResponse;
-    stakeholders?: StakeholdersApiResponse;
+export type ChartStoreData = {
     chart?: CommonGraphShape[];
 }
 
-export type ExplorerStoreState = {
-    loaded?: boolean;
-    mainInfoLoading?: boolean;
-    stakeholdersLoading?: boolean;
-    chartLoading?: boolean;
+export type ChartStoreState = {
+    isLoading?: boolean;
 }
 
 export type UserStakingStoreData = {
@@ -187,5 +182,21 @@ export type TransactionsStoreData = {
 }
 
 export type TransactionsStoreState = {
+    isLoading?: boolean;
+}
+
+export type StakeholdersStoreData = {
+    stakeholders?: StakeholdersApiResponse;
+}
+
+export type StakeholdersStoreState = {
+    isLoading?: boolean;
+}
+
+export type MainInfoData = {
+    mainInfo?: StakingMainApiResponse;
+}
+
+export type MainInfoState = {
     isLoading?: boolean;
 }

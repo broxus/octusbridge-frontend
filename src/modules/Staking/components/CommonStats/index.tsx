@@ -9,24 +9,19 @@ import { Button } from '@/components/common/Button'
 import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
 import { CommonCharts } from '@/modules/Staking/components/CommonCharts'
-import { ExplorerStoreContext } from '@/modules/Staking/providers/ExplorerStoreProvider'
+import { useExplorerContext } from '@/modules/Staking/providers/ExplorerProvider'
 import { error, formattedAmount } from '@/utils'
 
 export function CommonStats(): JSX.Element | null {
-    const explorer = React.useContext(ExplorerStoreContext)
-
-    if (!explorer) {
-        return null
-    }
-
     const intl = useIntl()
+    const { mainInfo } = useExplorerContext()
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
 
     const fetch = async () => {
         try {
-            await explorer.fetchMainInfo()
+            await mainInfo.fetch()
         }
         catch (e) {
             error(e)
@@ -63,14 +58,14 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_TVL',
                                 })}
-                                value={explorer.tvl
-                                    ? formattedAmount(explorer.tvl, 0, true, true)
+                                value={mainInfo.tvl
+                                    ? formattedAmount(mainInfo.tvl, 0, true, true)
                                     : noValue}
                             >
-                                {explorer.tvlChange && (
+                                {mainInfo.tvlChange && (
                                     <TvlChange
-                                        changesDirection={parseInt(explorer.tvlChange, 10)}
-                                        priceChange={formattedAmount(explorer.tvlChange)}
+                                        changesDirection={parseInt(mainInfo.tvlChange, 10)}
+                                        priceChange={formattedAmount(mainInfo.tvlChange)}
                                         size="small"
                                     />
                                 )}
@@ -84,15 +79,15 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_REWARD',
                                 })}
-                                // value={explorer.reward30d ? formattedAmount(explorer.reward30d) : noValue}
+                                // value={mainInfo.reward30d ? formattedAmount(mainInfo.reward30d) : noValue}
                             >
                                 {intl.formatMessage({
                                     id: 'SOON',
                                 })}
-                                {/* {explorer.reward30dChange && (
+                                {/* {mainInfo.reward30dChange && (
                                     <TvlChange
-                                        changesDirection={parseInt(explorer.reward30dChange, 10)}
-                                        priceChange={formattedAmount(explorer.reward30dChange)}
+                                        changesDirection={parseInt(mainInfo.reward30dChange, 10)}
+                                        priceChange={formattedAmount(mainInfo.reward30dChange)}
                                         size="small"
                                     />
                                 )} */}
@@ -106,7 +101,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_APR',
                                 })}
-                                // value={explorer.averageApr ? `${explorer.averageApr}%` : noValue}
+                                // value={mainInfo.averageApr ? `${mainInfo.averageApr}%` : noValue}
                             >
                                 {intl.formatMessage({
                                     id: 'SOON',
@@ -121,7 +116,7 @@ export function CommonStats(): JSX.Element | null {
                                 title={intl.formatMessage({
                                     id: 'STAKING_STATS_STAKEHOLDERS',
                                 })}
-                                value={explorer.stakeholders !== undefined ? explorer.stakeholders : noValue}
+                                value={mainInfo.stakeholders !== undefined ? mainInfo.stakeholders : noValue}
                             />
                         )}
                     </Observer>
