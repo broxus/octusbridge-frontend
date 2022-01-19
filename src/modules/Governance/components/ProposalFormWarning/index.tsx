@@ -58,7 +58,7 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                     )}
                 </div>
 
-                <Button type="primary" size="md" link="/staking">
+                <Button type="primary" size="md" link="/staking/my">
                     {intl.formatMessage({
                         id: 'PROPOSAL_FORM_LINK',
                     })}

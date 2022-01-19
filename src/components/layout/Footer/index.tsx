@@ -84,13 +84,13 @@ export function Footer(): JSX.Element {
                             </div>
                             <ul className="footer-nav__list">
                                 <li>
-                                    <Link to="/staking">
+                                    <Link to="/staking/my">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_STAKE_LINK_TEXT',
                                         })}
                                     </Link>
                                     {' / '}
-                                    <Link to="/staking/redeem">
+                                    <Link to="/staking/my">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_REDEEM_LINK_TEXT',
                                         })}

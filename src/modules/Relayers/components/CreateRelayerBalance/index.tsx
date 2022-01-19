@@ -102,7 +102,7 @@ export function CreateRelayerBalance({
                     <Alert
                         key="insufficient"
                         actions={(
-                            <Link to="/staking" className="btn btn--md btn--tertiary">
+                            <Link to="/staking/my" className="btn btn--md btn--tertiary">
                                 {intl.formatMessage({
                                     id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_ACTION',
                                 })}

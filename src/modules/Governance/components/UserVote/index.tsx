@@ -140,7 +140,7 @@ export function UserVoteInner(): JSX.Element {
                                         block
                                         size="md"
                                         type="secondary"
-                                        link="/staking"
+                                        link="/staking/my"
                                         key="staking"
                                     >
                                         {intl.formatMessage({
