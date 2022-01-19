@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
+import BigNumber from 'bignumber.js'
 
 import { DataCard } from '@/components/common/DataCard'
 import { TvlChange } from '@/components/common/TvlChange'
@@ -70,7 +71,10 @@ export function TransfersStats(): JSX.Element {
                                             ? parseInt(stats.mainInfo?.volume24hUsdtChange, 10)
                                             : undefined}
                                         priceChange={stats.mainInfo?.volume24hUsdtChange
-                                            ? formattedAmount(stats.mainInfo.volume24hUsdtChange, 0, true, true)
+                                            ? formattedAmount(
+                                                Math.abs(parseFloat(stats.mainInfo.volume24hUsdtChange)),
+                                                0, true, true,
+                                            )
                                             : noValue}
                                     />
                                 )}
@@ -95,7 +99,10 @@ export function TransfersStats(): JSX.Element {
                                             ? parseInt(stats.mainInfo?.volume7dUsdtChange, 10)
                                             : undefined}
                                         priceChange={stats.mainInfo?.volume7dUsdtChange
-                                            ? formattedAmount(stats.mainInfo.volume7dUsdtChange, 0, true, true)
+                                            ? formattedAmount(
+                                                Math.abs(parseFloat(stats.mainInfo.volume7dUsdtChange)),
+                                                0, true, true,
+                                            )
                                             : noValue}
                                     />
                                 )}
