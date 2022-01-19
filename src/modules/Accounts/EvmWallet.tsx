@@ -43,7 +43,10 @@ export function EvmWallet(): JSX.Element | null {
                                         />
                                     )}
                                     <div className="wallet-icon">
-                                        <Icon icon="ethWalletIcon" ratio={0.8} />
+                                        <Icon
+                                            icon={`${(network?.currencySymbol ?? 'eth').toLowerCase()}WalletIcon`}
+                                            ratio={0.8}
+                                        />
                                     </div>
                                 </div>
                                 <div className="wallet__info">
