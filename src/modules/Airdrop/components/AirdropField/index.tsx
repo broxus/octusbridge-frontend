@@ -2,6 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 
 import { TokenIcon } from '@/components/common/TokenIcon'
+import { Token } from '@/components/common/Token'
 import { TokenCache } from '@/stores/TokensCacheService'
 
 
@@ -44,13 +45,15 @@ export function AirdropField({
                         disabled
                         value={props.value}
                     />
-                    <div className="staking-account-field__token">
-                        <TokenIcon
-                            size="small"
-                            address={token?.root}
-                            uri={token?.icon}
-                        />
-                        {token?.symbol}
+                    <div className="form-airdrop__token">
+                        {token && (
+                            <Token
+                                uri={token.icon}
+                                address={token.root}
+                                symbol={token.symbol}
+                                size="small"
+                            />
+                        )}
                     </div>
                 </div>
             </fieldset>
