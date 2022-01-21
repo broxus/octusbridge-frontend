@@ -1,0 +1,5 @@
+.proposals-user-table {
+    &.list {
+        --list-grid-template: 30px minmax(330px, 50%) minmax(110px, 10%) minmax(110px, 10%) minmax(190px, 10%) minmax(180px, 20%) 100px;
+    }
+}

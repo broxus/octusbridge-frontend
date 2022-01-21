@@ -5,10 +5,10 @@ import { Observer } from 'mobx-react-lite'
 import { Button } from '@/components/common/Button'
 import { Container, Header, Title } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
-import { AllProposals } from '@/modules/Governance/AllProposals'
-import { UserProposals } from '@/modules/Governance/UserProposals'
+import { ProposalsList } from '@/modules/Governance/components/ProposalsList'
+import { UserStats } from '@/modules/Governance/components/UserStats'
+import { UserProposals } from '@/modules/Governance/components/UserProposals'
 import { useTonWallet } from '@/stores/TonWalletService'
-import { UserStats } from '@/modules/Governance/UserStats'
 
 import './index.scss'
 
@@ -61,7 +61,7 @@ export function Proposals(): JSX.Element {
                 )}
             </Observer>
 
-            <AllProposals />
+            <ProposalsList />
         </Container>
     )
 }

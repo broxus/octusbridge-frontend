@@ -1,0 +1,7 @@
+.votes-table {
+    &.list {
+        --list-grid-template: minmax(150px, 15%) minmax(300px, 70%) minmax(100px, 10%) minmax(150px, 15%);
+
+        letter-spacing: 0.5px;
+    }
+}

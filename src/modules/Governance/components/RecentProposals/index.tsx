@@ -8,8 +8,6 @@ import { ProposalsTable } from '@/modules/Governance/components/ProposalsTable'
 import { useProposals } from '@/modules/Governance/hooks'
 import { error } from '@/utils'
 
-import './index.scss'
-
 export function RecentProposals(): JSX.Element {
     const intl = useIntl()
     const proposals = useProposals()

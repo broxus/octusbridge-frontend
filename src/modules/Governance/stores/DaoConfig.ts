@@ -26,13 +26,15 @@ export class DaoConfigStore {
     }
 
     public init(): void {
-        this.syncDisposer = reaction(
-            () => this.tonWallet.isConnected,
-            isConnected => (isConnected ? this.sync() : this.reset()),
-            {
-                fireImmediately: true,
-            },
-        )
+        if (!this.syncDisposer) {
+            this.syncDisposer = reaction(
+                () => this.tonWallet.isConnected,
+                isConnected => (isConnected ? this.sync() : this.reset()),
+                {
+                    fireImmediately: true,
+                },
+            )
+        }
     }
 
     public dispose(): void {

@@ -29,13 +29,15 @@ export class UserDataStore {
     }
 
     public init(): void {
-        this.syncDisposer = reaction(
-            () => this.isConnected,
-            isConnected => (isConnected ? this.sync() : this.reset()),
-            {
-                fireImmediately: true,
-            },
-        )
+        if (!this.syncDisposer) {
+            this.syncDisposer = reaction(
+                () => this.isConnected,
+                isConnected => (isConnected ? this.sync() : this.reset()),
+                {
+                    fireImmediately: true,
+                },
+            )
+        }
     }
 
     public dispose(): void {

@@ -28,8 +28,8 @@ import './index.scss'
 export function UserProposalsInner(): JSX.Element | null {
     const intl = useIntl()
     const tonWallet = useTonWallet()
-    const userProposal = useUserProposals()
-    const pagination = usePagination(userProposal.totalCount)
+    const userProposals = useUserProposals()
+    const pagination = usePagination(userProposals.totalCount)
     const [filters, setFilters] = useProposalsFilters('my')
 
     const noValue = intl.formatMessage({
@@ -47,7 +47,7 @@ export function UserProposalsInner(): JSX.Element | null {
         }
 
         try {
-            await userProposal.fetch(tonWallet.address, {
+            await userProposals.fetch(tonWallet.address, {
                 startTimeGe: filters.startTimeGe,
                 startTimeLe: filters.startTimeLe,
                 endTimeGe: filters.endTimeGe,
@@ -71,7 +71,7 @@ export function UserProposalsInner(): JSX.Element | null {
             fetch()
         }
         else {
-            userProposal.dispose()
+            userProposals.dispose()
         }
     }, [
         filters.state,
@@ -106,7 +106,7 @@ export function UserProposalsInner(): JSX.Element | null {
                 <div className="card card--flat card--small">
                     <Table
                         className="proposals-user-table"
-                        loading={userProposal.loading}
+                        loading={userProposals.loading}
                         cols={[{
                             name: intl.formatMessage({
                                 id: 'PROPOSALS_TABLE_NO',
@@ -138,7 +138,7 @@ export function UserProposalsInner(): JSX.Element | null {
                             }),
                             align: 'right',
                         }]}
-                        rows={userProposal.items.map(({ proposal, vote }) => ({
+                        rows={userProposals.items.map(({ proposal, vote }) => ({
                             cells: [
                                 proposal.proposalId || noValue,
                                 proposal.state ? (

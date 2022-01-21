@@ -1,15 +1,3 @@
-.proposals-user-table {
-    &.list {
-        --list-grid-template: 30px minmax(330px, 50%) minmax(110px, 10%) minmax(110px, 10%) minmax(190px, 10%) minmax(180px, 20%) 100px;
-    }
-}
-
-.top-voters {
-    &.list {
-        --list-grid-template: minmax(200px, 25%) minmax(200px, 25%) minmax(200px, 25%) minmax(200px, 25%);
-    }
-}
-
 .proposal-layout-content {
     align-items: flex-start;
     column-gap: 40px;
@@ -31,13 +19,5 @@
 
     @media only screen and (max-width: 1169px) {
         position: static;
-    }
-}
-
-.votes-table {
-    &.list {
-        --list-grid-template: minmax(150px, 15%) minmax(300px, 70%) minmax(100px, 10%) minmax(150px, 15%);
-
-        letter-spacing: 0.5px;
     }
 }

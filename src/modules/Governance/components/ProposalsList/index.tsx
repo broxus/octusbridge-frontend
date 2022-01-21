@@ -11,9 +11,7 @@ import { ProposalsFilters as Filters } from '@/modules/Governance/types'
 import { usePagination } from '@/hooks'
 import { error } from '@/utils'
 
-import './index.scss'
-
-export function AllProposalsInner(): JSX.Element {
+export function ProposalsListInner(): JSX.Element {
     const intl = useIntl()
     const proposals = useProposals()
     const pagination = usePagination(proposals.totalCount)
@@ -89,4 +87,4 @@ export function AllProposalsInner(): JSX.Element {
     )
 }
 
-export const AllProposals = observer(AllProposalsInner)
+export const ProposalsList = observer(ProposalsListInner)

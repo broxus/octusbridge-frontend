@@ -15,15 +15,6 @@ export function UserStats(): JSX.Element {
         id: 'NO_VALUE',
     })
 
-    React.useEffect(() => {
-        if (voting.isConnected) {
-            voting.init()
-        }
-        else {
-            voting.dispose()
-        }
-    }, [voting.isConnected])
-
     return (
         <Section>
             <Title>

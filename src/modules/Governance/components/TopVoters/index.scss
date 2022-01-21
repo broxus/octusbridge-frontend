@@ -1,0 +1,5 @@
+.top-voters {
+    &.list {
+        --list-grid-template: minmax(200px, 25%) minmax(200px, 25%) minmax(200px, 25%) minmax(200px, 25%);
+    }
+}
