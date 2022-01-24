@@ -80,7 +80,11 @@ export function TokensAmountFieldset(): JSX.Element {
                                                     id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TOKENS_AMOUNT_HINT',
                                                 }, {
                                                     symbol: bridge.token?.symbol,
-                                                    value: formattedAmount(0, bridge.token?.decimals),
+                                                    value: formattedAmount(
+                                                        0,
+                                                        bridge.token?.decimals,
+                                                        { preserve: true },
+                                                    ),
                                                 })}
                                             </span>
                                         )
@@ -95,6 +99,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.maxTokenAmount || 0,
                                                         bridge.token?.decimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -110,6 +115,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.minReceiveTokens || 0,
                                                         bridge.token?.decimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </>
@@ -125,17 +131,18 @@ export function TokensAmountFieldset(): JSX.Element {
                     {process.env.NODE_ENV !== 'production' && (
                         <React.Fragment key="amounts">
                             <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => <>Min value: 0</>}
-                                </Observer>
+                                {'> Min value: 0'}
                             </div>
                             <div className="crosschain-transfer__control-hint">
                                 <Observer>
                                     {() => (
                                         <>
-                                            Max value:
-                                            {' '}
-                                            {formattedAmount(bridge.maxTokenAmount || 0, bridge.token?.decimals)}
+                                            {'> Max value: '}
+                                            {formattedAmount(
+                                                bridge.maxTokenAmount,
+                                                bridge.token?.decimals,
+                                                { preserve: true },
+                                            )}
                                         </>
                                     )}
                                 </Observer>

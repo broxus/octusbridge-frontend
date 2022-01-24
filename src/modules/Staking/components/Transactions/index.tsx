@@ -156,7 +156,9 @@ export function TransactionsInner({
                                 ? <TransactionExplorerLink withIcon id={item.transactionHash} />
                                 : noValue,
                             item.amountExec
-                                ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), 0, true, true)
+                                ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), undefined, {
+                                    target: 'token',
+                                })
                                 : noValue,
                             item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
                         ],

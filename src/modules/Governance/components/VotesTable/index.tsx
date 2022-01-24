@@ -97,9 +97,9 @@ export function VotesTableInner(): JSX.Element {
                             item.reason ? <VoteReason value={item.reason} /> : noValue,
                             <VoteType
                                 badge
-                                type={item.support === true ? 1 : 0}
+                                type={item.support ? 1 : 0}
                                 value={item.votes
-                                    ? formattedAmount(item.votes, DexConstants.TONDecimals, true, true)
+                                    ? formattedAmount(item.votes, DexConstants.TONDecimals, { target: 'token' })
                                     : undefined}
                             />,
                             dateFormat(item.createdAt * 1000),

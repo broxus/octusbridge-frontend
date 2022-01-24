@@ -28,8 +28,6 @@ export function AmountInner({
         <>
             {currencyAddress && amount ? (
                 <TokenAmount
-                    truncate
-                    roundIfThousand
                     address={currencyAddress}
                     uri={tokensCache.get(currencyAddress)?.icon}
                     symbol={tokensCache.get(currencyAddress)?.symbol}

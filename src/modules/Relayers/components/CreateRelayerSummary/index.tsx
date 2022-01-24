@@ -104,7 +104,7 @@ export function CreateRelayerSummary({
                     <span>
                         {
                             stakingBalance !== undefined && stakingTokenDecimals !== undefined
-                                ? formattedAmount(stakingBalance, stakingTokenDecimals)
+                                ? formattedAmount(stakingBalance, stakingTokenDecimals, { target: 'token' })
                                 : noValue
                         }
                     </span>
@@ -120,7 +120,7 @@ export function CreateRelayerSummary({
                     </span>
                     {
                         contractFee !== undefined && tonTokenDecimals !== undefined
-                            ? formattedAmount(contractFee, tonTokenDecimals)
+                            ? formattedAmount(contractFee, tonTokenDecimals, { target: 'token' })
                             : noValue
                     }
                 </li>

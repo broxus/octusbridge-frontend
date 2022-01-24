@@ -59,7 +59,7 @@ export function CommonStats(): JSX.Element | null {
                                     id: 'STAKING_STATS_TVL',
                                 })}
                                 value={mainInfo.tvl
-                                    ? formattedAmount(mainInfo.tvl, 0, true, true)
+                                    ? formattedAmount(mainInfo.tvl)
                                     : noValue}
                             >
                                 {mainInfo.tvlChange && (

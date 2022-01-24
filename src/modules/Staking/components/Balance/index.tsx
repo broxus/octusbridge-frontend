@@ -53,9 +53,13 @@ export function StakingBalance(): JSX.Element {
                                     /* eslint-disable no-nested-ternary */
                                     amount: accountData.hasAccount === undefined
                                         ? ''
-                                        : accountData.hasAccount === false
+                                        : !accountData.hasAccount
                                             ? '0'
-                                            : formattedAmount(stakingForm.balance, accountData.tokenDecimals),
+                                            : formattedAmount(
+                                                stakingForm.balance,
+                                                accountData.tokenDecimals,
+                                                { target: 'token' },
+                                            ),
                                     symbol: accountData.hasAccount === undefined
                                         ? ''
                                         : accountData.tokenSymbol,
@@ -122,9 +126,13 @@ export function StakingBalance(): JSX.Element {
                                         /* eslint-disable no-nested-ternary */
                                         amount: accountData.hasAccount === undefined
                                             ? ''
-                                            : accountData.hasAccount === false
+                                            : !accountData.hasAccount
                                                 ? '0'
-                                                : formattedAmount(redeemForm.balance, accountData.tokenDecimals),
+                                                : formattedAmount(
+                                                    redeemForm.balance,
+                                                    accountData.tokenDecimals,
+                                                    { target: 'token' },
+                                                ),
                                         symbol: accountData.hasAccount === undefined
                                             ? ''
                                             : accountData.tokenSymbol,
@@ -167,6 +175,7 @@ export function StakingBalance(): JSX.Element {
                                             amount: formattedAmount(
                                                 accountData.lockedReward,
                                                 accountData.tokenDecimals,
+                                                { target: 'token' },
                                             ),
                                             symbol: accountData.tokenSymbol,
                                         })
@@ -178,7 +187,11 @@ export function StakingBalance(): JSX.Element {
                                     <AmountField
                                         readOnly
                                         value={claimForm.balance && accountData.tokenDecimals
-                                            ? formattedAmount(claimForm.balance, accountData.tokenDecimals)
+                                            ? formattedAmount(
+                                                claimForm.balance,
+                                                accountData.tokenDecimals,
+                                                { preserve: true },
+                                            )
                                             : ''}
                                         disabled={claimForm.isLoading}
                                         displayMaxButton={false}

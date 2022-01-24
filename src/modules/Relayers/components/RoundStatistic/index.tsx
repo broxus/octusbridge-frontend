@@ -3,6 +3,7 @@ import * as React from 'react'
 import { RoundCard } from '@/modules/Relayers/components/RoundCard'
 import { Filter } from '@/modules/Relayers/components/RoundStatistic/filter'
 import { RoundData } from '@/modules/Relayers/components/RoundData'
+import { noop } from '@/utils'
 
 import './index.scss'
 
@@ -21,7 +22,7 @@ export function RoundStatistic(): JSX.Element | null {
                     limit={10}
                     current={3}
                     actual={3}
-                    onSubmit={() => {}}
+                    onSubmit={noop}
                 />
             </div>
 

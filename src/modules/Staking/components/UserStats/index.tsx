@@ -67,7 +67,9 @@ export function UserStats({
                                 id: 'STAKING_STATS_TVL',
                             })}
                             value={userInfo.userTvl
-                                ? formattedAmount(userInfo.userTvl, 0, true, true)
+                                ? formattedAmount(userInfo.userTvl, undefined, {
+                                    target: 'token',
+                                })
                                 : noValue}
                         >
                             {/* {userInfo.userTvlChange && (
@@ -88,7 +90,9 @@ export function UserStats({
                                 id: 'STAKING_STATS_FROZEN',
                             })}
                             value={userInfo.userFrozenStake
-                                ? formattedAmount(userInfo.userFrozenStake, 0, true, true)
+                                ? formattedAmount(userInfo.userFrozenStake, undefined, {
+                                    target: 'token',
+                                })
                                 : noValue}
                         />
                     )}

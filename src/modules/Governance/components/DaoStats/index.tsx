@@ -7,7 +7,7 @@ import { Section, Title } from '@/components/common/Section'
 import { CommonCharts } from '@/modules/Staking/components/CommonCharts'
 import { useExplorerContext } from '@/modules/Staking/providers/ExplorerProvider'
 import { useProposals } from '@/modules/Governance/hooks'
-import { error, formattedAmount } from '@/utils'
+import { error, formatDigits, formattedAmount } from '@/utils'
 
 export function DaoStats(): JSX.Element | null {
     const intl = useIntl()
@@ -54,7 +54,7 @@ export function DaoStats(): JSX.Element | null {
                                     id: 'DAO_STATS_RESERVES',
                                 })}
                                 value={mainInfo.tvl
-                                    ? formattedAmount(mainInfo.tvl, 0, true, true)
+                                    ? formattedAmount(mainInfo.tvl)
                                     : noValue}
                             />
                         )}
@@ -77,7 +77,7 @@ export function DaoStats(): JSX.Element | null {
                                     id: 'DAO_STATS_VOTING_ADDRESSES',
                                 })}
                                 value={mainInfo.stakeholders
-                                    ? formattedAmount(mainInfo.stakeholders)
+                                    ? formatDigits(mainInfo.stakeholders ?? 0)
                                     : noValue}
                             />
                         )}
@@ -90,7 +90,7 @@ export function DaoStats(): JSX.Element | null {
                                     id: 'DAO_STATS_PROPOSALS',
                                 })}
                                 value={proposals.totalCount
-                                    ? formattedAmount(proposals.totalCount)
+                                    ? formatDigits(proposals.totalCount ?? 0)
                                     : noValue}
                             />
                         )}

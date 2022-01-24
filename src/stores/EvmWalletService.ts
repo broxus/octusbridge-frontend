@@ -345,8 +345,6 @@ export class EvmWalletService {
                 this.state.isInitializing = false
             })
 
-            console.log(this.cachedProvider)
-
             await this.syncAccountData()
             await this.syncBalance()
         }

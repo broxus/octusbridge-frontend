@@ -7,7 +7,7 @@ import { Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { AmountCard } from '@/components/common/AmountCard'
 import { UserCard } from '@/components/common/UserCard'
-import { dateFormat } from '@/utils'
+import { dateFormat, noop } from '@/utils'
 
 import './index.scss'
 
@@ -16,8 +16,7 @@ export function Rounds(): JSX.Element {
 
     return (
         <div className="rounds">
-            <div className="rounds__filters">
-            </div>
+            <div className="rounds__filters" />
 
             <div className="card card--small card--flat">
                 <Table
@@ -122,9 +121,8 @@ export function Rounds(): JSX.Element {
                 />
 
                 <Pagination
-                    limit={10}
-                    current={1}
-                    onSubmit={() => {}}
+                    page={1}
+                    onSubmit={noop}
                 />
             </div>
         </div>

@@ -1,7 +1,6 @@
 import * as React from 'react'
 import classNames from 'classnames'
 
-import { TokenIcon } from '@/components/common/TokenIcon'
 import { Token } from '@/components/common/Token'
 import { TokenCache } from '@/stores/TokensCacheService'
 

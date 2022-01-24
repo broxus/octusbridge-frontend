@@ -40,10 +40,12 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                             locked: formattedAmount(
                                 proposalCreate.lockedTokens,
                                 proposalCreate.token.decimals,
+                                { target: 'token' },
                             ),
                             amount: formattedAmount(
                                 proposalCreate.tokenMissing || proposalCreate.threshold,
                                 proposalCreate.token.decimals,
+                                { target: 'token' },
                             ),
                         })
                     ) : (
@@ -53,6 +55,7 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                             amount: formattedAmount(
                                 proposalCreate.tokenMissing || proposalCreate.threshold,
                                 proposalCreate.token.decimals,
+                                { target: 'token' },
                             ),
                         })
                     )}

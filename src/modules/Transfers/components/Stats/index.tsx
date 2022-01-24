@@ -1,14 +1,18 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
-import BigNumber from 'bignumber.js'
 
 import { DataCard } from '@/components/common/DataCard'
 import { TvlChange } from '@/components/common/TvlChange'
 import { Section, Title } from '@/components/common/Section'
 import { TransfersChart } from '@/modules/Transfers/components/Chart'
 import { useTransfersStatsContext } from '@/modules/Transfers/providers'
-import { error, formattedAmount } from '@/utils'
+import {
+    error,
+    formatDigits,
+    formattedAmount,
+    parseCurrencyBillions,
+} from '@/utils'
 
 export function TransfersStats(): JSX.Element {
     const intl = useIntl()
@@ -48,7 +52,7 @@ export function TransfersStats(): JSX.Element {
                                     id: 'TRANSFERS_STATS_COUNT',
                                 })}
                                 value={stats.totalCount
-                                    ? formattedAmount(stats.totalCount, 0)
+                                    ? formatDigits(stats.totalCount.toString())
                                     : noValue}
                             />
                         )}
@@ -61,7 +65,7 @@ export function TransfersStats(): JSX.Element {
                                     id: 'TRANSFERS_STATS_VOLUME_24H',
                                 })}
                                 value={stats.mainInfo?.volume24hUsdt
-                                    ? `$${formattedAmount(stats.mainInfo.volume24hUsdt, 0, true, true)}`
+                                    ? parseCurrencyBillions(stats.mainInfo.volume24hUsdt)
                                     : noValue}
                             >
                                 {stats.mainInfo?.volume24hUsdtChange && (
@@ -73,7 +77,6 @@ export function TransfersStats(): JSX.Element {
                                         priceChange={stats.mainInfo?.volume24hUsdtChange
                                             ? formattedAmount(
                                                 Math.abs(parseFloat(stats.mainInfo.volume24hUsdtChange)),
-                                                0, true, true,
                                             )
                                             : noValue}
                                     />
@@ -89,7 +92,7 @@ export function TransfersStats(): JSX.Element {
                                     id: 'TRANSFERS_STATS_VOLUME_7D',
                                 })}
                                 value={stats.mainInfo?.volume7dUsdt
-                                    ? `$${formattedAmount(stats.mainInfo.volume7dUsdt, 0, true, true)}`
+                                    ? parseCurrencyBillions(stats.mainInfo.volume7dUsdt)
                                     : noValue}
                             >
                                 {stats.mainInfo?.volume7dUsdtChange && (
@@ -101,7 +104,6 @@ export function TransfersStats(): JSX.Element {
                                         priceChange={stats.mainInfo?.volume7dUsdtChange
                                             ? formattedAmount(
                                                 Math.abs(parseFloat(stats.mainInfo.volume7dUsdtChange)),
-                                                0, true, true,
                                             )
                                             : noValue}
                                     />
@@ -117,7 +119,7 @@ export function TransfersStats(): JSX.Element {
                                     id: 'TRANSFERS_STATS_FROM',
                                 })}
                                 value={stats.mainInfo?.fromEverscaleUsdt
-                                    ? `$${formattedAmount(stats.mainInfo.fromEverscaleUsdt, 0, true, true)}`
+                                    ? parseCurrencyBillions(stats.mainInfo.fromEverscaleUsdt)
                                     : noValue}
                             />
                         )}
@@ -130,7 +132,7 @@ export function TransfersStats(): JSX.Element {
                                     id: 'TRANSFERS_STATS_TO',
                                 })}
                                 value={stats.mainInfo?.toEverscaleUsdt
-                                    ? `$${formattedAmount(stats.mainInfo.toEverscaleUsdt, 0, true, true)}`
+                                    ? parseCurrencyBillions(stats.mainInfo.toEverscaleUsdt)
                                     : noValue}
                             />
                         )}

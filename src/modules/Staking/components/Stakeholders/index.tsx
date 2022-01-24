@@ -295,12 +295,20 @@ export function StakeholdersInner(): JSX.Element | null {
                                     intl.formatMessage({
                                         id: mapStakeholderKindToIntlId(item.userType),
                                     }),
-                                    item.stakeBalance ? formattedAmount(item.stakeBalance, 0, true, true) : noValue,
+                                    item.stakeBalance ? formattedAmount(item.stakeBalance, undefined, {
+                                        target: 'token',
+                                    }) : noValue,
                                     item.frozenStakeBalance
-                                        ? formattedAmount(item.frozenStakeBalance, 0, true, true)
+                                        ? formattedAmount(item.frozenStakeBalance, undefined, {
+                                            target: 'token',
+                                        })
                                         : noValue,
-                                    item.lastReward ? formattedAmount(item.lastReward, 0, true, true) : noValue,
-                                    item.totalReward ? formattedAmount(item.totalReward, 0, true, true) : noValue,
+                                    item.lastReward ? formattedAmount(item.lastReward, undefined, {
+                                        target: 'token',
+                                    }) : noValue,
+                                    item.totalReward ? formattedAmount(item.totalReward, undefined, {
+                                        target: 'token',
+                                    }) : noValue,
                                     item.createdAt ? dateFormat(item.createdAt) : noValue,
                                 ],
                             }))}

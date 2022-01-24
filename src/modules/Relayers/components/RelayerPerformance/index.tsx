@@ -32,7 +32,7 @@ export function RelayerPerformance(): JSX.Element | null {
                             id: 'RELAYER_PERFORMANCE_STAKE',
                         })}
                         value={relayer.frozenStake && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.frozenStake, relayer.stakeTokenDecimals)
+                            ? formattedAmount(relayer.frozenStake, relayer.stakeTokenDecimals, { target: 'token' })
                             : null}
                     >
                         {relayer.defrostTime !== undefined && (
@@ -49,7 +49,7 @@ export function RelayerPerformance(): JSX.Element | null {
                             id: 'RELAYER_PERFORMANCE_LATEST_REWARD',
                         })}
                         value={relayer.latestReward && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.latestReward, relayer.stakeTokenDecimals)
+                            ? formattedAmount(relayer.latestReward, relayer.stakeTokenDecimals, { target: 'token' })
                             : null}
                     />
 
@@ -58,7 +58,7 @@ export function RelayerPerformance(): JSX.Element | null {
                             id: 'RELAYER_PERFORMANCE_TOTAL_REWARD',
                         })}
                         value={relayer.totalReward && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.totalReward, relayer.stakeTokenDecimals)
+                            ? formattedAmount(relayer.totalReward, relayer.stakeTokenDecimals, { target: 'token' })
                             : null}
                     />
 

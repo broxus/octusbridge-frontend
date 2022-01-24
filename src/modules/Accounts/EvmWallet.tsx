@@ -61,7 +61,10 @@ export function EvmWallet(): JSX.Element | null {
                                                 value: formattedAmount(
                                                     wallet.balance,
                                                     18,
-                                                    false,
+                                                    {
+                                                        preserve: true,
+                                                        roundIfThousand: false,
+                                                    },
                                                 ),
                                                 currency: network?.currencySymbol || 'ETH',
                                             })}

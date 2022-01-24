@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import BigNumber from 'bignumber.js'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
@@ -143,8 +142,7 @@ export function Summary(): JSX.Element {
                                         {formattedAmount(
                                             summary.vaultBalance,
                                             summary.vaultDecimals,
-                                            true,
-                                            true,
+                                            { target: 'token' },
                                         )}
                                     </div>
                                 </li>
@@ -179,6 +177,7 @@ export function Summary(): JSX.Element {
                                         summary.isFromTon
                                             ? summary.token?.decimals
                                             : summary.tokenVault?.decimals,
+                                        { preserve: true },
                                     )
                                     : '–'}
                             </b>
@@ -217,9 +216,7 @@ export function Summary(): JSX.Element {
                                                 {formattedAmount(
                                                     summary.minTransferFee,
                                                     summary.token?.decimals,
-                                                    new BigNumber(summary.minTransferFee || 0)
-                                                        .shiftedBy(summary.token?.decimals || 0)
-                                                        .gte(0),
+                                                    { preserve: true },
                                                 )}
                                             </div>
                                         </li>
@@ -236,9 +233,7 @@ export function Summary(): JSX.Element {
                                                 {formattedAmount(
                                                     summary.maxTransferFee,
                                                     summary.token?.decimals,
-                                                    new BigNumber(summary.maxTransferFee || 0)
-                                                        .shiftedBy(summary.token?.decimals || 0)
-                                                        .gte(0),
+                                                    { preserve: true },
                                                 )}
                                             </div>
                                         </li>
@@ -277,9 +272,7 @@ export function Summary(): JSX.Element {
                                                 {formattedAmount(
                                                     summary.swapAmount,
                                                     summary.token?.decimals,
-                                                    new BigNumber(summary.swapAmount || 0)
-                                                        .shiftedBy(summary.token?.decimals || 0)
-                                                        .gte(0),
+                                                    { preserve: true },
                                                 )}
                                             </div>
                                         </li>
@@ -330,7 +323,11 @@ export function Summary(): JSX.Element {
                                 <li>
                                     <b className="text-lg text-truncate">
                                         {(summary.tokenAmount !== undefined && summary.tokenAmount !== '0')
-                                            ? formattedAmount(summary.tokenAmount, summary.token?.decimals)
+                                            ? formattedAmount(
+                                                summary.tokenAmount,
+                                                summary.token?.decimals,
+                                                { preserve: true },
+                                            )
                                             : '–'}
                                     </b>
                                 </li>

@@ -49,7 +49,11 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {stakingBalance && stakingTokenDecimals !== undefined ? (
-                        formattedAmount(stakingBalance, stakingTokenDecimals)
+                        formattedAmount(
+                            stakingBalance,
+                            stakingTokenDecimals,
+                            { target: 'token' },
+                        )
                     ) : noValue}
                 </li>
 
@@ -64,7 +68,11 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {requiredStake && stakingTokenDecimals !== undefined ? (
-                        formattedAmount(requiredStake, stakingTokenDecimals)
+                        formattedAmount(
+                            requiredStake,
+                            stakingTokenDecimals,
+                            { target: 'token' },
+                        )
                     ) : noValue}
                 </li>
 
@@ -86,6 +94,7 @@ export function CreateRelayerBalance({
                             {formattedAmount(
                                 new BigNumber(requiredStake).minus(stakingBalance).toFixed(),
                                 stakingTokenDecimals,
+                                { target: 'token' },
                             )}
                         </li>
                     )
@@ -115,7 +124,11 @@ export function CreateRelayerBalance({
                             id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
                         }, {
                             symbol: stakingTokenSymbol,
-                            amount: formattedAmount(requiredStake, stakingTokenDecimals),
+                            amount: formattedAmount(
+                                requiredStake,
+                                stakingTokenDecimals,
+                                { target: 'token' },
+                            ),
                         })}
                         type="danger"
                     />
@@ -137,7 +150,11 @@ export function CreateRelayerBalance({
                         text={intl.formatMessage({
                             id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
                         }, {
-                            amount: formattedAmount(contractFee, tonTokenDecimals),
+                            amount: formattedAmount(
+                                contractFee,
+                                tonTokenDecimals,
+                                { target: 'token' },
+                            ),
                             symbol: tonTokenSymbol,
                         })}
                         type="danger"

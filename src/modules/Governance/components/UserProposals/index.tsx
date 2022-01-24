@@ -151,9 +151,11 @@ export function UserProposalsInner(): JSX.Element | null {
                                 vote?.support !== undefined ? (
                                     <VoteType
                                         badge
-                                        type={vote.support === true ? 1 : 0}
+                                        type={vote.support ? 1 : 0}
                                         value={vote.votes
-                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals, true, true)
+                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals, {
+                                                target: 'token',
+                                            })
                                             : undefined}
                                     />
                                 ) : noValue,

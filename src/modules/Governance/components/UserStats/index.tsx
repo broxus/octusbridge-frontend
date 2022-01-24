@@ -36,7 +36,9 @@ export function UserStats(): JSX.Element {
                                 id: 'USER_VOTES_POWER',
                             })}
                             value={voting.votingPower && voting.tokenDecimals
-                                ? formattedAmount(voting.votingPower, voting.tokenDecimals, true, true)
+                                ? formattedAmount(voting.votingPower, voting.tokenDecimals, {
+                                    target: 'token',
+                                })
                                 : noValue}
                         />
                         <DataCard
@@ -44,7 +46,7 @@ export function UserStats(): JSX.Element {
                                 id: 'USER_VOTES_WEIGHT',
                             })}
                             value={voting.votingWeight
-                                ? `${formattedAmount(voting.votingWeight, 0)}%`
+                                ? `${formattedAmount(voting.votingWeight)}%`
                                 : noValue}
                         />
                         <DataCard

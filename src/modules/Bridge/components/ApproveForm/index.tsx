@@ -58,7 +58,7 @@ export function ApproveForm(): JSX.Element {
                                         label={intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_APPROVE_FIXED_CHECKBOX_LABEL',
                                         }, {
-                                            amount: formattedAmount(bridge.amount, undefined, false),
+                                            amount: formattedAmount(bridge.amount, undefined, { preserve: true }),
                                             symbol: bridge.token?.symbol || '',
                                         })}
                                         name="fixed"

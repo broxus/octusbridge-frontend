@@ -131,6 +131,7 @@ function RelayerStatusInner(): JSX.Element {
                                                 amount: formattedAmount(
                                                     stakingData.eventInitialBalance,
                                                     DexConstants.TONDecimals,
+                                                    { preserve: true },
                                                 ),
                                                 symbol: DexConstants.TONSymbol,
                                             })}

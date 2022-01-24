@@ -3,11 +3,14 @@ import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
 import {
-    Actions, Header, Section, Title,
+    Actions,
+    Header,
+    Section,
+    Title,
 } from '@/components/common/Section'
 import { Button } from '@/components/common/Button'
 import { useCurrentUserContext } from '@/modules/Staking/providers'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, parseCurrencyBillions } from '@/utils'
 
 import './index.scss'
 
@@ -49,7 +52,7 @@ export function StakingPerformance(): JSX.Element {
                             {() => (
                                 <div className="staking-performance-card__value">
                                     {accountData.tokenStakingBalanceUsd
-                                        ? `$${formattedAmount(accountData.tokenStakingBalanceUsd, 0, true, true)}`
+                                        ? parseCurrencyBillions(accountData.tokenStakingBalanceUsd)
                                         : noValue}
                                 </div>
                             )}
@@ -67,7 +70,9 @@ export function StakingPerformance(): JSX.Element {
                                 <div className="staking-performance-card__value staking-performance-card__value_small">
                                     {accountData.tokenStakingBalance && accountData.tokenDecimals
                                         ? formattedAmount(
-                                            accountData.tokenStakingBalance, accountData.tokenDecimals,
+                                            accountData.tokenStakingBalance,
+                                            accountData.tokenDecimals,
+                                            { target: 'token' },
                                         )
                                         : noValue}
                                 </div>
@@ -137,13 +142,12 @@ export function StakingPerformance(): JSX.Element {
                             {() => (
                                 <div className="staking-performance-card__value">
                                     {accountData.totalRewardUsd
-                                        ? `$${formattedAmount(accountData.totalRewardUsd, 0, true, true)}`
+                                        ? parseCurrencyBillions(accountData.totalRewardUsd)
                                         : noValue}
                                 </div>
                             )}
                         </Observer>
                     </div>
-
 
                     <div className="staking-performance-card">
                         <div className="staking-performance-card__title">
@@ -156,7 +160,9 @@ export function StakingPerformance(): JSX.Element {
                                 <div className="staking-performance-card__value staking-performance-card__value_small">
                                     {accountData.totalReward && accountData.tokenDecimals
                                         ? formattedAmount(
-                                            accountData.totalReward, accountData.tokenDecimals,
+                                            accountData.totalReward,
+                                            accountData.tokenDecimals,
+                                            { target: 'token' },
                                         )
                                         : noValue}
                                 </div>

@@ -24,7 +24,9 @@ export function AmountCard({
         <div className="amount-card">
             <div>
                 {value
-                    ? formattedAmount(value, decimals, true, true)
+                    ? formattedAmount(value, decimals, {
+                        preserve: true,
+                    })
                     : intl.formatMessage({
                         id: 'NO_VALUE',
                     })}

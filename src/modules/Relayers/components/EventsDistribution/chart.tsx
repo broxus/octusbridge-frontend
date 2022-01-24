@@ -39,7 +39,7 @@ export function Chart({
                             {intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(data[index].amount, data[index].decimals),
+                                value: formattedAmount(data[index].amount, data[index].decimals, { target: 'token' }),
                                 symbol: 'BRIDGE',
                             })}
                         </div>

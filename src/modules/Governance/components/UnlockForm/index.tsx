@@ -142,7 +142,11 @@ export function UnlockFormInner({
                                     <Icon icon="success" />
                                 ) : (
                                     voting.lockedTokens && voting.token?.decimals ? (
-                                        formattedAmount(voting.lockedTokens, voting.token.decimals)
+                                        formattedAmount(
+                                            voting.lockedTokens,
+                                            voting.token.decimals,
+                                            { target: 'token' },
+                                        )
                                     ) : noValue
                                 ),
                             ],
@@ -160,6 +164,7 @@ export function UnlockFormInner({
                                 value: formattedAmount(
                                     calcGazToUnlockVotes(userProposals.items.length),
                                     DexConstants.TONDecimals,
+                                    { target: 'token' },
                                 ),
                                 symbol: DexConstants.TONSymbol,
                             }),

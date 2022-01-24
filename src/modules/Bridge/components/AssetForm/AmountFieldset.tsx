@@ -84,6 +84,7 @@ export function AmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.tokenVaultLimitNumber.toFixed(),
                                                         bridge.amountMinDecimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -99,6 +100,7 @@ export function AmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.minAmount || 0,
                                                         bridge.amountMinDecimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -114,6 +116,7 @@ export function AmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.balance,
                                                         bridge.decimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -129,6 +132,7 @@ export function AmountFieldset(): JSX.Element {
                                                     value: formattedAmount(
                                                         bridge.balance,
                                                         bridge.decimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </>
@@ -147,11 +151,11 @@ export function AmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            Min value:
-                                            {' '}
+                                            {'> Min value: '}
                                             {formattedAmount(
                                                 bridge.minAmount || 0,
                                                 bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals,
+                                                { preserve: true },
                                             )}
                                         </>
                                     )}
@@ -161,11 +165,11 @@ export function AmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            Max value:
-                                            {' '}
+                                            {'> Max value: '}
                                             {formattedAmount(
                                                 bridge.balance || 0,
                                                 bridge.decimals,
+                                                { preserve: true },
                                             )}
                                         </>
                                     )}
@@ -176,11 +180,11 @@ export function AmountFieldset(): JSX.Element {
                                     <>
                                         {bridge.isEvmToTon && (
                                             <div className="crosschain-transfer__control-hint">
-                                                Available vault limit:
-                                                {' '}
+                                                {'> Available vault limit: '}
                                                 {formattedAmount(
                                                     bridge.tokenVaultLimitNumber.toFixed(),
                                                     bridge.amountMinDecimals,
+                                                    { preserve: true },
                                                 )}
                                             </div>
                                         )}

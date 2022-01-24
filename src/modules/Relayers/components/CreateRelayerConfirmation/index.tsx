@@ -68,7 +68,11 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(stakingBalance, stakingTokenDecimals),
+                                value: formattedAmount(
+                                    stakingBalance,
+                                    stakingTokenDecimals,
+                                    { target: 'token' },
+                                ),
                                 symbol: stakingTokenSymbol,
                             })
                             : noValue
@@ -86,7 +90,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(tonWalletBalance, tonTokenDecimals),
+                                value: formattedAmount(tonWalletBalance, tonTokenDecimals, { target: 'token' }),
                                 symbol: tonTokenSymbol,
                             })
                             : noValue
@@ -104,7 +108,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(contractFee, tonTokenDecimals),
+                                value: formattedAmount(contractFee, tonTokenDecimals, { target: 'token' }),
                                 symbol: tonTokenSymbol,
                             })
                             : noValue
@@ -125,7 +129,7 @@ export function CreateRelayerConfirmation({
                                 id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
                             }, {
                                 symbol: stakingTokenSymbol,
-                                amount: formattedAmount(requiredStake, stakingTokenDecimals),
+                                amount: formattedAmount(requiredStake, stakingTokenDecimals, { target: 'token' }),
                             })}
                             type="danger"
                         />
@@ -145,7 +149,7 @@ export function CreateRelayerConfirmation({
                             text={intl.formatMessage({
                                 id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
                             }, {
-                                amount: formattedAmount(contractFee, tonTokenDecimals),
+                                amount: formattedAmount(contractFee, tonTokenDecimals, { target: 'token' }),
                                 symbol: tonTokenSymbol,
                             })}
                             type="danger"

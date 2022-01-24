@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl'
 import { Pagination } from '@/components/common/Pagination'
 import { RoundCard } from '@/modules/Relayers/components/RoundCard'
 import { HeaderLayout } from '@/modules/Relayers/components/HeaderLayout'
+import { noop } from '@/utils'
 
 import './index.scss'
 
@@ -31,15 +32,14 @@ export function RoundHeader({
             />
 
             <Pagination
-                current={123}
-                limit={124}
+                page={123}
                 label={intl.formatMessage({
                     id: type === 'bidding'
                         ? 'BIDDING_ROUND_HEADER_PAGINATION'
                         : 'VALIDATION_ROUND_HEADER_PAGINATION',
                 })}
                 size="lg"
-                onSubmit={() => {}}
+                onSubmit={noop}
             />
         </HeaderLayout>
     )

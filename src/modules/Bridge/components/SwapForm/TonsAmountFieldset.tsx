@@ -113,8 +113,9 @@ export function TonsAmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: DexConstants.TONSymbol,
                                                     value: formattedAmount(
-                                                        bridge.minTonsAmount || 0,
+                                                        bridge.minTonsAmount,
                                                         DexConstants.TONDecimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -128,8 +129,9 @@ export function TonsAmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: DexConstants.TONSymbol,
                                                     value: formattedAmount(
-                                                        bridge.maxTonsAmount || 0,
+                                                        bridge.maxTonsAmount,
                                                         DexConstants.TONDecimals,
+                                                        { preserve: true },
                                                     ),
                                                 })}
                                             </span>
@@ -148,9 +150,12 @@ export function TonsAmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            Min value:
-                                            {' '}
-                                            {formattedAmount(bridge.minTonsAmount || 0, DexConstants.TONDecimals)}
+                                            {'> Min value: '}
+                                            {formattedAmount(
+                                                bridge.minTonsAmount,
+                                                DexConstants.TONDecimals,
+                                                { preserve: true },
+                                            )}
                                         </>
                                     )}
                                 </Observer>
@@ -159,9 +164,12 @@ export function TonsAmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            Max value:
-                                            {' '}
-                                            {formattedAmount(bridge.maxTonsAmount || 0, DexConstants.TONDecimals)}
+                                            {'> Max value: '}
+                                            {formattedAmount(
+                                                bridge.maxTonsAmount,
+                                                DexConstants.TONDecimals,
+                                                { preserve: true },
+                                            )}
                                         </>
                                     )}
                                 </Observer>

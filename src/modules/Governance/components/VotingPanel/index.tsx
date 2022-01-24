@@ -67,7 +67,11 @@ export function VotingPanel({
                             {intl.formatMessage({
                                 id: 'VOTING_PANEL_TOTAL',
                             }, {
-                                total: formattedAmount(total, DexConstants.TONDecimals),
+                                total: formattedAmount(
+                                    total,
+                                    DexConstants.TONDecimals,
+                                    { target: 'token' },
+                                ),
                             })}
                         </span>
                     )}

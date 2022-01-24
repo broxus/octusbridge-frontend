@@ -7,7 +7,7 @@ import { Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { EventType } from '@/modules/Relayers/components/Events/type'
-import { dateFormat, formattedAmount } from '@/utils'
+import { dateFormat, formattedAmount, noop } from '@/utils'
 
 import './index.scss'
 
@@ -71,7 +71,9 @@ export function Events(): JSX.Element {
                                 symbol="EVER"
                                 size="small"
                             />,
-                            formattedAmount(12300000000000, 9, true, true),
+                            formattedAmount(12300000000000, 9, {
+                                target: 'token',
+                            }),
                             dateFormat(new Date().getTime()),
                         ],
                     }]}
@@ -79,7 +81,7 @@ export function Events(): JSX.Element {
 
                 <Pagination
                     page={1}
-                    onSubmit={() => {}}
+                    onSubmit={noop}
                 />
             </div>
         </Section>

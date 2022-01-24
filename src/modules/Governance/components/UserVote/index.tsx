@@ -82,7 +82,11 @@ export function UserVoteInner(): JSX.Element {
                         id: 'USER_VOTE_VOTING_POWER',
                     }),
                     value: voting.votingPower
-                        ? formattedAmount(voting.votingPower, DexConstants.TONDecimals)
+                        ? formattedAmount(
+                            voting.votingPower,
+                            DexConstants.TONDecimals,
+                            { target: 'token' },
+                        )
                         : intl.formatMessage({
                             id: 'NO_VALUE',
                         }),
@@ -91,7 +95,7 @@ export function UserVoteInner(): JSX.Element {
                         id: 'USER_VOTE_VOTING_WEIGHT',
                     }),
                     value: voting.votingWeight
-                        ? `${formattedAmount(voting.votingWeight, 0)}%`
+                        ? `${formattedAmount(voting.votingWeight)}%`
                         : intl.formatMessage({
                             id: 'NO_VALUE',
                         }),

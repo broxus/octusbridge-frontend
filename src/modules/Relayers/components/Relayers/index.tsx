@@ -9,7 +9,7 @@ import { Pagination } from '@/components/common/Pagination'
 import { UserCard } from '@/components/common/UserCard'
 import { Status } from '@/modules/Relayers/components/Relayers/status'
 import { Rounds } from '@/modules/Relayers/components/Relayers/rounds'
-import { dateFormat, formattedAmount } from '@/utils'
+import { dateFormat, formattedAmount, noop } from '@/utils'
 
 import './index.scss'
 
@@ -56,7 +56,9 @@ export function Relayers(): JSX.Element {
                         cells: [
                             1,
                             <UserCard address="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1" />,
-                            formattedAmount(12040000000, 9, true, true),
+                            formattedAmount(12040000000, 9, {
+                                target: 'token',
+                            }),
                             <Status
                                 state="success"
                                 status="active"
@@ -75,9 +77,8 @@ export function Relayers(): JSX.Element {
                 />
 
                 <Pagination
-                    limit={100}
-                    current={1}
-                    onSubmit={() => {}}
+                    page={1}
+                    onSubmit={noop}
                 />
             </div>
         </Section>
