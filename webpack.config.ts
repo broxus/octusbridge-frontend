@@ -149,9 +149,27 @@ export default (_: any, options: any): WebpackConfig => {
             },
             {
                 test: /\.s[ac]ss$/i,
+                exclude: /\.module.(s(a|c)ss)$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                     'css-loader',
+                    'sass-loader',
+                ],
+            },
+            {
+                test: /\.module\.s(a|c)ss$/,
+                use: [
+                    isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: {
+                                localIdentName: isProduction
+                                    ? "[hash:base64:15]"
+                                    : "[path][name]__[local]--[hash:base64:5]",
+                            },
+                        },
+                    },
                     'sass-loader',
                 ],
             },
