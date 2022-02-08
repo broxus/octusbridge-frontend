@@ -92,6 +92,8 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TOKENS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT: 'Minimum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
+    CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE: 'Available instant liquidity in the vault<br>{value} {symbol}',
+    CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT: 'If you require a more significant withdrawal amount, you will be able to request additional liquidity or run the margin call at the next step.',
 
     CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing EVERs to pay gas fees?',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',

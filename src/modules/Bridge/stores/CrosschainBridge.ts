@@ -1820,6 +1820,12 @@ export class CrosschainBridge {
         return new BigNumber(this.tonWallet.balance || 0).lt(BridgeConstants.EmptyWalletMinTonsAmount)
     }
 
+    public get isInsufficientVaultBalance(): boolean {
+        return new BigNumber(this.tokenVault?.balance ?? 0)
+            .shiftedBy(-(this.tokenVault?.decimals ?? 0))
+            .lt(this.amountNumber)
+    }
+
     public get isEvmToEvm(): boolean {
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
@@ -1870,13 +1876,19 @@ export class CrosschainBridge {
     }
 
     public get tokenVault(): TokenAssetVault | undefined {
-        if (this.token === undefined || this.leftNetwork === undefined) {
+        if (
+            this.token === undefined
+            || this.leftNetwork === undefined
+            || this.rightNetwork === undefined
+        ) {
             return undefined
         }
 
         return this.tokensCache.getTokenVault(
             this.token.root,
-            this.leftNetwork.chainId,
+            this.isTonToEvm
+                ? this.rightNetwork.chainId
+                : this.leftNetwork.chainId,
             this.depositType,
         )
     }
@@ -1886,8 +1898,8 @@ export class CrosschainBridge {
     }
 
     public get tokenVaultLimitNumber(): BigNumber {
-        return new BigNumber(this.tokenVault?.limit || 0)
-            .shiftedBy(-(this.tokenVault?.decimals || 0))
+        return new BigNumber(this.tokenVaultLimit ?? 0)
+            .shiftedBy(-(this.tokenVault?.decimals ?? 0))
             .shiftedBy(this.amountMinDecimals)
             .dp(0, BigNumber.ROUND_DOWN)
     }

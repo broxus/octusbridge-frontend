@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Alert } from '@/components/common/Alert'
 import { AmountField } from '@/components/common/AmountField'
 import { useBridge } from '@/modules/Bridge/providers'
 import {
@@ -144,6 +145,32 @@ export function AmountFieldset(): JSX.Element {
                             }}
                         </Observer>
                     </div>
+
+                    <Observer>
+                        {() => (
+                            <>
+                                {(bridge.isTonToEvm && bridge.isInsufficientVaultBalance) && (
+                                    <Alert
+                                        className="margin-top"
+                                        // text={intl.formatMessage({
+                                        //     id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT',
+                                        // })}
+                                        title={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE',
+                                        }, {
+                                            symbol: bridge.token?.symbol,
+                                            value: formattedAmount(
+                                                bridge.tokenVault?.balance,
+                                                bridge.tokenVault?.decimals,
+                                            ),
+                                        }, {
+                                            ignoreTag: true,
+                                        })}
+                                    />
+                                )}
+                            </>
+                        )}
+                    </Observer>
 
                     {process.env.NODE_ENV !== 'production' && (
                         <>

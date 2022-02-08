@@ -28,9 +28,12 @@ export function Alert({
         >
             <div>
                 {title && (
-                    <h4 className="alert__title">
-                        {title}
-                    </h4>
+                    <h4
+                        className="alert__title"
+                        dangerouslySetInnerHTML={{
+                            __html: title,
+                        }}
+                    />
                 )}
 
                 {text && (
@@ -44,17 +47,6 @@ export function Alert({
             </div>
 
             {actions}
-
-            {/*
-            {actionLabel && actionLink && (
-                <Link
-                    className="btn btn--tertiary btn--sm"
-                    to={actionLink}
-                >
-                    {actionLabel}
-                </Link>
-            )}
-            */}
         </div>
     )
 }
