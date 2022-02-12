@@ -1,6 +1,6 @@
 import { action, makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
-import ton, { Address, Subscriber } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import { getStackingContract } from '@/modules/Staking/utils'
@@ -9,6 +9,7 @@ import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from 
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
+import rpc from '@/hooks/useRpcClient'
 
 export class RedeemFormStore {
 
@@ -29,7 +30,7 @@ export class RedeemFormStore {
     }
 
     public async submit(): Promise<void> {
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         this.setIsLoading(true)
 

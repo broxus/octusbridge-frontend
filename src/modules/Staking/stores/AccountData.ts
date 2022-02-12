@@ -1,5 +1,5 @@
 import { action, makeAutoObservable } from 'mobx'
-import { Address, Contract } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import { AccountDataStoreData, AccountDataStoreState } from '@/modules/Staking/types'
 import {
@@ -10,6 +10,7 @@ import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { StackingDetails, UserDataAbi, UserDetails } from '@/misc'
 import { error, throwException } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export class AccountDataStore {
 
@@ -53,7 +54,7 @@ export class AccountDataStore {
                 user: new Address(this.tonWallet.address),
             }).call()
 
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
 
             const { value0: userDetails } = await userDataContract.methods.getDetails({
                 answerId: 0,

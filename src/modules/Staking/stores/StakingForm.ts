@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
-import ton, { Address, Subscriber } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import {
@@ -13,6 +13,7 @@ import { TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
+import rpc from '@/hooks/useRpcClient'
 
 export class StakingFormStore {
 
@@ -34,7 +35,7 @@ export class StakingFormStore {
     }
 
     public async submit(): Promise<void> {
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         this.setIsLoading(true)
 
@@ -90,12 +91,12 @@ export class StakingFormStore {
                 .first()
 
             await walletContract.methods.transfer({
-                tokens: this.shiftedAmountBN.toFixed(),
-                to: this.accountData.stakingTokenWallet,
+                amount: this.shiftedAmountBN.toFixed(),
+                notify: true,
                 payload: STAKING_PAYLOAD,
-                notify_receiver: true,
-                send_gas_to: ownerAddress,
-                grams: 0,
+                remainingGasTo: ownerAddress,
+                recipient: this.accountData.stakingTokenWallet,
+                deployWalletValue: 0,
             })
                 .send({
                     from: ownerAddress,

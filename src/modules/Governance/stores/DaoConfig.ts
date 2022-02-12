@@ -1,4 +1,3 @@
-import { Contract } from 'everscale-inpage-provider'
 import {
     IReactionDisposer, makeAutoObservable, reaction, runInAction,
 } from 'mobx'
@@ -7,6 +6,7 @@ import { TonWalletService } from '@/stores/TonWalletService'
 import { DaoRootContractAddress } from '@/config'
 import { DaoAbi, ProposalConfig } from '@/misc'
 import { error } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 type Data = {
     config?: ProposalConfig
@@ -46,7 +46,7 @@ export class DaoConfigStore {
 
     public async sync(): Promise<void> {
         try {
-            const daoContract = new Contract(DaoAbi.Root, DaoRootContractAddress)
+            const daoContract = rpc.createContract(DaoAbi.Root, DaoRootContractAddress)
             const result = await daoContract.methods.proposalConfiguration({}).call()
             runInAction(() => {
                 this.data.config = result.proposalConfiguration

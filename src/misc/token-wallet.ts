@@ -34,6 +34,7 @@ export type WalletAddressRequest = {
 }
 
 export type TokenDetailsResponse = {
+    decimals: number;
     rootOwnerAddress: Address;
     totalSupply: string;
 }
@@ -129,12 +130,14 @@ export class TokenWallet {
     }
 
     public static async getDetails(root: Address, state?: FullContractState): Promise<TokenDetailsResponse> {
-        const [rootOwnerAddress, totalSupply] = await Promise.all([
+        const [decimals, rootOwnerAddress, totalSupply] = await Promise.all([
+            TokenWallet.getDecimals(root, state),
             TokenWallet.rootOwnerAddress(root, state),
             TokenWallet.totalSupply(root, state),
         ])
 
         return {
+            decimals,
             rootOwnerAddress,
             totalSupply,
         }

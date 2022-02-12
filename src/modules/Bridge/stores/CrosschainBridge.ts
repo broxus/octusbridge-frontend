@@ -707,7 +707,7 @@ export class CrosschainBridge {
             const {
                 expected_amount: maxTotalTonsAmount,
             } = await this.pairContract.methods.expectedExchange({
-                _answer_id: 0,
+                answerId: 0,
                 amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                 spent_token_root: new Address(this.token.root),
             }).call({
@@ -737,7 +737,7 @@ export class CrosschainBridge {
                 const {
                     expected_amount: toExchangeAmount,
                 } = await this.pairContract.methods.expectedExchange({
-                    _answer_id: 0,
+                    answerId: 0,
                     amount: minSpentTokensNumber
                         .shiftedBy(this.token.decimals)
                         .dp(0, BigNumber.ROUND_DOWN)
@@ -760,7 +760,7 @@ export class CrosschainBridge {
                 const {
                     expected_amount: maxSpendTokens,
                 } = await this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
+                    answerId: 0,
                     receive_amount: this.debt
                         .plus(tonsAmountBN)
                         .times(100)
@@ -819,7 +819,7 @@ export class CrosschainBridge {
             const {
                 expected_amount: maxSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
-                _answer_id: 0,
+                answerId: 0,
                 receive_amount: this.debt
                     .plus(this.tonsAmountNumber)
                     .times(100)
@@ -847,7 +847,7 @@ export class CrosschainBridge {
             const {
                 expected_amount: minSpendTokens,
             } = await this.pairContract.methods.expectedSpendAmount({
-                _answer_id: 0,
+                answerId: 0,
                 receive_amount: this.debt
                     .plus(this.tonsAmountNumber)
                     .times(100)
@@ -1175,7 +1175,7 @@ export class CrosschainBridge {
 
         try {
             const minReceiveTokens = (await this.pairContract.methods.expectedSpendAmount({
-                _answer_id: 0,
+                answerId: 0,
                 receive_amount: unshiftedAmountWithSlippage(
                     this.debt.plus(this.tonsAmountNumber),
                     BridgeConstants.DepositToFactoryMaxSlippage,
@@ -1215,7 +1215,7 @@ export class CrosschainBridge {
 
         try {
             const tokensAmount = (await this.pairContract.methods.expectedSpendAmount({
-                _answer_id: 0,
+                answerId: 0,
                 receive_amount: unshiftedAmountWithSlippage(
                     this.debt.plus(this.tonsAmountNumber),
                     BridgeConstants.DepositToFactoryMinSlippage,
@@ -1259,7 +1259,7 @@ export class CrosschainBridge {
 
         try {
             const tonsAmount = (await this.pairContract.methods.expectedExchange({
-                _answer_id: 0,
+                answerId: 0,
                 amount: this.amountNumber
                     .shiftedBy(this.token.decimals)
                     .dp(0, BigNumber.ROUND_DOWN)
@@ -1304,7 +1304,7 @@ export class CrosschainBridge {
 
         try {
             const minAmount = (await this.pairContract.methods.expectedSpendAmount({
-                _answer_id: 0,
+                answerId: 0,
                 receive_amount: this.debt.shiftedBy(DexConstants.TONDecimals)
                     .plus(this.minTonsAmount || 0)
                     .times(100)
@@ -1365,7 +1365,7 @@ export class CrosschainBridge {
         try {
             const results = await Promise.allSettled([
                 this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
+                    answerId: 0,
                     receive_amount: this.debt
                         .shiftedBy(DexConstants.TONDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)
@@ -1378,7 +1378,7 @@ export class CrosschainBridge {
                     cachedState: toJS(this.data.pairState),
                 }),
                 this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
+                    answerId: 0,
                     receive_amount: this.debt
                         .shiftedBy(DexConstants.TONDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)

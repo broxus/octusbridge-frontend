@@ -1,5 +1,3 @@
-import { Contract } from 'everscale-inpage-provider'
-
 import {
     GraphRequest, GraphResponse, StakeholderKindApiResponse, StakeholdersApiRequest,
     StakeholdersApiResponse, StakingMainApiResponse, StakingUserApiRequest,
@@ -9,9 +7,10 @@ import {
 import { BridgeConstants, StackingAbi, StackingContract } from '@/misc'
 import { IndexerApiBaseUrl } from '@/config'
 import { handleApi } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export function getStackingContract(): StackingContract {
-    return new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+    return rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 }
 
 export async function handleMainInfoApi(): Promise<StakingMainApiResponse> {

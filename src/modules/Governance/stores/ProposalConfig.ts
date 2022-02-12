@@ -1,10 +1,11 @@
-import { Address, Contract } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
 
 import { ConfigStoreData, ConfigStoreState } from '@/modules/Governance/types'
 import { ProposalAbi, ProposalConfig } from '@/misc'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export class ProposalConfigStore {
 
@@ -28,7 +29,7 @@ export class ProposalConfigStore {
         this.setLoading(true)
 
         try {
-            const proposalContract = new Contract(ProposalAbi.Root, new Address(address))
+            const proposalContract = rpc.createContract(ProposalAbi.Root, new Address(address))
 
             const { value0: config } = await proposalContract.methods.getConfig({
                 answerId: 0,

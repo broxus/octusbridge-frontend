@@ -79,6 +79,7 @@ function TransfersInner(): JSX.Element {
         titleId = 'TRANSFERS_USER_TITLE'
     }
 
+    // @ts-ignore
     const validTypes: TransferType[] = (() => {
         const from = networks.find(item => item.id === fromId)
         const to = networks.find(item => item.id === toId)

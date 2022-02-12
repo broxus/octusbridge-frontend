@@ -9,7 +9,7 @@ import { TokenWallet, TonAirdrop } from '@/misc'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { error, isGoodBignumber } from '@/utils'
 import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
-
+import rpc from '@/hooks/useRpcClient'
 
 export type AirdropStoreData = {
     amount: string;
@@ -112,7 +112,7 @@ export class AirdropStore {
 
             runInAction(() => {
                 this.data.amount = response[0]?._amount ?? '0'
-                this.data.decimals = parseInt(response[1].value0.decimals, 10)
+                this.data.decimals = parseInt(response[1].decimals.toString(), 10)
                 this.data.tokenRoot = _token.toString()
             })
         }
@@ -145,7 +145,7 @@ export class AirdropStore {
     }
 
     public static get airdropContract(): Contract<typeof TonAirdrop.Airdrop> {
-        return new Contract(TonAirdrop.Airdrop, AirdropContractAddress)
+        return rpc.createContract(TonAirdrop.Airdrop, AirdropContractAddress)
     }
 
     public get useTonWallet(): TonWalletService {

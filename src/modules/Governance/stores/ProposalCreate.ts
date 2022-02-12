@@ -1,4 +1,4 @@
-import ton, { Address, Contract, Subscriber } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
 
@@ -12,6 +12,7 @@ import { TonWalletService } from '@/stores/TonWalletService'
 import { DaoAbi, DexConstants } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export class ProposalCreateStore {
 
@@ -44,7 +45,7 @@ export class ProposalCreateStore {
         this.setState('createLoading', true)
 
         let proposalId
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         try {
             const userAddress = this.tonWallet.account?.address
@@ -68,7 +69,7 @@ export class ProposalCreateStore {
                 callData: item.callData, // TODO: Encode
             }))
 
-            const daoContract = new Contract(DaoAbi.Root, DaoRootContractAddress)
+            const daoContract = rpc.createContract(DaoAbi.Root, DaoRootContractAddress)
 
             const { totalValue: tonActionsValue } = await daoContract.methods.calcTonActionsValue({
                 actions: tonActions,

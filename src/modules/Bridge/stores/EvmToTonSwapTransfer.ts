@@ -12,7 +12,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import ton, { Address, Contract } from 'everscale-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 
 import {
     BridgeConstants,
@@ -43,6 +43,7 @@ import {
     isGoodBignumber,
     throwException,
 } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 
 // noinspection DuplicatedCode
@@ -211,7 +212,7 @@ export class EvmToTonSwapTransfer {
                 return
             }
 
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tx.to)
+            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
 
             const vaultAddress = await wrapper.methods.vault().call()
             const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
@@ -227,7 +228,7 @@ export class EvmToTonSwapTransfer {
 
             this.changeData('token', token)
 
-            addABI(EthAbi.VaultWrapper)
+            addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
 
             if (methodCall?.name !== 'depositToFactory') {
@@ -250,7 +251,7 @@ export class EvmToTonSwapTransfer {
 
             this.changeData('ethConfigAddress', ethConfigAddress)
 
-            const ethConfig = new Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = rpc.createContract(TokenAbi.EthEventConfig, ethConfigAddress)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
@@ -298,7 +299,7 @@ export class EvmToTonSwapTransfer {
         } as EvmSwapTransferStoreState['prepareState'])
 
         try {
-            const creditFactoryContract = new Contract(
+            const creditFactoryContract = rpc.createContract(
                 TokenAbi.CreditFactory,
                 BridgeConstants.CreditFactoryAddress,
             )
@@ -663,7 +664,7 @@ export class EvmToTonSwapTransfer {
                     return
                 }
 
-                const ethConfig = new Contract(
+                const ethConfig = rpc.createContract(
                     TokenAbi.EthEventConfig,
                     this.data.ethConfigAddress,
                 )
@@ -692,7 +693,7 @@ export class EvmToTonSwapTransfer {
 
                 this.changeData('deriveEventAddress', eventAddress)
 
-                const creditFactoryContract = new Contract(
+                const creditFactoryContract = rpc.createContract(
                     TokenAbi.CreditFactory,
                     BridgeConstants.CreditFactoryAddress,
                 )
@@ -751,7 +752,7 @@ export class EvmToTonSwapTransfer {
                 return
             }
 
-            const cachedState = (await ton.getFullContractState({
+            const cachedState = (await rpc.getFullContractState({
                 address: this.deriveEventAddress,
             })).state
 
@@ -851,7 +852,7 @@ export class EvmToTonSwapTransfer {
                 }
 
                 if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
-                    const eventContract = new Contract(
+                    const eventContract = rpc.createContract(
                         TokenAbi.TokenTransferEthEvent,
                         this.deriveEventAddress,
                     )
@@ -889,7 +890,7 @@ export class EvmToTonSwapTransfer {
                 }
             }
 
-            const tx = (await ton.getTransactions({ address: this.deriveEventAddress })).transactions[0]
+            const tx = (await rpc.getTransactions({ address: this.deriveEventAddress })).transactions[0]
 
             this.changeState('swapState', {
                 ...this.swapState,
@@ -1106,7 +1107,7 @@ export class EvmToTonSwapTransfer {
                 TokenWallet.balance({
                     wallet: creditProcessorDetails.tokenWallet,
                 }),
-                ton.getFullContractState({
+                rpc.getFullContractState({
                     address: this.creditProcessorAddress,
                 }),
                 TokenWallet.balance({
@@ -1212,7 +1213,7 @@ export class EvmToTonSwapTransfer {
 
     protected get creditProcessorContract(): Contract<typeof TokenAbi.CreditProcessor> | undefined {
         return this.creditProcessorAddress !== undefined
-            ? new Contract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
+            ? rpc.createContract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
             : undefined
     }
 

@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
 import { makeObservable, override, toJS } from 'mobx'
-import ton, { Address, Contract } from 'everscale-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 
 import { IndexerApiBaseUrl } from '@/config'
 import {
@@ -33,7 +33,7 @@ import { debug, error, isGoodBignumber } from '@/utils'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
-
+import rpc from '@/hooks/useRpcClient'
 
 // noinspection DuplicatedCode
 export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
@@ -108,7 +108,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tx.to)
+            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
 
             const vaultAddress = await wrapper.methods.vault().call()
             const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
@@ -124,7 +124,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             this.changeData('token', token)
 
-            addABI(EthAbi.VaultWrapper)
+            addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
 
             if (methodCall?.name !== 'depositToFactory') {
@@ -147,7 +147,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             this.changeData('ethConfigAddress', ethConfigAddress)
 
-            const ethConfig = new Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = rpc.createContract(TokenAbi.EthEventConfig, ethConfigAddress)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
@@ -156,7 +156,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             this.changeData('leftAddress', tx.from.toLowerCase())
 
             const layer3 = methodCall?.params[10].value.substr(2, methodCall?.params[10].value.length)
-            const event = await ton.unpackFromCell({
+            const event = await rpc.unpackFromCell({
                 allowPartial: true,
                 boc: Buffer.from(layer3, 'hex').toString('base64'),
                 structure: [
@@ -223,7 +223,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 status: 'pending',
             })
 
-            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             const signatures = eventDetails._signatures.map(sign => {
@@ -307,7 +307,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const cachedState = (await ton.getFullContractState({
+            const cachedState = (await rpc.getFullContractState({
                 address: this.deriveEventAddress,
             })).state
 
@@ -431,7 +431,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 }
 
                 if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
-                    const eventContract = new Contract(
+                    const eventContract = rpc.createContract(
                         TokenAbi.TokenTransferEthEvent,
                         this.deriveEventAddress,
                     )
@@ -469,7 +469,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 }
             }
 
-            const tx = (await ton.getTransactions({ address: this.deriveEventAddress })).transactions[0]
+            const tx = (await rpc.getTransactions({ address: this.deriveEventAddress })).transactions[0]
 
             this.changeState('swapState', {
                 ...this.swapState,
@@ -599,7 +599,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             let status: EventStateStatus = 'pending'
@@ -628,7 +628,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
+            const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -644,7 +644,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = new Contract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
+            const eventConfig = rpc.createContract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -776,7 +776,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const pairState = (await ton.getFullContractState({
+            const pairState = (await rpc.getFullContractState({
                 address: pairAddress,
             })).state
 
@@ -797,7 +797,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         try {
             const results = await Promise.allSettled([
                 this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
+                    answerId: 0,
                     receive_amount: this.debt
                         .shiftedBy(DexConstants.TONDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)
@@ -810,7 +810,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                     cachedState: toJS(this.data.pairState),
                 }),
                 this.pairContract.methods.expectedSpendAmount({
-                    _answer_id: 0,
+                    answerId: 0,
                     receive_amount: this.debt
                         .shiftedBy(DexConstants.TONDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)
@@ -876,7 +876,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     protected get pairContract(): Contract<typeof DexAbi.Pair> | undefined {
         return this.data.pairAddress !== undefined
-            ? new Contract(DexAbi.Pair, this.data.pairAddress)
+            ? rpc.createContract(DexAbi.Pair, this.data.pairAddress)
             : undefined
     }
 

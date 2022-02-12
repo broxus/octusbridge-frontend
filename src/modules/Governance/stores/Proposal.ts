@@ -1,5 +1,5 @@
 import { makeAutoObservable, toJS } from 'mobx'
-import ton, { Address, Contract, Subscriber } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import {
     Description, EthAction, Proposal, ProposalsRequest,
@@ -14,6 +14,7 @@ import { ProposalAbi } from '@/misc'
 import {
     error, lastOfCalls, throwException, validateUrl,
 } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export class ProposalStore {
 
@@ -99,7 +100,7 @@ export class ProposalStore {
     public async cancel(): Promise<void> {
         this.setState('cancelLoading', true)
 
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         try {
             if (!this.tonWallet.account?.address) {
@@ -110,7 +111,7 @@ export class ProposalStore {
                 throwException('Contract address must be defined in data')
             }
 
-            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
+            const proposalContract = rpc.createContract(ProposalAbi.Root, new Address(this.proposalAddress))
 
             const successStream = subscriber
                 .transactions(proposalContract.address)
@@ -150,7 +151,7 @@ export class ProposalStore {
     public async queue(): Promise<void> {
         this.setState('queueLoading', true)
 
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         try {
             if (!this.tonWallet.account?.address) {
@@ -161,7 +162,7 @@ export class ProposalStore {
                 throwException('Contract address must be defined in data')
             }
 
-            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
+            const proposalContract = rpc.createContract(ProposalAbi.Root, new Address(this.proposalAddress))
 
             const successStream = subscriber
                 .transactions(proposalContract.address)
@@ -198,7 +199,7 @@ export class ProposalStore {
     public async execute(): Promise<void> {
         this.setState('executeLoading', true)
 
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         try {
             if (!this.tonWallet.account?.address) {
@@ -209,7 +210,7 @@ export class ProposalStore {
                 throwException('Contract address must be defined in data')
             }
 
-            const proposalContract = new Contract(ProposalAbi.Root, new Address(this.proposalAddress))
+            const proposalContract = rpc.createContract(ProposalAbi.Root, new Address(this.proposalAddress))
 
             const successStream = subscriber
                 .transactions(proposalContract.address)

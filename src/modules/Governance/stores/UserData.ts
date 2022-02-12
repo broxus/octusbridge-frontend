@@ -1,4 +1,4 @@
-import { Address, Contract } from 'everscale-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 import {
     IReactionDisposer, makeAutoObservable, reaction, toJS,
 } from 'mobx'
@@ -10,6 +10,7 @@ import {
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
+import rpc from '@/hooks/useRpcClient'
 
 export class UserDataStore {
 
@@ -52,7 +53,7 @@ export class UserDataStore {
                 throwException('Wallet must be connected')
             }
 
-            const stakingContract = new Contract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
 
             const [
                 { value0: userDataAddress },
@@ -81,7 +82,7 @@ export class UserDataStore {
                 throwException('userDataAddress must be defined in data')
             }
 
-            const userDataContract = new Contract(UserDataAbi.Root, this.data.userDataAddress)
+            const userDataContract = rpc.createContract(UserDataAbi.Root, this.data.userDataAddress)
 
             const [
                 { value0: userDetails },
