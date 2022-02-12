@@ -2,7 +2,7 @@ import ton, {
     Address,
     Contract,
     FullContractState,
-} from 'ton-inpage-provider'
+} from 'everscale-inpage-provider'
 
 import { DexAbi } from '@/misc/abi'
 import { DexConstants } from '@/misc/dex-constants'

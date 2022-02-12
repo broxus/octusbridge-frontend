@@ -1,4 +1,4 @@
-import { AddressLiteral } from 'ton-inpage-provider'
+import { AddressLiteral } from 'everscale-inpage-provider'
 
 export class DexConstants {
 

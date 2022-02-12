@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
-import { Address } from 'ton-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import {
     ETH_ADDRESS_REGEXP, RELAYER_LINK_STORE_DATA, RELAYER_LINK_STORE_STATE,

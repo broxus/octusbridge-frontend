@@ -1,4 +1,4 @@
-import { Contract, DecodedAbiFunctionInputs, DecodedAbiFunctionOutputs } from 'ton-inpage-provider'
+import { Contract, DecodedAbiFunctionInputs, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 
 import {
     DaoAbi, ProposalAbi, StackingAbi, TokenAbi, UserDataAbi,

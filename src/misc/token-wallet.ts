@@ -1,29 +1,27 @@
-import ton, {
+import {
     Address,
-    Contract,
-    DecodedAbiFunctionOutputs,
     FullContractState,
-} from 'ton-inpage-provider'
+    TransactionId,
+} from 'everscale-inpage-provider'
 
+import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc/abi'
-import { debug } from '@/utils'
+import { debug, error } from '@/utils'
 
 
-export type CustomToken = {
+export type Token = {
     balance?: string;
     decimals: number;
     icon?: string;
-    isUpdating: boolean;
-    isUpdatingWalletAddress: boolean;
-    name: string;
+    isUpdating?: boolean;
+    isUpdatingWalletAddress?: boolean;
+    name?: string;
     root: string;
     symbol: string;
-    updatedAt: number;
+    updatedAt?: number;
     wallet?: string;
-
-    total_supply: string;
-    root_owner_address: Address;
-    root_public_key: string;
+    totalSupply?: string;
+    rootOwnerAddress?: Address;
 }
 
 export type BalanceWalletRequest = {
@@ -35,18 +33,27 @@ export type WalletAddressRequest = {
     owner: Address;
 }
 
+export type TokenDetailsResponse = {
+    rootOwnerAddress: Address;
+    totalSupply: string;
+}
+
+function params<TRequired>(): <TOptional>(o: TOptional) => Partial<TOptional> & TRequired;
+function params<TOptional>(o: TOptional): Partial<TOptional>;
+function params<T>(o?: T): Partial<T> | (<TOptional>(o: TOptional) => Partial<TOptional> & T) {
+    if (o != null) {
+        return o
+    }
+    return ((oo: any) => oo) as any
+}
 
 export class TokenWallet {
 
-    public static async walletAddress(
-        args: WalletAddressRequest,
-        state?: FullContractState,
-    ): Promise<Address> {
-        const rootContract = new Contract(TokenAbi.Root, args.root)
-        const { value0: tokenWallet } = await rootContract.methods.getWalletAddress({
-            owner_address_: args.owner,
-            wallet_public_key_: 0,
-            _answer_id: 0,
+    public static async walletAddress(args: WalletAddressRequest, state?: FullContractState): Promise<Address> {
+        const rootContract = rpc.createContract(TokenAbi.Root, args.root)
+        const { value0: tokenWallet } = await rootContract.methods.walletOf({
+            answerId: 0,
+            walletOwner: args.owner,
         }).call({ cachedState: state })
 
         debug(
@@ -75,9 +82,9 @@ export class TokenWallet {
             wallet = await this.walletAddress(args as WalletAddressRequest)
         }
 
-        const tokenWalletContract = new Contract(TokenAbi.Wallet, wallet)
+        const tokenWalletContract = rpc.createContract(TokenAbi.Wallet, wallet)
         const { value0: balance } = await tokenWalletContract.methods.balance({
-            _answer_id: 0,
+            answerId: 0,
         }).call({ cachedState: state })
 
         debug(
@@ -93,62 +100,150 @@ export class TokenWallet {
         return balance.toString()
     }
 
-    public static getDetails(
-        root: Address,
-        state?: FullContractState,
-    ): Promise<DecodedAbiFunctionOutputs<typeof TokenAbi.Root, 'getDetails'>> {
-        const rootContract = new Contract(TokenAbi.Root, root)
-        return rootContract.methods.getDetails({
-            _answer_id: 0,
-        }).call({ cachedState: state })
+    public static async balanceByTokenRoot(ownerAddress: Address, tokenRootAddress: Address): Promise<string> {
+        try {
+            const walletAddress = await TokenWallet.walletAddress({
+                owner: ownerAddress,
+                root: tokenRootAddress,
+            })
+            return await TokenWallet.balance({
+                wallet: walletAddress,
+            })
+        }
+        catch (e) {
+            error(e)
+            return '0'
+        }
     }
 
-    public static async getTokenData(root: string): Promise<CustomToken | undefined> {
+    public static async balanceByWalletAddress(walletAddress: Address): Promise<string> {
+        try {
+            return await TokenWallet.balance({
+                wallet: walletAddress,
+            })
+        }
+        catch (e) {
+            error(e)
+            return '0'
+        }
+    }
+
+    public static async getDetails(root: Address, state?: FullContractState): Promise<TokenDetailsResponse> {
+        const [rootOwnerAddress, totalSupply] = await Promise.all([
+            TokenWallet.rootOwnerAddress(root, state),
+            TokenWallet.totalSupply(root, state),
+        ])
+
+        return {
+            rootOwnerAddress,
+            totalSupply,
+        }
+    }
+
+    public static async getTokenFullDetails(root: string): Promise<Token | undefined> {
         const address = new Address(root)
 
-        const { state } = await ton.getFullContractState({ address })
+        const { state } = await rpc.getFullContractState({ address })
 
         if (!state) {
             return undefined
         }
 
         if (state.isDeployed) {
-            const { value0 } = await TokenWallet.getDetails(address, state)
+            const [decimals, name, symbol, details] = await Promise.all([
+                TokenWallet.getDecimals(address, state),
+                TokenWallet.getName(address, state),
+                TokenWallet.getSymbol(address, state),
+                TokenWallet.getDetails(address, state),
+            ])
 
             return {
-                ...value0,
-                decimals: parseInt(value0.decimals, 10),
-                name: decodeURIComponent(escape(atob(value0.name))),
-                symbol: decodeURIComponent(escape(atob(value0.symbol))),
+                ...details,
+                decimals,
+                name,
                 root,
-            } as unknown as CustomToken
+                symbol,
+            }
         }
 
         return undefined
     }
 
-    public static async decimal(
-        root: Address,
-        state?: FullContractState,
-    ): Promise<string> {
-        const rootContract = new Contract(TokenAbi.Root, root)
-        const { decimals } = await rootContract.methods.decimals({}).call(
+    public static async getDecimals(root: Address, state?: FullContractState): Promise<number> {
+        const rootContract = rpc.createContract(TokenAbi.Root, root)
+        const response = (await rootContract.methods.decimals({ answerId: 0 }).call(
             { cachedState: state },
-        )
-
-        return decimals.toString()
+        )).value0
+        return parseInt(response, 10)
     }
 
-    public static async symbol(
-        root: Address,
-        state?: FullContractState,
-    ): Promise<string> {
-        const rootContract = new Contract(TokenAbi.Root, root)
-        const { symbol } = await rootContract.methods.symbol({}).call({
+    public static async getSymbol(root: Address, state?: FullContractState): Promise<string> {
+        const rootContract = rpc.createContract(TokenAbi.Root, root)
+        return (await rootContract.methods.symbol({ answerId: 0 }).call({
             cachedState: state,
+            responsible: true,
+        })).value0
+    }
+
+    public static async getName(root: Address, state?: FullContractState): Promise<string> {
+        const rootContract = rpc.createContract(TokenAbi.Root, root)
+        return (await rootContract.methods.name({ answerId: 0 }).call({
+            cachedState: state,
+            responsible: true,
+        })).value0
+    }
+
+    public static async rootOwnerAddress(root: Address, state?: FullContractState): Promise<Address> {
+        const rootContract = rpc.createContract(TokenAbi.Root, root)
+        return (await rootContract.methods.rootOwner({ answerId: 0 }).call({
+            cachedState: state,
+            responsible: true,
+        })).value0
+    }
+
+    public static async totalSupply(root: Address, state?: FullContractState): Promise<string> {
+        const rootContract = rpc.createContract(TokenAbi.Root, root)
+        return (await rootContract.methods.totalSupply({ answerId: 0 }).call({
+            cachedState: state,
+            responsible: true,
+        })).value0
+    }
+
+    public static async send(args = params<{
+        address: Address,
+        recipient: Address,
+        owner: Address,
+        tokens: string,
+    }>()({
+        grams: '500000000',
+        payload: '',
+        withDerive: false,
+        bounce: true,
+    })): Promise<TransactionId> {
+        let { address } = args
+
+        if (args.withDerive) {
+            address = await this.walletAddress({
+                owner: args.owner,
+                root: args.address,
+            })
+        }
+
+        const tokenWalletContract = rpc.createContract(TokenAbi.Wallet, address)
+
+        const { id } = await tokenWalletContract.methods.transferToWallet({
+            amount: args.tokens,
+            recipientTokenWallet: args.recipient,
+            payload: args.payload || '',
+            notify: true,
+            remainingGasTo: args.owner,
+        }).send({
+            from: args.owner,
+            bounce: args.bounce,
+            amount: args.grams || '500000000',
         })
 
-        return atob(symbol).toString()
+        return id
     }
 
 }

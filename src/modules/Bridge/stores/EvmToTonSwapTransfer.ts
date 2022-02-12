@@ -12,7 +12,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import ton, { Address, Contract } from 'ton-inpage-provider'
+import ton, { Address, Contract } from 'everscale-inpage-provider'
 
 import {
     BridgeConstants,

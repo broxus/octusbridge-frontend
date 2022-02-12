@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { Contract } from 'ton-inpage-provider'
+import { Contract } from 'everscale-inpage-provider'
 
 import { BridgeConstants, DexConstants, TokenAbi } from '@/misc'
 

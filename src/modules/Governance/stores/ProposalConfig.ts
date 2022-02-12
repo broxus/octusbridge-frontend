@@ -1,4 +1,4 @@
-import { Address, Contract } from 'ton-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
 
 import { ConfigStoreData, ConfigStoreState } from '@/modules/Governance/types'

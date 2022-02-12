@@ -1,4 +1,4 @@
-import { Address } from 'ton-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 
 import {
     CastedVotes, ProposalConfig, StackingDetails,

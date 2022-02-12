@@ -1,4 +1,4 @@
-import { Address, Contract } from 'ton-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 import {
     IReactionDisposer, makeAutoObservable, reaction, toJS,
 } from 'mobx'

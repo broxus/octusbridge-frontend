@@ -7,8 +7,8 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import ton, { Address, Contract } from 'ton-inpage-provider'
-
+import { Address } from 'everscale-inpage-provider'
+import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc'
 import {
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA,
@@ -160,9 +160,9 @@ export class TonToEvmTransfer {
             })
 
             try {
-                await ton.ensureInitialized()
+                await rpc.ensureInitialized()
 
-                const { state } = await ton.getFullContractState({
+                const { state } = await rpc.getFullContractState({
                     address: this.contractAddress,
                 })
 
@@ -194,7 +194,7 @@ export class TonToEvmTransfer {
             return
         }
 
-        const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+        const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
 
         const [eventDetails, eventData] = await Promise.all([
             eventContract.methods.getDetails({ answerId: 0 }).call(),
@@ -202,7 +202,7 @@ export class TonToEvmTransfer {
         ])
 
         const proxyAddress = eventDetails._initializer
-        const proxyContract = new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
+        const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
 
         const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -263,7 +263,7 @@ export class TonToEvmTransfer {
                 status: 'pending',
             })
 
-            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             const signatures = eventDetails._signatures.map(sign => {
@@ -348,7 +348,7 @@ export class TonToEvmTransfer {
                 return
             }
 
-            const eventContract = new Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             let status: EventStateStatus = 'pending'
@@ -377,7 +377,7 @@ export class TonToEvmTransfer {
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
+            const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -393,7 +393,7 @@ export class TonToEvmTransfer {
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = new Contract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
+            const eventConfig = rpc.createContract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -467,7 +467,7 @@ export class TonToEvmTransfer {
                     this.token.root,
                     this.rightNetwork.chainId,
                 )
-                const isReleased = await vaultContract?.methods.withdrawIds(this.data.withdrawalId).call()
+                const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
                     this.changeState('releaseState', {

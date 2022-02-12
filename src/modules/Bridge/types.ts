@@ -1,4 +1,4 @@
-import { Address, DecodedAbiFunctionInputs, FullContractState } from 'ton-inpage-provider'
+import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-inpage-provider'
 
 import { TokenAbi } from '@/misc'
 import { TokenCache } from '@/stores/TokensCacheService'

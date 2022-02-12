@@ -4,15 +4,16 @@ import {
     reaction,
     runInAction,
 } from 'mobx'
-import ton, {
+import {
     ContractState,
     FullContractState,
-    hasTonProvider,
+    hasEverscaleProvider,
     Permissions,
     Subscription,
     Transaction,
-} from 'ton-inpage-provider'
+} from 'everscale-inpage-provider'
 
+import rpc from '@/hooks/useRpcClient'
 import { debug, error } from '@/utils'
 
 
@@ -51,12 +52,12 @@ const DEFAULT_WALLET_STATE: WalletState = {
 
 
 export async function connectToWallet(): Promise<void> {
-    const hasProvider = await hasTonProvider()
+    const hasProvider = await hasEverscaleProvider()
 
     if (hasProvider) {
-        await ton.ensureInitialized()
-        await ton.requestPermissions({
-            permissions: ['tonClient', 'accountInteraction'],
+        await rpc.ensureInitialized()
+        await rpc.requestPermissions({
+            permissions: ['basic', 'accountInteraction'],
         })
     }
 }
@@ -126,7 +127,7 @@ export class TonWalletService {
             return
         }
 
-        const hasProvider = await hasTonProvider()
+        const hasProvider = await hasEverscaleProvider()
 
         runInAction(() => {
             this.state.hasProvider = hasProvider
@@ -159,7 +160,7 @@ export class TonWalletService {
         this.state.isConnecting = true
 
         try {
-            await ton.disconnect()
+            await rpc.disconnect()
             this.reset()
         }
         catch (e) {
@@ -276,7 +277,7 @@ export class TonWalletService {
     protected async init(): Promise<void> {
         this.state.isInitializing = true
 
-        const hasProvider = await hasTonProvider()
+        const hasProvider = await hasEverscaleProvider()
 
         if (!hasProvider) {
             runInAction(() => {
@@ -290,7 +291,7 @@ export class TonWalletService {
             this.state.hasProvider = hasProvider
         })
 
-        await ton.ensureInitialized()
+        await rpc.ensureInitialized()
 
         runInAction(() => {
             this.state.isInitializing = false
@@ -298,14 +299,14 @@ export class TonWalletService {
             this.state.isConnecting = true
         })
 
-        const permissionsSubscriber = await ton.subscribe('permissionsChanged')
+        const permissionsSubscriber = await rpc.subscribe('permissionsChanged')
         permissionsSubscriber.on('data', event => {
             runInAction(() => {
                 this.data.account = event.permissions.accountInteraction
             })
         })
 
-        const currentProviderState = await ton.getProviderState()
+        const currentProviderState = await rpc.getProviderState()
 
         if (currentProviderState.permissions.accountInteraction === undefined) {
             runInAction(() => {
@@ -364,7 +365,7 @@ export class TonWalletService {
         })
 
         try {
-            const { state } = await ton.getFullContractState({
+            const { state } = await rpc.getFullContractState({
                 address: account.address,
             })
 
@@ -383,7 +384,7 @@ export class TonWalletService {
         }
 
         try {
-            this.#contractSubscriber = await ton.subscribe(
+            this.#contractSubscriber = await rpc.subscribe(
                 'contractStateChanged',
                 { address: account.address },
             )

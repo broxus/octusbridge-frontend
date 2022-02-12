@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
-import ton, { Address, Subscriber } from 'ton-inpage-provider'
+import ton, { Address, Subscriber } from 'everscale-inpage-provider'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import {

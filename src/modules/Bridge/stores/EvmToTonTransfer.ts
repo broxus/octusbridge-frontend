@@ -7,7 +7,7 @@ import BigNumber from 'bignumber.js'
 import {
     IReactionDisposer, makeAutoObservable, reaction, toJS,
 } from 'mobx'
-import ton, { Address, Contract } from 'ton-inpage-provider'
+import { Address } from 'everscale-inpage-provider'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
 import { EthAbi, TokenAbi } from '@/misc'
@@ -26,7 +26,7 @@ import { TokenAssetVault, TokensCacheService } from '@/stores/TokensCacheService
 import { TonWalletService } from '@/stores/TonWalletService'
 import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
-
+import rpc from '@/hooks/useRpcClient'
 
 // noinspection DuplicatedCode
 export class EvmToTonTransfer {
@@ -156,7 +156,7 @@ export class EvmToTonTransfer {
 
             this.changeData('ethConfigAddress', ethConfigAddress)
 
-            const ethConfig = new Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = rpc.createContract(TokenAbi.EthEventConfig, ethConfigAddress)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
@@ -197,7 +197,7 @@ export class EvmToTonTransfer {
             return
         }
 
-        const ethConfigContract = new Contract(
+        const ethConfigContract = rpc.createContract(
             TokenAbi.EthEventConfig,
             this.data.ethConfigAddress,
         )
@@ -281,7 +281,7 @@ export class EvmToTonTransfer {
                     return
                 }
 
-                const ethConfig = new Contract(
+                const ethConfig = rpc.createContract(
                     TokenAbi.EthEventConfig,
                     this.data.ethConfigAddress,
                 )
@@ -364,7 +364,7 @@ export class EvmToTonTransfer {
                 })
             }
 
-            const cachedState = (await ton.getFullContractState({
+            const cachedState = (await rpc.getFullContractState({
                 address: this.deriveEventAddress,
             })).state
 
@@ -382,7 +382,7 @@ export class EvmToTonTransfer {
                 return
             }
 
-            const eventContract = new Contract(
+            const eventContract = rpc.createContract(
                 TokenAbi.TokenTransferEthEvent,
                 this.deriveEventAddress,
             )

@@ -2,7 +2,7 @@ import { Mutex } from '@broxus/await-semaphore'
 import {
     makeAutoObservable, reaction, runInAction,
 } from 'mobx'
-import { Address, Contract, Subscription } from 'ton-inpage-provider'
+import { Address, Contract, Subscription } from 'everscale-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
 import Web3 from 'web3'
 
@@ -13,7 +13,7 @@ import { TokensListService } from '@/stores/TokensListService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { error, findNetwork, log } from '@/utils'
-
+import rpc from '@/hooks/useRpcClient'
 
 export type BridgeTokenAssetsManifest = {
     name: string;
@@ -309,7 +309,7 @@ export class TokensCacheService {
             return undefined
         }
 
-        return new Contract(TokenAbi.TokenTransferProxy, proxyAddress)
+        return rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
     }
 
     /**
@@ -392,10 +392,10 @@ export class TokensCacheService {
 
         if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
-            return new web3.eth.Contract(EthAbi.VaultWrapper, tokenVault.wrapperAddress)
+            return new web3.eth.Contract(EthAbi.Vault, tokenVault.wrapperAddress)
         }
 
-        return new this.evmWallet.web3.eth.Contract(EthAbi.VaultWrapper, tokenVault.wrapperAddress)
+        return new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tokenVault.wrapperAddress)
     }
 
     /**
@@ -414,7 +414,7 @@ export class TokensCacheService {
         const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
         const tonConfigurationAddress = proxyDetails.value0.tonConfiguration
 
-        return new Contract(TokenAbi.TonEventConfig, tonConfigurationAddress)
+        return rpc.createContract(TokenAbi.TonEventConfig, tonConfigurationAddress)
     }
 
     /**
@@ -434,7 +434,7 @@ export class TokensCacheService {
             return undefined
         }
 
-        return new Contract(TokenAbi.Wallet, new Address(wallet))
+        return rpc.createContract(TokenAbi.Wallet, new Address(wallet))
     }
 
     /**
@@ -640,9 +640,7 @@ export class TokensCacheService {
             return
         }
 
-        const tokenVaultContract = this.getEthTokenVaultContract(root, chainId, depositType)
-
-        const wrapperAddress = await tokenVaultContract?.methods.wrapper().call()
+        const wrapperAddress = tokenVault?.vault
 
         log(`Sync EMV token (${token.symbol}) vault wrapper address by chainId (${chainId}) and deposit type (${depositType})`)
 

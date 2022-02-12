@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
 import { makeObservable, override, toJS } from 'mobx'
-import ton, { Address, Contract } from 'ton-inpage-provider'
+import ton, { Address, Contract } from 'everscale-inpage-provider'
 
 import { IndexerApiBaseUrl } from '@/config'
 import {

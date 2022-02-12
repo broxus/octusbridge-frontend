@@ -1,4 +1,4 @@
-import ton, { Contract, Subscriber } from 'ton-inpage-provider'
+import ton, { Contract, Subscriber } from 'everscale-inpage-provider'
 import { makeAutoObservable, toJS } from 'mobx'
 
 import {

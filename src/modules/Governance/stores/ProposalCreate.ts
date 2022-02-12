@@ -1,4 +1,4 @@
-import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
+import ton, { Address, Contract, Subscriber } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
 

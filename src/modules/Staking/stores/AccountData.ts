@@ -1,5 +1,5 @@
 import { action, makeAutoObservable } from 'mobx'
-import { Address, Contract } from 'ton-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 
 import { AccountDataStoreData, AccountDataStoreState } from '@/modules/Staking/types'
 import {

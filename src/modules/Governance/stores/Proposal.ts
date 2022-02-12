@@ -1,5 +1,5 @@
 import { makeAutoObservable, toJS } from 'mobx'
-import ton, { Address, Contract, Subscriber } from 'ton-inpage-provider'
+import ton, { Address, Contract, Subscriber } from 'everscale-inpage-provider'
 
 import {
     Description, EthAction, Proposal, ProposalsRequest,

@@ -7,7 +7,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import ton, { Address, Contract } from 'ton-inpage-provider'
+import { Address, Contract } from 'everscale-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
 
 import {
@@ -46,7 +46,7 @@ import {
     validateMinValue,
 } from '@/utils'
 import { LabeledNetwork } from '@/types'
-
+import rpc from '@/hooks/useRpcClient'
 
 export class CrosschainBridge {
 
@@ -449,7 +449,7 @@ export class CrosschainBridge {
 
             const target = this.tonWallet.address.split(':')
             const creditFactoryTarget = BridgeConstants.CreditFactoryAddress.toString().split(':')
-            const hiddenBridgeFactoryContract = new Contract(
+            const hiddenBridgeFactoryContract = rpc.createContract(
                 TokenAbi.HiddenBridgeStrategyFactory,
                 BridgeConstants.HiddenBridgeStrategyFactory,
             )
@@ -464,7 +464,7 @@ export class CrosschainBridge {
                     tokenRoot: new Address(this.token.root),
                 }).call()).value0
 
-                const hiddenBridgeStrategyContract = new Contract(
+                const hiddenBridgeStrategyContract = rpc.createContract(
                     TokenAbi.HiddenBridgeStrategy,
                     recipient,
                 )
@@ -542,20 +542,35 @@ export class CrosschainBridge {
             return
         }
 
-        const subscriber = ton.createSubscriber()
+        const tonConfigurationState = (await rpc.getFullContractState({
+            address: tonConfigurationContract.address,
+        })).state
+
+        const subscriber = rpc.createSubscriber()
 
         try {
-            const eventStream = subscriber.transactions(
+            const oldStream = subscriber.oldTransactions(
                 tonConfigurationContract.address,
-            ).flatMap(item => item.transactions).filterMap(async tx => {
+                {
+                    fromLt: tonConfigurationState?.lastTransactionId?.lt,
+                },
+            )
+            const eventStream = oldStream.merge(subscriber.transactions(
+                tonConfigurationContract.address,
+            )).flatMap(item => item.transactions).filterMap(async tx => {
+
+                console.log(tx)
+
                 const decodedTx = await tonConfigurationContract.decodeTransaction({
                     methods: ['deployEvent'],
                     transaction: tx,
                 })
 
+                console.log(decodedTx)
+
                 if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
                     const { eventData } = decodedTx.input.eventVoteData
-                    const event = await ton.unpackFromCell({
+                    const event = await rpc.unpackFromCell({
                         allowPartial: true,
                         boc: eventData,
                         structure: [
@@ -566,6 +581,9 @@ export class CrosschainBridge {
                             { name: 'chainId', type: 'uint32' },
                         ] as const,
                     })
+
+                    console.log(event)
+
                     const checkAddress = `${event.data.wid}:${new BigNumber(event.data.addr).toString(16).padStart(64, '0')}`
                     const checkEvmAddress = `0x${new BigNumber(event.data.eth_addr).toString(16).padStart(40, '0')}`
 
@@ -594,7 +612,7 @@ export class CrosschainBridge {
                 return
             }
 
-            const data = await ton.packIntoCell({
+            const data = await rpc.packIntoCell({
                 data: {
                     addr: this.rightAddress,
                     chainId: this.rightNetwork.chainId,
@@ -605,12 +623,11 @@ export class CrosschainBridge {
                 ] as const,
             })
 
-            await walletContract.methods.burnByOwner({
-                callback_address: new Address(this.token.proxy),
-                callback_payload: data.boc,
-                grams: '0',
-                send_gas_to: new Address(this.tonWallet.address),
-                tokens: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+            await walletContract.methods.burn({
+                callbackTo: new Address(this.token.proxy),
+                payload: data.boc,
+                remainingGasTo: new Address(this.tonWallet.address),
+                amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
             }).send({
                 amount: '6000000000',
                 bounce: true,
@@ -1404,7 +1421,7 @@ export class CrosschainBridge {
                 return
             }
 
-            const pairState = (await ton.getFullContractState({
+            const pairState = (await rpc.getFullContractState({
                 address: pairAddress,
             })).state
 
@@ -1915,7 +1932,7 @@ export class CrosschainBridge {
 
     protected get pairContract(): Contract<typeof DexAbi.Pair> | undefined {
         return this.data.pairAddress !== undefined
-            ? new Contract(DexAbi.Pair, this.data.pairAddress)
+            ? rpc.createContract(DexAbi.Pair, this.data.pairAddress)
             : undefined
     }
 

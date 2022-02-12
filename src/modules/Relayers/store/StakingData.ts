@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
-import ton, { Address, Contract, FullContractState } from 'ton-inpage-provider'
+import { Address, FullContractState } from 'everscale-inpage-provider'
 import { addABI, decodeLogs, keepNonDecodedLogs } from 'abi-decoder'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
@@ -19,6 +19,7 @@ import {
     EthAbi, EventConfigDetails, TokenAbi, UserDataAbi,
 } from '@/misc'
 import { Web3Url } from '@/config'
+import rpc from '@/hooks/useRpcClient'
 
 export class StakingDataStore {
 
@@ -84,7 +85,7 @@ export class StakingDataStore {
                 user: ownerAddress,
             }).call()
 
-            const userDataContract = new Contract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
 
             const { value0: userDetails } = await userDataContract.methods.getDetails({
                 answerId: 0,
@@ -103,7 +104,7 @@ export class StakingDataStore {
         stackingDetails: StackingDetails,
     ): Promise<EventConfigDetails | undefined> {
         try {
-            const eventConfigContract = new Contract(
+            const eventConfigContract = rpc.createContract(
                 TokenAbi.EthEventConfig,
                 stackingDetails.bridge_event_config_eth_ton,
             )
@@ -183,7 +184,7 @@ export class StakingDataStore {
         eventVoteData: EventVoteData,
     ): Promise<FullContractState | undefined> {
         try {
-            const eventConfigContract = new Contract(
+            const eventConfigContract = rpc.createContract(
                 TokenAbi.EthEventConfig,
                 stackingDetails.bridge_event_config_eth_ton,
             )
@@ -191,7 +192,7 @@ export class StakingDataStore {
                 eventVoteData,
                 answerId: 0,
             }).call()
-            const { state: eventState } = await ton.getFullContractState({
+            const { state: eventState } = await rpc.getFullContractState({
                 address: eventAddress.eventContract,
             })
 

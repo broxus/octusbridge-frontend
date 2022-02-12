@@ -1,51 +1,18 @@
-import { AddressLiteral } from 'ton-inpage-provider'
+import { AddressLiteral } from 'everscale-inpage-provider'
 
 import { NetworkShape } from '@/types'
 
 
 export const networks: NetworkShape[] = [
     {
-        chainId: '1',
+        chainId: '5',
         currencySymbol: 'ETH',
-        explorerBaseUrl: 'https://etherscan.io/',
-        id: 'evm-1',
-        label: 'Ethereum',
-        name: 'Ethereum Mainnet',
-        rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+        explorerBaseUrl: 'https://goerli.etherscan.io/',
+        id: 'evm-5',
+        label: 'Goerli',
+        name: 'Ethereum Testnet Goerli',
+        rpcUrl: 'https://goerli.infura.io/v3/f3ca4333bf4a41308d0a277ae1c09336',
         transactionType: '0x2',
-        type: 'evm',
-    },
-    {
-        chainId: '56',
-        currencySymbol: 'BNB',
-        explorerBaseUrl: 'https://bscscan.com/',
-        id: 'evm-56',
-        label: 'Binance Smart Chain',
-        name: 'BSC',
-        rpcUrl: 'https://bsc-dataseed.binance.org/',
-        transactionType: '0x0',
-        type: 'evm',
-    },
-    {
-        chainId: '250',
-        currencySymbol: 'FTM',
-        explorerBaseUrl: 'https://ftmscan.com/',
-        id: 'evm-250',
-        label: 'Fantom Opera',
-        name: 'Fantom Opera',
-        rpcUrl: 'https://rpc.ftm.tools/',
-        transactionType: '0x0',
-        type: 'evm',
-    },
-    {
-        chainId: '137',
-        currencySymbol: 'MATIC',
-        explorerBaseUrl: 'https://polygonscan.com/',
-        id: 'evm-137',
-        label: 'Polygon',
-        name: 'Polygon',
-        rpcUrl: 'https://matic-mainnet.chainstacklabs.com/',
-        transactionType: '0x0',
         type: 'evm',
     },
     {
@@ -88,13 +55,13 @@ export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92c
 
 export const RelayEvmNetworkChainId = '1'
 
-export const StakingAccountAddress = new AddressLiteral('0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075')
+export const StakingAccountAddress = new AddressLiteral('0:4465015903ea512bea517492aa5036620505d26e0ef6942f446e2df4e038ee49')
 
-export const DaoRootContractAddress = new AddressLiteral('0:3c33153078ea2b94144ad058812563f4896cadbb84e7cc55c08e24e0a394fb3e')
+export const DaoRootContractAddress = new AddressLiteral('0:3c7a7ea44b60ea62822c40ecd6d2766b938180f63fc28da9c4f6dc89dc034199')
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/migration-1/test.json'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/migration-1/test.json'
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 

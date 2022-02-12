@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
-import { Contract } from 'ton-inpage-provider'
 
 import { RELAYER_BROADCAST_STORE_DATA, RELAYER_BROADCAST_STORE_STATE } from '@/modules/Relayers/constants'
 import { ConfirmationStatus, RelayerBroadcastStoreData, RelayerBroadcastStoreState } from '@/modules/Relayers/types'
@@ -9,6 +8,7 @@ import { getStackingContract } from '@/modules/Staking/utils'
 import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { TokenAbi } from '@/misc'
+import rpc from '@/hooks/useRpcClient'
 
 export class RelayerBroadcastStore {
 
@@ -53,7 +53,7 @@ export class RelayerBroadcastStore {
                 throwException('eventInitialBalance must be defined in staking data')
             }
 
-            const eventConfigContract = new Contract(
+            const eventConfigContract = rpc.createContract(
                 TokenAbi.EthEventConfig,
                 this.stakingData.bridgeEventConfigEthTon,
             )
