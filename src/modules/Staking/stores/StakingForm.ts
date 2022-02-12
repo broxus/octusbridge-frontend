@@ -90,13 +90,12 @@ export class StakingFormStore {
                 })
                 .first()
 
-            await walletContract.methods.transfer({
+            await walletContract.methods.transferToWallet({
                 amount: this.shiftedAmountBN.toFixed(),
                 notify: true,
                 payload: STAKING_PAYLOAD,
                 remainingGasTo: ownerAddress,
-                recipient: this.accountData.stakingTokenWallet,
-                deployWalletValue: 0,
+                recipientTokenWallet: this.accountData.stakingTokenWallet,
             })
                 .send({
                     from: ownerAddress,
