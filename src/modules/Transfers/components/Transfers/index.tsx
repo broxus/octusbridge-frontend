@@ -74,7 +74,7 @@ function TransfersListInner(): JSX.Element {
         titleId = 'TRANSFERS_USER_TITLE'
     }
 
-    const validTypes: TransferType[] = (() => {
+    const validTypes = (() => {
         const from = networks.find(item => item.id === fromId)
         const to = networks.find(item => item.id === toId)
 
@@ -99,7 +99,7 @@ function TransfersListInner(): JSX.Element {
         if (to && to.type === 'ton') {
             return ['Credit', 'Default']
         }
-        return ['Default', 'Credit', 'Transit']
+        return ['Default', 'Credit', 'Transit'] as TransferType[]
     })()
 
     const mapTransferTypeToFilter = (): TransferKindFilter[] => {

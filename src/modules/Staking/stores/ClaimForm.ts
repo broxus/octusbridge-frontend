@@ -1,4 +1,3 @@
-import ton, { Subscriber } from 'ton-inpage-provider'
 import { action, makeAutoObservable, runInAction } from 'mobx'
 import BigNumber from 'bignumber.js'
 
@@ -8,6 +7,7 @@ import { TonWalletService } from '@/stores/TonWalletService'
 import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
+import rpc from '@/hooks/useRpcClient'
 
 export class ClaimFormStore {
 
@@ -27,7 +27,7 @@ export class ClaimFormStore {
             return
         }
 
-        const subscriber = new Subscriber(ton)
+        const subscriber = rpc.createSubscriber()
 
         runInAction(() => {
             this.state.isLoading = true
