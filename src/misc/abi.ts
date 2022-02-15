@@ -5179,7 +5179,7 @@ export class TokenAbi {
 
     static HiddenBridgeStrategyFactory = {
         'ABI version': 2,
-        version: '2.1',
+        version: '2.2',
         header: ['pubkey', 'time', 'expire'],
         functions: [
             {
@@ -5253,7 +5253,7 @@ export class TokenAbi {
 
     static HiddenBridgeStrategy = {
         'ABI version': 2,
-        version: '2.1',
+        version: '2.2',
         header: ['pubkey', 'time', 'expire'],
         functions: [
             {
@@ -5284,16 +5284,13 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'tokensReceivedCallback',
+                name: 'onAcceptTokensTransfer',
                 inputs: [
-                    { name: 'tokenWallet_', type: 'address' },
-                    { name: 'tokenRoot_', type: 'address' },
+                    { name: '_tokenRoot', type: 'address' },
                     { name: 'amount', type: 'uint128' },
-                    { name: 'senderPublicKey', type: 'uint256' },
                     { name: 'senderAddress', type: 'address' },
                     { name: 'senderWallet', type: 'address' },
                     { name: 'originalGasTo', type: 'address' },
-                    { name: 'value7', type: 'uint128' },
                     { name: 'payload', type: 'cell' },
                 ],
                 outputs: [

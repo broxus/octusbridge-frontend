@@ -85,7 +85,7 @@ export const GasToUnlockCastedVote = '200000000'
 
 export const HiddenBridgeStrategyGas = '2500000000'
 
-export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92ce088cbb68659d3d8a2aa1bc546899d42abf46cc16132cd591')
+export const HiddenBridgeStrategyFactory = new AddressLiteral('0:18e1dfffa7c13122c993c94b205b68905c14b77ce03d3cbcb1fd6f52664fbf2d')
 
 export const RelayEvmNetworkChainId = '1'
 
