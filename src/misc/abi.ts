@@ -4708,7 +4708,7 @@ export class TokenAbi {
 
     static CreditProcessor = {
         'ABI version': 2,
-        version: '2.1',
+        version: '2.2',
         header: ['pubkey', 'time', 'expire'],
         functions: [
             {
@@ -4799,9 +4799,9 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'onTokenEventProxyConfig',
+                name: 'onTokenRoot',
                 inputs: [
-                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'outdatedTokenRoots', type: 'address[]' }, { name: 'tokenRoot', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }], name: 'value', type: 'tuple' },
+                    { name: '_tokenRoot', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -4839,14 +4839,6 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'notifyEventStatusChanged',
-                inputs: [
-                    { name: 'eventState_', type: 'uint8' },
-                ],
-                outputs: [
-                ],
-            },
-            {
                 name: 'checkEventStatus',
                 inputs: [
                 ],
@@ -4870,7 +4862,7 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'broxusBridgeCallback',
+                name: 'onEventConfirmed',
                 inputs: [
                     { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData_', type: 'tuple' },
                     { name: 'value1', type: 'address' },
@@ -4879,7 +4871,37 @@ export class TokenAbi {
                 ],
             },
             {
+                name: 'onAcceptTokensMint',
+                inputs: [
+                    { name: '_tokenRoot', type: 'address' },
+                    { name: '_amount', type: 'uint128' },
+                    { name: '_remainingGasTo', type: 'address' },
+                    { name: '_payload', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'onAcceptTokensBurn',
+                inputs: [
+                    { name: 'value0', type: 'uint128' },
+                    { name: 'value1', type: 'address' },
+                    { name: 'value2', type: 'address' },
+                    { name: 'value3', type: 'address' },
+                    { name: 'value4', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
                 name: 'process',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'payDebtForUser',
                 inputs: [
                 ],
                 outputs: [
@@ -4893,16 +4915,16 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'proxyTransferToRecipient',
+                name: 'proxyTokensTransfer',
                 inputs: [
-                    { name: 'tokenWallet_', type: 'address' },
-                    { name: 'gasValue', type: 'uint128' },
-                    { name: 'amount_', type: 'uint128' },
-                    { name: 'recipient', type: 'address' },
-                    { name: 'deployGrams', type: 'uint128' },
-                    { name: 'gasBackAddress', type: 'address' },
-                    { name: 'notifyReceiver', type: 'bool' },
-                    { name: 'payload', type: 'cell' },
+                    { name: '_tokenWallet', type: 'address' },
+                    { name: '_gasValue', type: 'uint128' },
+                    { name: '_amount', type: 'uint128' },
+                    { name: '_recipient', type: 'address' },
+                    { name: '_deployWalletValue', type: 'uint128' },
+                    { name: '_remainingGasTo', type: 'address' },
+                    { name: '_notify', type: 'bool' },
+                    { name: '_payload', type: 'cell' },
                 ],
                 outputs: [
                 ],
@@ -4964,29 +4986,24 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'tokensReceivedCallback',
+                name: 'onAcceptTokensTransfer',
                 inputs: [
                     { name: 'value0', type: 'address' },
-                    { name: 'value1', type: 'address' },
                     { name: 'receivedAmount', type: 'uint128' },
-                    { name: 'value3', type: 'uint256' },
                     { name: 'senderAddress', type: 'address' },
-                    { name: 'value5', type: 'address' },
-                    { name: 'value6', type: 'address' },
-                    { name: 'value7', type: 'uint128' },
+                    { name: 'value3', type: 'address' },
+                    { name: 'value4', type: 'address' },
                     { name: 'payload', type: 'cell' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'tokensBouncedCallback',
+                name: 'onBounceTokensTransfer',
                 inputs: [
-                    { name: 'wallet_', type: 'address' },
-                    { name: 'value1', type: 'address' },
-                    { name: 'value2', type: 'uint128' },
-                    { name: 'value3', type: 'address' },
-                    { name: 'value4', type: 'uint128' },
+                    { name: 'value0', type: 'address' },
+                    { name: 'value1', type: 'uint128' },
+                    { name: 'value2', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -5126,21 +5143,6 @@ export class TokenAbi {
                 name: 'RevertRemainderGasCalled',
                 inputs: [
                     { name: 'sender', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'Closed',
-                inputs: [
                 ],
                 outputs: [
                 ],
@@ -5374,12 +5376,13 @@ export class TokenAbi {
 
     static CreditFactory = {
         'ABI version': 2,
-        version: '2.1',
+        version: '2.2',
         header: ['pubkey', 'time', 'expire'],
         functions: [
             {
                 name: 'constructor',
                 inputs: [
+                    { name: 'admin_', type: 'address' },
                     { name: 'owners_', type: 'uint256[]' },
                     { name: 'fee', type: 'uint128' },
                 ],
@@ -5448,6 +5451,21 @@ export class TokenAbi {
                 ],
                 outputs: [
                     { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'proxyTokensTransfer',
+                inputs: [
+                    { name: '_tokenWallet', type: 'address' },
+                    { name: '_gasValue', type: 'uint128' },
+                    { name: '_amount', type: 'uint128' },
+                    { name: '_recipient', type: 'address' },
+                    { name: '_deployWalletValue', type: 'uint128' },
+                    { name: '_remainingGasTo', type: 'address' },
+                    { name: '_notify', type: 'bool' },
+                    { name: '_payload', type: 'cell' },
+                ],
+                outputs: [
                 ],
             },
             {
@@ -5568,9 +5586,24 @@ export class TokenAbi {
                 ],
             },
             {
+                name: 'upgrade',
+                inputs: [
+                    { name: 'code', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
                 name: 'addOwner',
                 inputs: [
                     { name: 'newOwner', type: 'uint256' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'resetOwners',
+                inputs: [
                 ],
                 outputs: [
                 ],
@@ -5584,11 +5617,27 @@ export class TokenAbi {
                 ],
             },
             {
+                name: 'admin',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'admin', type: 'address' },
+                ],
+            },
+            {
                 name: 'owners',
                 inputs: [
                 ],
                 outputs: [
                     { name: 'owners', type: 'uint256[]' },
+                ],
+            },
+            {
+                name: 'version',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'version', type: 'uint32' },
                 ],
             },
         ],
@@ -5604,15 +5653,43 @@ export class TokenAbi {
                 outputs: [
                 ],
             },
+            {
+                name: 'FeeChanged',
+                inputs: [
+                    { name: 'value', type: 'uint128' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'CreditProcessorCodeChanged',
+                inputs: [
+                    { name: 'hash', type: 'uint256' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'DeployProcessorForUserCalled',
+                inputs: [
+                    { components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'eventVoteData', type: 'tuple' },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'sender', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
         ],
         fields: [
             { name: '_pubkey', type: 'uint256' },
             { name: '_timestamp', type: 'uint64' },
             { name: '_constructorFlag', type: 'bool' },
             { name: '_randomNonce', type: 'uint256' },
+            { name: 'admin', type: 'address' },
             { name: 'owners', type: 'uint256[]' },
-            { name: 'creditProcessorCode', type: 'cell' },
+            { name: 'version', type: 'uint32' },
             { name: 'fee_', type: 'uint128' },
+            { name: 'creditProcessorCode', type: 'cell' },
         ],
     } as const
 

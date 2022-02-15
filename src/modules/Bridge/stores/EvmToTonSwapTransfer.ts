@@ -212,11 +212,11 @@ export class EvmToTonSwapTransfer {
                 return
             }
 
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
+            // const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
 
-            const vaultAddress = await wrapper.methods.vault().call()
-            const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
-            const vaultWrapperAddress = await vaultContract.methods.wrapper().call()
+            const vaultAddress = tx.to // await wrapper.methods.vault().call()
+            // const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
+            const vaultWrapperAddress = tx.to // await vaultContract.methods.wrapper().call()
 
             const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
 
@@ -456,15 +456,15 @@ export class EvmToTonSwapTransfer {
                 return
             }
 
-            await this.creditProcessorContract.methods.proxyTransferToRecipient({
-                amount_: this.swapState.tokenBalance || 0,
-                deployGrams,
-                gasBackAddress: this.tonWallet.account.address,
-                gasValue: proxyGasValue,
-                notifyReceiver: false,
-                recipient: this.tonWallet.account.address,
-                payload: '',
-                tokenWallet_: this.swapState.tokenWallet,
+            await this.creditProcessorContract.methods.proxyTokensTransfer({
+                _amount: this.swapState.tokenBalance || 0,
+                _deployWalletValue: deployGrams,
+                _remainingGasTo: this.tonWallet.account.address,
+                _gasValue: proxyGasValue,
+                _notify: false,
+                _recipient: this.tonWallet.account.address,
+                _payload: '',
+                _tokenWallet: this.swapState.tokenWallet,
             }).send({
                 amount: gasAmount.toFixed(),
                 bounce: false,
@@ -538,15 +538,15 @@ export class EvmToTonSwapTransfer {
                 return
             }
 
-            await this.creditProcessorContract.methods.proxyTransferToRecipient({
-                amount_: this.swapState.wtonBalance || 0,
-                deployGrams,
-                gasBackAddress: this.tonWallet.account.address,
-                gasValue: proxyGasValue,
-                notifyReceiver: false,
-                recipient: this.tonWallet.account.address,
-                payload: '',
-                tokenWallet_: this.swapState.tokenWallet,
+            await this.creditProcessorContract.methods.proxyTokensTransfer({
+                _amount: this.swapState.wtonBalance || 0,
+                _deployWalletValue: deployGrams,
+                _remainingGasTo: this.tonWallet.account.address,
+                _gasValue: proxyGasValue,
+                _notify: false,
+                _recipient: this.tonWallet.account.address,
+                _payload: '',
+                _tokenWallet: this.swapState.tokenWallet,
             }).send({
                 amount: gasAmount.toFixed(),
                 bounce: false,
