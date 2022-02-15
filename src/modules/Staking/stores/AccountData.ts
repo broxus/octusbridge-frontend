@@ -138,8 +138,8 @@ export class AccountDataStore {
 
             if (stakingDetails) {
                 [currency] = await Promise.all([
-                    handleCurrency(stakingDetails.tokenRoot.toString()),
-                    this.tokensCache.syncTonToken(stakingDetails.tokenRoot.toString()),
+                    handleCurrency(stakingDetails.tokenRoot.toString()).catch(_ => undefined),
+                    await this.tokensCache.syncTonToken(stakingDetails.tokenRoot.toString()),
                 ])
             }
 

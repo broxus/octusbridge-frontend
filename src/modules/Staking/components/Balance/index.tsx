@@ -51,18 +51,14 @@ export function StakingBalance(): JSX.Element {
                                     id: 'STAKING_BALANCE_WALLET_BALANCE',
                                 }, {
                                     /* eslint-disable no-nested-ternary */
-                                    amount: accountData.hasAccount === undefined
-                                        ? ''
-                                        : !accountData.hasAccount
-                                            ? '0'
-                                            : formattedAmount(
-                                                stakingForm.balance,
-                                                accountData.tokenDecimals,
-                                                { target: 'token' },
-                                            ),
-                                    symbol: accountData.hasAccount === undefined
-                                        ? ''
-                                        : accountData.tokenSymbol,
+                                    amount: stakingForm.balance
+                                        ? formattedAmount(
+                                            stakingForm.balance,
+                                            accountData.tokenDecimals,
+                                            { target: 'token' },
+                                        )
+                                        : '0',
+                                    symbol: accountData.tokenSymbol,
                                 })}
                                 action={intl.formatMessage({
                                     id: 'STAKING_BALANCE_STAKE',
