@@ -42,7 +42,7 @@ export function UnlockButtonInner({
         <div className="unlock-button">
             {/* eslint-disable no-nested-ternary */}
             {voting.loading ? (
-                <ContentLoader slim transparent iconRation={0.8} />
+                <ContentLoader slim transparent iconRatio={0.8} />
             ) : (
                 locked ? (
                     <Button
@@ -55,7 +55,7 @@ export function UnlockButtonInner({
                             id: 'PROPOSALS_UNLOCK',
                         })}
                         {loading && (
-                            <ContentLoader slim transparent iconRation={0.8} />
+                            <ContentLoader slim transparent iconRatio={0.8} />
                         )}
                     </Button>
                 ) : (

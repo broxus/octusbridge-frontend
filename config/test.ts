@@ -97,6 +97,8 @@ export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-a
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/migration-1/manifest.json'
 
+export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/everscale-assets-upgrade/master/main.json'
+
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
 export const IndexerApiBaseUrl = 'https://bridge-indexer-test.broxus.com/v1'

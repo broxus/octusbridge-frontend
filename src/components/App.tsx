@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom'
 
 import { NativeScrollArea } from '@/components/common/NativeScrollArea'
+import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
@@ -28,6 +29,7 @@ import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useTonWallet } from '@/stores/TonWalletService'
+import { useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { noop } from '@/utils'
 
 import './App.scss'
@@ -36,6 +38,7 @@ import './App.scss'
 export function App(): JSX.Element {
     const evmWallet = useEvmWallet()
     const tonWallet = useTonWallet()
+    const upgradeTokens = useUpgradeTokens()
 
     return (
         <IntlProvider
@@ -113,6 +116,10 @@ export function App(): JSX.Element {
                                     </div>
                                 </NativeScrollArea>
                             )}
+
+                            {upgradeTokens.hasTokensToUpgrade ? (
+                                <TokensUpgradeModal />
+                            ) : null}
                         </>
                     )}
                 </Observer>

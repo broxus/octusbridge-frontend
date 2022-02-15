@@ -58,7 +58,7 @@ export function CancelPopup({
                         id: 'PROPOSAL_CANCEL_POPUP_CONFIRM',
                     })}
                     {loading && (
-                        <ContentLoader slim iconRation={0.7} />
+                        <ContentLoader slim iconRatio={0.7} />
                     )}
                 </Button>
             </div>

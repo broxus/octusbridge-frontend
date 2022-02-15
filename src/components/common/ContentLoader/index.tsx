@@ -8,13 +8,13 @@ import './index.scss'
 type Props = {
     slim?: boolean;
     transparent?: boolean;
-    iconRation?: number;
+    iconRatio?: number;
 }
 
 export function ContentLoader({
     slim,
     transparent,
-    iconRation,
+    iconRatio,
 }: Props): JSX.Element {
     return (
         <div
@@ -23,7 +23,7 @@ export function ContentLoader({
                 'content-loader_transparent': transparent,
             })}
         >
-            <Icon icon="loader" ratio={iconRation} />
+            <Icon icon="loader" ratio={iconRatio} />
         </div>
     )
 }

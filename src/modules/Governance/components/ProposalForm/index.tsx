@@ -156,7 +156,7 @@ export function ProposalForm(): JSX.Element {
                                     id: 'PROPOSAL_FORM_SUBMIT',
                                 })}
                                 {proposalCreate.createLoading && (
-                                    <ContentLoader slim iconRation={0.8} />
+                                    <ContentLoader slim iconRatio={0.8} />
                                 )}
                             </Button>
                         )}
