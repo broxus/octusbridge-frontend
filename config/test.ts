@@ -50,7 +50,7 @@ export const networks: NetworkShape[] = [
     },
     {
         chainId: '1',
-        currencySymbol: 'TON',
+        currencySymbol: 'EVER',
         explorerBaseUrl: 'https://tonscan.io/',
         id: 'ton-1',
         label: 'Everscale',
@@ -59,6 +59,7 @@ export const networks: NetworkShape[] = [
         type: 'ton',
     },
 ]
+
 
 export const AirdropContractAddress = new AddressLiteral('0:b321058503889a78fe0954cfb67564b218cff1eac1467dc48e4c80118dd6719f')
 
@@ -88,74 +89,16 @@ export const HiddenBridgeStrategyFactory = new AddressLiteral('0:0a6655e74d9f92c
 
 export const RelayEvmNetworkChainId = '1'
 
-export const StakingAccountAddress = new AddressLiteral('0:7727ca13859ee381892ee6a0435165d36053188900550cdb02b93ea6bc81c075')
+export const StakingAccountAddress = new AddressLiteral('0:ec6a2fd6c3732e494684d016f1addec1a1828b6b7ecfcd30b34e8e5ad2d421d0')
 
-// TODO: This is mainnet address, change it for testnet
-export const DaoRootContractAddress = new AddressLiteral('0:3c33153078ea2b94144ad058812563f4896cadbb84e7cc55c08e24e0a394fb3e')
+export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa24edde79728142d2bfb74bc9edf66ad86ae7cd8e56a86')
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/migration-1/main.json'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/migration-1/manifest.json'
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
-export const IndexerApiBaseUrl = 'https://bridge-indexer-test.broxus.com/v1'
+export const IndexerApiBaseUrl = 'https://bridge-indexer.broxus.com/v1'
 
-export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer-test.broxus.com/v1'
-
-export const TonSwapIndexerApiBaseUrl = 'https://ton-swap-indexer-test.broxus.com/v1'
-
-
-// export const networks: NetworkShape[] = [
-//     {
-//         chainId: '3',
-//         currencySymbol: 'ETH',
-//         explorerBaseUrl: 'https://ropsten.etherscan.io/',
-//         id: 'evm-1',
-//         label: 'Ropsten',
-//         name: 'Ropsten',
-//         rpcUrl: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161/',
-//         type: 'evm',
-//     },
-//     {
-//         chainId: '5',
-//         currencySymbol: 'ETH',
-//         explorerBaseUrl: 'https://goerli.etherscan.io/',
-//         id: 'evm-5',
-//         label: 'Goerli',
-//         name: 'Goerli',
-//         rpcUrl: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161/',
-//         type: 'evm',
-//     },
-//     {
-//         chainId: '1',
-//         currencySymbol: 'TON',
-//         explorerBaseUrl: 'https://tonscan.io/',
-//         id: 'ton-1',
-//         label: 'Everscale',
-//         name: 'Everscale',
-//         rpcUrl: '',
-//         type: 'ton',
-//     },
-// ]
-//
-// export const CreditBody = '5000000000'
-//
-// export const CreditFactoryAddress = new AddressLiteral('0:d51a53b4e50e4c0cd8c56554274f7367dcc3aa901e9b351881f2729b3b726d93')
-//
-// export const DepositToFactoryMaxSlippage = 10
-//
-// export const DepositToFactoryMinSlippage = 5
-//
-// export const GasToStaking = '55000000000'
-//
-// export const RelayEvmNetworkChainId = '5'
-//
-// // todo: to AddressLiteral
-// export const StakingAccountAddress = '0:6fdaa8f199d372c9f1ec8b3b20bc0e5ef72df412dd25f1d6ee8eb9db1e39fadc'
-//
-// export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/test.json'
-//
-// export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/test.json'
-//
-// export const Web3Url = 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer.broxus.com/v1'
