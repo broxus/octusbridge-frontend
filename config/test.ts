@@ -97,9 +97,9 @@ export const StakingAccountAddress = new AddressLiteral('0:ec6a2fd6c3732e494684d
 
 export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa24edde79728142d2bfb74bc9edf66ad86ae7cd8e56a86')
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/migration-1/main.json'
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/migration-1/manifest.json'
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
 export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/everscale-assets-upgrade/master/main.json'
 
