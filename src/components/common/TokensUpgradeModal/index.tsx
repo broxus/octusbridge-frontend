@@ -91,7 +91,7 @@ export function TokensUpgradeModal(): JSX.Element {
                                                         : 'TOKENS_UPGRADE_UPGRADE_BTN_TEXT',
                                                 })}
                                                 {migration.isTokenUpgrading(token.rootV4) && (
-                                                    <ContentLoader slim />
+                                                    <ContentLoader slim iconRatio={0.8} />
                                                 )}
                                             </Button>
                                         </div>
