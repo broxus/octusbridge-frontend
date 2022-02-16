@@ -52,7 +52,7 @@ export function TopVotersInner(): JSX.Element {
 
                 <Button
                     type="tertiary"
-                    link="/staking/explorer"
+                    link="/staking"
                 >
                     {intl.formatMessage({
                         id: 'TOP_VOTERS_LINK',

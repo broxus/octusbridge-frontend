@@ -86,29 +86,16 @@ export function Footer(): JSX.Element {
                                 <li>
                                     <Link to="/staking/my">
                                         {intl.formatMessage({
-                                            id: 'FOOTER_NAV_STAKE_LINK_TEXT',
-                                        })}
-                                    </Link>
-                                    {' / '}
-                                    <Link to="/staking/my">
-                                        {intl.formatMessage({
-                                            id: 'FOOTER_NAV_REDEEM_LINK_TEXT',
-                                        })}
-                                    </Link>
-                                </li>
-                                <li>
-                                    <a>
-                                        {intl.formatMessage({
                                             id: 'FOOTER_NAV_MY_STAKE_LINK_TEXT',
                                         })}
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a>
+                                    <Link to="/staking">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_STAKING_EXPLORER_LINK_TEXT',
                                         })}
-                                    </a>
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
@@ -150,25 +137,25 @@ export function Footer(): JSX.Element {
                             </div>
                             <ul className="footer-nav__list">
                                 <li>
-                                    <a>
+                                    <Link to="/governance">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_OVERVIEW_LINK_TEXT',
                                         })}
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a>
+                                    <Link to="/governance/proposals">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_PROPOSALS_LINK_TEXT',
                                         })}
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a>
+                                    <Link to="/staking">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_LEADERBOARD_LINK_TEXT',
                                         })}
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
                                     <a>
@@ -187,7 +174,7 @@ export function Footer(): JSX.Element {
                             </div>
                             <ul className="footer-nav__list">
                                 <li>
-                                    <a href="https://tonswap.io" target="_blank" rel="nofollow noopener noreferrer">
+                                    <a href="https://flatqube.io" target="_blank" rel="nofollow noopener noreferrer">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_TON_SWAP_LINK_TEXT',
                                         })}
@@ -201,7 +188,7 @@ export function Footer(): JSX.Element {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="https://wton.io" target="_blank" rel="nofollow noopener noreferrer">
+                                    <a href="https://wrappedever.io" target="_blank" rel="nofollow noopener noreferrer">
                                         {intl.formatMessage({
                                             id: 'FOOTER_NAV_WTON_LINK_TEXT',
                                         })}

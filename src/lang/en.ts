@@ -19,10 +19,10 @@ export default {
 
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
-    WALLET_INSTALLATION_LINK_TEXT: 'Install Crystal Wallet',
+    WALLET_INSTALLATION_LINK_TEXT: 'Install EVER Wallet',
     WALLET_CONNECT_MSG: 'To continue, you need to connect the wallet',
 
-    TON_WALLET_INSTALLATION_NOTE: '<p>At the moment, only Crystal Wallet supports EVER Bridge.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
+    TON_WALLET_INSTALLATION_NOTE: '<p>At the moment, only EVER Wallet supports Octus Bridge.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
     CONNECTION_TROUBLE_TITLE: 'Connection troubles',
     CONNECTION_TROUBLE_NOTE: 'At the moment we have found some problems with the network connection. Try again later or change your RPC settings',
 
@@ -50,17 +50,17 @@ export default {
     FOOTER_NAV_LEADERBOARD_LINK_TEXT: 'Leaderboard',
     FOOTER_NAV_BRIDGE_DISTRIBUTION_LINK_TEXT: 'BRIDGE distribution',
     FOOTER_NAV_HEADER_DEFI_PRODUCTS: 'DeFi Products',
-    FOOTER_NAV_TON_SWAP_LINK_TEXT: 'TON Swap',
+    FOOTER_NAV_TON_SWAP_LINK_TEXT: 'FlatQube',
     FOOTER_NAV_TON_SCAN_LINK_TEXT: 'TON Scan',
-    FOOTER_NAV_WTON_LINK_TEXT: 'WTON',
-    FOOTER_NAV_CRYSTAL_WALLET_LINK_TEXT: 'Crystal Wallet',
+    FOOTER_NAV_WTON_LINK_TEXT: 'Wrapped EVER',
+    FOOTER_NAV_CRYSTAL_WALLET_LINK_TEXT: 'EVER Wallet',
     FOOTER_GITHUB_LINK_TEXT: 'Source code on GitHub',
     FOOTER_TERMS_OF_USE_LINK_TEXT: 'Terms of use',
     FOOTER_PRIVACY_POLICY_LINK_TEXT: 'Privacy policy',
     FOOTER_COOKIES_TERMS_LINK_TEXT: 'Cookies',
     FOOTER_COPYRIGHTS: '&copy; <a href="https://broxus.com" target="_blank" rel="noopener noreferrer">Broxus</a>, {year}',
 
-    CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect Crystal Wallet',
+    CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect EVER Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',
     EVM_WALLET_WRONG_NETWORK_NOTE: 'Wrong blockchain selected in MetaMask. Open the wallet to select {network}.',
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
@@ -105,7 +105,7 @@ export default {
     CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE: 'We recommend using the auto exchange if your wallet balance is insufficient to pay gas fees for the transaction.',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into EVER, pay for your transfer and send the change to the target address.',
     CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT: 'Minimum receive: {value} {symbol}',
-    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your Crystal Wallet address is not deployed',
+    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your EVER Wallet address is not deployed',
     CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in EVER.</p><p>Your balance is sufficient, but cannot be used until the wallet is deployed. Would you please go to EVER Wallet and click the «Deploy» button to proceed?</p><p>If you don’t want to deploy your wallet, you can still pay the gas by converting part of your tokens into EVERs with the form below.</p>',
     CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TITLE: 'Insufficient EVER balance to perform transfer',
     CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in EVER.</p><p>Top up your wallet for at least {minTons} EVER or convert part of your tokens into EVER using the form below.</p>',
@@ -425,7 +425,7 @@ export default {
     STAKING_REWARD_ROUNDS_SHARE: 'Share',
     STAKING_REWARD_ROUNDS_REWARD: 'Reward',
 
-    STAKING_CONNECT_WALLET_MSG: 'Connect Crystal Wallet to see your staking and balance information',
+    STAKING_CONNECT_WALLET_MSG: 'Connect EVER Wallet to see your staking and balance information',
 
     STAKING_PERFORMANCE_TITLE: 'My staking performance',
     STAKING_PERFORMANCE_BALANCE: 'Balance',
