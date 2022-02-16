@@ -132,6 +132,7 @@ export function Nav(): JSX.Element {
                         })}
                     </NavLink>
                 </li>
+                {/*
                 <li>
                     <NavLink to="/airdrop">
                         {intl.formatMessage({
@@ -139,6 +140,7 @@ export function Nav(): JSX.Element {
                         })}
                     </NavLink>
                 </li>
+                */}
             </ul>
         </nav>
     )
