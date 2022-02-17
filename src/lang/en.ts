@@ -27,7 +27,7 @@ export default {
     CONNECTION_TROUBLE_NOTE: 'At the moment we have found some problems with the network connection. Try again later or change your RPC settings',
 
     TOKENS_UPGRADE_POPUP_TITLE: 'Upgrade tokens',
-    TOKENS_UPGRADE_POPUP_NOTE: 'We found some outdated tokens in your wallet. Please, upgrade this tokens to continue.',
+    TOKENS_UPGRADE_POPUP_NOTE: 'We found some outdated tokens in your wallet. Please, upgrade these tokens to continue.',
     TOKENS_UPGRADE_UPGRADE_BTN_TEXT: 'Upgrade',
     TOKENS_UPGRADE_UPGRADING_BTN_TEXT: 'Upgrading',
 
