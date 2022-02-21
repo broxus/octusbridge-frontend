@@ -163,19 +163,22 @@ export function StakingBalance(): JSX.Element {
                                     loading={claimForm.isLoading}
                                     disabled={!claimForm.isValid || claimForm.isLoading}
                                     onSubmit={claimForm.submit}
-                                    hint={accountData.lockedReward && accountData.tokenDecimals
-                                        && new BigNumber(accountData.lockedReward).gt(0)
-                                        ? intl.formatMessage({
-                                            id: 'STAKING_BALANCE_LOCKED_REWARD',
-                                        }, {
-                                            amount: formattedAmount(
-                                                accountData.lockedReward,
-                                                accountData.tokenDecimals,
-                                                { target: 'token' },
-                                            ),
-                                            symbol: accountData.tokenSymbol,
-                                        })
-                                        : undefined}
+                                    hint={intl.formatMessage({
+                                        id: 'STAKING_BALANCE_CLAIM_DISABLED',
+                                    })}
+                                    // hint={accountData.lockedReward && accountData.tokenDecimals
+                                    //     && new BigNumber(accountData.lockedReward).gt(0)
+                                    //     ? intl.formatMessage({
+                                    //         id: 'STAKING_BALANCE_LOCKED_REWARD',
+                                    //     }, {
+                                    //         amount: formattedAmount(
+                                    //             accountData.lockedReward,
+                                    //             accountData.tokenDecimals,
+                                    //             { target: 'token' },
+                                    //         ),
+                                    //         symbol: accountData.tokenSymbol,
+                                    //     })
+                                    //     : undefined}
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_CLAIM',
                                     })}

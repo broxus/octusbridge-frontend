@@ -141,8 +141,8 @@ export function StakingPerformance(): JSX.Element {
                         <Observer>
                             {() => (
                                 <div className="staking-performance-card__value">
-                                    {accountData.totalRewardUsd
-                                        ? parseCurrencyBillions(accountData.totalRewardUsd)
+                                    {accountData.pendingRewardUsd
+                                        ? parseCurrencyBillions(accountData.pendingRewardUsd)
                                         : noValue}
                                 </div>
                             )}
@@ -158,9 +158,9 @@ export function StakingPerformance(): JSX.Element {
                         <Observer>
                             {() => (
                                 <div className="staking-performance-card__value staking-performance-card__value_small">
-                                    {accountData.totalReward && accountData.tokenDecimals
+                                    {accountData.pendingReward && accountData.tokenDecimals
                                         ? formattedAmount(
-                                            accountData.totalReward,
+                                            accountData.pendingReward,
                                             accountData.tokenDecimals,
                                             { target: 'token' },
                                         )

@@ -417,6 +417,7 @@ export default {
     STAKING_BALANCE_WALLET_BALANCE: 'Wallet balance: {amount} {symbol}',
     STAKING_BALANCE_STAKE_BALANCE: 'Available balance: {amount} {symbol}',
     STAKING_BALANCE_LOCKED_REWARD: '{amount} {symbol} can be claimed after the end of the reward round',
+    STAKING_BALANCE_CLAIM_DISABLED: 'Claim will be available after the end of the reward round',
 
     STAKING_REWARD_ROUNDS_TITLE: 'Reward rounds',
     STAKING_REWARD_ROUNDS_ID: 'Id',

@@ -280,6 +280,17 @@ export class AccountDataStore {
             .toFixed()
     }
 
+    public get pendingRewardUsd(): string | undefined {
+        if (!this.pendingReward || !this.data.currency || this.tokenDecimals === undefined) {
+            return undefined
+        }
+
+        return new BigNumber(this.pendingReward)
+            .shiftedBy(-this.tokenDecimals)
+            .times(this.data.currency.price)
+            .toFixed()
+    }
+
     public get tokenStakingBalanceUsd(): string | undefined {
         if (!this.tokenStakingBalance || !this.data.currency || this.tokenDecimals === undefined) {
             return undefined
