@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { ContentLoader } from '@/components/common/ContentLoader'
+import { Icon } from '@/components/common/Icon'
 import { OutdatedToken, useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { formattedAmount } from '@/utils'
@@ -15,6 +16,11 @@ import './index.scss'
 export function TokensUpgradeModal(): JSX.Element {
     const intl = useIntl()
     const migration = useUpgradeTokens()
+
+    const onClose = () => {
+        migration.cleanup()
+    }
+
     const upgrade = (token: OutdatedToken) => async () => {
         await migration.upgrade(token)
     }
@@ -23,6 +29,13 @@ export function TokensUpgradeModal(): JSX.Element {
         <div className="popup">
             <div className="popup-overlay" />
             <div className="popup__wrap">
+                <button
+                    type="button"
+                    className="btn btn-icon popup-close"
+                    onClick={onClose}
+                >
+                    <Icon icon="close" />
+                </button>
                 <h2 className="popup-title">
                     {intl.formatMessage({
                         id: 'TOKENS_UPGRADE_POPUP_TITLE',

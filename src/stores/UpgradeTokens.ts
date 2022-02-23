@@ -51,9 +51,7 @@ export class UpgradeTokens {
 
     protected state: UpgradeTokensState
 
-    constructor(
-        protected readonly tonWallet: TonWalletService,
-    ) {
+    constructor(protected readonly tonWallet: TonWalletService) {
         this.data = {
             tokens: [],
         }
@@ -71,6 +69,10 @@ export class UpgradeTokens {
         reaction(() => this.tonWallet.address, async () => {
             await this.checkForUpdates()
         }, { fireImmediately: true })
+    }
+
+    public cleanup(): void {
+        this.data.tokens = []
     }
 
     public get tokens(): UpgradeTokensData['tokens'] {
