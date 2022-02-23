@@ -33,12 +33,12 @@
         "target": "esnext"
     },
     "exclude": [
-        "./webpack.config.ts",
+        "webpack.config.ts",
         "node_modules"
     ],
     "include": [
-        "src/**/*.ts",
         "src/**/*.d.ts",
+        "src/**/*.ts",
         "src/**/*.tsx",
         "node_modules/@types/node/globals.d.ts"
     ]

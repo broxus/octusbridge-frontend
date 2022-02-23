@@ -4,14 +4,15 @@
     "private": true,
     "engines": {
         "node": ">=16",
-        "npm": ">=7"
+        "npm": ">=8"
     },
     "scripts": {
         "start": "npx webpack serve --mode development --config webpack.config.ts",
         "build": "npx webpack --mode production --config webpack.config.ts",
         "lint": "npx eslint src --ext js,jsx,ts,tsx",
-        "lint:styles": "npx stylelint **/*.scss",
-        "lint:styles:fix": "npm run lint:styles -- --fix"
+        "lint:fix": "npx eslint src --ext js,jsx,ts,tsx --fix",
+        "stylelint": "npx stylelint **/*.scss",
+        "stylelint:fix": "npx stylelint **/*.scss --fix"
     },
     "dependencies": {
         "@broxus/await-semaphore": "^0.1.4",
