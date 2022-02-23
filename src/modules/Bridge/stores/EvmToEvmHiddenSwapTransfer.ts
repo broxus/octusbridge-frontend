@@ -108,11 +108,11 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
+            // const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
 
-            const vaultAddress = await wrapper.methods.vault().call()
-            const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
-            const vaultWrapperAddress = await vaultContract.methods.wrapper().call()
+            const vaultAddress = tx.to// await wrapper.methods.vault().call()
+            // const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
+            const vaultWrapperAddress = tx.to // await vaultContract.methods.wrapper().call()
 
             const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
 
