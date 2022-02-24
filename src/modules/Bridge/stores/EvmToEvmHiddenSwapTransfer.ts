@@ -714,7 +714,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                     this.token.root,
                     this.rightNetwork.chainId,
                 )
-                const isReleased = await vaultContract?.methods.withdrawIds(this.data.withdrawalId).call()
+                const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
                     this.changeState('releaseState', {
