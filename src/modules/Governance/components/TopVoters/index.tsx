@@ -10,7 +10,7 @@ import { Button } from '@/components/common/Button'
 import { useStakeholders } from '@/modules/Governance/hooks'
 import { StakeholdersOrdering } from '@/modules/Governance/types'
 import { usePagination, useTableOrder } from '@/hooks'
-import { error, formatDigits, formattedAmount } from '@/utils'
+import { error, formattedAmount } from '@/utils'
 
 import './index.scss'
 
@@ -97,7 +97,7 @@ export function TopVotersInner(): JSX.Element {
                                 address={item.userAddress}
                                 link={`/staking/explorer/${item.userAddress}`}
                             />,
-                            formatDigits(item.votes),
+                            formattedAmount(item.votes, undefined, { target: 'token' }),
                             `${formattedAmount(item.voteWeight)}%`,
                             item.proposalVotesCount,
                         ],
