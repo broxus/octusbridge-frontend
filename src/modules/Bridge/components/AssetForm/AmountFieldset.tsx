@@ -166,6 +166,7 @@ export function AmountFieldset(): JSX.Element {
                                         }, {
                                             ignoreTag: true,
                                         })}
+                                        type="warning"
                                     />
                                 )}
                             </>
