@@ -105,7 +105,7 @@ export default (_: any, options: any): WebpackConfig => {
 
     config.plugins.push(
         new HtmlWebpackPlugin({
-            title: 'Octus Bridge',
+            title: 'Cross-Chain Transactions | Octus Bridge',
             favicon: 'public/favicon.svg',
             filename: path.resolve(__dirname, 'dist/index.html'),
             template: 'public/index.html',
@@ -128,6 +128,11 @@ export default (_: any, options: any): WebpackConfig => {
                     {
                         context: 'public',
                         from: 'favicon.svg',
+                    },
+                    {
+                        context: 'public',
+                        from: 'meta-image.png',
+                        to: 'assets/meta-image.png'
                     },
                 ],
             }),
