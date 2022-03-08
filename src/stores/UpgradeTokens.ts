@@ -10,7 +10,7 @@ import {
 
 import { UpgradeTokenListURI } from '@/config'
 import rpc from '@/hooks/useRpcClient'
-import { MigrationTokenAbi, TokenWalletV4 } from '@/misc'
+import { MigrationTokenAbi, TokenWallet, TokenWalletV4 } from '@/misc'
 import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { error } from '@/utils'
 
@@ -101,6 +101,13 @@ export class UpgradeTokens {
         try {
             // eslint-disable-next-line no-restricted-syntax
             for (const token of tokensToUpgrade) {
+                const rootV5Address = new Address(token.rootV5)
+                const owner = (await TokenWallet.rootOwnerAddress(rootV5Address)).toString()
+
+                if (owner !== token.proxy) {
+                    continue
+                }
+
                 const rootV4Address = new Address(token.rootV4)
                 const { state } = await rpc.getFullContractState({ address: rootV4Address })
 
