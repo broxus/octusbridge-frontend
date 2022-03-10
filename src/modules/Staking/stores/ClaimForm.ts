@@ -11,6 +11,8 @@ import rpc from '@/hooks/useRpcClient'
 
 export class ClaimFormStore {
 
+    public readonly tonDepositAmount = GasToStaking
+
     protected state: ClaimFormState = {}
 
     constructor(
@@ -36,8 +38,12 @@ export class ClaimFormStore {
         try {
             await this.accountData.sync()
 
-            if (!this.isValid) {
+            if (!this.amountValid) {
                 throwException('Claim form is not valid')
+            }
+
+            if (!this.gasValid) {
+                throwException('Gas amount is invalid')
             }
 
             if (!this.tonWallet.account?.address) {
@@ -70,7 +76,7 @@ export class ClaimFormStore {
                 .send({
                     bounce: true,
                     from: this.tonWallet.account.address,
-                    amount: GasToStaking,
+                    amount: this.tonDepositAmount,
                 })
 
             await successStream
@@ -97,12 +103,20 @@ export class ClaimFormStore {
         return this.accountData.pendingReward
     }
 
-    public get isValid(): boolean {
+    public get amountValid(): boolean {
         if (!this.balance) {
             return false
         }
 
         return new BigNumber(this.balance).gt(0)
+    }
+
+    public get gasValid(): boolean {
+        if (!this.tonWallet.balance) {
+            return false
+        }
+
+        return new BigNumber(this.tonWallet.balance).gte(this.tonDepositAmount)
     }
 
 }

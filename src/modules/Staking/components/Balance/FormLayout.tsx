@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button'
 import './index.scss'
 
 type Props = {
+    error?: string;
     action: string;
     disabled?: boolean;
     hint?: string;
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export function FormLayout({
+    error,
     action,
     disabled,
     hint,
@@ -47,10 +49,18 @@ export function FormLayout({
                     </Button>
                 </div>
             </div>
-            {hint && (
-                <div className="staking-form-layout__hint">
-                    {hint}
+            {error ? (
+                <div className="staking-form-layout__hint staking-form-layout__hint_error">
+                    {error}
                 </div>
+            ) : (
+                <>
+                    {hint && (
+                        <div className="staking-form-layout__hint">
+                            {hint}
+                        </div>
+                    )}
+                </>
             )}
         </form>
     )

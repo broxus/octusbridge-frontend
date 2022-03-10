@@ -10,6 +10,7 @@ import { CardLayout } from '@/modules/Staking/components/Balance/CardLayout'
 import { FormLayout } from '@/modules/Staking/components/Balance/FormLayout'
 import { useCurrentUserContext } from '@/modules/Staking/providers/CurrentUserProvider'
 import { formattedAmount } from '@/utils'
+import { DexConstants } from '@/misc'
 
 type Tabs = 'redeem' | 'claim'
 
@@ -45,7 +46,7 @@ export function StakingBalance(): JSX.Element {
                         {() => (
                             <FormLayout
                                 loading={stakingForm.isLoading}
-                                disabled={!stakingForm.isValid || stakingForm.isLoading}
+                                disabled={!stakingForm.amountValid || !stakingForm.gasValid || stakingForm.isLoading}
                                 onSubmit={stakingForm.submit}
                                 hint={intl.formatMessage({
                                     id: 'STAKING_BALANCE_WALLET_BALANCE',
@@ -63,10 +64,20 @@ export function StakingBalance(): JSX.Element {
                                 action={intl.formatMessage({
                                     id: 'STAKING_BALANCE_STAKE',
                                 })}
+                                error={stakingForm.amountValid && !stakingForm.gasValid
+                                    ? intl.formatMessage({
+                                        id: 'STAKING_BALANCE_GAS_ERROR',
+                                    }, {
+                                        gasAmount: formattedAmount(
+                                            stakingForm.tonDepositAmount,
+                                            DexConstants.TONDecimals,
+                                        ),
+                                    })
+                                    : undefined}
                             >
                                 <AmountField
                                     isValid={!stakingForm.isLoading && new BigNumber(stakingForm.amount).gt(0)
-                                        ? stakingForm.isValid
+                                        ? stakingForm.amountValid && stakingForm.gasValid
                                         : true}
                                     value={stakingForm.amount}
                                     decimals={accountData.tokenDecimals}
@@ -114,7 +125,7 @@ export function StakingBalance(): JSX.Element {
                             {() => (
                                 <FormLayout
                                     loading={redeemForm.isLoading}
-                                    disabled={!redeemForm.isValid || redeemForm.isLoading}
+                                    disabled={!redeemForm.amountValid || !redeemForm.gasValid || redeemForm.isLoading}
                                     onSubmit={redeemForm.submit}
                                     hint={intl.formatMessage({
                                         id: 'STAKING_BALANCE_STAKE_BALANCE',
@@ -136,10 +147,20 @@ export function StakingBalance(): JSX.Element {
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_REDEEM',
                                     })}
+                                    error={redeemForm.amountValid && !redeemForm.gasValid
+                                        ? intl.formatMessage({
+                                            id: 'STAKING_BALANCE_GAS_ERROR',
+                                        }, {
+                                            gasAmount: formattedAmount(
+                                                redeemForm.tonDepositAmount,
+                                                DexConstants.TONDecimals,
+                                            ),
+                                        })
+                                        : undefined}
                                 >
                                     <AmountField
                                         isValid={!redeemForm.isLoading && new BigNumber(redeemForm.amount).gt(0)
-                                            ? redeemForm.isValid
+                                            ? redeemForm.amountValid && redeemForm.gasValid
                                             : true}
                                         value={redeemForm.amount}
                                         decimals={accountData.tokenDecimals}
@@ -161,7 +182,7 @@ export function StakingBalance(): JSX.Element {
                             {() => (
                                 <FormLayout
                                     loading={claimForm.isLoading}
-                                    disabled={!claimForm.isValid || claimForm.isLoading}
+                                    disabled={!claimForm.amountValid || !claimForm.gasValid || claimForm.isLoading}
                                     onSubmit={claimForm.submit}
                                     hint={intl.formatMessage({
                                         id: 'STAKING_BALANCE_CLAIM_DISABLED',
@@ -182,6 +203,16 @@ export function StakingBalance(): JSX.Element {
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_CLAIM',
                                     })}
+                                    error={claimForm.amountValid && !claimForm.gasValid
+                                        ? intl.formatMessage({
+                                            id: 'STAKING_BALANCE_GAS_ERROR',
+                                        }, {
+                                            gasAmount: formattedAmount(
+                                                claimForm.tonDepositAmount,
+                                                DexConstants.TONDecimals,
+                                            ),
+                                        })
+                                        : undefined}
                                 >
                                     <AmountField
                                         readOnly

@@ -46,6 +46,10 @@
         font-size: 12px;
         line-height: 16px;
         margin-top: 4px;
+
+        &_error {
+            color: #EB4361;
+        }
     }
 
     &__button {

@@ -37,8 +37,12 @@ export class RedeemFormStore {
         try {
             await this.accountData.sync()
 
-            if (!this.isValid) {
+            if (!this.amountValid) {
                 throwException('Redeem amount is invalid')
+            }
+
+            if (!this.gasValid) {
+                throwException('Gas amount is invalid')
             }
 
             if (!this.shiftedAmountBN) {
@@ -140,12 +144,8 @@ export class RedeemFormStore {
             : undefined
     }
 
-    public get isValid(): boolean {
-        if (!this.tonWallet.balance || !this.balance) {
-            return false
-        }
-
-        if (new BigNumber(this.tonWallet.balance).lt(this.tonDepositAmount)) {
+    public get amountValid(): boolean {
+        if (!this.balance) {
             return false
         }
 
@@ -158,6 +158,14 @@ export class RedeemFormStore {
         }
 
         return this.shiftedAmountBN.lte(this.balance)
+    }
+
+    public get gasValid(): boolean {
+        if (!this.tonWallet.balance) {
+            return false
+        }
+
+        return new BigNumber(this.tonWallet.balance).gte(this.tonDepositAmount)
     }
 
 }

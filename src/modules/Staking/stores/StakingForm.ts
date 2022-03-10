@@ -43,8 +43,12 @@ export class StakingFormStore {
         try {
             await this.accountData.sync()
 
-            if (!this.isValid) {
+            if (!this.amountValid) {
                 throwException('Staking amount is invalid')
+            }
+
+            if (!this.gasValid) {
+                throwException('Gas amount is invalid')
             }
 
             if (!this.shiftedAmountBN) {
@@ -165,12 +169,8 @@ export class StakingFormStore {
             : undefined
     }
 
-    public get isValid(): boolean {
-        if (!this.tonWallet.balance || !this.balance) {
-            return false
-        }
-
-        if (new BigNumber(this.tonWallet.balance).lt(this.tonDepositAmount)) {
+    public get amountValid(): boolean {
+        if (!this.balance) {
             return false
         }
 
@@ -183,6 +183,14 @@ export class StakingFormStore {
         }
 
         return this.shiftedAmountBN.lte(this.balance)
+    }
+
+    public get gasValid(): boolean {
+        if (!this.tonWallet.balance) {
+            return false
+        }
+
+        return new BigNumber(this.tonWallet.balance).gte(this.tonDepositAmount)
     }
 
 }
