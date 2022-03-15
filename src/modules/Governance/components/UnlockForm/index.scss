@@ -34,4 +34,10 @@
     &__pagination {
         margin-top: 16px;
     }
+
+    &__loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }

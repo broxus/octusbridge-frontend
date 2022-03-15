@@ -597,6 +597,7 @@ export default {
     USER_VOTE_INCREASE_STAKE: 'Increase stake',
     USER_VOTE_UNLOCK_TOKENS: 'Unlock tokens',
     USER_VOTE_UNLOCK_HINT: 'Your tokens are locked. You can unlock them after voting to be able to withdraw.',
+    USER_VOTE_UNLOCK_ALL_HINT: 'You can unlock all tokens after voting.',
     USER_VOTE_START_TEXT: 'Voting will start from {start} to {end}',
     USER_VOTE_ENDED_TEXT: 'Voting was from {start} to {end}',
     USER_VOTE_UNKNOWN_STATE: 'Unknown state',

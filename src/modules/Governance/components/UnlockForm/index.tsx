@@ -40,9 +40,12 @@ export function UnlockFormInner({
         id: 'NO_VALUE',
     })
 
-    const hasLockedTokens = userProposals.items
-        .filter(({ proposal }) => !voting.unlockedIds.includes(proposal.proposalId))
-        .length > 0
+    const initializing = voting.castedVotes === undefined
+        || userProposals.totalCount === undefined
+    const hasCastedVotes = voting.castedVotes !== undefined
+        && voting.castedVotes.length > 0
+    const isAvailableUnlockAll = hasCastedVotes
+        && voting.castedVotes.length === userProposals.totalCount
 
     const fetch = async () => {
         if (!tonWallet.address) {
@@ -68,8 +71,12 @@ export function UnlockFormInner({
 
     const onSubmit = async () => {
         try {
+            if (!voting.castedVotes) {
+                return
+            }
+
             const success = await voting.unlockCastedVote(
-                userProposals.items.map(item => item.proposal.proposalId),
+                voting.castedVotes.map(([id]) => parseInt(id, 10)),
             )
 
             if (success) {
@@ -108,83 +115,101 @@ export function UnlockFormInner({
                 })}
             </h2>
 
-            {userProposals.items.length > 0 ? (
+            {initializing ? (
+                <div className="unlock-form__loader">
+                    <ContentLoader slim transparent />
+                </div>
+            ) : (
                 <>
-                    <Table
-                        className="unlock-form__table"
-                        loading={userProposals.loading}
-                        cols={[{
-                            name: intl.formatMessage({
-                                id: 'UNLOCK_FORM_ID',
-                            }),
-                        }, {
-                            name: intl.formatMessage({
-                                id: 'UNLOCK_FORM_SUMMARY',
-                            }),
-                        }, {
-                            name: intl.formatMessage({
-                                id: 'UNLOCK_FORM_TOKENS',
-                            }),
-                            align: 'right',
-                        }]}
-                        rows={userProposals.items.map(({ proposal, vote }) => ({
-                            cells: [
-                                proposal.proposalId,
-                                proposal.state ? (
-                                    <ProposalSummary
-                                        id={proposal.proposalId}
-                                        state={proposal.state}
-                                        description={proposal.description}
-                                    />
-                                ) : noValue,
-                                /* eslint-disable no-nested-ternary */
-                                voting.unlockedIds.includes(proposal.proposalId) ? (
-                                    <Icon icon="success" />
-                                ) : (
-                                    voting.token?.decimals ? (
-                                        formattedAmount(
-                                            vote.votes,
-                                            voting.token.decimals,
+                    {isAvailableUnlockAll === true && (
+                        <>
+                            <Table
+                                className="unlock-form__table"
+                                loading={userProposals.loading}
+                                cols={[{
+                                    name: intl.formatMessage({
+                                        id: 'UNLOCK_FORM_ID',
+                                    }),
+                                }, {
+                                    name: intl.formatMessage({
+                                        id: 'UNLOCK_FORM_SUMMARY',
+                                    }),
+                                }, {
+                                    name: intl.formatMessage({
+                                        id: 'UNLOCK_FORM_TOKENS',
+                                    }),
+                                    align: 'right',
+                                }]}
+                                rows={userProposals.items.map(({ proposal, vote }) => ({
+                                    cells: [
+                                        proposal.proposalId,
+                                        proposal.state ? (
+                                            <ProposalSummary
+                                                id={proposal.proposalId}
+                                                state={proposal.state}
+                                                description={proposal.description}
+                                            />
+                                        ) : noValue,
+                                        /* eslint-disable no-nested-ternary */
+                                        voting.unlockedIds.includes(proposal.proposalId) ? (
+                                            <Icon icon="success" />
+                                        ) : (
+                                            voting.token?.decimals ? (
+                                                formattedAmount(
+                                                    vote.votes,
+                                                    voting.token.decimals,
+                                                    { target: 'token' },
+                                                )
+                                            ) : noValue
+                                        ),
+                                    ],
+                                }))}
+                            />
+
+                            <Summary
+                                items={[{
+                                    key: intl.formatMessage({
+                                        id: 'UNLOCK_FORM_GAZ',
+                                    }),
+                                    value: intl.formatMessage({
+                                        id: 'AMOUNT',
+                                    }, {
+                                        value: formattedAmount(
+                                            calcGazToUnlockVotes(userProposals.items.length),
+                                            DexConstants.TONDecimals,
                                             { target: 'token' },
-                                        )
-                                    ) : noValue
-                                ),
-                            ],
-                        }))}
-                    />
+                                        ),
+                                        symbol: DexConstants.TONSymbol,
+                                    }),
+                                }]}
+                            />
 
-                    <Summary
-                        items={[{
-                            key: intl.formatMessage({
-                                id: 'UNLOCK_FORM_GAZ',
-                            }),
-                            value: intl.formatMessage({
-                                id: 'AMOUNT',
-                            }, {
-                                value: formattedAmount(
-                                    calcGazToUnlockVotes(userProposals.items.length),
-                                    DexConstants.TONDecimals,
-                                    { target: 'token' },
-                                ),
-                                symbol: DexConstants.TONSymbol,
-                            }),
-                        }]}
-                    />
+                            {pagination.totalPages > 1 && (
+                                <Pagination
+                                    page={pagination.page}
+                                    totalPages={pagination.totalPages}
+                                    onSubmit={pagination.submit}
+                                />
+                            )}
+                        </>
+                    )}
 
-                    {pagination.totalPages > 1 && (
-                        <Pagination
-                            page={pagination.page}
-                            totalPages={pagination.totalPages}
-                            onSubmit={pagination.submit}
-                        />
+                    {hasCastedVotes && !isAvailableUnlockAll && (
+                        <div className="unlock-form__empty">
+                            {intl.formatMessage({
+                                id: 'USER_VOTE_UNLOCK_ALL_HINT',
+                            })}
+                        </div>
+                    )}
+
+                    {!hasCastedVotes && !isAvailableUnlockAll && (
+                        <div className="unlock-form__empty">
+                            {intl.formatMessage({
+                                id: 'UNLOCK_FORM_NO_PROPOSALS',
+                            })}
+                        </div>
                     )}
                 </>
-            ) : (
-                <div className="unlock-form__empty">
-                    {intl.formatMessage({
-                        id: 'UNLOCK_FORM_NO_PROPOSALS',
-                    })}
-                </div>
             )}
 
             <div className="unlock-form__actions">
@@ -202,7 +227,7 @@ export function UnlockFormInner({
                 <Button
                     block
                     type="primary"
-                    disabled={userProposals.loading || voting.unlockLoading || !hasLockedTokens}
+                    disabled={userProposals.loading || voting.unlockLoading || !isAvailableUnlockAll}
                     onClick={onSubmit}
                 >
                     {voting.unlockLoading ? (
