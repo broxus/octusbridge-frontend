@@ -5,18 +5,18 @@ import { useIntl } from 'react-intl'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
-import { getTonMainNetwork } from '@/utils'
+import { getEverscaleMainNetwork } from '@/utils'
 
 
 function SecondPrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmHiddenSwapTransfer()
 
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const isSwapConfirmed = transfer.swapState?.status === 'confirmed'
     const { status = 'disabled' } = { ...transfer.secondPrepareState }
     const isConfirmed = status === 'confirmed'
-    const waitingWallet = !tonWallet.isReady && isSwapConfirmed && !isConfirmed
+    const waitingWallet = !everWallet.isReady && isSwapConfirmed && !isConfirmed
 
     return (
         <PrepareStatus
@@ -27,7 +27,7 @@ function SecondPrepareStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_SECOND_NOTE',
             }, {
-                network: getTonMainNetwork()?.label || '',
+                network: getEverscaleMainNetwork()?.label || '',
             })}
             status={status}
             txHash={transfer.contractAddress?.toString()}

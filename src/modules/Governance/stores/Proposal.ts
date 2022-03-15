@@ -9,12 +9,12 @@ import {
 import { handleProposals, parseDescription } from '@/modules/Governance/utils'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { VotesStore } from '@/modules/Governance/stores/Votes'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { ProposalAbi } from '@/misc'
 import {
     error, lastOfCalls, throwException, validateUrl,
 } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ProposalStore {
 
@@ -32,7 +32,7 @@ export class ProposalStore {
 
     constructor(
         protected proposalId: number,
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)

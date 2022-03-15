@@ -9,7 +9,7 @@ import {
     EvmTransferStep,
     RouteStep,
     Summary,
-    TonTransferStep,
+    EverscaleTransferStep,
 } from '@/modules/Bridge/components'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
@@ -35,7 +35,7 @@ export function Bridge(): JSX.Element {
                                     return <ApproveStep key="approve" />
 
                                 case CrosschainBridgeStep.TRANSFER:
-                                    if (bridge.isEvmToTon) {
+                                    if (bridge.isEvmToEverscale) {
                                         return bridge.isSwapEnabled
                                             ? <EvmSwapTransferStep key="evm-swap-transfer" />
                                             : <EvmTransferStep key="evm-transfer" />
@@ -49,8 +49,8 @@ export function Bridge(): JSX.Element {
                                         )
                                     }
 
-                                    if (bridge.isTonToEvm) {
-                                        return <TonTransferStep key="ton-transfer" />
+                                    if (bridge.isEverscaleToEvm) {
+                                        return <EverscaleTransferStep key="ton-transfer" />
                                     }
 
                                     return null

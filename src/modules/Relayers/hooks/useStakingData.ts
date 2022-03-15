@@ -2,11 +2,11 @@ import * as React from 'react'
 
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 
 export function useStakingData(
     tokensCache: TokensCacheService = useTokensCache(),
-    tonWallet: TonWalletService = useTonWallet(),
+    tonWallet: EverWalletService = useEverWallet(),
 ): StakingDataStore {
     const ref = React.useRef<StakingDataStore>()
     ref.current = ref.current || new StakingDataStore(tokensCache, tonWallet)

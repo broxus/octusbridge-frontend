@@ -5,11 +5,12 @@ import { Contract } from 'everscale-inpage-provider'
 import BigNumber from 'bignumber.js'
 
 import { AirdropContractAddress } from '@/config'
-import { TokenWallet, TonAirdrop } from '@/misc'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
-import { error, isGoodBignumber } from '@/utils'
-import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 import rpc from '@/hooks/useRpcClient'
+import { TokenWallet, TonAirdrop } from '@/misc'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
+import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { error, isGoodBignumber } from '@/utils'
+
 
 export type AirdropStoreData = {
     amount: string;
@@ -30,7 +31,7 @@ export class AirdropStore {
     protected state: AirdropStoreState
 
     constructor(
-        protected readonly tonWallet: TonWalletService,
+        protected readonly tonWallet: EverWalletService,
         protected readonly tokenCache: TokensCacheService,
     ) {
         this.data = {
@@ -145,10 +146,10 @@ export class AirdropStore {
     }
 
     public static get airdropContract(): Contract<typeof TonAirdrop.Airdrop> {
-        return rpc.createContract(TonAirdrop.Airdrop, AirdropContractAddress)
+        return new rpc.Contract(TonAirdrop.Airdrop, AirdropContractAddress)
     }
 
-    public get useTonWallet(): TonWalletService {
+    public get useTonWallet(): EverWalletService {
         return this.tonWallet
     }
 
@@ -158,7 +159,7 @@ export class AirdropStore {
 
 
 const AirdropStoreSingleton = new AirdropStore(
-    useTonWallet(),
+    useEverWallet(),
     useTokensCache(),
 )
 

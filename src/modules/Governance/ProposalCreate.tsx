@@ -9,14 +9,14 @@ import { ProposalForm } from '@/modules/Governance/components/ProposalForm'
 import { ProposalFormWarning } from '@/modules/Governance/components/ProposalFormWarning'
 import { WalletConnector } from '@/modules/TonWalletConnector'
 import { useProposalCreateContext } from '@/modules/Governance/providers'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { useDebounce } from '@/hooks'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function ProposalCreateInner(): JSX.Element | null {
     const intl = useIntl()
-    const wallet = useTonWallet()
+    const wallet = useEverWallet()
     const proposalCreate = useProposalCreateContext()
     const isInitializing = useDebounce(wallet.isInitializing, 100)
 

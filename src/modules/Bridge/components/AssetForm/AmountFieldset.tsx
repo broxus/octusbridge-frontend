@@ -24,7 +24,7 @@ export function AmountFieldset(): JSX.Element {
     }, 50)
 
     const onChange = (value: string) => {
-        bridge.changeData('amount', value)
+        bridge.setData('amount', value)
         if (bridge.isSwapEnabled || bridge.isEvmToEvm) {
             onChangeAmount()
         }
@@ -75,7 +75,7 @@ export function AmountFieldset(): JSX.Element {
                         <Observer>
                             {() => {
                                 switch (true) {
-                                    case bridge.isEvmToTon && bridge.isAmountVaultLimitExceed:
+                                    case bridge.isEvmToEverscale && bridge.isAmountVaultLimitExceed:
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
@@ -83,7 +83,7 @@ export function AmountFieldset(): JSX.Element {
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.tokenVaultLimitNumber.toFixed(),
+                                                        bridge.vaultLimitNumber.toFixed(),
                                                         bridge.amountMinDecimals,
                                                         { preserve: true },
                                                     ),
@@ -149,7 +149,11 @@ export function AmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <>
-                                {(bridge.isTonToEvm && bridge.isInsufficientVaultBalance) && (
+                                {(
+                                    bridge.isEverscaleToEvm
+                                    && bridge.isInsufficientVaultBalance
+                                    && !bridge.isEverscaleBasedToken
+                                ) && (
                                     <Alert
                                         className="margin-top"
                                         // text={intl.formatMessage({
@@ -160,8 +164,8 @@ export function AmountFieldset(): JSX.Element {
                                         }, {
                                             symbol: bridge.token?.symbol,
                                             value: formattedAmount(
-                                                bridge.tokenVault?.balance,
-                                                bridge.tokenVault?.decimals,
+                                                bridge.pipeline?.vaultBalance,
+                                                bridge.pipeline?.evmTokenDecimals,
                                             ),
                                         }, {
                                             ignoreTag: true,
@@ -206,11 +210,11 @@ export function AmountFieldset(): JSX.Element {
                             <Observer>
                                 {() => (
                                     <>
-                                        {bridge.isEvmToTon && (
+                                        {bridge.isEvmToEverscale && (
                                             <div className="crosschain-transfer__control-hint">
                                                 {'> Available vault limit: '}
                                                 {formattedAmount(
-                                                    bridge.tokenVaultLimitNumber.toFixed(),
+                                                    bridge.vaultLimitNumber.toFixed(),
                                                     bridge.amountMinDecimals,
                                                     { preserve: true },
                                                 )}

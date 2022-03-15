@@ -18,16 +18,16 @@ import { UnlockAllButton } from '@/modules/Governance/components/UnlockAllButton
 import { ProposalsFilters as Filters } from '@/modules/Governance/types'
 import { useProposalsFilters, useUserProposals } from '@/modules/Governance/hooks'
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { usePagination } from '@/hooks'
 import { error, formattedAmount } from '@/utils'
 import { DexConstants } from '@/misc'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function UserProposalsInner(): JSX.Element | null {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
     const userProposals = useUserProposals()
     const pagination = usePagination(userProposals.totalCount)
     const [filters, setFilters] = useProposalsFilters('my')
@@ -153,7 +153,7 @@ export function UserProposalsInner(): JSX.Element | null {
                                         badge
                                         type={vote.support ? 1 : 0}
                                         value={vote.votes
-                                            ? formattedAmount(vote.votes, DexConstants.TONDecimals, {
+                                            ? formattedAmount(vote.votes, DexConstants.CoinDecimals, {
                                                 target: 'token',
                                             })
                                             : undefined}

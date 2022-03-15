@@ -21,14 +21,14 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
         && isTonAddressValid(transfer.contractAddress.toString())
     )
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const isEventConfirmed = transfer.secondEventState?.status === 'confirmed'
     const status = transfer.releaseState?.status || 'disabled'
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && isEventConfirmed
         && !isConfirmed
     )
@@ -66,7 +66,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -74,7 +74,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

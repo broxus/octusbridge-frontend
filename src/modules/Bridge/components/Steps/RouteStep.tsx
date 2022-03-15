@@ -13,18 +13,18 @@ import {
     NetworkFields,
 } from '@/modules/Bridge/types'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { getLabeledNetworks } from '@/utils'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 
 export function RouteStep(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
     const evmWallet = bridge.useEvmWallet
-    const tonWallet = bridge.useTonWallet
+    const everWallet = bridge.useEverWallet
 
     const onChangeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
-        bridge.changeData(key, value)
+        bridge.setData(key, value)
     }
 
     const onChangeNetwork = <K extends keyof NetworkFields>(key: K) => (value: string) => {
@@ -33,7 +33,7 @@ export function RouteStep(): JSX.Element {
     }
 
     const nextStep = () => {
-        bridge.changeState('step', CrosschainBridgeStep.SELECT_ASSET)
+        bridge.setState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
 
     return (
@@ -53,14 +53,14 @@ export function RouteStep(): JSX.Element {
 
             <Observer>
                 {() => {
-                    let wallet: TonWalletService | EvmWalletService | undefined
+                    let wallet: EverWalletService | EvmWalletService | undefined
 
                     if (bridge.leftNetwork !== undefined) {
                         if (bridge.leftNetwork.type === 'evm') {
                             wallet = evmWallet
                         }
-                        else if (bridge.leftNetwork.type === 'ton') {
-                            wallet = tonWallet
+                        else if (bridge.leftNetwork.type === 'everscale') {
+                            wallet = everWallet
                         }
                     }
 
@@ -89,14 +89,14 @@ export function RouteStep(): JSX.Element {
 
             <Observer>
                 {() => {
-                    let wallet: TonWalletService | EvmWalletService | undefined
+                    let wallet: EverWalletService | EvmWalletService | undefined
 
                     if (bridge.rightNetwork !== undefined) {
                         if (bridge.rightNetwork.type === 'evm') {
                             wallet = evmWallet
                         }
-                        else if (bridge.rightNetwork.type === 'ton') {
-                            wallet = tonWallet
+                        else if (bridge.rightNetwork.type === 'everscale') {
+                            wallet = everWallet
                         }
                     }
 
@@ -114,7 +114,7 @@ export function RouteStep(): JSX.Element {
                             })}
                             network={bridge.rightNetwork}
                             networks={bridge.rightNetworks}
-                            shouldDisplayNetworkAlert={bridge.isTonToEvm
+                            shouldDisplayNetworkAlert={bridge.isEverscaleToEvm
                                 ? !isEqual(bridge.rightNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}

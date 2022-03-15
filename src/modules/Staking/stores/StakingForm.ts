@@ -10,10 +10,10 @@ import {
 import { getStakingContract } from '@/modules/Staking/utils'
 import { StakingFormStoreData, StakingFormStoreState } from '@/modules/Staking/types'
 import { TokensCacheService } from '@/stores/TokensCacheService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class StakingFormStore {
 
@@ -26,7 +26,7 @@ export class StakingFormStore {
     constructor(
         public readonly accountData: AccountDataStore,
         public readonly tokensCache: TokensCacheService,
-        public readonly tonWallet: TonWalletService,
+        public readonly tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this, {
             setAmount: action.bound,
@@ -67,7 +67,7 @@ export class StakingFormStore {
                 throwException('Token address must be defined in account data')
             }
 
-            const walletContract = await this.tokensCache.getTonTokenWalletContract(
+            const walletContract = await this.tokensCache.getEverscaleTokenWalletContract(
                 this.accountData.tokenAddress,
             )
 

@@ -1,12 +1,12 @@
 import * as React from 'react'
-import RcSelect, { SelectProps } from 'rc-select'
+import RcSelect, { BaseSelectRef, SelectProps } from 'rc-select'
 
 import { Icon } from '@/components/common/Icon'
 
 import './index.scss'
 
 
-function InternalSelect<T>(props: SelectProps<T>, ref: React.Ref<RcSelect<T>>): JSX.Element {
+function InternalSelect<T>(props: SelectProps<T>, ref: React.Ref<BaseSelectRef>): JSX.Element {
     const { allowClear, value } = props
 
     return (
@@ -23,5 +23,5 @@ function InternalSelect<T>(props: SelectProps<T>, ref: React.Ref<RcSelect<T>>): 
 }
 
 export const Select = React.forwardRef(InternalSelect) as <T>(
-    props: SelectProps<T> & { ref?: React.Ref<RcSelect<T>> }
+    props: SelectProps<T> & { ref?: React.Ref<BaseSelectRef> }
 ) => React.ReactElement

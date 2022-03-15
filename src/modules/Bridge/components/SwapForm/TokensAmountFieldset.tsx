@@ -24,7 +24,7 @@ export function TokensAmountFieldset(): JSX.Element {
     }, 50)
 
     const onChange = (value: string) => {
-        bridge.changeData('tokenAmount', value)
+        bridge.setData('tokenAmount', value)
         onChangeTokensAmount()
     }
 

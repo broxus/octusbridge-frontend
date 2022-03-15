@@ -4,8 +4,8 @@ import { observer } from 'mobx-react-lite'
 import { InstallWallet } from '@/modules/TonWalletConnector/components/InstallWallet'
 import { ConnectWallet } from '@/modules/TonWalletConnector/components/ConnectWallet'
 import { Panel, PanelProps } from '@/modules/TonWalletConnector/components/Panel'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { useDebounce } from '@/hooks'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 type Props = {
     size?: PanelProps['size'];
@@ -18,7 +18,7 @@ export const WalletConnector = observer(({
     message,
     children,
 }: Props): JSX.Element | null => {
-    const wallet = useTonWallet()
+    const wallet = useEverWallet()
     const isInitializing = useDebounce(wallet.isInitializing, 100)
 
     const onClickConnect = () => {

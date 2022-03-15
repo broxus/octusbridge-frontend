@@ -7,14 +7,14 @@ import { Button } from '@/components/common/Button'
 import { Layout } from '@/modules/Governance/components/ProposalManagement/Layout'
 import { CancelPopup } from '@/modules/Governance/components/ProposalManagement/CancelPopup'
 import { useProposalContext } from '@/modules/Governance/providers'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { error } from '@/utils'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function ProposalManagementInner(): JSX.Element | null {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
     const proposal = useProposalContext()
     const currentTime = new Date().getTime()
 

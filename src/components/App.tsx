@@ -13,7 +13,7 @@ import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
-import { EvmWallet, TonWallet } from '@/modules/Accounts'
+import { EverWallet, EvmWallet } from '@/modules/Accounts'
 // import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
@@ -27,8 +27,8 @@ import Overview from '@/pages/governance'
 import Proposals from '@/pages/governance/proposals'
 import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
+import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { noop } from '@/utils'
 
@@ -37,7 +37,7 @@ import './App.scss'
 
 export function App(): JSX.Element {
     const evmWallet = useEvmWallet()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
     const upgradeTokens = useUpgradeTokens()
 
     return (
@@ -56,9 +56,11 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
+                            {/*
                             <Route exact path="/transfers">
                                 <TransferList />
                             </Route>
+                            */}
                             <Route path="/transfers">
                                 <TransferList />
                             </Route>
@@ -114,7 +116,7 @@ export function App(): JSX.Element {
                                 <NativeScrollArea className="wallets-scroll-area">
                                     <div className="wallets">
                                         <EvmWallet />
-                                        <TonWallet />
+                                        <EverWallet />
                                     </div>
                                 </NativeScrollArea>
                             )}

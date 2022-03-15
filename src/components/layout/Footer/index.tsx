@@ -5,14 +5,14 @@ import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
 import { Logo } from '@/components/layout/Logo'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 export function Footer(): JSX.Element {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
 
     const toolbar = (
         <Observer>

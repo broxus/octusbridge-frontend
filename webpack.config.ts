@@ -1,19 +1,18 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin'
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import path from 'path'
 import webpack from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 type WebpackConfig = webpack.Configuration & { devServer?: DevServerConfiguration }
 
 
 export default (_: any, options: any): WebpackConfig => {
-    const HOST = process.env.HOST ?? 'localhost'
+    const HOST = process.env.HOST ?? '0.0.0.0'
     const PORT = parseInt(process.env.PORT ?? '3000', 10)
-    const hmrDisabled = process.env.NO_HMR
     const showErrors = process.env.ERRORS
 
     const isProduction = options.mode === 'production'
@@ -95,10 +94,6 @@ export default (_: any, options: any): WebpackConfig => {
         }),
     ]
 
-    if (isDevelopment && !hmrDisabled) {
-        config.plugins.push(new webpack.HotModuleReplacementPlugin())
-    }
-
     if (isDevelopment && showErrors) {
         config.plugins.push(new ForkTsCheckerWebpackPlugin())
     }
@@ -154,7 +149,7 @@ export default (_: any, options: any): WebpackConfig => {
             },
             {
                 test: /\.s[ac]ss$/i,
-                exclude: /\.module.(s(a|c)ss)$/,
+                exclude: /\.module.(s[ac]ss)$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                     'css-loader',
@@ -162,7 +157,7 @@ export default (_: any, options: any): WebpackConfig => {
                 ],
             },
             {
-                test: /\.module\.s(a|c)ss$/,
+                test: /\.module\.s[ac]ss$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                     {
@@ -226,7 +221,7 @@ export default (_: any, options: any): WebpackConfig => {
             // sys: require.resolve('util'),
             // timers: require.resolve('timers-browserify'),
             // tty: require.resolve('tty-browserify'),
-            // url: require.resolve('url'),
+            url: require.resolve('url'),
             util: require.resolve('util'),
             // vm: require.resolve('vm-browserify'),
             // zlib: require.resolve('browserify-zlib'),
@@ -258,16 +253,7 @@ export default (_: any, options: any): WebpackConfig => {
         config.devServer = {
             host: HOST,
             port: PORT,
-            contentBase: [
-                path.join(__dirname + '/dist'),
-            ],
-            inline: hmrDisabled ? false : true,
-            hot: hmrDisabled ? false : true,
-            quiet: false,
             historyApiFallback: true,
-            stats: {
-                colors: true,
-            },
         }
     }
 

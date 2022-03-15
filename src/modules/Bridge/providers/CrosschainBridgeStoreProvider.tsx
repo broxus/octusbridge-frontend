@@ -3,15 +3,15 @@ import { reaction } from 'mobx'
 import { useHistory } from 'react-router-dom'
 
 import { CrosschainBridge, useSummary } from '@/modules/Bridge/stores'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 
 
 export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge>(
     new CrosschainBridge(
         useEvmWallet(),
-        useTonWallet(),
+        useEverWallet(),
         useTokensCache(),
     ),
 )
@@ -23,9 +23,9 @@ export function useBridge(): CrosschainBridge {
 
 type Props = {
     children: React.ReactNode;
-    evmWallet: EvmWalletService,
-    tonWallet: TonWalletService,
-    tokensCache: TokensCacheService,
+    everWallet: EverWalletService;
+    evmWallet: EvmWalletService;
+    tokensCache: TokensCacheService;
 }
 
 
@@ -35,7 +35,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
     const bridge = React.useMemo(() => new CrosschainBridge(
         props.evmWallet,
-        props.tonWallet,
+        props.everWallet,
         props.tokensCache,
     ), [])
 
@@ -50,7 +50,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
             const leftNetwork = `${bridge.leftNetwork?.type}-${bridge.leftNetwork?.chainId}`
             const rightNetwork = `${bridge.rightNetwork?.type}-${bridge.rightNetwork?.chainId}`
-            const depositType = bridge.isTonToEvm ? '' : `/${bridge.depositType || 'default'}`
+            const depositType = bridge.isEverscaleToEvm ? '' : `/${bridge.depositType || 'default'}`
 
             history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}${depositType}`)
         })
@@ -58,9 +58,9 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
         const summaryDisposer = reaction(
             () => ({
                 amount: bridge.amountNumber
-                    .shiftedBy(bridge.isFromTon
+                    .shiftedBy(bridge.isFromEverscale
                         ? (bridge.token?.decimals || 0)
-                        : (bridge.tokenVault?.decimals || 0))
+                        : (bridge.pipeline?.evmTokenDecimals || 0))
                     .toFixed(),
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
@@ -74,7 +74,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                     .toFixed(),
             }),
             data => {
-                summary.updateData(data)
+                summary.setData(data)
             },
         )
 

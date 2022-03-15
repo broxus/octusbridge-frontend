@@ -18,7 +18,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
     const transfer = useEvmHiddenSwapTransfer()
 
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const isEventConfirmed = transfer.eventState?.status === 'confirmed'
     const status = transfer.swapState?.status || 'disabled'
     const isConfirmed = status === 'confirmed'
@@ -34,7 +34,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
         CreditProcessorState.ProcessRequiresGas,
     ].includes(transfer.creditProcessorState) : false
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && isEventConfirmed
         && !isConfirmed
         && !isCancelled
@@ -62,7 +62,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -70,7 +70,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

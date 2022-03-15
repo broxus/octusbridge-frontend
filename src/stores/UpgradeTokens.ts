@@ -11,7 +11,7 @@ import {
 import { UpgradeTokenListURI } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { MigrationTokenAbi, TokenWallet, TokenWalletV4 } from '@/misc'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { error } from '@/utils'
 
 
@@ -51,7 +51,7 @@ export class UpgradeTokens {
 
     protected state: UpgradeTokensState
 
-    constructor(protected readonly tonWallet: TonWalletService) {
+    constructor(protected readonly tonWallet: EverWalletService) {
         this.data = {
             tokens: [],
         }
@@ -214,7 +214,7 @@ export class UpgradeTokens {
 }
 
 
-const store = new UpgradeTokens(useTonWallet())
+const store = new UpgradeTokens(useEverWallet())
 
 export function useUpgradeTokens(): UpgradeTokens {
     return store

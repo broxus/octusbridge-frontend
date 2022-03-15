@@ -2,10 +2,16 @@ import { addABI, decodeMethod } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
-import { makeObservable, override, toJS } from 'mobx'
+import {
+    computed,
+    makeObservable,
+    override,
+    toJS,
+} from 'mobx'
 import { Address, Contract } from 'everscale-inpage-provider'
 
 import { IndexerApiBaseUrl } from '@/config'
+import rpc from '@/hooks/useRpcClient'
 import {
     BridgeConstants, Dex,
     DexAbi,
@@ -16,7 +22,7 @@ import {
     DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA,
     DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_STATE,
 } from '@/modules/Bridge/constants'
-import { EvmToTonSwapTransfer } from '@/modules/Bridge/stores/EvmToTonSwapTransfer'
+import { EvmToEverscaleSwapPipeline } from '@/modules/Bridge/stores/EvmToEverscaleSwapPipeline'
 import {
     BurnCallbackOrdering,
     BurnCallbackTableResponse,
@@ -29,18 +35,17 @@ import {
     SearchBurnCallbackInfoRequest,
 } from '@/modules/Bridge/types'
 import { getCreditFactoryContract } from '@/modules/Bridge/utils'
-import { debug, error, isGoodBignumber } from '@/utils'
+import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { TokensCacheService } from '@/stores/TokensCacheService'
-import rpc from '@/hooks/useRpcClient'
+import { debug, error, isGoodBignumber } from '@/utils'
+
 
 // noinspection DuplicatedCode
-export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
-
-    protected data: EvmHiddenSwapTransferStoreData
-
-    protected state: EvmHiddenSwapTransferStoreState
+export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
+    EvmHiddenSwapTransferStoreData,
+    EvmHiddenSwapTransferStoreState
+> {
 
     protected contractUpdater: ReturnType<typeof setTimeout> | undefined
 
@@ -50,37 +55,36 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
     constructor(
         protected readonly evmWallet: EvmWalletService,
-        protected readonly tonWallet: TonWalletService,
+        protected readonly everWallet: EverWalletService,
         protected readonly tokensCache: TokensCacheService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
-        super(evmWallet, tonWallet, tokensCache, params)
+        super(evmWallet, everWallet, tokensCache, params)
 
         this.data = DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA
         this.state = DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_STATE
 
         makeObservable<
-            EvmToEvmHiddenSwapTransfer,
+            EvmToEvmHiddenSwapPipeline,
+            | 'data'
             | 'state'
-            | 'changeState'
+            | 'debt'
+            | 'pairContract'
         >(this, {
+            data: override,
             state: override,
-            changeState: override,
+            contractAddress: computed,
+            everscaleAddress: computed,
+            maxTransferFee: computed,
+            minTransferFee: computed,
+            swapAmount: computed,
+            tokenAmount: computed,
+            secondPrepareState: computed,
+            secondEventState: computed,
+            releaseState: computed,
+            debt: computed,
+            pairContract: computed,
         })
-    }
-
-    public changeData<K extends keyof EvmHiddenSwapTransferStoreData>(
-        key: K,
-        value: EvmHiddenSwapTransferStoreData[K],
-    ): void {
-        this.data[key] = value
-    }
-
-    public changeState<K extends keyof EvmHiddenSwapTransferStoreState>(
-        key: K,
-        value: EvmHiddenSwapTransferStoreState[K],
-    ): void {
-        this.state[key] = value
     }
 
     public async resolve(): Promise<void> {
@@ -88,14 +92,12 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.tokensCache.tokens.length === 0
-            || this.transferState?.status === 'pending'
             || this.transferState?.status === 'confirmed'
         ) {
             return
         }
 
-        this.changeState('transferState', {
+        this.setState('transferState', {
             confirmedBlocksCount: this.state.transferState?.confirmedBlocksCount || 0,
             eventBlocksToConfirm: this.state.transferState?.eventBlocksToConfirm || 0,
             status: 'pending',
@@ -108,21 +110,18 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            // const wrapper = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, tx.to)
+            const token = this.tokensCache.findTokenByVaultAddress(
+                tx.to,
+                this.leftNetwork.chainId,
+            )
 
-            const vaultAddress = tx.to// await wrapper.methods.vault().call()
-            // const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vaultAddress)
-            const vaultWrapperAddress = tx.to // await vaultContract.methods.wrapper().call()
-
-            const token = this.tokensCache.findTokenByVaultAddress(vaultAddress, this.leftNetwork.chainId)
-
-            if (vaultWrapperAddress !== tx.to || token === undefined) {
+            if (token === undefined) {
                 return
             }
 
-            await this.tokensCache.syncEvmToken(token.root, this.leftNetwork.chainId)
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
-            this.changeData('token', token)
+            this.setData('token', token)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -131,13 +130,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const ethereumConfiguration = token.vaults.find(
-                vault => (
-                    vault.vault.toLowerCase() === vaultAddress.toLowerCase()
-                    && vault.chainId === this.leftNetwork?.chainId
-                    && vault.depositType === 'credit'
-                ),
-            )?.ethereumConfiguration
+            const ethereumConfiguration = this.pipeline?.ethereumConfiguration
 
             if (ethereumConfiguration === undefined) {
                 return
@@ -145,15 +138,15 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             const ethConfigAddress = new Address(ethereumConfiguration)
 
-            this.changeData('ethConfigAddress', ethConfigAddress)
+            this.setData('ethConfigAddress', ethConfigAddress)
 
-            const ethConfig = rpc.createContract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, ethConfigAddress)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
-            this.changeData('amount', methodCall?.params[0].value)
-            this.changeData('tokenAmount', methodCall?.params[5].value)
-            this.changeData('leftAddress', tx.from.toLowerCase())
+            this.setData('amount', methodCall?.params[0].value)
+            this.setData('tokenAmount', methodCall?.params[5].value)
+            this.setData('leftAddress', tx.from.toLowerCase())
 
             const layer3 = methodCall?.params[10].value.substr(2, methodCall?.params[10].value.length)
             const event = await rpc.unpackFromCell({
@@ -167,19 +160,19 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 ] as const,
             })
 
-            this.changeData(
+            this.setData(
                 'rightAddress',
                 `0x${new BigNumber(event.data.evmAddress).toString(16).padStart(40, '0')}`.toLowerCase(),
             )
 
             const targetWid = methodCall?.params[1].value
             const targetAddress = methodCall?.params[2].value
-            this.changeData(
+            this.setData(
                 'everscaleAddress',
                 `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
             )
 
-            this.changeState('transferState', {
+            this.setState('transferState', {
                 confirmedBlocksCount: 0,
                 eventBlocksToConfirm: parseInt(eventBlocksToConfirm, 10),
                 status: 'pending',
@@ -189,7 +182,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         }
         catch (e) {
             error('Resolve error', e)
-            this.changeState('transferState', {
+            this.setState('transferState', {
                 confirmedBlocksCount: 0,
                 eventBlocksToConfirm: 0,
                 status: 'disabled',
@@ -197,7 +190,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         }
 
         await Promise.all([
-            this.tonWallet.isConnected ? this.syncPair() : undefined,
+            this.everWallet.isConnected ? this.syncPair() : undefined,
             this.syncCreditFactoryFee(),
         ])
         await this.syncTransferFees()
@@ -218,12 +211,12 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            this.changeState('releaseState', {
+            this.setState('releaseState', {
                 ...this.releaseState,
                 status: 'pending',
             })
 
-            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             const signatures = eventDetails._signatures.map(sign => {
@@ -250,14 +243,10 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return -1
             })
 
-            const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
-                this.token.root,
-                this.rightNetwork.chainId,
-                'credit',
-            )
+            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
 
-            if (wrapperContract === undefined) {
-                this.changeState('releaseState', {
+            if (vaultContract === undefined) {
+                this.setState('releaseState', {
                     ...this.releaseState,
                     status: 'disabled',
                 })
@@ -267,7 +256,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             try {
                 tries += 1
 
-                await wrapperContract.methods.saveWithdraw(
+                await vaultContract.methods.saveWithdraw(
                     this.data.encodedEvent,
                     signatures.map(({ signature }) => signature),
                     0,
@@ -282,7 +271,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                     await send('0x0')
                 }
                 else {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         ...this.releaseState,
                         status: 'disabled',
                     })
@@ -302,7 +291,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         (async () => {
             if (this.deriveEventAddress === undefined) {
                 if (this.prepareState?.status !== 'pending') {
-                    this.changeState('prepareState', this.prepareState)
+                    this.setState('prepareState', this.prepareState)
                 }
                 return
             }
@@ -313,14 +302,14 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             if (cachedState === undefined || !cachedState?.isDeployed) {
                 if (this.prepareState?.status !== 'pending') {
-                    this.changeState('prepareState', this.prepareState)
+                    this.setState('prepareState', this.prepareState)
                 }
 
                 if (this.evmWallet.web3 !== undefined && this.txHash !== undefined) {
                     try {
                         const { blockNumber } = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
                         const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
-                        this.changeState('transferState', {
+                        this.setState('transferState', {
                             ...this.transferState,
                             confirmedBlocksCount: networkBlockNumber - blockNumber,
                         } as EvmSwapTransferStoreState['transferState'])
@@ -332,7 +321,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
                         debug('Outdated ts', (Date.now() / 1000) - ts)
 
-                        this.changeState('prepareState', {
+                        this.setState('prepareState', {
                             ...this.prepareState,
                             isOutdated: ((Date.now() / 1000) - ts) >= 600,
                         } as EvmSwapTransferStoreState['prepareState'])
@@ -360,26 +349,26 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             const isProcessed = state === CreditProcessorState.Processed
 
             if (this.creditProcessorState !== state) {
-                this.changeState('swapState', {
+                this.setState('swapState', {
                     ...this.swapState,
                     isCanceling: false,
                     isProcessing: false,
                 } as EvmSwapTransferStoreState['swapState'])
             }
 
-            this.changeState('creditProcessorState', state)
+            this.setState('creditProcessorState', state)
 
             if (isCancelled || isProcessed) {
-                this.changeState('prepareState', {
+                this.setState('prepareState', {
                     status: 'confirmed',
                 })
-                this.changeState('eventState', {
+                this.setState('eventState', {
                     confirmations: this.eventState?.confirmations || 0,
                     requiredConfirmations: this.eventState?.requiredConfirmations || 0,
                     status: 'confirmed',
                 })
 
-                this.changeState('swapState', {
+                this.setState('swapState', {
                     ...this.swapState,
                     isStuck: false,
                     status: isCancelled ? 'disabled' : 'pending',
@@ -394,18 +383,18 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                     status: isCancelled ? 'disabled' : 'confirmed',
                 }
 
-                this.changeState('swapState', swapState)
+                this.setState('swapState', swapState)
 
                 if (isProcessed) {
-                    this.changeData('swapAmount', creditProcessorDetails.swapAmount)
+                    this.setData('swapAmount', creditProcessorDetails.swapAmount)
 
                     const swapAmountNumber = new BigNumber(creditProcessorDetails.swapAmount)
                         .shiftedBy(this.token?.decimals ? -this.token.decimals : 0)
                     const tokenAmountNumber = new BigNumber(this.amount)
-                        .shiftedBy(this.tokenVault?.decimals ? -this.tokenVault.decimals : 0)
+                        .shiftedBy(this.pipeline?.evmTokenDecimals ? -this.pipeline.evmTokenDecimals : 0)
 
                     if (isGoodBignumber(tokenAmountNumber) && isGoodBignumber(swapAmountNumber)) {
-                        this.changeData(
+                        this.setData(
                             'tokenAmount',
                             tokenAmountNumber
                                 .minus(swapAmountNumber)
@@ -414,7 +403,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                         )
                     }
 
-                    this.changeState('secondPrepareState', {
+                    this.setState('secondPrepareState', {
                         status: 'pending',
                     })
                     this.runContractUpdater()
@@ -425,13 +414,13 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             if (state >= CreditProcessorState.EventDeployInProgress) {
                 if (this.prepareState?.status !== 'confirmed') {
-                    this.changeState('prepareState', {
+                    this.setState('prepareState', {
                         status: 'confirmed',
                     })
                 }
 
                 if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
-                    const eventContract = rpc.createContract(
+                    const eventContract = new rpc.Contract(
                         TokenAbi.TokenTransferEthEvent,
                         this.deriveEventAddress,
                     )
@@ -454,14 +443,14 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                         eventState.status = 'rejected'
                     }
 
-                    this.changeState('eventState', eventState)
+                    this.setState('eventState', eventState)
 
                     if (eventState.status !== 'confirmed' && eventState.status !== 'rejected') {
                         return
                     }
 
                     if (eventState.status === 'confirmed') {
-                        this.changeState('swapState', {
+                        this.setState('swapState', {
                             ...this.swapState,
                             status: 'pending',
                         })
@@ -471,7 +460,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
 
             const tx = (await rpc.getTransactions({ address: this.deriveEventAddress })).transactions[0]
 
-            this.changeState('swapState', {
+            this.setState('swapState', {
                 ...this.swapState,
                 deployer: creditProcessorDetails.deployer,
             } as EvmSwapTransferStoreState['swapState'])
@@ -488,7 +477,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 CreditProcessorState.UnwrapFailed,
                 CreditProcessorState.ProcessRequiresGas,
             ].includes(state) && isStuck) {
-                this.changeState('swapState', {
+                this.setState('swapState', {
                     ...this.swapState,
                     isStuck: isStuckNow === undefined ? true : isStuckNow,
                     status: 'pending',
@@ -496,19 +485,19 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            this.changeState('swapState', {
+            this.setState('swapState', {
                 ...this.swapState,
                 isStuck: isStuckNow,
             } as EvmSwapTransferStoreState['swapState'])
 
             if (this.eventState?.status === 'confirmed') {
-                this.changeState('swapState', {
+                this.setState('swapState', {
                     ...this.swapState,
                     status: 'pending',
                 })
             }
             else {
-                this.changeState('swapState', this.swapState)
+                this.setState('swapState', this.swapState)
             }
         })().finally(() => {
             if (
@@ -554,12 +543,12 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            this.changeData('contractAddress', new Address(transfer.tonEventContractAddress))
-            this.changeState('secondPrepareState', {
+            this.setData('contractAddress', new Address(transfer.tonEventContractAddress))
+            this.setState('secondPrepareState', {
                 status: 'confirmed',
             })
 
-            this.changeState('secondEventState', {
+            this.setState('secondEventState', {
                 confirmations: this.secondEventState?.confirmations || 0,
                 requiredConfirmations: this.secondEventState?.requiredConfirmations || 0,
                 status: 'pending',
@@ -592,14 +581,14 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
         (async () => {
             if (
                 !this.evmWallet.isConnected
-                || !this.tonWallet.isConnected
+                || !this.everWallet.isConnected
                 || this.evmWallet.web3 === undefined
                 || this.contractAddress === undefined
             ) {
                 return
             }
 
-            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             let status: EventStateStatus = 'pending'
@@ -611,7 +600,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 status = 'rejected'
             }
 
-            this.changeState('secondEventState', {
+            this.setState('secondEventState', {
                 confirmations: eventDetails._confirms.length,
                 requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
                 status,
@@ -622,13 +611,13 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             }
 
             if (this.data.withdrawalId === undefined || this.data.encodedEvent === undefined) {
-                this.changeState('releaseState', {
+                this.setState('releaseState', {
                     status: 'pending',
                 })
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
+            const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -638,13 +627,11 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 return
             }
 
-            const { chainId } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
-
-            await this.tokensCache.syncEvmToken(token.root, chainId)
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = rpc.createContract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
+            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails._config.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -667,8 +654,8 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                 eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                 eventData: eventDataEncoded,
-                configurationWid: proxyDetails.value0.tonConfiguration.toString().split(':')[0],
-                configurationAddress: `0x${proxyDetails.value0.tonConfiguration.toString().split(':')[1]}`,
+                configurationWid: proxyDetails._config.tonConfiguration.toString().split(':')[0],
+                configurationAddress: `0x${proxyDetails._config.tonConfiguration.toString().split(':')[1]}`,
                 eventContractWid: this.contractAddress.toString().split(':')[0],
                 eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                 proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -676,8 +663,8 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             }])
             const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
 
-            this.changeData('encodedEvent', encodedEvent)
-            this.changeData('withdrawalId', withdrawalId)
+            this.setData('encodedEvent', encodedEvent)
+            this.setData('withdrawalId', withdrawalId)
 
             if (this.evmWallet.isConnected && this.secondEventState?.status === 'confirmed') {
                 this.runReleaseUpdater()
@@ -710,21 +697,18 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensCache.getEthTokenVaultContract(
-                    this.token.root,
-                    this.rightNetwork.chainId,
-                )
+                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         isReleased,
                         status: isReleased ? 'confirmed' : 'disabled',
                     })
                 }
 
                 if (isReleased) {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         isReleased: true,
                         status: 'confirmed',
                     })
@@ -753,10 +737,10 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 answerId: 0,
             }).call()).value0
 
-            this.changeData('creditFactoryFee', fee)
+            this.setData('creditFactoryFee', fee)
         }
         catch (e) {
-            this.changeData('creditFactoryFee', '')
+            this.setData('creditFactoryFee', '')
             error('Sync fee error', e)
         }
     }
@@ -781,8 +765,8 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
             })).state
 
             debug('Sync pair')
-            this.changeData('pairAddress', pairAddress)
-            this.changeData('pairState', pairState)
+            this.setData('pairAddress', pairAddress)
+            this.setData('pairState', pairState)
         }
         catch (e) {
             error('Sync pair error', e)
@@ -799,7 +783,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 this.pairContract.methods.expectedSpendAmount({
                     answerId: 0,
                     receive_amount: this.debt
-                        .shiftedBy(DexConstants.TONDecimals)
+                        .shiftedBy(DexConstants.CoinDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)
                         .times(100)
                         .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMinSlippage))
@@ -812,7 +796,7 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 this.pairContract.methods.expectedSpendAmount({
                     answerId: 0,
                     receive_amount: this.debt
-                        .shiftedBy(DexConstants.TONDecimals)
+                        .shiftedBy(DexConstants.CoinDecimals)
                         .plus(BridgeConstants.HiddenBridgeStrategyGas)
                         .times(100)
                         .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMaxSlippage))
@@ -824,8 +808,8 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
                 }),
             ]).then(r => r.map(i => (i.status === 'fulfilled' ? i.value : undefined)))
 
-            this.changeData('minTransferFee', results[0]?.expected_amount)
-            this.changeData('maxTransferFee', results[1]?.expected_amount)
+            this.setData('minTransferFee', results[0]?.expected_amount)
+            this.setData('maxTransferFee', results[1]?.expected_amount)
         }
         catch (e) {
             error('Sync transfers fee error', e)
@@ -871,12 +855,12 @@ export class EvmToEvmHiddenSwapTransfer extends EvmToTonSwapTransfer {
     protected get debt(): BigNumber {
         return new BigNumber(BridgeConstants.CreditBody)
             .plus(new BigNumber(this.data.creditFactoryFee || 0))
-            .shiftedBy(-DexConstants.TONDecimals)
+            .shiftedBy(-DexConstants.CoinDecimals)
     }
 
     protected get pairContract(): Contract<typeof DexAbi.Pair> | undefined {
         return this.data.pairAddress !== undefined
-            ? rpc.createContract(DexAbi.Pair, this.data.pairAddress)
+            ? new rpc.Contract(DexAbi.Pair, this.data.pairAddress)
             : undefined
     }
 

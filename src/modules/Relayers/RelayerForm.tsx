@@ -44,8 +44,8 @@ function RelayerFormInner(): JSX.Element {
                     stakingTokenDecimals={stakingData.stakingTokenDecimals}
                     tonWalletBalance={stakingData.tonWalletBalance}
                     tonWalletBalanceIsValid={relayerLink.tonWalletBalanceIsValid}
-                    tonTokenSymbol={DexConstants.TONSymbol}
-                    tonTokenDecimals={DexConstants.TONDecimals}
+                    tonTokenSymbol={DexConstants.CoinSymbol}
+                    tonTokenDecimals={DexConstants.CoinDecimals}
                     contractFee={stakingData.relayInitialTonDeposit}
                     onDismiss={relayerLink.cancel}
                     onSubmit={relayerLink.linkAccounts}
@@ -53,8 +53,8 @@ function RelayerFormInner(): JSX.Element {
             )}
 
             <CreateRelayerLayout
-                tonTokenSymbol={DexConstants.TONSymbol}
-                tonTokenDecimals={DexConstants.TONDecimals}
+                tonTokenSymbol={DexConstants.CoinSymbol}
+                tonTokenDecimals={DexConstants.CoinDecimals}
                 relayInitialTonDeposit={stakingData.relayInitialTonDeposit}
                 stakingBalance={stakingData.stakingBalance}
                 stakingTokenDecimals={stakingData.stakingTokenDecimals}
@@ -131,8 +131,8 @@ function RelayerFormInner(): JSX.Element {
                                         isSubmitted={relayerLink.isSubmitted}
                                         tonWalletBalanceIsValid={relayerLink.tonWalletBalanceIsValid}
                                         contractFee={stakingData.relayInitialTonDeposit}
-                                        tonTokenSymbol={DexConstants.TONSymbol}
-                                        tonTokenDecimals={DexConstants.TONDecimals}
+                                        tonTokenSymbol={DexConstants.CoinSymbol}
+                                        tonTokenDecimals={DexConstants.CoinDecimals}
                                         stakingBalance={stakingData.stakingBalance}
                                         requiredStake={stakingData.minRelayDeposit}
                                         stakingTokenDecimals={stakingData.stakingTokenDecimals}

@@ -18,7 +18,7 @@ export function ApproveStep(): JSX.Element {
     }
 
     const prevStep = () => {
-        bridge.changeState('step', CrosschainBridgeStep.SELECT_ASSET)
+        bridge.setState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
 
     return (

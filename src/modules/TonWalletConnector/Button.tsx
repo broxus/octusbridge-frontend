@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button, ButtonProps } from '@/components/common/Button'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { useMounted } from '@/hooks'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 type Props = {
     block?: boolean;
@@ -18,7 +18,7 @@ export const TonButtonConnector = observer(({
     children,
 }: Props): JSX.Element | null => {
     const intl = useIntl()
-    const wallet = useTonWallet()
+    const wallet = useEverWallet()
     const mounted = useMounted()
 
     if (!mounted) {

@@ -1,15 +1,15 @@
 import * as React from 'react'
 
-import { EvmHiddenSwapTransferStep, Summary } from '@/modules/Bridge/components'
+import { EvmTransferStep, Summary } from '@/modules/Bridge/components'
 
 
-export function EvmToEvmHiddenSwapStatus(): JSX.Element {
+export function EvmToEverscale(): JSX.Element {
     return (
         <section className="section">
             <div className="section__wrapper">
                 <main className="content">
                     <hr />
-                    <EvmHiddenSwapTransferStep />
+                    <EvmTransferStep />
                 </main>
 
                 <aside className="sidebar">

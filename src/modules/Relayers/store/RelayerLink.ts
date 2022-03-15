@@ -10,8 +10,8 @@ import { RelayerLinkStoreData, RelayerLinkStoreState } from '@/modules/Relayers/
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
 import { getStakingContract } from '@/modules/Staking/utils'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class RelayerLinkStore {
 
@@ -22,7 +22,7 @@ export class RelayerLinkStore {
     protected stackingContract = getStakingContract()
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected stakingData: StakingDataStore,
     ) {
         makeAutoObservable(this, {

@@ -6,10 +6,10 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { LabeledNetwork, NetworkShape } from '@/types'
 import { isEvmAddressValid, isTonAddressValid } from '@/utils'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 
 type Props = {
@@ -23,7 +23,7 @@ type Props = {
     networkFieldDisabled?: boolean;
     networks: LabeledNetwork[];
     shouldDisplayNetworkAlert?: boolean;
-    wallet?: TonWalletService | EvmWalletService;
+    wallet?: EverWalletService | EvmWalletService;
 }
 
 
@@ -52,7 +52,7 @@ export function RouteForm({
                 return isEvmAddressValid(address)
             }
 
-            if (network?.type === 'ton') {
+            if (network?.type === 'everscale') {
                 return isTonAddressValid(address)
             }
         }

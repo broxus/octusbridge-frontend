@@ -13,13 +13,13 @@ import { useBridge } from '@/modules/Bridge/providers'
 export function SwapSwitcherFieldset(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
-    const tonWallet = bridge.useTonWallet
+    const everWallet = bridge.useEverWallet
 
     const onSwitch = async () => {
-        if (bridge.isInsufficientTonBalance) {
+        if (bridge.isInsufficientEverBalance) {
             return
         }
-        bridge.changeState('isSwapEnabled', !bridge.isSwapEnabled)
+        bridge.setState('isSwapEnabled', !bridge.isSwapEnabled)
         await bridge.onSwapToggle()
     }
 
@@ -32,7 +32,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
                             <OptionSwitcher
                                 checked={bridge.isSwapEnabled}
                                 id="gas-fees"
-                                disabled={bridge.isInsufficientTonBalance}
+                                disabled={bridge.isInsufficientEverBalance}
                                 label={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL',
                                 }, {
@@ -46,18 +46,18 @@ export function SwapSwitcherFieldset(): JSX.Element {
                     <Observer>
                         {() => {
                             switch (true) {
-                                case !tonWallet.isConnected: {
+                                case !everWallet.isConnected: {
                                     return (
                                         <Button
                                             className="margin-top"
                                             disabled={(
-                                                tonWallet.isInitializing
-                                                || tonWallet.isConnecting
-                                                || tonWallet.isConnected
+                                                everWallet.isInitializing
+                                                || everWallet.isConnecting
+                                                || everWallet.isConnected
                                             )}
                                             size="md"
                                             type="primary"
-                                            onClick={tonWallet.connect}
+                                            onClick={everWallet.connect}
                                         >
                                             {intl.formatMessage({
                                                 id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
@@ -67,11 +67,11 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                 }
 
                                 case (
-                                    tonWallet.isConnected
-                                    && !tonWallet.isUpdatingContract
+                                    everWallet.isConnected
+                                    && !everWallet.isUpdatingContract
                                     && (
-                                        tonWallet.contract === undefined
-                                        || !tonWallet.contract?.isDeployed
+                                        everWallet.contract === undefined
+                                        || !everWallet.contract?.isDeployed
                                     )
                                 ): {
                                     return (
@@ -89,9 +89,9 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                 }
 
                                 case (
-                                    tonWallet.isConnected
-                                    && !tonWallet.isUpdatingContract
-                                    && bridge.isInsufficientTonBalance
+                                    everWallet.isConnected
+                                    && !everWallet.isUpdatingContract
+                                    && bridge.isInsufficientEverBalance
                                 ): {
                                     return (
                                         <Alert
@@ -101,7 +101,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                             }, {
                                                 minTons: (
                                                     new BigNumber(BridgeConstants.EmptyWalletMinTonsAmount)
-                                                        .shiftedBy(-DexConstants.TONDecimals)
+                                                        .shiftedBy(-DexConstants.CoinDecimals)
                                                         .toFixed()
                                                 ),
                                             }, {

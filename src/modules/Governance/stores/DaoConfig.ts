@@ -2,11 +2,11 @@ import {
     IReactionDisposer, makeAutoObservable, reaction, runInAction,
 } from 'mobx'
 
-import { TonWalletService } from '@/stores/TonWalletService'
 import { DaoRootContractAddress } from '@/config'
 import { DaoAbi, ProposalConfig } from '@/misc'
 import { error } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 type Data = {
     config?: ProposalConfig
@@ -20,7 +20,7 @@ export class DaoConfigStore {
     protected syncDisposer?: IReactionDisposer
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this)
     }

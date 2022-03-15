@@ -6,21 +6,21 @@ import { useIntl } from 'react-intl'
 import { EventStatus } from '@/modules/Bridge/components/Statuses'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useTonTransfer } from '@/modules/Bridge/providers'
+import { useEverscaleTransfer } from '@/modules/Bridge/providers'
 
 
 function EventStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const transfer = useTonTransfer()
+    const transfer = useEverscaleTransfer()
 
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const isPrepareConfirmed = transfer.prepareState?.status === 'confirmed'
     const status = transfer.eventState?.status || 'disabled'
     const isConfirmed = status === 'confirmed'
     const { confirmations = 0, requiredConfirmations = 0 } = { ...transfer.eventState }
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && isPrepareConfirmed
         && !isConfirmed
     )
@@ -44,7 +44,7 @@ function EventStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -52,7 +52,7 @@ function EventStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

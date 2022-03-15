@@ -8,7 +8,7 @@ import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useEvmTransfer } from '@/modules/Bridge/providers'
-import { getTonMainNetwork, isEvmTxHashValid } from '@/utils'
+import { getEverscaleMainNetwork, isEvmTxHashValid } from '@/utils'
 
 
 function PrepareStatusIndicatorInner(): JSX.Element {
@@ -17,13 +17,13 @@ function PrepareStatusIndicatorInner(): JSX.Element {
 
     const isTransferPage = transfer.txHash !== undefined && isEvmTxHashValid(transfer.txHash)
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const status = transfer.prepareState?.status || 'disabled'
     const isTransferConfirmed = transfer.transferState?.status === 'confirmed'
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && isTransferConfirmed
         && !isConfirmed
     )
@@ -57,7 +57,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
             }, {
-                network: getTonMainNetwork()?.label || '',
+                network: getEverscaleMainNetwork()?.label || '',
             })}
             status={status}
             txHash={isConfirmed ? transfer.deriveEventAddress?.toString() : undefined}
@@ -65,7 +65,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -73,7 +73,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

@@ -2,31 +2,31 @@ import * as React from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { useTransferLifecycle } from '@/modules/Bridge/hooks'
-import { EvmToEvmHiddenSwapTransfer } from '@/modules/Bridge/stores'
+import { EvmToEvmHiddenSwapPipeline } from '@/modules/Bridge/stores'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { isEvmTxHashValid } from '@/utils'
 
 
-export const EvmHiddenSwapTransferContext = React.createContext<EvmToEvmHiddenSwapTransfer>(
-    new EvmToEvmHiddenSwapTransfer(
+export const EvmHiddenSwapTransferContext = React.createContext<EvmToEvmHiddenSwapPipeline>(
+    new EvmToEvmHiddenSwapPipeline(
         useEvmWallet(),
-        useTonWallet(),
+        useEverWallet(),
         useTokensCache(),
     ),
 )
 
-export function useEvmHiddenSwapTransfer(): EvmToEvmHiddenSwapTransfer {
+export function useEvmHiddenSwapTransfer(): EvmToEvmHiddenSwapPipeline {
     return React.useContext(EvmHiddenSwapTransferContext)
 }
 
 type Props = {
     children: React.ReactNode;
-    evmWallet: EvmWalletService,
-    tonWallet: TonWalletService,
-    tokensCache: TokensCacheService,
+    everWallet: EverWalletService;
+    evmWallet: EvmWalletService;
+    tokensCache: TokensCacheService;
 }
 
 export function EvmHiddenSwapTransferStoreProvider({ children, ...props }: Props): JSX.Element {
@@ -36,9 +36,9 @@ export function EvmHiddenSwapTransferStoreProvider({ children, ...props }: Props
         return <Redirect to="/bridge" />
     }
 
-    const transfer = React.useMemo(() => new EvmToEvmHiddenSwapTransfer(
+    const transfer = React.useMemo(() => new EvmToEvmHiddenSwapPipeline(
         props.evmWallet,
-        props.tonWallet,
+        props.everWallet,
         props.tokensCache,
         params,
     ), [params])

@@ -8,18 +8,18 @@ import {
 import { TokenCache } from '@/stores/TokensCacheService'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { DaoAbi, DexConstants } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ProposalCreateStore {
 
     protected state: ProposalCreateStoreState = {}
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected userData: UserDataStore,
         protected daoConfig: DaoConfigStore,
     ) {
@@ -58,7 +58,7 @@ export class ProposalCreateStore {
                 ...item,
                 payload: item.payload,
                 value: new BigNumber(item.value)
-                    .shiftedBy(DexConstants.TONDecimals)
+                    .shiftedBy(DexConstants.CoinDecimals)
                     .decimalPlaces(0)
                     .toFixed(),
                 target: new Address(item.target),

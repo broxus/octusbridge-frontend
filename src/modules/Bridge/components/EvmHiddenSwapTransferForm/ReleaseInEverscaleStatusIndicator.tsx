@@ -4,10 +4,10 @@ import { useIntl } from 'react-intl'
 
 import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
 import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
-import { getTonMainNetwork } from '@/utils'
+import { getEverscaleMainNetwork } from '@/utils'
 
 
-function ReleaseInTonStatusIndicatorInner(): JSX.Element {
+function ReleaseInEverscaleStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmHiddenSwapTransfer()
 
@@ -19,11 +19,11 @@ function ReleaseInTonStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
             }, {
-                network: getTonMainNetwork()?.label || '',
+                network: getEverscaleMainNetwork()?.label || '',
             })}
             status={status}
         />
     )
 }
 
-export const ReleaseInTonStatusIndicator = observer(ReleaseInTonStatusIndicatorInner)
+export const ReleaseInEverscaleStatusIndicator = observer(ReleaseInEverscaleStatusIndicatorInner)

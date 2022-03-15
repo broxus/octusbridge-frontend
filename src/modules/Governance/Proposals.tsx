@@ -8,13 +8,13 @@ import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { ProposalsList } from '@/modules/Governance/components/ProposalsList'
 import { UserStats } from '@/modules/Governance/components/UserStats'
 import { UserProposals } from '@/modules/Governance/components/UserProposals'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function Proposals(): JSX.Element {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
 
     return (
         <Container size="lg">

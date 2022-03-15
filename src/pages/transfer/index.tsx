@@ -1,21 +1,21 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { useParams } from 'react-router-dom'
+import { Redirect, useParams } from 'react-router-dom'
 
 import {
+    EverscaleToEvm,
+    EverscaleTransferStoreProvider,
     EvmHiddenSwapTransferStoreProvider,
     EvmSwapTransferStoreProvider,
-    EvmToEvmHiddenSwapStatus,
-    EvmToTonStatus,
-    EvmToTonSwapStatus,
+    EvmToEverscale,
+    EvmToEverscaleSwap,
+    EvmToEvmHiddenSwap,
     EvmTransferStoreProvider,
-    TonToEvmStatus,
-    TonTransferStoreProvider,
 } from '@/modules/Bridge'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { useTokensCache } from '@/stores/TokensCacheService'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 
 export default function Page(): JSX.Element | null {
@@ -24,6 +24,21 @@ export default function Page(): JSX.Element | null {
 
     switch (`${params.fromType}-${params.toType}`) {
         case 'evm-ton':
+            return (
+                <Redirect
+                    to={`/transfer/evm-${params.fromId}/everscale-${params.toId}/${params.txHash}/${params.depositType}`}
+                />
+            )
+
+        case 'ton-evm': {
+            return (
+                <Redirect
+                    to={`/transfer/everscale-${params.fromId}/evm-${params.toId}/${params.txHash}/${params.depositType}`}
+                />
+            )
+        }
+
+        case 'evm-everscale':
             return (
                 <div className="container container--large">
                     <header className="page-header">
@@ -37,18 +52,18 @@ export default function Page(): JSX.Element | null {
                     {params.depositType === 'credit' ? (
                         <EvmSwapTransferStoreProvider
                             evmWallet={useEvmWallet()}
-                            tonWallet={useTonWallet()}
+                            everWallet={useEverWallet()}
                             tokensCache={useTokensCache()}
                         >
-                            <EvmToTonSwapStatus />
+                            <EvmToEverscaleSwap />
                         </EvmSwapTransferStoreProvider>
                     ) : (
                         <EvmTransferStoreProvider
                             evmWallet={useEvmWallet()}
-                            tonWallet={useTonWallet()}
+                            everWallet={useEverWallet()}
                             tokensCache={useTokensCache()}
                         >
-                            <EvmToTonStatus />
+                            <EvmToEverscale />
                         </EvmTransferStoreProvider>
                     )}
                 </div>
@@ -67,15 +82,15 @@ export default function Page(): JSX.Element | null {
 
                     <EvmHiddenSwapTransferStoreProvider
                         evmWallet={useEvmWallet()}
-                        tonWallet={useTonWallet()}
+                        everWallet={useEverWallet()}
                         tokensCache={useTokensCache()}
                     >
-                        <EvmToEvmHiddenSwapStatus />
+                        <EvmToEvmHiddenSwap />
                     </EvmHiddenSwapTransferStoreProvider>
                 </div>
             )
 
-        case 'ton-evm':
+        case 'everscale-evm':
             return (
                 <div className="container container--large">
                     <header className="page-header">
@@ -86,13 +101,13 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    <TonTransferStoreProvider
+                    <EverscaleTransferStoreProvider
                         evmWallet={useEvmWallet()}
-                        tonWallet={useTonWallet()}
+                        everWallet={useEverWallet()}
                         tokensCache={useTokensCache()}
                     >
-                        <TonToEvmStatus />
-                    </TonTransferStoreProvider>
+                        <EverscaleToEvm />
+                    </EverscaleTransferStoreProvider>
                 </div>
             )
 

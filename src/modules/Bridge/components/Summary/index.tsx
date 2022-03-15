@@ -39,7 +39,7 @@ export function Summary(): JSX.Element {
                                 />
                                 {(summary.leftNetwork?.name !== undefined && summary.leftAddress !== undefined) ? (
                                     <div>
-                                        {summary.leftNetwork?.type === 'ton' && (
+                                        {summary.leftNetwork?.type === 'everscale' && (
                                             <TonscanAccountLink
                                                 key="ton-address"
                                                 address={summary.leftAddress}
@@ -81,7 +81,7 @@ export function Summary(): JSX.Element {
                                 />
                                 {(summary.rightNetwork?.name !== undefined && summary.rightAddress !== undefined) ? (
                                     <div>
-                                        {summary.rightNetwork?.type === 'ton' && (
+                                        {summary.rightNetwork?.type === 'everscale' && (
                                             <TonscanAccountLink
                                                 key="ton-address"
                                                 address={summary.rightAddress}
@@ -129,7 +129,10 @@ export function Summary(): JSX.Element {
                 <Observer>
                     {() => (
                         <>
-                            {((summary.isEvmToTon || summary.isTonToEvm) && summary.vaultBalance !== undefined) && (
+                            {((
+                                summary.isEvmToEverscale
+                                || summary.isEverscaleToEvm
+                            ) && !summary.isEverscaleBasedToken && summary.vaultBalance !== undefined) && (
                                 <li key="vault-balance">
                                     <div className="text-muted">
                                         {intl.formatMessage({
@@ -141,7 +144,7 @@ export function Summary(): JSX.Element {
                                     <div className="text-truncate">
                                         {formattedAmount(
                                             summary.vaultBalance,
-                                            summary.vaultDecimals,
+                                            summary.evmTokenDecimals,
                                             { target: 'token' },
                                         )}
                                     </div>
@@ -174,9 +177,9 @@ export function Summary(): JSX.Element {
                                 {(summary.amount && summary.amount !== '0')
                                     ? formattedAmount(
                                         summary.amount,
-                                        summary.isFromTon
+                                        summary.isFromEverscale
                                             ? summary.token?.decimals
-                                            : summary.tokenVault?.decimals,
+                                            : summary.evmTokenDecimals,
                                         { preserve: true },
                                     )
                                     : '–'}

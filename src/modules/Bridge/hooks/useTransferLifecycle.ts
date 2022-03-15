@@ -3,56 +3,59 @@ import { reaction } from 'mobx'
 import { useParams } from 'react-router-dom'
 
 import type {
-    EvmToEvmHiddenSwapTransfer,
-    EvmToTonSwapTransfer,
-    EvmToTonTransfer,
-    TonToEvmTransfer,
+    EverscaleToEvmPipeline,
+    EvmToEverscalePipeline,
+    EvmToEverscaleSwapPipeline,
+    EvmToEvmHiddenSwapPipeline,
 } from '@/modules/Bridge/stores'
 import { useSummary } from '@/modules/Bridge/stores'
-import { EvmTransferQueryParams, TonTransferQueryParams } from '@/modules/Bridge/types'
+import { EverscaleTransferQueryParams, EvmTransferQueryParams } from '@/modules/Bridge/types'
 
 
-type Transfer = TonToEvmTransfer | EvmToTonTransfer | EvmToTonSwapTransfer | EvmToEvmHiddenSwapTransfer
+type Pipeline = EverscaleToEvmPipeline
+    | EvmToEverscalePipeline
+    | EvmToEverscaleSwapPipeline
+    | EvmToEvmHiddenSwapPipeline
 
-export function useTransferLifecycle(transfer: Transfer): void {
-    const params = useParams<EvmTransferQueryParams | TonTransferQueryParams>()
+export function useTransferLifecycle(pipeline: Pipeline): void {
+    const params = useParams<EvmTransferQueryParams | EverscaleTransferQueryParams>()
 
     React.useEffect(() => {
         (async () => {
             try {
-                await transfer.init()
+                await pipeline.init()
             }
             catch (e) {}
         })()
-        return () => transfer.dispose()
+        return () => pipeline.dispose()
     }, [params])
 
     React.useEffect(() => {
         const summary = useSummary()
-        summary.changeState('isTransferPage', true)
+        summary.setState('isTransferPage', true)
         const summaryDisposer = reaction(
             () => ({
-                amount: transfer.amount,
-                everscaleAddress: (transfer as EvmToEvmHiddenSwapTransfer).everscaleAddress,
-                leftAddress: transfer.leftAddress,
-                leftNetwork: transfer.leftNetwork,
-                maxTransferFee: (transfer as EvmToEvmHiddenSwapTransfer).maxTransferFee,
-                minTransferFee: (transfer as EvmToEvmHiddenSwapTransfer).minTransferFee,
-                rightAddress: transfer.rightAddress,
-                rightNetwork: transfer.rightNetwork,
-                swapAmount: (transfer as EvmToEvmHiddenSwapTransfer).swapAmount,
-                token: transfer.token,
-                tokenAmount: (transfer as EvmToEvmHiddenSwapTransfer).tokenAmount,
+                amount: pipeline.amount,
+                everscaleAddress: (pipeline as EvmToEvmHiddenSwapPipeline).everscaleAddress,
+                leftAddress: pipeline.leftAddress,
+                leftNetwork: pipeline.leftNetwork,
+                maxTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).maxTransferFee,
+                minTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).minTransferFee,
+                rightAddress: pipeline.rightAddress,
+                rightNetwork: pipeline.rightNetwork,
+                swapAmount: (pipeline as EvmToEvmHiddenSwapPipeline).swapAmount,
+                token: pipeline.token,
+                tokenAmount: (pipeline as EvmToEvmHiddenSwapPipeline).tokenAmount,
             }),
             data => {
-                summary.updateData(data)
+                summary.setData(data)
             },
         )
 
         const transferReleaseDisposer = reaction(
-            () => (transfer as EvmToEvmHiddenSwapTransfer).releaseState?.isReleased,
+            () => (pipeline as EvmToEvmHiddenSwapPipeline).releaseState?.isReleased,
             value => {
-                summary.changeState('isTransferReleased', value)
+                summary.setState('isTransferReleased', value)
             },
         )
 

@@ -21,7 +21,7 @@ export function VoteCard({
         <div className="vote-card">
             <div className="vote-card__value">
                 {value
-                    ? formattedAmount(value, DexConstants.TONDecimals, {
+                    ? formattedAmount(value, DexConstants.CoinDecimals, {
                         target: 'token',
                     })
                     : intl.formatMessage({

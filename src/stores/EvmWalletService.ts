@@ -8,26 +8,26 @@ import {
 } from '@/utils'
 
 
-export type WalletData = {
+export type EvmWalletData = {
     address?: string;
     balance?: string;
     chainId: string;
 }
 
-export type WalletState = {
+export type EvmWalletState = {
     isConnected: boolean;
     isConnecting: boolean | undefined;
     isInitialized: boolean;
     isInitializing: boolean;
 }
 
-const DEFAULT_WALLET_DATA: WalletData = {
+const DEFAULT_WALLET_DATA: EvmWalletData = {
     address: undefined,
     balance: '0',
     chainId: '1',
 }
 
-const DEFAULT_WALLET_STATE: WalletState = {
+const DEFAULT_WALLET_STATE: EvmWalletState = {
     isConnected: false,
     isConnecting: undefined,
     isInitialized: false,
@@ -39,17 +39,17 @@ export class EvmWalletService {
 
     /**
      * Current data of the wallet
-     * @type {WalletData}
+     * @type {EvmWalletData}
      * @protected
      */
-    protected data: WalletData = DEFAULT_WALLET_DATA
+    protected data: EvmWalletData = DEFAULT_WALLET_DATA
 
     /**
      * Current state of the wallet connection
-     * @type {WalletState}
+     * @type {EvmWalletState}
      * @protected
      */
-    protected state: WalletState = DEFAULT_WALLET_STATE
+    protected state: EvmWalletState = DEFAULT_WALLET_STATE
 
     constructor() {
         makeAutoObservable(this, {
@@ -121,7 +121,7 @@ export class EvmWalletService {
      * Returns computed wallet address value
      * @returns {string | undefined}
      */
-    public get address(): WalletData['address'] {
+    public get address(): EvmWalletData['address'] {
         return this.data.address
     }
 
@@ -129,7 +129,7 @@ export class EvmWalletService {
      * Returns computed wallet balance value
      * @returns {string | undefined}
      */
-    public get balance(): WalletData['balance'] {
+    public get balance(): EvmWalletData['balance'] {
         return this.data.balance
     }
 
@@ -146,7 +146,7 @@ export class EvmWalletService {
      * Returns `true` if wallet is connected
      * @returns {boolean}
      */
-    public get isConnected(): WalletState['isConnected'] {
+    public get isConnected(): EvmWalletState['isConnected'] {
         return this.state.isConnected
     }
 
@@ -154,7 +154,7 @@ export class EvmWalletService {
      * Returns `true` if wallet is connecting
      * @returns {boolean}
      */
-    public get isConnecting(): WalletState['isConnecting'] {
+    public get isConnecting(): EvmWalletState['isConnecting'] {
         return this.state.isConnecting
     }
 
@@ -162,7 +162,7 @@ export class EvmWalletService {
      * Returns `true` if wallet is initialized
      * @returns {boolean}
      */
-    public get isInitialized(): WalletState['isInitialized'] {
+    public get isInitialized(): EvmWalletState['isInitialized'] {
         return this.state.isInitialized
     }
 
@@ -170,7 +170,7 @@ export class EvmWalletService {
      * Returns `true` if wallet is initializing
      * @returns {boolean}
      */
-    public get isInitializing(): WalletState['isInitializing'] {
+    public get isInitializing(): EvmWalletState['isInitializing'] {
         return this.state.isInitializing
     }
 
@@ -392,8 +392,8 @@ export class EvmWalletService {
 }
 
 
-const EvmWalletServiceStore = new EvmWalletService()
+const Service = new EvmWalletService()
 
 export function useEvmWallet(): EvmWalletService {
-    return EvmWalletServiceStore
+    return Service
 }

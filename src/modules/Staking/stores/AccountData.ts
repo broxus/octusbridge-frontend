@@ -7,12 +7,12 @@ import BigNumber from 'bignumber.js'
 import { AccountDataStoreData, AccountDataStoreState, CurrencyResponse } from '@/modules/Staking/types'
 import { getStakingContract, handleCurrency } from '@/modules/Staking/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import {
     CastedVotes, PendingReward, RelayConfig, StackingDetails, UserDataAbi, UserDetails,
 } from '@/misc'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class AccountDataStore {
 
@@ -26,7 +26,7 @@ export class AccountDataStore {
 
     constructor(
         public readonly tokensCache: TokensCacheService,
-        public readonly tonWallet: TonWalletService,
+        public readonly tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this, {
             connectToTonWallet: action.bound,
@@ -176,7 +176,7 @@ export class AccountDataStore {
             if (stakingDetails) {
                 [currency] = await Promise.all([
                     handleCurrency(stakingDetails.tokenRoot.toString()).catch(_ => undefined),
-                    await this.tokensCache.syncTonToken(stakingDetails.tokenRoot.toString()),
+                    await this.tokensCache.syncEverscaleToken(stakingDetails.tokenRoot.toString()),
                 ])
             }
 

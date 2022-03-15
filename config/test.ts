@@ -56,7 +56,7 @@ export const networks: NetworkShape[] = [
         label: 'Everscale',
         name: 'Everscale',
         rpcUrl: '',
-        type: 'ton',
+        type: 'everscale',
     },
 ]
 

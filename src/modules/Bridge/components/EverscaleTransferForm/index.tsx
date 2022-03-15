@@ -1,8 +1,8 @@
 import * as React from 'react'
 
-import { EventStatusIndicator } from '@/modules/Bridge/components/TonTransferForm/EventStatusIndicator'
-import { PrepareStatusIndicator } from '@/modules/Bridge/components/TonTransferForm/PrepareStatusIndicator'
-import { ReleaseStatusIndicator } from '@/modules/Bridge/components/TonTransferForm/ReleaseStatusIndicator'
+import { EventStatusIndicator } from '@/modules/Bridge/components/EverscaleTransferForm/EventStatusIndicator'
+import { PrepareStatusIndicator } from '@/modules/Bridge/components/EverscaleTransferForm/PrepareStatusIndicator'
+import { ReleaseStatusIndicator } from '@/modules/Bridge/components/EverscaleTransferForm/ReleaseStatusIndicator'
 
 
 export function TonTransferForm(): JSX.Element {

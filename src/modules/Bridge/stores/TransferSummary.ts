@@ -1,43 +1,30 @@
-import { makeAutoObservable } from 'mobx'
+import { makeObservable, observable } from 'mobx'
 
 import {
     DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
     DEFAULT_TRANSFER_SUMMARY_STORE_STATE,
 } from '@/modules/Bridge/constants'
 import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
-import { TokenAssetVault, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { BaseStore } from '@/stores/BaseStore'
+import { Pipeline, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 
 
-export class TransferSummary {
-
-    protected data: TransferSummaryData
-
-    protected state: TransferSummaryState
+export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
 
     constructor(protected readonly tokensCache: TokensCacheService) {
-        this.data = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
-        this.state = DEFAULT_TRANSFER_SUMMARY_STORE_STATE
+        super()
 
-        makeAutoObservable(this)
-    }
+        this.reset()
 
-    public changeState<K extends keyof TransferSummaryState>(
-        key: K,
-        value: TransferSummaryState[K],
-    ): void {
-        this.state[key] = value
-    }
-
-    public updateData(data: TransferSummaryData): void {
-        this.data = {
-            ...this.data,
-            ...data,
-        }
+        makeObservable<TransferSummary, 'data' | 'state'>(this, {
+            data: observable,
+            state: observable,
+        })
     }
 
     public reset(): void {
-        this.data = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
-        this.state = DEFAULT_TRANSFER_SUMMARY_STORE_STATE
+        this.setData(DEFAULT_TRANSFER_SUMMARY_STORE_DATA)
+        this.setState(DEFAULT_TRANSFER_SUMMARY_STORE_STATE)
     }
 
     public get amount(): TransferSummaryData['amount'] {
@@ -76,6 +63,25 @@ export class TransferSummary {
         return this.data.rightNetwork
     }
 
+    public get pipeline(): Pipeline | undefined {
+        if (
+            this.token?.root === undefined
+            || this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.rightNetwork?.type === undefined
+            || this.rightNetwork?.chainId === undefined
+        ) {
+            return undefined
+        }
+
+        return this.tokensCache.pipeline(
+            this.token.root,
+            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            // this.depositType,
+        )
+    }
+
     public get swapAmount(): TransferSummaryData['swapAmount'] {
         return this.data.swapAmount
     }
@@ -96,58 +102,32 @@ export class TransferSummary {
         return this.state.isTransferReleased
     }
 
-    public get tokenVault(): TokenAssetVault | undefined {
-        if (this.token?.root === undefined || this.leftNetwork?.chainId === undefined) {
-            return undefined
-        }
-        return this.token.vaults?.find(vault => vault.chainId === this.leftNetwork!.chainId)
-    }
-
-    public get tokenVaultRight(): TokenAssetVault | undefined {
-        if (this.token?.root === undefined || this.rightNetwork?.chainId === undefined) {
-            return undefined
-        }
-        return this.token.vaults?.find(vault => vault.chainId === this.rightNetwork!.chainId)
-    }
-
     public get vaultBalance(): string | undefined {
-        if (this.isEvmToTon) {
-            return this.tokenVault?.balance
-        }
-
-        if (this.isTonToEvm) {
-            return this.tokenVaultRight?.balance
-        }
-
-        return undefined
+        return this.pipeline?.vaultBalance
     }
 
-    public get vaultDecimals(): number | undefined {
-        if (this.isEvmToTon) {
-            return this.tokenVault?.decimals
-        }
+    public get evmTokenDecimals(): number | undefined {
+        return this.pipeline?.evmTokenDecimals
+    }
 
-        if (this.isTonToEvm) {
-            return this.tokenVaultRight?.decimals
-        }
-
-        return undefined
+    public get isEverscaleBasedToken(): boolean {
+        return this.pipeline?.tokenBase === 'everscale'
     }
 
     public get isEvmToEvm(): boolean {
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
-    public get isEvmToTon(): boolean {
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'ton'
+    public get isEvmToEverscale(): boolean {
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'everscale'
     }
 
-    public get isFromTon(): boolean {
-        return this.leftNetwork?.type === 'ton'
+    public get isFromEverscale(): boolean {
+        return this.leftNetwork?.type === 'everscale'
     }
 
-    public get isTonToEvm(): boolean {
-        return this.leftNetwork?.type === 'ton' && this.rightNetwork?.type === 'evm'
+    public get isEverscaleToEvm(): boolean {
+        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
     }
 
 }

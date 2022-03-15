@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { useBridge } from '@/modules/Bridge/providers'
 import { SwapSwitcherFieldset } from '@/modules/Bridge/components/SwapForm/SwapSwitcherFieldset'
 import { TokensAmountFieldset } from '@/modules/Bridge/components/SwapForm/TokensAmountFieldset'
-import { TonsAmountFieldset } from '@/modules/Bridge/components/SwapForm/TonsAmountFieldset'
+import { EversAmountFieldset } from '@/modules/Bridge/components/SwapForm/EversAmountFieldset'
 
 
 export function SwapForm(): JSX.Element {
@@ -27,7 +27,7 @@ export function SwapForm(): JSX.Element {
                             {bridge.isSwapEnabled ? (
                                 <>
                                     <TokensAmountFieldset />
-                                    <TonsAmountFieldset />
+                                    <EversAmountFieldset />
                                 </>
                             ) : null}
                         </>

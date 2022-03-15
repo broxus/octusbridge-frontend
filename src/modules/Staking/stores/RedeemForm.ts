@@ -5,10 +5,10 @@ import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import { getStakingContract } from '@/modules/Staking/utils'
 import { RedeemFormStoreData, RedeemFormStoreState } from '@/modules/Staking/types'
 import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class RedeemFormStore {
 
@@ -20,7 +20,7 @@ export class RedeemFormStore {
 
     constructor(
         public readonly accountData: AccountDataStore,
-        public readonly tonWallet: TonWalletService,
+        public readonly tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this, {
             setAmount: action.bound,

@@ -2,12 +2,15 @@ import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
 import {
+    computed,
     IReactionDisposer,
-    makeAutoObservable,
+    makeObservable,
+    observable,
     reaction,
     toJS,
 } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
+
 import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc'
 import {
@@ -16,37 +19,58 @@ import {
 } from '@/modules/Bridge/constants'
 import {
     EventStateStatus,
-    TonTransferQueryParams,
-    TonTransferStoreData,
-    TonTransferStoreState,
+    EverscaleTransferQueryParams,
+    EverscaleTransferStoreData,
+    EverscaleTransferStoreState,
 } from '@/modules/Bridge/types'
+import { BaseStore } from '@/stores/BaseStore'
+import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TonWalletService } from '@/stores/TonWalletService'
-import { TokenAssetVault, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { Pipeline, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
 
 
-export class TonToEvmTransfer {
-
-    protected data: TonTransferStoreData
-
-    protected state: TonTransferStoreState
+// noinspection DuplicatedCode
+export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData, EverscaleTransferStoreState> {
 
     protected eventUpdater: ReturnType<typeof setTimeout> | undefined
 
     protected releaseUpdater: ReturnType<typeof setTimeout> | undefined
 
     constructor(
-        protected readonly tonWallet: TonWalletService,
+        protected readonly everWallet: EverWalletService,
         protected readonly evmWallet: EvmWalletService,
         protected readonly tokensCache: TokensCacheService,
-        protected readonly params?: TonTransferQueryParams,
+        protected readonly params?: EverscaleTransferQueryParams,
     ) {
+        super()
+
         this.data = DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA
         this.state = DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE
 
-        makeAutoObservable(this)
+        makeObservable<
+            EverscaleToEvmPipeline,
+            | 'data'
+            | 'state'
+        >(this, {
+            data: observable,
+            state: observable,
+            amount: computed,
+            leftAddress: computed,
+            rightAddress: computed,
+            eventState: computed,
+            prepareState: computed,
+            releaseState: computed,
+            leftNetwork: computed,
+            rightNetwork: computed,
+            pipeline: computed,
+            token: computed,
+            contractAddress: computed,
+            useEverWallet: computed,
+            useEvmWallet: computed,
+            useTokensCache: computed,
+        })
     }
 
     public async init(): Promise<void> {
@@ -54,134 +78,70 @@ export class TonToEvmTransfer {
             return
         }
 
-        const runCheck = async () => {
-            switch (true) {
-                case this.prepareState?.status !== 'confirmed':
-                    this.changeState('prepareState', {
-                        status: 'pending',
-                    })
-
-                    if (!this.state.isContractDeployed) {
-                        this.checkContract()
-                    }
-                    else {
-                        try { await this.resolve() }
-                        catch (e) {}
-                    }
-                    break
-
-                case this.prepareState?.status === 'confirmed' && this.eventState?.status !== 'confirmed':
-                    if (this.token === undefined) {
-                        break
-                    }
-
-                    this.changeState('eventState', {
-                        confirmations: this.eventState?.confirmations || 0,
-                        requiredConfirmations: this.eventState?.requiredConfirmations || 0,
-                        status: 'pending',
-                    })
-                    await this.tokensCache.syncEvmToken(this.token.root, this.evmWallet.chainId)
-                    this.runEventUpdater()
-                    break
-
-                case (
-                    this.prepareState?.status === 'confirmed'
-                    && this.eventState?.status === 'confirmed'
-                    && this.releaseState?.status !== 'confirmed'
-                ):
-                    this.runReleaseUpdater()
-                    break
-
-                default:
-            }
-        }
-
         this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async value => {
             if (this.evmWallet.isConnected && value === this.rightNetwork?.chainId) {
-                await runCheck()
+                await this.checkContract()
             }
         }, { delay: 30 })
 
         this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
             if (isConnected && this.evmWallet.chainId === this.rightNetwork?.chainId) {
-                await runCheck()
+                await this.checkContract()
             }
         }, { delay: 30 })
 
-        this.#tonWalletDisposer = reaction(() => this.tonWallet.isConnected, async isConnected => {
+        this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, async isConnected => {
             if (isConnected) {
-                await runCheck()
+                await this.checkContract()
             }
         }, { delay: 30 })
 
-        this.#contractDisposer = reaction(() => this.state.isContractDeployed, async () => {
-            if (this.tonWallet.isConnected) {
-                try { await this.resolve() }
-                catch (e) {}
-            }
-        })
-
-        if (this.tonWallet.isConnected) {
-            await runCheck()
+        if (this.everWallet.isConnected) {
+            await this.checkContract()
         }
     }
 
     public dispose(): void {
         this.#chainIdDisposer?.()
         this.#evmWalletDisposer?.()
-        this.#tonWalletDisposer?.()
-        this.#contractDisposer?.()
+        this.#everWalletDisposer?.()
         this.stopEventUpdater()
         this.stopReleaseUpdater()
     }
 
-    public changeData<K extends keyof TonTransferStoreData>(
-        key: K,
-        value: TonTransferStoreData[K],
-    ): void {
-        this.data[key] = value
-    }
-
-    public changeState<K extends keyof TonTransferStoreState>(
-        key: K,
-        value: TonTransferStoreState[K],
-    ): void {
-        this.state[key] = value
-    }
-
-    public checkContract(): void {
-        const check = async () => {
-            if (this.contractAddress === undefined) {
-                return
-            }
-
-            this.changeState('prepareState', {
-                status: this.prepareState?.status || 'pending',
-            })
-
-            try {
-                await rpc.ensureInitialized()
-
-                const { state } = await rpc.getFullContractState({
-                    address: this.contractAddress,
-                })
-
-                if (state?.isDeployed) {
-                    this.changeState('isContractDeployed', true)
-                }
-            }
-            catch (e) {
-                error('Check contract error', e)
-            }
+    public async checkContract(force: boolean = false): Promise<void> {
+        if (this.contractAddress === undefined || (this.state.isCheckingContract && !force)) {
+            return
         }
 
-        check().then(() => {
-            if (!this.state.isContractDeployed) {
-                setTimeout(() => {
-                    this.checkContract()
+        this.setState({
+            isCheckingContract: true,
+            prepareState: {
+                status: this.prepareState?.status || 'pending',
+            },
+        })
+
+        try {
+            await rpc.ensureInitialized()
+
+            const { state } = await rpc.getFullContractState({
+                address: this.contractAddress,
+            })
+
+            if (!state?.isDeployed) {
+                setTimeout(async () => {
+                    await this.checkContract(true)
                 }, 5000)
             }
-        })
+            else {
+                this.setState('isCheckingContract', false)
+                await this.resolve()
+            }
+        }
+        catch (e) {
+            error('Check contract error', e)
+            this.setState('isCheckingContract', false)
+        }
     }
 
     public async resolve(): Promise<void> {
@@ -194,17 +154,12 @@ export class TonToEvmTransfer {
             return
         }
 
-        const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+        const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
 
         const [eventDetails, eventData] = await Promise.all([
             eventContract.methods.getDetails({ answerId: 0 }).call(),
             eventContract.methods.getDecodedData({ answerId: 0 }).call(),
         ])
-
-        const proxyAddress = eventDetails._initializer
-        const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
-
-        const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
         const {
             chainId,
@@ -212,6 +167,11 @@ export class TonToEvmTransfer {
             owner_address,
             tokens,
         } = eventData
+
+        const proxyAddress = eventDetails._initializer
+        const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
+
+        const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
         const token = this.tokensCache.get(tokenAddress.toString())
 
@@ -222,23 +182,27 @@ export class TonToEvmTransfer {
         const leftAddress = owner_address.toString()
         const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
 
-        this.changeData('amount', tokens)
-        this.changeData('chainId', chainId)
-        this.changeData('leftAddress', leftAddress.toLowerCase())
-        this.changeData('rightAddress', rightAddress.toLowerCase())
-        this.changeData('token', token)
-        this.changeState('prepareState', {
-            status: 'confirmed',
+        this.setData({
+            amount: tokens,
+            chainId,
+            leftAddress: leftAddress.toLowerCase(),
+            rightAddress: rightAddress.toLowerCase(),
+            token,
         })
 
-        this.changeState('eventState', {
-            confirmations: this.eventState?.confirmations || 0,
-            requiredConfirmations: this.eventState?.requiredConfirmations || 0,
-            status: this.eventState?.status || 'pending',
+        this.setState({
+            eventState: {
+                confirmations: this.eventState?.confirmations || 0,
+                requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                status: this.eventState?.status || 'pending',
+            },
+            prepareState: {
+                status: 'confirmed',
+            },
         })
 
         if (this.evmWallet.chainId === chainId) {
-            await this.tokensCache.syncEvmToken(token.root, chainId)
+            await this.tokensCache.syncEvmToken(this.pipeline)
             this.runEventUpdater()
         }
     }
@@ -250,6 +214,7 @@ export class TonToEvmTransfer {
             if (
                 tries >= 2
                 || this.evmWallet.web3 === undefined
+                || this.leftNetwork === undefined
                 || this.rightNetwork === undefined
                 || this.contractAddress === undefined
                 || this.token === undefined
@@ -258,14 +223,13 @@ export class TonToEvmTransfer {
                 return
             }
 
-            this.changeState('releaseState', {
+            this.setState('releaseState', {
                 ...this.releaseState,
                 status: 'pending',
             })
 
-            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
-
             const signatures = eventDetails._signatures.map(sign => {
                 const signature = `0x${Buffer.from(sign, 'base64').toString('hex')}`
                 const address = this.evmWallet.web3!.eth.accounts.recover(
@@ -278,6 +242,7 @@ export class TonToEvmTransfer {
                     signature,
                 }
             })
+
             signatures.sort((a, b) => {
                 if (a.order.eq(b.order)) {
                     return 0
@@ -290,13 +255,10 @@ export class TonToEvmTransfer {
                 return -1
             })
 
-            const wrapperContract = this.tokensCache.getEthTokenVaultWrapperContract(
-                this.token.root,
-                this.rightNetwork.chainId,
-            )
+            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
 
-            if (wrapperContract === undefined) {
-                this.changeState('releaseState', {
+            if (vaultContract === undefined) {
+                this.setState('releaseState', {
                     ...this.releaseState,
                     status: 'disabled',
                 })
@@ -306,10 +268,9 @@ export class TonToEvmTransfer {
             try {
                 tries += 1
 
-                await wrapperContract.methods.saveWithdraw(
+                await vaultContract.methods.saveWithdraw(
                     this.data.encodedEvent,
                     signatures.map(({ signature }) => signature),
-                    0,
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
@@ -321,7 +282,7 @@ export class TonToEvmTransfer {
                     await send('0x0')
                 }
                 else {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         ...this.releaseState,
                         status: 'disabled',
                     })
@@ -341,14 +302,14 @@ export class TonToEvmTransfer {
         (async () => {
             if (
                 !this.evmWallet.isConnected
-                || !this.tonWallet.isConnected
+                || !this.everWallet.isConnected
                 || this.evmWallet.web3 === undefined
                 || this.contractAddress === undefined
             ) {
                 return
             }
 
-            const eventContract = rpc.createContract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+            const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
             const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
             let status: EventStateStatus = 'pending'
@@ -360,7 +321,7 @@ export class TonToEvmTransfer {
                 status = 'rejected'
             }
 
-            this.changeState('eventState', {
+            this.setState('eventState', {
                 confirmations: eventDetails._confirms.length,
                 requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
                 status,
@@ -371,13 +332,13 @@ export class TonToEvmTransfer {
             }
 
             if (this.data.withdrawalId === undefined || this.data.encodedEvent === undefined) {
-                this.changeState('releaseState', {
+                this.setState('releaseState', {
                     status: 'pending',
                 })
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = rpc.createContract(TokenAbi.TokenTransferProxy, proxyAddress)
+            const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -387,13 +348,11 @@ export class TonToEvmTransfer {
                 return
             }
 
-            const { chainId } = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
-
-            await this.tokensCache.syncEvmToken(token.root, chainId)
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = rpc.createContract(TokenAbi.TonEventConfig, proxyDetails.value0.tonConfiguration)
+            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails._config.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -416,8 +375,8 @@ export class TonToEvmTransfer {
                 eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                 eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                 eventData: eventDataEncoded,
-                configurationWid: proxyDetails.value0.tonConfiguration.toString().split(':')[0],
-                configurationAddress: `0x${proxyDetails.value0.tonConfiguration.toString().split(':')[1]}`,
+                configurationWid: proxyDetails._config.tonConfiguration.toString().split(':')[0],
+                configurationAddress: `0x${proxyDetails._config.tonConfiguration.toString().split(':')[1]}`,
                 eventContractWid: this.contractAddress.toString().split(':')[0],
                 eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                 proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -425,8 +384,10 @@ export class TonToEvmTransfer {
             }])
             const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
 
-            this.changeData('encodedEvent', encodedEvent)
-            this.changeData('withdrawalId', withdrawalId)
+            this.setData({
+                encodedEvent,
+                withdrawalId,
+            })
 
             if (
                 this.evmWallet.isConnected
@@ -463,21 +424,18 @@ export class TonToEvmTransfer {
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensCache.getEthTokenVaultContract(
-                    this.token.root,
-                    this.rightNetwork.chainId,
-                )
+                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         isReleased,
                         status: isReleased ? 'confirmed' : 'disabled',
                     })
                 }
 
                 if (isReleased) {
-                    this.changeState('releaseState', {
+                    this.setState('releaseState', {
                         isReleased: true,
                         status: 'confirmed',
                     })
@@ -499,27 +457,27 @@ export class TonToEvmTransfer {
         }
     }
 
-    public get amount(): TonTransferStoreData['amount'] {
+    public get amount(): EverscaleTransferStoreData['amount'] {
         return this.data.amount
     }
 
-    public get leftAddress(): TonTransferStoreData['leftAddress'] {
+    public get leftAddress(): EverscaleTransferStoreData['leftAddress'] {
         return this.data.leftAddress
     }
 
-    public get rightAddress(): TonTransferStoreData['rightAddress'] {
+    public get rightAddress(): EverscaleTransferStoreData['rightAddress'] {
         return this.data.rightAddress
     }
 
-    public get eventState(): TonTransferStoreState['eventState'] {
+    public get eventState(): EverscaleTransferStoreState['eventState'] {
         return this.state.eventState
     }
 
-    public get prepareState(): TonTransferStoreState['prepareState'] {
+    public get prepareState(): EverscaleTransferStoreState['prepareState'] {
         return this.state.prepareState
     }
 
-    public get releaseState(): TonTransferStoreState['releaseState'] {
+    public get releaseState(): EverscaleTransferStoreState['releaseState'] {
         return this.state.releaseState
     }
 
@@ -527,14 +485,33 @@ export class TonToEvmTransfer {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
         }
-        return findNetwork(this.params.fromId, this.params.fromType) as NetworkShape
+        return findNetwork(this.params.fromId, this.params.fromType)
     }
 
     public get rightNetwork(): NetworkShape | undefined {
         if (this.params?.toId === undefined || this.params?.toType === undefined) {
             return undefined
         }
-        return findNetwork(this.params.toId, this.params.toType) as NetworkShape
+        return findNetwork(this.params.toId, this.params.toType)
+    }
+
+    public get pipeline(): Pipeline | undefined {
+        if (
+            this.token?.root === undefined
+            || this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.rightNetwork?.type === undefined
+            || this.rightNetwork?.chainId === undefined
+        ) {
+            return undefined
+        }
+
+        return this.tokensCache.pipeline(
+            this.token.root,
+            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.params?.depositType,
+        )
     }
 
     public get token(): TokenCache | undefined {
@@ -547,31 +524,22 @@ export class TonToEvmTransfer {
             : undefined
     }
 
-    public get useEvmWallet(): EvmWalletService {
-        return this.evmWallet
+    public get useEverWallet(): EverWalletService {
+        return this.everWallet
     }
 
-    public get useTonWallet(): TonWalletService {
-        return this.tonWallet
+    public get useEvmWallet(): EvmWalletService {
+        return this.evmWallet
     }
 
     public get useTokensCache(): TokensCacheService {
         return this.tokensCache
     }
 
-    protected get tokenVault(): TokenAssetVault | undefined {
-        if (this.token === undefined || this.rightNetwork?.chainId === undefined) {
-            return undefined
-        }
-        return this.tokensCache.getTokenVault(this.token.root, this.rightNetwork.chainId)
-    }
-
     #chainIdDisposer: IReactionDisposer | undefined
 
     #evmWalletDisposer: IReactionDisposer | undefined
 
-    #tonWalletDisposer: IReactionDisposer | undefined
-
-    #contractDisposer: IReactionDisposer | undefined
+    #everWalletDisposer: IReactionDisposer | undefined
 
 }
