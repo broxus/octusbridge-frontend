@@ -125,25 +125,29 @@ export function StakingBalance(): JSX.Element {
                             {() => (
                                 <FormLayout
                                     loading={redeemForm.isLoading}
-                                    disabled={!redeemForm.amountValid || !redeemForm.gasValid || redeemForm.isLoading}
+                                    disabled={!redeemForm.amountValid
+                                        || !redeemForm.gasValid
+                                        || redeemForm.hasCastedVotes !== false
+                                        || redeemForm.isLoading}
                                     onSubmit={redeemForm.submit}
-                                    hint={intl.formatMessage({
-                                        id: 'STAKING_BALANCE_STAKE_BALANCE',
-                                    }, {
-                                        /* eslint-disable no-nested-ternary */
-                                        amount: accountData.hasAccount === undefined
+                                    hint={redeemForm.hasCastedVotes === true
+                                        ? intl.formatMessage({
+                                            id: 'USER_VOTE_UNLOCK_HINT',
+                                        })
+                                        : accountData.hasAccount === undefined
                                             ? ''
-                                            : !accountData.hasAccount
-                                                ? '0'
-                                                : formattedAmount(
-                                                    redeemForm.balance,
-                                                    accountData.tokenDecimals,
-                                                    { target: 'token' },
-                                                ),
-                                        symbol: accountData.hasAccount === undefined
-                                            ? ''
-                                            : accountData.tokenSymbol,
-                                    })}
+                                            : intl.formatMessage({
+                                                id: 'STAKING_BALANCE_STAKE_BALANCE',
+                                            }, {
+                                                amount: accountData.hasAccount
+                                                    ? formattedAmount(
+                                                        redeemForm.balance,
+                                                        accountData.tokenDecimals,
+                                                        { target: 'token' },
+                                                    )
+                                                    : '0',
+                                                symbol: accountData.tokenSymbol,
+                                            })}
                                     action={intl.formatMessage({
                                         id: 'STAKING_BALANCE_REDEEM',
                                     })}
@@ -165,7 +169,7 @@ export function StakingBalance(): JSX.Element {
                                         value={redeemForm.amount}
                                         decimals={accountData.tokenDecimals}
                                         maxValue={redeemForm.balance}
-                                        disabled={redeemForm.isLoading}
+                                        disabled={redeemForm.isLoading || redeemForm.hasCastedVotes !== false}
                                         onChange={redeemForm.setAmount}
                                         onClickMax={redeemForm.setAmountShifted}
                                         placeholder={intl.formatMessage({
