@@ -19,7 +19,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
         if (bridge.isInsufficientEverBalance) {
             return
         }
-        bridge.setState('isSwapEnabled', !bridge.isSwapEnabled)
+        bridge.setData('depositType', bridge.isSwapEnabled ? 'default' : 'credit')
         await bridge.onSwapToggle()
     }
 

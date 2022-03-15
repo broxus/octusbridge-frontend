@@ -47,6 +47,7 @@
     &__controls + .alert {
         margin-top: 16px;
     }
+
     &__controls + .alert {
         align-items: flex-start;
         flex-direction: column;
@@ -78,7 +79,7 @@
     }
 
     &__control-hint {
-        color: rgba(255, 255, 255, 0.48);
+        color: rgb(255 255 255 / 48%);
         font-size: 12px;
         font-weight: 500;
         letter-spacing: 0.4px;
@@ -140,6 +141,7 @@
             flex-wrap: wrap;
             gap: 12px;
             line-height: 20px;
+
             &:not(:last-child) {
                 margin-bottom: 12px;
             }
@@ -188,7 +190,7 @@
 
         &__badge {
             align-items: center;
-            background: rgba(255, 255, 255, 0.16);
+            background: rgb(255 255 255 / 16%);
             border-radius: 27px;
             display: flex;
             font-size: 12px;

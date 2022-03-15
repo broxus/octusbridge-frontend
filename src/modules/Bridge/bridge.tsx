@@ -4,12 +4,12 @@ import { Observer } from 'mobx-react-lite'
 import {
     ApproveStep,
     AssetStep,
+    EverscaleTransferStep,
     EvmHiddenSwapTransferStep,
     EvmSwapTransferStep,
     EvmTransferStep,
     RouteStep,
     Summary,
-    EverscaleTransferStep,
 } from '@/modules/Bridge/components'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'

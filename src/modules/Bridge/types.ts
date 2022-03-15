@@ -47,7 +47,6 @@ export type CrosschainBridgeStoreState = {
     isPendingAllowance: boolean;
     isPendingApproval: boolean;
     isProcessing: boolean;
-    isSwapEnabled: boolean;
     step: CrosschainBridgeStep;
 }
 

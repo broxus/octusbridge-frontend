@@ -47,7 +47,6 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState =
     isCalculating: false,
     isFetching: false,
     isLocked: false,
-    isSwapEnabled: false,
     isPendingAllowance: false,
     isPendingApproval: false,
     isProcessing: false,

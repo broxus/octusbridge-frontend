@@ -1,14 +1,24 @@
 import BigNumber from 'bignumber.js'
 import isEqual from 'lodash.isequal'
 import {
-    action, IReactionDisposer, makeObservable, observable, reaction, toJS,
+    action,
+    computed,
+    IReactionDisposer,
+    makeObservable,
+    observable,
+    reaction,
+    toJS,
 } from 'mobx'
 import { Address, Contract } from 'everscale-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
 
 import rpc from '@/hooks/useRpcClient'
 import {
-    BridgeConstants, Dex, DexAbi, DexConstants, TokenAbi,
+    BridgeConstants,
+    Dex,
+    DexAbi,
+    DexConstants,
+    TokenAbi,
 } from '@/misc'
 import {
     DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA,
@@ -58,19 +68,83 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         makeObservable<
             CrosschainBridge,
             | 'data'
+            | 'state'
+            | 'debt'
+            | 'pairContract'
+            | 'vaultContract'
             | 'handleChangeToken'
             | 'handleEvmWalletConnection'
             | 'handleEverWalletConnection'
             | 'handleEverWalletBalance'
-            | 'state'
         >(this, {
             data: observable,
-            changeNetwork: action.bound,
+            state: observable,
             handleChangeToken: action.bound,
             handleEvmWalletConnection: action.bound,
             handleEverWalletConnection: action.bound,
             handleEverWalletBalance: action.bound,
-            state: observable,
+            amount: computed,
+            maxTokenAmount: computed,
+            maxEversAmount: computed,
+            maxTransferFee: computed,
+            minAmount: computed,
+            minEversAmount: computed,
+            minTransferFee: computed,
+            tokenAmount: computed,
+            eversAmount: computed,
+            depositType: computed,
+            minReceiveTokens: computed,
+            leftAddress: computed,
+            leftNetwork: computed,
+            pipeline: computed,
+            rightAddress: computed,
+            rightNetwork: computed,
+            txHash: computed,
+            approvalStrategy: computed,
+            isCalculating: computed,
+            isFetching: computed,
+            isLocked: computed,
+            isPendingAllowance: computed,
+            isPendingApproval: computed,
+            isSwapEnabled: computed,
+            step: computed,
+            amountNumber: computed,
+            amountMinDecimals: computed,
+            balance: computed,
+            balanceNumber: computed,
+            decimals: computed,
+            minAmountNumber: computed,
+            minReceiveTokensNumber: computed,
+            isAmountVaultLimitExceed: computed,
+            isAmountMinValueValid: computed,
+            isAmountMaxValueValid: computed,
+            isAmountValid: computed,
+            isTokensAmountValid: computed,
+            isEversAmountValid: computed,
+            isAssetValid: computed,
+            isRouteValid: computed,
+            isCreditAvailable: computed,
+            isInsufficientEverBalance: computed,
+            isInsufficientVaultBalance: computed,
+            isEverscaleBasedToken: computed,
+            isEvmToEvm: computed,
+            isEvmToEverscale: computed,
+            isFromEvm: computed,
+            isFromEverscale: computed,
+            isEverscaleToEvm: computed,
+            rightNetworks: computed,
+            token: computed,
+            vaultLimit: computed,
+            vaultLimitNumber: computed,
+            tokens: computed,
+            tokenAmountNumber: computed,
+            eversAmountNumber: computed,
+            debt: computed,
+            pairContract: computed,
+            vaultContract: computed,
+            useEverWallet: computed,
+            useEvmWallet: computed,
+            useTokensCache: computed,
         })
     }
 
@@ -92,6 +166,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         if (key === 'leftNetwork') {
+            const { leftAddress, rightAddress } = this
             if (value.type === 'everscale') {
                 this.setData('leftAddress', this.everWallet.address || '')
             }
@@ -99,7 +174,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 this.setData('leftAddress', this.evmWallet.address || '')
             }
             if (value.id === this.rightNetwork?.id) {
-                const { leftAddress, rightAddress } = this
                 this.setData({
                     rightNetwork: this.leftNetwork,
                     rightAddress: leftAddress,
@@ -938,7 +1012,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isFetching: false,
             isLocked: false,
             isPendingAllowance: false,
-            isSwapEnabled: false,
         })
     }
 
@@ -1125,8 +1198,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     protected checkSwapCredit(): void {
         if (this.everWallet.isConnected && !this.everWallet.isUpdatingContract && this.isInsufficientEverBalance) {
             if (this.step === CrosschainBridgeStep.SELECT_ASSET) {
-                this.setData('minEversAmount', BridgeConstants.EmptyWalletMinTonsAmount)
-                this.setState('isSwapEnabled', this.isCreditAvailable)
+                this.setData({
+                    depositType: this.isCreditAvailable ? 'credit' : this.depositType,
+                    minEversAmount: BridgeConstants.EmptyWalletMinTonsAmount,
+                })
             }
         }
         else {
@@ -1623,10 +1698,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.state.isPendingApproval
     }
 
-    public get isSwapEnabled(): CrosschainBridgeStoreState['isSwapEnabled'] {
-        return this.state.isSwapEnabled
-    }
-
     public get step(): CrosschainBridgeStoreState['step'] {
         return this.state.step
     }
@@ -1820,7 +1891,17 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.token === undefined) {
             return false
         }
-        return this.pipeline !== undefined
+
+        return this.tokensCache.pipelines?.some(
+            pipeline => (
+                pipeline.everscaleTokenRoot === this.token?.root
+                && pipeline.depositType === 'credit'
+            ),
+        )
+    }
+
+    public get isSwapEnabled(): boolean {
+        return this.depositType === 'credit'
     }
 
     public get isInsufficientEverBalance(): boolean {
