@@ -70,7 +70,7 @@ export function StakingBalance(): JSX.Element {
                                     }, {
                                         gasAmount: formattedAmount(
                                             stakingForm.tonDepositAmount,
-                                            DexConstants.TONDecimals,
+                                            DexConstants.CoinDecimals,
                                         ),
                                     })
                                     : undefined}
@@ -157,7 +157,7 @@ export function StakingBalance(): JSX.Element {
                                         }, {
                                             gasAmount: formattedAmount(
                                                 redeemForm.tonDepositAmount,
-                                                DexConstants.TONDecimals,
+                                                DexConstants.CoinDecimals,
                                             ),
                                         })
                                         : undefined}
@@ -213,7 +213,7 @@ export function StakingBalance(): JSX.Element {
                                         }, {
                                             gasAmount: formattedAmount(
                                                 claimForm.tonDepositAmount,
-                                                DexConstants.TONDecimals,
+                                                DexConstants.CoinDecimals,
                                             ),
                                         })
                                         : undefined}

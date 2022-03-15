@@ -11,14 +11,14 @@ function EventStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmTransfer()
 
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const {
         confirmations = 0,
         requiredConfirmations = 0,
         status = 'disabled',
     } = { ...transfer.eventState }
     const waitingWallet = (
-        !tonWallet.isReady
+        !everWallet.isReady
         && transfer.prepareState?.status === 'confirmed'
         && status !== 'confirmed'
     )
@@ -35,7 +35,7 @@ function EventStatusIndicatorInner(): JSX.Element {
             wrongNetwork={false}
         >
             {(() => {
-                if (tonWallet.isInitializing) {
+                if (everWallet.isInitializing) {
                     return null
                 }
 
@@ -43,9 +43,9 @@ function EventStatusIndicatorInner(): JSX.Element {
                     return (
                         <Button
                             key="ton"
-                            disabled={tonWallet.isInitializing || tonWallet.isConnecting}
+                            disabled={everWallet.isInitializing || everWallet.isConnecting}
                             type="primary"
-                            onClick={tonWallet.connect}
+                            onClick={everWallet.connect}
                         >
                             {intl.formatMessage({
                                 id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',

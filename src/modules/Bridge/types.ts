@@ -2,7 +2,7 @@ import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-
 
 import { TokenAbi } from '@/misc'
 import { TokenCache } from '@/stores/TokensCacheService'
-import { NetworkShape } from '@/types'
+import { NetworkShape, NetworkType } from '@/types'
 
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
@@ -19,14 +19,15 @@ export type CrosschainBridgeStoreData = {
     bridgeFee?: string;
     creditFactoryFee?: string;
     depositType: 'default' | 'credit';
+    eversAmount?: string;
     leftAddress: string;
     leftNetwork?: NetworkShape;
-    minAmount?: string;
+    maxEversAmount?: string;
     maxTokenAmount?: string;
-    maxTonsAmount?: string;
     maxTransferFee?: string;
+    minAmount?: string;
+    minEversAmount?: string;
     minReceiveTokens?: string;
-    minTonsAmount?: string;
     minTransferFee?: string;
     pairAddress?: Address;
     pairState?: FullContractState;
@@ -35,7 +36,6 @@ export type CrosschainBridgeStoreData = {
     selectedToken?: string;
     swapType: '0' | '1';
     tokenAmount?: string;
-    tonsAmount?: string;
     txHash?: string;
 }
 
@@ -70,9 +70,9 @@ export type TransferStateStatus = 'confirmed' | 'pending' | 'disabled' | 'reject
 export type EvmTransferQueryParams = {
     depositType?: string;
     fromId: string;
-    fromType: string;
+    fromType: NetworkType;
     toId: string;
-    toType: string;
+    toType: NetworkType;
     txHash: string;
 }
 
@@ -93,6 +93,7 @@ export type EvmTransferStoreState = {
         requiredConfirmations: number;
         status: EventStateStatus;
     };
+    isCheckingTransaction: boolean;
     prepareState?: {
         errorMessage?: string;
         isDeployed?: boolean;
@@ -114,6 +115,7 @@ export type EvmSwapTransferStoreData = EvmTransferStoreData & {
 export type EvmSwapTransferStoreState = {
     creditProcessorState?: CreditProcessorState;
     eventState?: EvmTransferStoreState['eventState'];
+    isCheckingTransaction: boolean;
     prepareState?: {
         errorMessage?: string;
         isBroadcasting?: boolean;
@@ -134,7 +136,7 @@ export type EvmSwapTransferStoreState = {
         tokenWallet?: Address;
         tonBalance?: string;
         wtonBalance?: string;
-        wtonWallet?: Address;
+        weverWallet?: Address;
     };
 }
 
@@ -153,20 +155,21 @@ export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
 }
 
 export type EvmHiddenSwapTransferStoreState = EvmSwapTransferStoreState & {
-    secondEventState?: TonTransferStoreState['eventState'];
-    secondPrepareState?: TonTransferStoreState['prepareState'];
-    releaseState?: TonTransferStoreState['releaseState'];
+    secondEventState?: EverscaleTransferStoreState['eventState'];
+    secondPrepareState?: EverscaleTransferStoreState['prepareState'];
+    releaseState?: EverscaleTransferStoreState['releaseState'];
 }
 
-export type TonTransferQueryParams = {
+export type EverscaleTransferQueryParams = {
     contractAddress: string;
+    depositType?: string;
     fromId: string;
-    fromType: string;
+    fromType: NetworkType;
     toId: string;
-    toType: string;
+    toType: NetworkType;
 }
 
-export type TonTransferStoreData = {
+export type EverscaleTransferStoreData = {
     amount: string;
     chainId?: string;
     encodedEvent?: string;
@@ -176,14 +179,14 @@ export type TonTransferStoreData = {
     withdrawalId?: string;
 }
 
-export type TonTransferStoreState = {
+export type EverscaleTransferStoreState = {
     eventState?: {
         confirmations: number;
         errorMessage?: string;
         requiredConfirmations: number;
         status: EventStateStatus;
     };
-    isContractDeployed: boolean;
+    isCheckingContract: boolean;
     prepareState?: {
         errorMessage?: string;
         status: PrepareStateStatus;

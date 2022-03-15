@@ -19,14 +19,14 @@ import { debug, error } from '@/utils'
 
 export type Account = Permissions['accountInteraction']
 
-export type WalletData = {
+export type EverWalletData = {
     account?: Account;
     balance: string;
     contract?: ContractState | FullContractState;
     transaction?: Transaction;
 }
 
-export type WalletState = {
+export type EverWalletState = {
     hasProvider: boolean;
     isConnecting: boolean;
     isInitialized: boolean;
@@ -35,14 +35,14 @@ export type WalletState = {
 }
 
 
-const DEFAULT_WALLET_DATA: WalletData = {
+const DEFAULT_WALLET_DATA: EverWalletData = {
     account: undefined,
     balance: '0',
     contract: undefined,
     transaction: undefined,
 }
 
-const DEFAULT_WALLET_STATE: WalletState = {
+const DEFAULT_WALLET_STATE: EverWalletState = {
     hasProvider: false,
     isConnecting: false,
     isInitialized: false,
@@ -63,21 +63,21 @@ export async function connectToWallet(): Promise<void> {
 }
 
 
-export class TonWalletService {
+export class EverWalletService {
 
     /**
      * Current data of the wallet
-     * @type {WalletData}
+     * @type {EverWalletData}
      * @protected
      */
-    protected data: WalletData = DEFAULT_WALLET_DATA
+    protected data: EverWalletData = DEFAULT_WALLET_DATA
 
     /**
      * Current state of the wallet connection
-     * @type {WalletState}
+     * @type {EverWalletState}
      * @protected
      */
-    protected state: WalletState = DEFAULT_WALLET_STATE
+    protected state: EverWalletState = DEFAULT_WALLET_STATE
 
     constructor() {
         this.#contractSubscriber = undefined
@@ -183,7 +183,7 @@ export class TonWalletService {
      * Returns computed wallet balance value
      * @returns {string | undefined}
      */
-    public get balance(): WalletData['balance'] {
+    public get balance(): EverWalletData['balance'] {
         return this.data.balance
     }
 
@@ -192,7 +192,7 @@ export class TonWalletService {
      * That means extension is installed and activated, else `false`
      * @returns {boolean}
      */
-    public get hasProvider(): WalletState['hasProvider'] {
+    public get hasProvider(): EverWalletState['hasProvider'] {
         return this.state.hasProvider
     }
 
@@ -208,7 +208,7 @@ export class TonWalletService {
      * Returns `true` if wallet is connecting
      * @returns {boolean}
      */
-    public get isConnecting(): WalletState['isConnecting'] {
+    public get isConnecting(): EverWalletState['isConnecting'] {
         return this.state.isConnecting
     }
 
@@ -216,7 +216,7 @@ export class TonWalletService {
      * Returns `true` if wallet is initialized
      * @returns {boolean}
      */
-    public get isInitialized(): WalletState['isInitialized'] {
+    public get isInitialized(): EverWalletState['isInitialized'] {
         return this.state.isInitialized
     }
 
@@ -224,7 +224,7 @@ export class TonWalletService {
      * Returns `true` if wallet is initializing
      * @returns {boolean}
      */
-    public get isInitializing(): WalletState['isInitializing'] {
+    public get isInitializing(): EverWalletState['isInitializing'] {
         return this.state.isInitializing
     }
 
@@ -241,31 +241,31 @@ export class TonWalletService {
      * Returns `true` if wallet contract is updating
      * @returns {boolean}
      */
-    public get isUpdatingContract(): WalletState['isUpdatingContract'] {
+    public get isUpdatingContract(): EverWalletState['isUpdatingContract'] {
         return this.state.isUpdatingContract
     }
 
     /**
      * Returns computed account
-     * @returns {WalletData['account']}
+     * @returns {EverWalletData['account']}
      */
-    public get account(): WalletData['account'] {
+    public get account(): EverWalletData['account'] {
         return this.data.account
     }
 
     /**
      * Returns computed wallet contract state
-     * @returns {WalletData['contract']}
+     * @returns {EverWalletData['contract']}
      */
-    public get contract(): WalletData['contract'] {
+    public get contract(): EverWalletData['contract'] {
         return this.data.contract
     }
 
     /**
      * Returns computed last successful transaction data
-     * @returns {WalletData['transaction']}
+     * @returns {EverWalletData['transaction']}
      */
-    public get transaction(): WalletData['transaction'] {
+    public get transaction(): EverWalletData['transaction'] {
         return this.data.transaction
     }
 
@@ -418,8 +418,8 @@ export class TonWalletService {
 }
 
 
-const TonWalletServiceStore = new TonWalletService()
+const Wallet = new EverWalletService()
 
-export function useTonWallet(): TonWalletService {
-    return TonWalletServiceStore
+export function useEverWallet(): EverWalletService {
+    return Wallet
 }

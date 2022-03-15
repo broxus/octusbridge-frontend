@@ -5,14 +5,14 @@ import {
     CrosschainBridgeStep,
     CrosschainBridgeStoreData,
     CrosschainBridgeStoreState,
+    EverscaleTransferStoreData,
+    EverscaleTransferStoreState,
     EvmHiddenSwapTransferStoreData,
     EvmHiddenSwapTransferStoreState,
     EvmSwapTransferStoreData,
     EvmSwapTransferStoreState,
     EvmTransferStoreData,
     EvmTransferStoreState,
-    TonTransferStoreData,
-    TonTransferStoreState,
     TransferSummaryData, TransferSummaryState,
 } from '@/modules/Bridge/types'
 
@@ -26,10 +26,10 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     leftNetwork: undefined,
     minAmount: undefined,
     maxTokenAmount: undefined,
-    maxTonsAmount: undefined,
+    maxEversAmount: undefined,
     maxTransferFee: undefined,
     minReceiveTokens: undefined,
-    minTonsAmount: undefined,
+    minEversAmount: undefined,
     minTransferFee: undefined,
     pairAddress: undefined,
     pairState: undefined,
@@ -38,7 +38,7 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     selectedToken: undefined,
     swapType: '0',
     tokenAmount: undefined,
-    tonsAmount: undefined,
+    eversAmount: undefined,
     txHash: undefined,
 }
 
@@ -66,6 +66,7 @@ export const DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA: EvmTransferStoreData = {
 
 export const DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE: EvmTransferStoreState = {
     eventState: undefined,
+    isCheckingTransaction: false,
     prepareState: undefined,
     transferState: undefined,
 }
@@ -84,6 +85,7 @@ export const DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA: EvmSwapTransferStoreData = {
 export const DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE: EvmSwapTransferStoreState = {
     creditProcessorState: undefined,
     eventState: undefined,
+    isCheckingTransaction: false,
     prepareState: undefined,
     transferState: undefined,
     swapState: undefined,
@@ -105,12 +107,13 @@ export const DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA: EvmHiddenSwapTransferS
 export const DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_STATE: EvmHiddenSwapTransferStoreState = {
     creditProcessorState: undefined,
     eventState: undefined,
+    isCheckingTransaction: false,
     prepareState: undefined,
     transferState: undefined,
     swapState: undefined,
 }
 
-export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA: TonTransferStoreData = {
+export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA: EverscaleTransferStoreData = {
     amount: '',
     chainId: undefined,
     encodedEvent: undefined,
@@ -120,9 +123,9 @@ export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA: TonTransferStoreData = {
     withdrawalId: undefined,
 }
 
-export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE: TonTransferStoreState = {
+export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE: EverscaleTransferStoreState = {
     eventState: undefined,
-    isContractDeployed: false,
+    isCheckingContract: false,
     prepareState: undefined,
     releaseState: undefined,
 }
@@ -139,4 +142,4 @@ export const DEFAULT_TRANSFER_SUMMARY_STORE_STATE: TransferSummaryState = {
 
 export const EMPTY_WALLET_MIN_TONS_AMOUNT = new BigNumber(
     BridgeConstants.EmptyWalletMinTonsAmount,
-).shiftedBy(-DexConstants.TONDecimals)
+).shiftedBy(-DexConstants.CoinDecimals)

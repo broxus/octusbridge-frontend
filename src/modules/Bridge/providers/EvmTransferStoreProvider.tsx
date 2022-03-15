@@ -2,31 +2,31 @@ import * as React from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { useTransferLifecycle } from '@/modules/Bridge/hooks'
-import { EvmToTonTransfer } from '@/modules/Bridge/stores'
+import { EvmToEverscalePipeline } from '@/modules/Bridge/stores'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
 import { isEvmTxHashValid } from '@/utils'
 
 
-export const EvmTransferContext = React.createContext<EvmToTonTransfer>(
-    new EvmToTonTransfer(
+export const EvmTransferContext = React.createContext<EvmToEverscalePipeline>(
+    new EvmToEverscalePipeline(
         useEvmWallet(),
-        useTonWallet(),
+        useEverWallet(),
         useTokensCache(),
     ),
 )
 
-export function useEvmTransfer(): EvmToTonTransfer {
+export function useEvmTransfer(): EvmToEverscalePipeline {
     return React.useContext(EvmTransferContext)
 }
 
 type Props = {
     children: React.ReactNode;
-    evmWallet: EvmWalletService,
-    tonWallet: TonWalletService,
-    tokensCache: TokensCacheService,
+    everWallet: EverWalletService;
+    evmWallet: EvmWalletService;
+    tokensCache: TokensCacheService;
 }
 
 export function EvmTransferStoreProvider({ children, ...props }: Props): JSX.Element {
@@ -36,9 +36,9 @@ export function EvmTransferStoreProvider({ children, ...props }: Props): JSX.Ele
         return <Redirect to="/bridge" />
     }
 
-    const transfer = React.useMemo(() => new EvmToTonTransfer(
+    const transfer = React.useMemo(() => new EvmToEverscalePipeline(
         props.evmWallet,
-        props.tonWallet,
+        props.everWallet,
         props.tokensCache,
         params,
     ), [params])

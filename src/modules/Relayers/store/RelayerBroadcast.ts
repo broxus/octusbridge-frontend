@@ -5,10 +5,10 @@ import { RELAYER_BROADCAST_STORE_DATA, RELAYER_BROADCAST_STORE_STATE } from '@/m
 import { ConfirmationStatus, RelayerBroadcastStoreData, RelayerBroadcastStoreState } from '@/modules/Relayers/types'
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { getStakingContract } from '@/modules/Staking/utils'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import { TokenAbi } from '@/misc'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class RelayerBroadcastStore {
 
@@ -19,7 +19,7 @@ export class RelayerBroadcastStore {
     protected stackingContract = getStakingContract()
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected stakingData: StakingDataStore,
     ) {
         makeAutoObservable(this, {

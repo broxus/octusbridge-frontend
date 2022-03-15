@@ -6,7 +6,6 @@ import { addABI, decodeLogs, keepNonDecodedLogs } from 'abi-decoder'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { StakingDataStoreData, StakingDataStoreState } from '@/modules/Relayers/types'
 import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
@@ -20,6 +19,7 @@ import {
 } from '@/misc'
 import { Web3Url } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class StakingDataStore {
 
@@ -35,7 +35,7 @@ export class StakingDataStore {
 
     constructor(
         public readonly tokensCache: TokensCacheService,
-        public readonly tonWallet: TonWalletService,
+        public readonly tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this, {
             connectTonWallet: action.bound,
@@ -225,7 +225,7 @@ export class StakingDataStore {
                 : undefined
 
             if (stackingDetails) {
-                await this.tokensCache.syncTonToken(stackingDetails.tokenRoot.toString())
+                await this.tokensCache.syncEverscaleToken(stackingDetails.tokenRoot.toString())
             }
 
             if (this.isConnected) {

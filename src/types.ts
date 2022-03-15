@@ -1,4 +1,4 @@
-export type NetworkType = 'evm' | 'ton'
+export type NetworkType = 'evm' | 'everscale' & string
 
 export type NetworkShape = {
     chainId: string;

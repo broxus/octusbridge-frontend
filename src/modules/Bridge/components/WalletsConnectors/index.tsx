@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TonWalletService } from '@/stores/TonWalletService'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 import './index.scss'
 
@@ -13,11 +13,11 @@ import './index.scss'
 type Props = {
     className?: string;
     evmWallet: EvmWalletService;
-    tonWallet: TonWalletService;
+    everWallet: EverWalletService;
 }
 
 
-export function WalletsConnectors({ className, evmWallet, tonWallet }: Props): JSX.Element {
+export function WalletsConnectors({ className, evmWallet, everWallet }: Props): JSX.Element {
     const intl = useIntl()
 
     return (
@@ -36,12 +36,12 @@ export function WalletsConnectors({ className, evmWallet, tonWallet }: Props): J
                             })}
                         </Button>
                     )}
-                    {!tonWallet.isConnected && (
+                    {!everWallet.isConnected && (
                         <Button
                             key="ton"
-                            disabled={tonWallet.isInitializing || tonWallet.isConnecting}
+                            disabled={everWallet.isInitializing || everWallet.isConnecting}
                             type="secondary"
-                            onClick={tonWallet.connect}
+                            onClick={everWallet.connect}
                         >
                             {intl.formatMessage({
                                 id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',

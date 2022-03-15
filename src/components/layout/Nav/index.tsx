@@ -4,14 +4,14 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Observer } from 'mobx-react-lite'
 
 import { Icon } from '@/components/common/Icon'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function Nav(): JSX.Element {
     const intl = useIntl()
     const location = useLocation()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
     const splitLocation = location.pathname.split('/')
 
     return (

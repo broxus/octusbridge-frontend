@@ -1,51 +1,50 @@
 import * as React from 'react'
-import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
 
+import { networks } from '@/config'
 import {
-    DateFilter, FilterField, Filters, NetworkFilter, RadioFilter,
-    TextFilter, TokenFilter,
+    DateFilter,
+    FilterField,
+    Filters,
+    NetworkFilter,
+    RadioFilter,
+    TextFilter,
+    TokenFilter,
 } from '@/components/common/Filters'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
+import {
+    useDateParam,
+    useDictParam,
+    usePagination,
+    useTableOrder,
+    useTextParam,
+    useUrlParams,
+} from '@/hooks'
 import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import {
-    useDateParam, useDictParam, usePagination, useTableOrder,
-    useTextParam, useUrlParams,
-} from '@/hooks'
-import {
-    TransferKindFilter, TransfersFilters, TransfersOrdering,
-    TransfersRequestStatus, TransferType,
+    TransferKindFilter,
+    TransfersFilters,
+    TransfersOrdering,
+    TransfersRequestStatus,
+    TransferType,
 } from '@/modules/Transfers/types'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
 import { error } from '@/utils'
-import { networks } from '@/config'
+
 
 function TransfersListInner(): JSX.Element {
     const intl = useIntl()
     const transfers = useTransfersContext()
     const tokensCache = useTokensCache()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
 
     const pagination = usePagination(transfers.totalCount)
 
     const tableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
-
-    const evmNetworks = React.useMemo(() => (
-        networks.filter(item => item.type === 'evm')
-    ), [])
-
-    const tokens = React.useMemo(() => (
-        evmNetworks
-            .flatMap(({ chainId }) => tokensCache.filterTokensByChainId(chainId))
-            .reduce<TokenCache[]>((acc, token) => (
-                acc.findIndex(({ root }) => root === token.root) === -1
-                    ? [...acc, token]
-                    : acc
-            ), [])
-    ), [tokensCache.tokens, evmNetworks])
 
     const urlParams = useUrlParams()
 
@@ -65,6 +64,19 @@ function TransfersListInner(): JSX.Element {
     const [fromId] = useTextParam('from')
     const [toId] = useTextParam('to')
 
+    const tokens = React.useMemo(() => (
+        networks
+            .filter(item => item.type === 'evm')
+            .flatMap(({ chainId }) => tokensCache.filterTokensByChainId(chainId))
+            .reduce<TokenCache[]>((acc, token) => {
+                if (acc.findIndex(({ root }) => root === token.root) > -1) {
+                    return acc
+                }
+                acc.push(token)
+                return acc
+            }, [])
+    ), [tokensCache.tokens])
+
     let titleId = 'TRANSFERS_ALL_TITLE'
 
     if (tonWallet.address && tonWallet.address === userAddress) {
@@ -81,10 +93,10 @@ function TransfersListInner(): JSX.Element {
         if (from && to && from.type === 'evm' && to.type === 'evm') {
             return ['Transit']
         }
-        if (from && to && from.type === 'evm' && to.type === 'ton') {
+        if (from && to && from.type === 'evm' && to.type === 'everscale') {
             return ['Default', 'Credit']
         }
-        if (from && to && from.type === 'ton' && to.type === 'evm') {
+        if (from && to && from.type === 'everscale' && to.type === 'evm') {
             return ['Default']
         }
         if (from && from.type === 'evm') {
@@ -93,10 +105,10 @@ function TransfersListInner(): JSX.Element {
         if (to && to.type === 'evm') {
             return ['Default', 'Transit']
         }
-        if (from && from.type === 'ton') {
+        if (from && from.type === 'everscale') {
             return ['Default']
         }
-        if (to && to.type === 'ton') {
+        if (to && to.type === 'everscale') {
             return ['Credit', 'Default']
         }
         return ['Default', 'Credit', 'Transit'] as TransferType[]
@@ -129,14 +141,14 @@ function TransfersListInner(): JSX.Element {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = ['ethtoeth']
         }
-        else if (from && to && from.type === 'evm' && to.type === 'ton') {
+        else if (from && to && from.type === 'evm' && to.type === 'everscale') {
             const validKinds = ['ethtoton', 'creditethtoton'] as TransferKindFilter[]
             const selected = selectedKinds.filter(item => validKinds.includes(item))
 
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = selected.length ? selected : validKinds
         }
-        else if (from && to && from.type === 'ton' && to.type === 'evm') {
+        else if (from && to && from.type === 'everscale' && to.type === 'evm') {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = ['tontoeth']
         }
@@ -154,10 +166,10 @@ function TransfersListInner(): JSX.Element {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = selected.length ? selected : []
         }
-        else if (from && from.type === 'ton') {
+        else if (from && from.type === 'everscale') {
             transferKinds = ['tontoeth']
         }
-        else if (to && to.type === 'ton') {
+        else if (to && to.type === 'everscale') {
             const validKinds = ['creditethtoton', 'ethtoton'] as TransferKindFilter[]
             const selected = selectedKinds.filter(item => validKinds.includes(item))
 

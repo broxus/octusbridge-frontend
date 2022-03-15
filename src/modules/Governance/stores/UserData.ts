@@ -9,9 +9,9 @@ import {
 import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import { handleProposalsCount, handleStakeholder } from '@/modules/Governance/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class UserDataStore {
 
@@ -22,7 +22,7 @@ export class UserDataStore {
     protected syncDisposer?: IReactionDisposer
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected tokensCache: TokensCacheService,
     ) {
         makeAutoObservable(this)
@@ -117,7 +117,7 @@ export class UserDataStore {
             if (!this.data.stakingDetails?.tokenRoot) {
                 throwException('Staking details must be defined in data')
             }
-            await this.tokensCache.syncTonToken(this.data.stakingDetails.tokenRoot.toString())
+            await this.tokensCache.syncEverscaleToken(this.data.stakingDetails.tokenRoot.toString())
         }
         catch (e) {
             error(e)

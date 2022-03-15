@@ -99,7 +99,7 @@ export function VotesTableInner(): JSX.Element {
                                 badge
                                 type={item.support ? 1 : 0}
                                 value={item.votes
-                                    ? formattedAmount(item.votes, DexConstants.TONDecimals, { target: 'token' })
+                                    ? formattedAmount(item.votes, DexConstants.CoinDecimals, { target: 'token' })
                                     : undefined}
                             />,
                             dateFormat(item.createdAt * 1000),

@@ -25,18 +25,18 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isFromEvm) {
+        if (bridge.isFromEvm && !bridge.isEverscaleBasedToken) {
             await bridge.checkAllowance()
         }
         else {
-            bridge.changeState('step', CrosschainBridgeStep.TRANSFER)
+            bridge.setState('step', CrosschainBridgeStep.TRANSFER)
         }
     }
 
     const prevStep = () => {
         bridge.resetAsset()
-        bridge.changeData('selectedToken', undefined)
-        bridge.changeState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        bridge.setData('selectedToken', undefined)
+        bridge.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
     }
 
     return (
@@ -59,7 +59,7 @@ export function AssetStep(): JSX.Element {
             <Observer>
                 {() => (
                     <>
-                        {(bridge.isEvmToTon && bridge.isCreditAvailable) && (
+                        {(bridge.isEvmToEverscale && bridge.isCreditAvailable) && (
                             <SwapForm />
                         )}
                     </>
@@ -95,7 +95,7 @@ export function AssetStep(): JSX.Element {
                             {(bridge.isPendingAllowance || bridge.isFetching || bridge.isCalculating) ? (
                                 <Icon icon="loader" className="spin" />
                             ) : intl.formatMessage({
-                                id: bridge.isEvmToTon
+                                id: bridge.isEvmToEverscale
                                     ? 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT'
                                     : 'CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT',
                             })}

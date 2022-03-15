@@ -10,10 +10,10 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmTransfer()
 
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const status = transfer.eventState?.status || 'disabled'
     const waitingWallet = (
-        !tonWallet.isReady
+        !everWallet.isReady
         && transfer.prepareState?.status === 'confirmed'
         && status !== 'confirmed'
     )

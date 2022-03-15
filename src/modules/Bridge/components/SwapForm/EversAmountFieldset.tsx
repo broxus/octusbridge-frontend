@@ -16,7 +16,7 @@ import {
 } from '@/utils'
 
 
-export function TonsAmountFieldset(): JSX.Element {
+export function EversAmountFieldset(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
 
@@ -27,7 +27,7 @@ export function TonsAmountFieldset(): JSX.Element {
     }, 50)
 
     const onChange = (value: string) => {
-        bridge.changeData('tonsAmount', value)
+        bridge.setData('eversAmount', value)
         changeTonsAmountRecalculate()
     }
 
@@ -52,20 +52,20 @@ export function TonsAmountFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <TokenAmountField
-                                decimals={DexConstants.TONDecimals}
+                                decimals={DexConstants.CoinDecimals}
                                 displayMaxButton={false}
                                 // displayMaxButton={bridge.maxTonsAmount !== undefined && bridge.maxTonsAmount !== '0'}
-                                isValid={bridge.isTonsAmountValid}
+                                isValid={bridge.isEversAmountValid}
                                 placeholder="0"
                                 suffix={(
                                     <div className="amount-field-suffix">
                                         <Icon icon="everCoinIcon" ratio={1.2} />
-                                        <span>{DexConstants.TONSymbol}</span>
+                                        <span>{DexConstants.CoinSymbol}</span>
                                     </div>
                                 )}
                                 token={bridge.token}
                                 size="md"
-                                value={bridge.tonsAmount || ''}
+                                value={bridge.eversAmount || ''}
                                 onChange={onChange}
                                 // onClickMax={onClickMax}
                             />
@@ -77,30 +77,30 @@ export function TonsAmountFieldset(): JSX.Element {
                             {() => {
                                 let isMinValueValid = isGoodBignumber(bridge.tokenAmountNumber, false)
 
-                                if (bridge.isInsufficientTonBalance) {
+                                if (bridge.isInsufficientEverBalance) {
                                     isMinValueValid = validateMinValue(
-                                        bridge.minTonsAmount,
-                                        bridge.tonsAmount,
-                                        DexConstants.TONDecimals,
+                                        bridge.minEversAmount,
+                                        bridge.eversAmount,
+                                        DexConstants.CoinDecimals,
                                     )
                                 }
                                 else if (
-                                    bridge.tonsAmount
-                                    && bridge.tonsAmount.length > 0
-                                    && isGoodBignumber(bridge.tonsAmountNumber, false)
+                                    bridge.eversAmount
+                                    && bridge.eversAmount.length > 0
+                                    && isGoodBignumber(bridge.eversAmountNumber, false)
                                 ) {
                                     isMinValueValid = validateMinValue(
                                         '0',
-                                        bridge.tonsAmount,
-                                        DexConstants.TONDecimals,
+                                        bridge.eversAmount,
+                                        DexConstants.CoinDecimals,
                                     )
                                 }
 
-                                const isMaxValueValid = isGoodBignumber(new BigNumber(bridge.maxTonsAmount || 0))
+                                const isMaxValueValid = isGoodBignumber(new BigNumber(bridge.maxEversAmount || 0))
                                     ? validateMaxValue(
-                                        bridge.maxTonsAmount,
-                                        bridge.tonsAmount,
-                                        DexConstants.TONDecimals,
+                                        bridge.maxEversAmount,
+                                        bridge.eversAmount,
+                                        DexConstants.CoinDecimals,
                                     )
                                     : true
 
@@ -111,10 +111,10 @@ export function TonsAmountFieldset(): JSX.Element {
                                                 {intl.formatMessage({
                                                     id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT',
                                                 }, {
-                                                    symbol: DexConstants.TONSymbol,
+                                                    symbol: DexConstants.CoinSymbol,
                                                     value: formattedAmount(
-                                                        bridge.minTonsAmount,
-                                                        DexConstants.TONDecimals,
+                                                        bridge.minEversAmount,
+                                                        DexConstants.CoinDecimals,
                                                         { preserve: true },
                                                     ),
                                                 })}
@@ -127,10 +127,10 @@ export function TonsAmountFieldset(): JSX.Element {
                                                 {intl.formatMessage({
                                                     id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT',
                                                 }, {
-                                                    symbol: DexConstants.TONSymbol,
+                                                    symbol: DexConstants.CoinSymbol,
                                                     value: formattedAmount(
-                                                        bridge.maxTonsAmount,
-                                                        DexConstants.TONDecimals,
+                                                        bridge.maxEversAmount,
+                                                        DexConstants.CoinDecimals,
                                                         { preserve: true },
                                                     ),
                                                 })}
@@ -152,8 +152,8 @@ export function TonsAmountFieldset(): JSX.Element {
                                         <>
                                             {'> Min value: '}
                                             {formattedAmount(
-                                                bridge.minTonsAmount,
-                                                DexConstants.TONDecimals,
+                                                bridge.minEversAmount,
+                                                DexConstants.CoinDecimals,
                                                 { preserve: true },
                                             )}
                                         </>
@@ -166,8 +166,8 @@ export function TonsAmountFieldset(): JSX.Element {
                                         <>
                                             {'> Max value: '}
                                             {formattedAmount(
-                                                bridge.maxTonsAmount,
-                                                DexConstants.TONDecimals,
+                                                bridge.maxEversAmount,
+                                                DexConstants.CoinDecimals,
                                                 { preserve: true },
                                             )}
                                         </>

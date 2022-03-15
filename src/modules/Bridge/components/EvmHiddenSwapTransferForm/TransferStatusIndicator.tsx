@@ -21,14 +21,14 @@ function TransferStatusIndicatorInner(): JSX.Element {
 
     const isTransferPage = transfer.txHash !== undefined && isEvmTxHashValid(transfer.txHash)
     const evmWallet = isTransferPage ? transfer.useEvmWallet : bridge.useEvmWallet
-    const tonWallet = isTransferPage ? transfer.useTonWallet : bridge.useTonWallet
+    const everWallet = isTransferPage ? transfer.useEverWallet : bridge.useEverWallet
     const status = isTransferPage ? (transfer.transferState?.status || 'disabled') : transferStatus
     const isConfirmed = status === 'confirmed'
     const isRejected = status === 'rejected'
     const isPending = status === 'pending'
     const { confirmedBlocksCount = 0, eventBlocksToConfirm = 0 } = { ...transfer.transferState }
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && !isConfirmed
     )
     const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
@@ -72,7 +72,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -80,7 +80,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

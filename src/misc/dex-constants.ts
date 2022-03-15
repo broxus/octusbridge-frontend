@@ -6,8 +6,8 @@ export class DexConstants {
 
     static WTONRootAddress = WTONRootAddress
 
-    static TONDecimals = 9
+    static CoinDecimals = 9
 
-    static TONSymbol = 'EVER'
+    static CoinSymbol = 'EVER'
 
 }

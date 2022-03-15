@@ -6,15 +6,15 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { DexConstants } from '@/misc'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 import { formattedAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
 
-export function TonWallet(): JSX.Element | null {
+export function EverWallet(): JSX.Element | null {
     const intl = useIntl()
-    const wallet = useTonWallet()
+    const wallet = useEverWallet()
 
     return (
         <Observer>
@@ -54,13 +54,13 @@ export function TonWallet(): JSX.Element | null {
                                         }, {
                                             value: formattedAmount(
                                                 wallet.balance,
-                                                DexConstants.TONDecimals,
+                                                DexConstants.CoinDecimals,
                                                 {
                                                     preserve: true,
                                                     roundIfThousand: false,
                                                 },
                                             ),
-                                            currency: DexConstants.TONSymbol,
+                                            currency: DexConstants.CoinSymbol,
                                         })}
                                     </div>
                                 )}

@@ -43,8 +43,8 @@ function RelayerStatusInner(): JSX.Element {
             }
 
             <CreateRelayerLayout
-                tonTokenSymbol={DexConstants.TONSymbol}
-                tonTokenDecimals={DexConstants.TONDecimals}
+                tonTokenSymbol={DexConstants.CoinSymbol}
+                tonTokenDecimals={DexConstants.CoinDecimals}
                 relayInitialTonDeposit={stakingData.relayInitialTonDeposit}
                 stakingBalance={stakingData.stakingBalance}
                 stakingTokenDecimals={stakingData.stakingTokenDecimals}
@@ -130,10 +130,10 @@ function RelayerStatusInner(): JSX.Element {
                                             }, {
                                                 amount: formattedAmount(
                                                     stakingData.eventInitialBalance,
-                                                    DexConstants.TONDecimals,
+                                                    DexConstants.CoinDecimals,
                                                     { preserve: true },
                                                 ),
-                                                symbol: DexConstants.TONSymbol,
+                                                symbol: DexConstants.CoinSymbol,
                                             })}
                                         />
                                     </p>

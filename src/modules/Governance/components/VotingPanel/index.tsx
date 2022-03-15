@@ -39,7 +39,7 @@ export function VotingPanel({
 
     const valueRounded = value
         ? new BigNumber(value)
-            .shiftedBy(-DexConstants.TONDecimals)
+            .shiftedBy(-DexConstants.CoinDecimals)
             .dp(0, BigNumber.ROUND_DOWN)
             .toFixed()
         : undefined
@@ -69,7 +69,7 @@ export function VotingPanel({
                             }, {
                                 total: formattedAmount(
                                     total,
-                                    DexConstants.TONDecimals,
+                                    DexConstants.CoinDecimals,
                                     { target: 'token' },
                                 ),
                             })}

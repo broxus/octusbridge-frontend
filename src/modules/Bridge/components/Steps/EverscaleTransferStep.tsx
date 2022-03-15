@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { TonTransferForm } from '@/modules/Bridge/components/TonTransferForm'
+import { TonTransferForm } from '@/modules/Bridge/components/EverscaleTransferForm'
 
 
-export function TonTransferStep(): JSX.Element {
+export function EverscaleTransferStep(): JSX.Element {
     const intl = useIntl()
 
     return (

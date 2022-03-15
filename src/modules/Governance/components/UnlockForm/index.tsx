@@ -13,10 +13,10 @@ import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary
 import { useUserProposals } from '@/modules/Governance/hooks'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { useVotingContext } from '@/modules/Governance/providers'
-import { useTonWallet } from '@/stores/TonWalletService'
 import { usePagination } from '@/hooks'
 import { DexConstants } from '@/misc'
 import { error, formattedAmount } from '@/utils'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
@@ -31,7 +31,7 @@ export function UnlockFormInner({
     onSuccess,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
     const voting = useVotingContext()
     const userProposals = useUserProposals()
     const pagination = usePagination(userProposals.totalCount)
@@ -176,10 +176,10 @@ export function UnlockFormInner({
                                     }, {
                                         value: formattedAmount(
                                             calcGazToUnlockVotes(userProposals.items.length),
-                                            DexConstants.TONDecimals,
+                                            DexConstants.CoinDecimals,
                                             { target: 'token' },
                                         ),
-                                        symbol: DexConstants.TONSymbol,
+                                        symbol: DexConstants.CoinSymbol,
                                     }),
                                 }]}
                             />

@@ -84,7 +84,7 @@ export function UserVoteInner(): JSX.Element {
                     value: voting.votingPower
                         ? formattedAmount(
                             voting.votingPower,
-                            DexConstants.TONDecimals,
+                            DexConstants.CoinDecimals,
                             { target: 'token' },
                         )
                         : intl.formatMessage({

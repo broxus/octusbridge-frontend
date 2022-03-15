@@ -10,11 +10,11 @@ import { StakingBalance } from '@/modules/Staking/components/Balance'
 import { StakingPerformance } from '@/modules/Staking/components/Performance'
 import { StakingRounds } from '@/modules/Staking/components/Rounds'
 import { WalletConnector } from '@/modules/TonWalletConnector'
-import { useTonWallet } from '@/stores/TonWalletService'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 export function CurrentUser(): JSX.Element {
     const intl = useIntl()
-    const tonWallet = useTonWallet()
+    const tonWallet = useEverWallet()
 
     return (
         <Container size="lg">

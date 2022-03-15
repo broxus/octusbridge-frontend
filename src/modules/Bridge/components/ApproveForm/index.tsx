@@ -13,7 +13,7 @@ export function ApproveForm(): JSX.Element {
     const bridge = useBridge()
 
     const onChangeStrategy = (value: ApprovalStrategies) => {
-        bridge.changeState('approvalStrategy', value)
+        bridge.setState('approvalStrategy', value)
     }
 
     return (

@@ -12,7 +12,7 @@ export function TokensAssetsFieldset(): JSX.Element {
     const bridge = useBridge()
 
     const onChangeToken = (value?: string) => {
-        bridge.changeData('selectedToken', value)
+        bridge.setData('selectedToken', value)
     }
 
     return (

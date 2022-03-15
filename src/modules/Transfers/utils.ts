@@ -93,7 +93,7 @@ export function getFromNetwork(transfer: Transfer): NetworkShape | undefined {
                 ? findNetwork(`${transfer.ethTonChainId}`, 'evm')
                 : undefined
         case 'TonToEth':
-            return findNetwork('1', 'ton')
+            return findNetwork('1', 'everscale')
         default:
             return undefined
     }
@@ -103,7 +103,7 @@ export function getToNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
         case 'CreditEthToTon':
-            return findNetwork('1', 'ton')
+            return findNetwork('1', 'everscale')
         case 'EthToEth':
         case 'TonToEth':
             return transfer.tonEthChainId
@@ -118,15 +118,15 @@ export function getTransferLink(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
         case 'TonToEth':
             return transfer.tonEthChainId && transfer.tonEthContractAddress
-                ? `/transfer/ton-1/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
+                ? `/transfer/everscale-1/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
                 : undefined
         case 'EthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}/default`
+                ? `/transfer/evm-${transfer.ethTonChainId}/everscale-1/${transfer.ethTonTransactionHashEth}/default`
                 : undefined
         case 'CreditEthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/ton-1/${transfer.ethTonTransactionHashEth}/credit`
+                ? `/transfer/evm-${transfer.ethTonChainId}/everscale-1/${transfer.ethTonTransactionHashEth}/credit`
                 : undefined
         case 'EthToEth':
             return transfer.ethTonChainId && transfer.tonEthChainId && transfer.ethTonTransactionHashEth

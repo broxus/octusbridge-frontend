@@ -1,15 +1,15 @@
 import * as React from 'react'
 
-import { Summary, TonTransferStep } from '@/modules/Bridge/components'
+import { EvmSwapTransferStep, Summary } from '@/modules/Bridge/components'
 
 
-export function TonToEvmStatus(): JSX.Element {
+export function EvmToEverscaleSwap(): JSX.Element {
     return (
         <section className="section">
             <div className="section__wrapper">
                 <main className="content">
                     <hr />
-                    <TonTransferStep />
+                    <EvmSwapTransferStep />
                 </main>
 
                 <aside className="sidebar">

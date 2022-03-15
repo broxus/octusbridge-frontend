@@ -2,11 +2,11 @@ import * as React from 'react'
 
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { RelayerLinkStore } from '@/modules/Relayers/store/RelayerLink'
-import { TonWalletService, useTonWallet } from '@/stores/TonWalletService'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 
 export function useRelayerLink(
     stakingData: StakingDataStore,
-    tonWallet: TonWalletService = useTonWallet(),
+    tonWallet: EverWalletService = useEverWallet(),
 ): RelayerLinkStore {
     const ref = React.useRef<RelayerLinkStore>()
     ref.current = ref.current || new RelayerLinkStore(tonWallet, stakingData)

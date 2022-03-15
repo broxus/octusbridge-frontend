@@ -41,7 +41,7 @@ export function TonActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_VALUE',
                 }),
-                value: formattedAmount(value, DexConstants.TONDecimals, {
+                value: formattedAmount(value, DexConstants.CoinDecimals, {
                     target: 'token',
                 }),
             }]}

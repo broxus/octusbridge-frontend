@@ -3,11 +3,11 @@ import BigNumber from 'bignumber.js'
 
 import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
 import { ClaimFormState } from '@/modules/Staking/types'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ClaimFormStore {
 
@@ -17,7 +17,7 @@ export class ClaimFormStore {
 
     constructor(
         public readonly accountData: AccountDataStore,
-        public readonly tonWallet: TonWalletService,
+        public readonly tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this, {
             submit: action.bound,

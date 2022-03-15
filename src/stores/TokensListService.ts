@@ -11,6 +11,8 @@ export type TonToken = {
     address: string;
     logoURI?: string;
     version?: number;
+    vendor: string;
+    verified: boolean;
 }
 
 export type TonTokenListManifest<T> = {

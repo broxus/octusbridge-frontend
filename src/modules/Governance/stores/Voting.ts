@@ -3,7 +3,7 @@ import { makeAutoObservable, toJS } from 'mobx'
 import {
     BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
-import { TonWalletService } from '@/stores/TonWalletService'
+import { EverWalletService } from '@/stores/EverWalletService'
 import { TokenCache } from '@/stores/TokensCacheService'
 import { VotingStoreState } from '@/modules/Governance/types'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
@@ -17,7 +17,7 @@ export class VotingStore {
     protected state: VotingStoreState = {}
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
         protected userData: UserDataStore,
     ) {
         makeAutoObservable(this)

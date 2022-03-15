@@ -14,7 +14,7 @@ function EventStatusIndicatorInner(): JSX.Element {
     const transfer = useEvmSwapTransfer()
 
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const isPrepareConfirmed = transfer.prepareState?.status === 'confirmed'
     const {
         confirmations = 0,
@@ -23,7 +23,7 @@ function EventStatusIndicatorInner(): JSX.Element {
     } = { ...transfer.eventState }
     const isConfirmed = status === 'confirmed'
     const waitingWallet = (
-        !tonWallet.isReady
+        !everWallet.isReady
         && isPrepareConfirmed
         && !isConfirmed
     )
@@ -48,7 +48,7 @@ function EventStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -56,7 +56,7 @@ function EventStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

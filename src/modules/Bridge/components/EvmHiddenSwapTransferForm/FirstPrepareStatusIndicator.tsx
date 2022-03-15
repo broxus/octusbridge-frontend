@@ -8,7 +8,7 @@ import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
-import { getTonMainNetwork } from '@/utils'
+import { getEverscaleMainNetwork } from '@/utils'
 import { CreditProcessorState } from '@/modules/Bridge/types'
 
 
@@ -17,12 +17,12 @@ function FirstPrepareStatusIndicatorInner(): JSX.Element {
     const transfer = useEvmHiddenSwapTransfer()
 
     const evmWallet = transfer.useEvmWallet
-    const tonWallet = transfer.useTonWallet
+    const everWallet = transfer.useEverWallet
     const status = transfer.prepareState?.status || 'disabled'
     const isTransferConfirmed = transfer.transferState?.status === 'confirmed'
     const isConfirmed = status === 'confirmed'
     const waitingWallet = (
-        (!evmWallet.isReady || !tonWallet.isReady)
+        (!evmWallet.isReady || !everWallet.isReady)
         && isTransferConfirmed
         && !isConfirmed
     )
@@ -50,7 +50,7 @@ function FirstPrepareStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_FIRST_NOTE',
             }, {
-                network: getTonMainNetwork()?.label || '',
+                network: getEverscaleMainNetwork()?.label || '',
             })}
             status={status}
             txHash={isConfirmed ? transfer.creditProcessorAddress?.toString() : undefined}
@@ -58,7 +58,7 @@ function FirstPrepareStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || tonWallet.isInitializing) {
+                if (evmWallet.isInitializing || everWallet.isInitializing) {
                     return null
                 }
 
@@ -66,7 +66,7 @@ function FirstPrepareStatusIndicatorInner(): JSX.Element {
                     return (
                         <WalletsConnectors
                             evmWallet={evmWallet}
-                            tonWallet={tonWallet}
+                            everWallet={everWallet}
                         />
                     )
                 }

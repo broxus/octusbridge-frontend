@@ -3,9 +3,9 @@ import { makeAutoObservable } from 'mobx'
 
 import { ConfigStoreData, ConfigStoreState } from '@/modules/Governance/types'
 import { ProposalAbi, ProposalConfig } from '@/misc'
-import { TonWalletService } from '@/stores/TonWalletService'
 import { error } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
+import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ProposalConfigStore {
 
@@ -16,7 +16,7 @@ export class ProposalConfigStore {
     }
 
     constructor(
-        protected tonWallet: TonWalletService,
+        protected tonWallet: EverWalletService,
     ) {
         makeAutoObservable(this)
     }

@@ -3738,7 +3738,7 @@ export class TokenAbi {
         ],
     } as const
 
-    static TonEventConfig = {
+    static EverscaleEventConfig = {
         'ABI version': 2,
         version: '2.2',
         header: ['time', 'expire'],
@@ -4484,7 +4484,7 @@ export class TokenAbi {
         ],
     } as const
 
-    static TokenTransferProxy = {
+    static ProxyTokenTransferEverscale = {
         'ABI version': 2,
         version: '2.2',
         header: ['pubkey', 'time', 'expire'],
@@ -4493,6 +4493,22 @@ export class TokenAbi {
                 name: 'constructor',
                 inputs: [
                     { name: 'owner_', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'apiVersion',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'API_VERSION', type: 'string' },
+                ],
+            },
+            {
+                name: 'receiveTokenWalletAddress',
+                inputs: [
+                    { name: 'wallet', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -4507,24 +4523,12 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'burnCallback',
+                name: 'onAcceptTokensTransfer',
                 inputs: [
-                    { name: 'tokens', type: 'uint128' },
-                    { name: 'value1', type: 'cell' },
-                    { name: 'value2', type: 'uint256' },
-                    { name: 'sender_address', type: 'address' },
-                    { name: 'value4', type: 'address' },
-                    { name: 'send_gas_to', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'onAcceptTokensBurn',
-                inputs: [
-                    { name: 'tokens', type: 'uint128' },
-                    { name: 'walletOwner', type: 'address' },
-                    { name: 'wallet', type: 'address' },
+                    { name: 'tokenRoot', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'sender', type: 'address' },
+                    { name: 'senderWallet', type: 'address' },
                     { name: 'remainingGasTo', type: 'address' },
                     { name: 'payload', type: 'cell' },
                 ],
@@ -4537,10 +4541,11 @@ export class TokenAbi {
                     { name: 'answerId', type: 'uint32' },
                 ],
                 outputs: [
-                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'outdatedTokenRoots', type: 'address[]' }, { name: 'tokenRoot', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }], name: 'value0', type: 'tuple' },
-                    { name: 'value1', type: 'address' },
-                    { name: 'value2', type: 'uint128' },
-                    { name: 'value3', type: 'bool' },
+                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'root', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }, { name: 'settingsTransferGrams', type: 'uint128' }], name: '_config', type: 'tuple' },
+                    { name: '_owner', type: 'address' },
+                    { name: '_received_count', type: 'uint128' },
+                    { name: '_transferred_count', type: 'uint128' },
+                    { name: '_token_wallet', type: 'address' },
                 ],
             },
             {
@@ -4558,32 +4563,22 @@ export class TokenAbi {
                     { name: 'answerId', type: 'uint32' },
                 ],
                 outputs: [
-                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'outdatedTokenRoots', type: 'address[]' }, { name: 'tokenRoot', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }], name: 'value0', type: 'tuple' },
+                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'root', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }, { name: 'settingsTransferGrams', type: 'uint128' }], name: 'value0', type: 'tuple' },
                 ],
             },
             {
                 name: 'setConfiguration',
                 inputs: [
-                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'outdatedTokenRoots', type: 'address[]' }, { name: 'tokenRoot', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }], name: '_config', type: 'tuple' },
-                    { name: 'gasBackAddress', type: 'address' },
+                    { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'root', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }, { name: 'settingsTransferGrams', type: 'uint128' }], name: '_config', type: 'tuple' },
                 ],
                 outputs: [
                 ],
             },
             {
-                name: 'transferTokenOwnership',
+                name: 'upgrade',
                 inputs: [
-                    { name: 'target', type: 'address' },
-                    { name: 'newOwner', type: 'address' },
-                ],
-                outputs: [
-                ],
-            },
-            {
-                name: 'legacyTransferTokenOwnership',
-                inputs: [
-                    { name: 'target', type: 'address' },
-                    { name: 'newOwner', type: 'address' },
+                    { name: 'code', type: 'cell' },
+                    { name: 'send_gas_to', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -4626,7 +4621,7 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'encodeTonEventData',
+                name: 'encodeEverscaleEventData',
                 inputs: [
                     { name: 'wid', type: 'int8' },
                     { name: 'addr', type: 'uint256' },
@@ -4639,7 +4634,7 @@ export class TokenAbi {
                 ],
             },
             {
-                name: 'decodeTonEventData',
+                name: 'decodeEverscaleEventData',
                 inputs: [
                     { name: 'data', type: 'cell' },
                 ],
@@ -4665,6 +4660,14 @@ export class TokenAbi {
                 ],
                 outputs: [
                     { name: 'owner', type: 'address' },
+                ],
+            },
+            {
+                name: 'token_wallet',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'token_wallet', type: 'address' },
                 ],
             },
         ],
@@ -4700,9 +4703,10 @@ export class TokenAbi {
             { name: '_constructorFlag', type: 'bool' },
             { name: '_randomNonce', type: 'uint256' },
             { name: 'owner', type: 'address' },
-            { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'outdatedTokenRoots', type: 'address[]' }, { name: 'tokenRoot', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }], name: 'config', type: 'tuple' },
-            { name: 'burnedCount', type: 'uint128' },
-            { name: 'paused', type: 'bool' },
+            { components: [{ name: 'tonConfiguration', type: 'address' }, { name: 'ethereumConfigurations', type: 'address[]' }, { name: 'root', type: 'address' }, { name: 'settingsDeployWalletGrams', type: 'uint128' }, { name: 'settingsTransferGrams', type: 'uint128' }], name: 'config', type: 'tuple' },
+            { name: 'received_count', type: 'uint128' },
+            { name: 'transferred_count', type: 'uint128' },
+            { name: 'token_wallet', type: 'address' },
         ],
     } as const
 
@@ -6338,425 +6342,6 @@ export class EthAbi {
                 {
                     indexed: false,
                     internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'PendingWithdrawalCancel',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'bytes32',
-                    name: 'payloadId',
-                    type: 'bytes32',
-                },
-            ],
-            name: 'PendingWithdrawalCreated',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-            ],
-            name: 'PendingWithdrawalFill',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'enum IVault.ApproveStatus',
-                    name: 'approveStatus',
-                    type: 'uint8',
-                },
-            ],
-            name: 'PendingWithdrawalUpdateApproveStatus',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'PendingWithdrawalUpdateBounty',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'requestedAmount',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'redeemedAmount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'PendingWithdrawalWithdraw',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'debtRatio',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'minDebtPerHarvest',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'maxDebtPerHarvest',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'performanceFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyAdded',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-            ],
-            name: 'StrategyAddedToQueue',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'oldVersion',
-                    type: 'address',
-                },
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'newVersion',
-                    type: 'address',
-                },
-            ],
-            name: 'StrategyMigrated',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-            ],
-            name: 'StrategyRemovedFromQueue',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'gain',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'loss',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'debtPaid',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'totalGain',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'totalSkim',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'totalLoss',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'totalDebt',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'debtAdded',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'debtRatio',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyReported',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-            ],
-            name: 'StrategyRevoked',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'debtRatio',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyUpdateDebtRatio',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'maxDebtPerHarvest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyUpdateMaxDebtPerHarvest',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'minDebtPerHarvest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyUpdateMinDebtPerHarvest',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: true,
-                    internalType: 'address',
-                    name: 'strategy',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'performanceFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyUpdatePerformanceFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'int128',
-                    name: 'wid',
-                    type: 'int128',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'addr',
-                    type: 'uint256',
-                },
-            ],
-            name: 'StrategyUpdateRewards',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
                     name: 'bridge',
                     type: 'address',
                 },
@@ -6794,19 +6379,6 @@ export class EthAbi {
                 },
             ],
             name: 'UpdateDepositFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'depositLimit',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDepositLimit',
             type: 'event',
         },
         {
@@ -6853,32 +6425,6 @@ export class EthAbi {
             inputs: [
                 {
                     indexed: false,
-                    internalType: 'uint256',
-                    name: 'managenentFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateManagementFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'performanceFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdatePerformanceFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
                     internalType: 'int128',
                     name: 'wid',
                     type: 'int128',
@@ -6912,19 +6458,6 @@ export class EthAbi {
                 {
                     indexed: false,
                     internalType: 'uint256',
-                    name: 'undeclaredWithdrawLimit',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateUndeclaredWithdrawLimit',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
                     name: 'fee',
                     type: 'uint256',
                 },
@@ -6938,75 +6471,52 @@ export class EthAbi {
                 {
                     indexed: false,
                     internalType: 'address',
-                    name: 'withdrawGuardian',
+                    name: 'sender',
                     type: 'address',
                 },
-            ],
-            name: 'UpdateWithdrawGuardian',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'int128',
+                    name: 'recipientWid',
+                    type: 'int128',
+                },
                 {
                     indexed: false,
                     internalType: 'uint256',
-                    name: 'withdrawLimitPerPeriod',
+                    name: 'recipientAddr',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'withdrawalRecipient',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'withdrawalId',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'bounty',
                     type: 'uint256',
                 },
             ],
-            name: 'UpdateWithdrawLimitPerPeriod',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address[20]',
-                    name: 'queue',
-                    type: 'address[20]',
-                },
-            ],
-            name: 'UpdateWithdrawalQueue',
+            name: 'UserDeposit',
             type: 'event',
         },
         {
             inputs: [],
             name: 'acceptGovernance',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_debtRatio',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'minDebtPerHarvest',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'maxDebtPerHarvest',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_performanceFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'addStrategy',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -7026,19 +6536,6 @@ export class EthAbi {
         },
         {
             inputs: [],
-            name: 'availableDepositLimit',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
             name: 'bridge',
             outputs: [
                 {
@@ -7048,46 +6545,6 @@ export class EthAbi {
                 },
             ],
             stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'int128',
-                            name: 'wid',
-                            type: 'int128',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'cancelPendingWithdrawal',
-            outputs: [],
-            stateMutability: 'nonpayable',
             type: 'function',
         },
         {
@@ -7110,121 +6567,6 @@ export class EthAbi {
                     internalType: 'struct IEverscale.EverscaleAddress',
                     name: '',
                     type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'convertFromTargetDecimals',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'convertToTargetDecimals',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'creditAvailable',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'creditAvailable',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'debtOutstanding',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'debtOutstanding',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'debtRatio',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
                 },
             ],
             stateMutability: 'view',
@@ -7275,12 +6617,12 @@ export class EthAbi {
                             type: 'uint32',
                         },
                     ],
-                    internalType: 'struct IVaultBasic.WithdrawalParams',
+                    internalType: 'struct IVault.WithdrawalParams',
                     name: '',
                     type: 'tuple',
                 },
             ],
-            stateMutability: 'view',
+            stateMutability: 'pure',
             type: 'function',
         },
         {
@@ -7306,100 +6648,6 @@ export class EthAbi {
                     internalType: 'uint256',
                     name: 'amount',
                     type: 'uint256',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int128',
-                            name: 'wid',
-                            type: 'int128',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int128',
-                            name: 'wid',
-                            type: 'int128',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256[]',
-                    name: 'amount',
-                    type: 'uint256[]',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple[]',
                 },
             ],
             name: 'deposit',
@@ -7410,19 +6658,6 @@ export class EthAbi {
         {
             inputs: [],
             name: 'depositFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'depositLimit',
             outputs: [
                 {
                     internalType: 'uint256',
@@ -7510,75 +6745,6 @@ export class EthAbi {
             type: 'function',
         },
         {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'expectedReturn',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
-            ],
-            name: 'forceWithdraw',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple[]',
-                },
-            ],
-            name: 'forceWithdraw',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
             inputs: [],
             name: 'governance',
             outputs: [
@@ -7608,11 +6774,6 @@ export class EthAbi {
             inputs: [
                 {
                     internalType: 'address',
-                    name: '_token',
-                    type: 'address',
-                },
-                {
-                    internalType: 'address',
                     name: '_bridge',
                     type: 'address',
                 },
@@ -7622,9 +6783,9 @@ export class EthAbi {
                     type: 'address',
                 },
                 {
-                    internalType: 'uint256',
-                    name: '_targetDecimals',
-                    type: 'uint256',
+                    internalType: 'address',
+                    name: '_token',
+                    type: 'address',
                 },
                 {
                     components: [
@@ -7651,45 +6812,6 @@ export class EthAbi {
         },
         {
             inputs: [],
-            name: 'lastReport',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'lockedProfit',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'lockedProfitDegradation',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
             name: 'management',
             outputs: [
                 {
@@ -7699,177 +6821,6 @@ export class EthAbi {
                 },
             ],
             stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'managementFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'oldVersion',
-                    type: 'address',
-                },
-                {
-                    internalType: 'address',
-                    name: 'newVersion',
-                    type: 'address',
-                },
-            ],
-            name: 'migrateStrategy',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'user',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-            ],
-            name: 'pendingWithdrawals',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'bounty',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'timestamp',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'enum IVault.ApproveStatus',
-                            name: 'approveStatus',
-                            type: 'uint8',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalParams',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: '',
-                    type: 'address',
-                },
-            ],
-            name: 'pendingWithdrawalsPerUser',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'pendingWithdrawalsTotal',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'performanceFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'gain',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'loss',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_debtPayment',
-                    type: 'uint256',
-                },
-            ],
-            name: 'report',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'revokeStrategy',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'revokeStrategy',
-            outputs: [],
-            stateMutability: 'nonpayable',
             type: 'function',
         },
         {
@@ -7909,55 +6860,9 @@ export class EthAbi {
                     name: 'signatures',
                     type: 'bytes[]',
                 },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
             ],
             name: 'saveWithdraw',
             outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'bytes',
-                    name: 'payload',
-                    type: 'bytes',
-                },
-                {
-                    internalType: 'bytes[]',
-                    name: 'signatures',
-                    type: 'bytes[]',
-                },
-            ],
-            name: 'saveWithdraw',
-            outputs: [
-                {
-                    internalType: 'bool',
-                    name: 'instantWithdrawal',
-                    type: 'bool',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
-            ],
             stateMutability: 'nonpayable',
             type: 'function',
         },
@@ -7995,19 +6900,6 @@ export class EthAbi {
                 },
             ],
             name: 'setDepositFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'limit',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setDepositLimit',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -8054,129 +6946,12 @@ export class EthAbi {
         {
             inputs: [
                 {
-                    internalType: 'uint256',
-                    name: 'degradation',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setLockedProfitDegradation',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
                     internalType: 'address',
                     name: '_management',
                     type: 'address',
                 },
             ],
             name: 'setManagement',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setManagementFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple[]',
-                },
-                {
-                    internalType: 'enum IVault.ApproveStatus[]',
-                    name: 'approveStatus',
-                    type: 'uint8[]',
-                },
-            ],
-            name: 'setPendingWithdrawalApprove',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'enum IVault.ApproveStatus',
-                    name: 'approveStatus',
-                    type: 'uint8',
-                },
-            ],
-            name: 'setPendingWithdrawalApprove',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setPendingWithdrawalBounty',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setPerformanceFee',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -8209,49 +6984,6 @@ export class EthAbi {
         {
             inputs: [
                 {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'int128',
-                            name: 'wid',
-                            type: 'int128',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: '_rewards',
-                    type: 'tuple',
-                },
-            ],
-            name: 'setStrategyRewards',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: '_undeclaredWithdrawLimit',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setUndeclaredWithdrawLimit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
                     internalType: 'uint256',
                     name: '_withdrawFee',
                     type: 'uint256',
@@ -8260,151 +6992,6 @@ export class EthAbi {
             name: 'setWithdrawFee',
             outputs: [],
             stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: '_withdrawGuardian',
-                    type: 'address',
-                },
-            ],
-            name: 'setWithdrawGuardian',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: '_withdrawLimitPerPeriod',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setWithdrawLimitPerPeriod',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address[20]',
-                    name: 'queue',
-                    type: 'address[20]',
-                },
-            ],
-            name: 'setWithdrawalQueue',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'skim',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-            ],
-            name: 'strategies',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'performanceFee',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'activation',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'debtRatio',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'minDebtPerHarvest',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'maxDebtPerHarvest',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'lastReport',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'totalDebt',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'totalGain',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'totalSkim',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'totalLoss',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'address',
-                            name: 'rewardsManager',
-                            type: 'address',
-                        },
-                        {
-                            components: [
-                                {
-                                    internalType: 'int128',
-                                    name: 'wid',
-                                    type: 'int128',
-                                },
-                                {
-                                    internalType: 'uint256',
-                                    name: 'addr',
-                                    type: 'uint256',
-                                },
-                            ],
-                            internalType: 'struct IEverscale.EverscaleAddress',
-                            name: 'rewards',
-                            type: 'tuple',
-                        },
-                    ],
-                    internalType: 'struct IVault.StrategyParams',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
             type: 'function',
         },
         {
@@ -8461,183 +7048,7 @@ export class EthAbi {
         },
         {
             inputs: [],
-            name: 'totalAssets',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'totalDebt',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'undeclaredWithdrawLimit',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_debtRatio',
-                    type: 'uint256',
-                },
-            ],
-            name: 'updateStrategyDebtRatio',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'maxDebtPerHarvest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'updateStrategyMaxDebtPerHarvest',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'minDebtPerHarvest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'updateStrategyMinDebtPerHarvest',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'strategyId',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_performanceFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'updateStrategyPerformanceFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'amountRequested',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'maxLoss',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'withdraw',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'amountAdjusted',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [],
             name: 'withdrawFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'withdrawGuardian',
-            outputs: [
-                {
-                    internalType: 'address',
-                    name: '',
-                    type: 'address',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'withdrawLimitPerPeriod',
             outputs: [
                 {
                     internalType: 'uint256',
@@ -8662,50 +7073,6 @@ export class EthAbi {
                     internalType: 'bool',
                     name: '',
                     type: 'bool',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'withdrawalPeriodId',
-                    type: 'uint256',
-                },
-            ],
-            name: 'withdrawalPeriods',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'total',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'considered',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.WithdrawalPeriodParams',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'withdrawalQueue',
-            outputs: [
-                {
-                    internalType: 'address[20]',
-                    name: '',
-                    type: 'address[20]',
                 },
             ],
             stateMutability: 'view',

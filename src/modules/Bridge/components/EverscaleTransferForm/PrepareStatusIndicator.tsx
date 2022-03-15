@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
-import { useBridge, useTonTransfer } from '@/modules/Bridge/providers'
+import { useBridge, useEverscaleTransfer } from '@/modules/Bridge/providers'
 import { PrepareStateStatus } from '@/modules/Bridge/types'
 import { isTonAddressValid } from '@/utils'
 
@@ -12,7 +12,7 @@ import { isTonAddressValid } from '@/utils'
 function PrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
-    const transfer = useTonTransfer()
+    const transfer = useEverscaleTransfer()
 
     const [prepareStatus, setPrepareStatus] = React.useState<PrepareStateStatus>('disabled')
 
@@ -20,12 +20,12 @@ function PrepareStatusIndicatorInner(): JSX.Element {
         transfer.contractAddress !== undefined
         && isTonAddressValid(transfer.contractAddress.toString())
     )
-    const tonWallet = isTransferPage ? transfer.useTonWallet : bridge.useTonWallet
+    const everWallet = isTransferPage ? transfer.useEverWallet : bridge.useEverWallet
     const status = isTransferPage ? (transfer.prepareState?.status || 'disabled') : prepareStatus
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
     const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
-    const waitingWallet = !tonWallet.isReady && !isConfirmed
+    const waitingWallet = !everWallet.isReady && !isConfirmed
 
     const onPrepare = async () => {
         if (isTransferPage || prepareStatus === 'pending') {
@@ -34,7 +34,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
 
         try {
             setPrepareStatus('pending')
-            await bridge.prepareTonToEvm(() => {
+            await bridge.prepareEverscaleToEvm(() => {
                 setPrepareStatus('disabled')
             })
         }
@@ -57,16 +57,16 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             waitingWallet={waitingWallet}
         >
             {(() => {
-                if (tonWallet.isInitializing) {
+                if (everWallet.isInitializing) {
                     return null
                 }
 
                 if (waitingWallet) {
                     return (
                         <Button
-                            disabled={tonWallet.isConnecting || tonWallet.isConnected}
+                            disabled={everWallet.isConnecting || everWallet.isConnected}
                             type="primary"
-                            onClick={tonWallet.connect}
+                            onClick={everWallet.connect}
                         >
                             {intl.formatMessage({
                                 id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
@@ -79,7 +79,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
                     <Button
                         disabled={(
                             isTransferPage
-                            || !tonWallet.isReady
+                            || !everWallet.isReady
                             || isPending
                             || isConfirmed
                         )}
