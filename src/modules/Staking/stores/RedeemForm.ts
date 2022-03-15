@@ -168,4 +168,12 @@ export class RedeemFormStore {
         return new BigNumber(this.tonWallet.balance).gte(this.tonDepositAmount)
     }
 
+    public get hasCastedVotes(): boolean | undefined {
+        if (!this.accountData.castedVotes) {
+            return undefined
+        }
+
+        return this.accountData.castedVotes.length > 0
+    }
+
 }

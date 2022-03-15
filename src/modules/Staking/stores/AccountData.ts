@@ -9,7 +9,7 @@ import { getStakingContract, handleCurrency } from '@/modules/Staking/utils'
 import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
 import { TonWalletService } from '@/stores/TonWalletService'
 import {
-    PendingReward, RelayConfig, StackingDetails, UserDataAbi, UserDetails,
+    CastedVotes, PendingReward, RelayConfig, StackingDetails, UserDataAbi, UserDetails,
 } from '@/misc'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
@@ -80,7 +80,7 @@ export class AccountDataStore {
         }
     }
 
-    protected async fetchUserDetails(): Promise<UserDetails | undefined> {
+    protected async fetchUserDataAddress(): Promise<Address | undefined> {
         try {
             if (!this.tonWallet.address) {
                 throwException('Ton wallet must be connected')
@@ -91,6 +91,20 @@ export class AccountDataStore {
                 user: new Address(this.tonWallet.address),
             }).call()
 
+            return userDataAddress
+        }
+        catch (e) {
+            error(e)
+            return undefined
+        }
+    }
+
+    protected async fetchUserDetails(userDataAddress: Address): Promise<UserDetails | undefined> {
+        try {
+            if (!this.tonWallet.address) {
+                throwException('Ton wallet must be connected')
+            }
+
             const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
 
             const { value0: userDetails } = await userDataContract.methods.getDetails({
@@ -98,6 +112,24 @@ export class AccountDataStore {
             }).call()
 
             return userDetails
+        }
+        catch (e) {
+            error(e)
+            return undefined
+        }
+    }
+
+    public async fetchCastedVotes(userDataAddress: Address): Promise<CastedVotes | undefined> {
+        try {
+            if (!this.tonWallet.address) {
+                throwException('Ton wallet must be connected')
+            }
+
+            const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
+
+            const { casted_votes: castedVotes } = await userDataContract.methods.casted_votes({}).call()
+
+            return castedVotes
         }
         catch (e) {
             error(e)
@@ -130,10 +162,15 @@ export class AccountDataStore {
             let pendingReward: PendingReward | undefined,
                 currency: CurrencyResponse | undefined
 
-            const [relayConfig, stakingDetails, userDetails] = await Promise.all([
+            const [relayConfig, stakingDetails, userDataAddress] = await Promise.all([
                 this.fetchRelayConfig(),
                 this.fetchStakingDetails(),
-                this.fetchUserDetails(),
+                this.fetchUserDataAddress(),
+            ])
+
+            const [userDetails, castedVotes] = await Promise.all([
+                userDataAddress ? this.fetchUserDetails(userDataAddress) : undefined,
+                userDataAddress ? this.fetchCastedVotes(userDataAddress) : undefined,
             ])
 
             if (stakingDetails) {
@@ -149,7 +186,12 @@ export class AccountDataStore {
 
             runInAction(() => {
                 this.data = {
-                    stakingDetails, userDetails, pendingReward, relayConfig, currency,
+                    stakingDetails,
+                    userDetails,
+                    pendingReward,
+                    relayConfig,
+                    currency,
+                    castedVotes,
                 }
                 this.state.hasAccount = !!userDetails
             })
@@ -304,6 +346,10 @@ export class AccountDataStore {
 
     public get hasAccount(): boolean | undefined {
         return this.state.hasAccount
+    }
+
+    public get castedVotes(): CastedVotes | undefined {
+        return this.data.castedVotes
     }
 
 }

@@ -127,7 +127,7 @@ export function UnlockFormInner({
                             }),
                             align: 'right',
                         }]}
-                        rows={userProposals.items.map(({ proposal }) => ({
+                        rows={userProposals.items.map(({ proposal, vote }) => ({
                             cells: [
                                 proposal.proposalId,
                                 proposal.state ? (
@@ -141,9 +141,9 @@ export function UnlockFormInner({
                                 voting.unlockedIds.includes(proposal.proposalId) ? (
                                     <Icon icon="success" />
                                 ) : (
-                                    voting.lockedTokens && voting.token?.decimals ? (
+                                    voting.token?.decimals ? (
                                         formattedAmount(
-                                            voting.lockedTokens,
+                                            vote.votes,
                                             voting.token.decimals,
                                             { target: 'token' },
                                         )

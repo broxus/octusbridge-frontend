@@ -1,4 +1,5 @@
 import {
+    CastedVotes,
     PendingReward, RelayConfig, StackingDetails, UserDetails,
 } from '@/misc'
 import { CommonGraphShape } from '@/modules/Chart/types'
@@ -19,6 +20,7 @@ export type AccountDataStoreData = {
     pendingReward?: PendingReward;
     relayConfig?: RelayConfig;
     currency?: CurrencyResponse;
+    castedVotes?: CastedVotes;
 }
 
 export type RedeemFormStoreState = {
