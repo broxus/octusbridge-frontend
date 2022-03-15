@@ -83,7 +83,7 @@ export function Pagination({
 
                     <Select
                         value={count}
-                        options={COUNTS.map(value => ({ value }))}
+                        options={COUNTS.map(value => ({ value, label: value }))}
                         onChange={onChangeCount}
                     />
 
