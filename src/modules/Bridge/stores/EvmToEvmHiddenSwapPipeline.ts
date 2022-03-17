@@ -130,8 +130,6 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            console.log(this.pipelineCredit, this.pipelineDefault)
-
             await this.tokensCache.syncEvmToken(this.pipelineCredit)
 
             addABI(EthAbi.Vault)
