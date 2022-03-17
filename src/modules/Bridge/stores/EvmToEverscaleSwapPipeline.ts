@@ -7,6 +7,7 @@ import {
 import BigNumber from 'bignumber.js'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 import {
+    action,
     computed,
     IReactionDisposer,
     makeObservable,
@@ -80,6 +81,12 @@ export class EvmToEverscaleSwapPipeline<
         >(this, {
             data: observable,
             state: observable,
+            broadcast: action.bound,
+            process: action.bound,
+            cancel: action.bound,
+            withdrawTokens: action.bound,
+            withdrawWevers: action.bound,
+            withdrawEvers: action.bound,
             creditProcessorContract: computed,
             amount: computed,
             creditProcessorAddress: computed,
@@ -492,7 +499,7 @@ export class EvmToEverscaleSwapPipeline<
         }
     }
 
-    public async withdrawWtons(): Promise<void> {
+    public async withdrawWevers(): Promise<void> {
         if (
             this.swapState?.tokenBalance === undefined
             || this.swapState.tokenWallet === undefined
@@ -574,7 +581,7 @@ export class EvmToEverscaleSwapPipeline<
         }
     }
 
-    public async withdrawTons(): Promise<void> {
+    public async withdrawEvers(): Promise<void> {
         if (
             this.swapState?.tonBalance === undefined
             || this.swapState.isWithdrawing

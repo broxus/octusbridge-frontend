@@ -130,7 +130,9 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
+            console.log(this.pipelineCredit, this.pipelineDefault)
+
+            await this.tokensCache.syncEvmToken(this.pipelineCredit)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -140,7 +142,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const ethereumConfiguration = this.pipeline?.ethereumConfiguration
+            const ethereumConfiguration = this.pipelineCredit?.ethereumConfiguration
 
             if (ethereumConfiguration === undefined) {
                 debug('Cannon find ethereum configuration in pipeline. Exit resolve')
@@ -249,7 +251,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return -1
             })
 
-            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
+            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipelineDefault)
 
             if (vaultContract === undefined) {
                 this.setState('releaseState', {
@@ -398,7 +400,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                     const swapAmountNumber = new BigNumber(creditProcessorDetails.swapAmount)
                         .shiftedBy(this.token?.decimals ? -this.token.decimals : 0)
                     const tokenAmountNumber = new BigNumber(this.amount)
-                        .shiftedBy(this.pipeline?.evmTokenDecimals ? -this.pipeline.evmTokenDecimals : 0)
+                        .shiftedBy(this.pipelineCredit?.evmTokenDecimals ? -this.pipelineCredit.evmTokenDecimals : 0)
 
                     if (isGoodBignumber(tokenAmountNumber) && isGoodBignumber(swapAmountNumber)) {
                         this.setData(
@@ -638,8 +640,6 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return
             }
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
-
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
             const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails.value0.tonConfiguration)
@@ -710,7 +710,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
+                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipelineDefault)
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
@@ -833,7 +833,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
         }
     }
 
-    public get pipeline(): Pipeline | undefined {
+    public get pipelineCredit(): Pipeline | undefined {
         if (
             this.token?.root === undefined
             || this.leftNetwork?.type === undefined
@@ -848,11 +848,30 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
         return this.tokensCache.pipeline(
             this.token.root,
-            this.isEvmToEvm
-                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                : `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
+            'credit',
+        )
+    }
+
+    public get pipelineDefault(): Pipeline | undefined {
+        if (
+            this.token?.root === undefined
+            || this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.rightNetwork?.type === undefined
+            || this.rightNetwork?.chainId === undefined
+        ) {
+            return undefined
+        }
+
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+
+        return this.tokensCache.pipeline(
+            this.token.root,
+            `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.depositType,
+            'default',
         )
     }
 
@@ -890,10 +909,6 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
     public get releaseState(): EvmHiddenSwapTransferStoreState['releaseState'] {
         return this.state.releaseState
-    }
-
-    public get isEvmToEvm(): boolean {
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
     protected get debt(): BigNumber {

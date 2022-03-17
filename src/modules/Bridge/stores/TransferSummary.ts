@@ -101,13 +101,11 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
         return this.tokensCache.pipeline(
             this.token.root,
+            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             (this.isEvmToEvm && this.isTransferPage)
                 ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                : `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            (this.isEvmToEvm && !this.isTransferPage)
-                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
                 : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.data.depositType,
+            (this.isEvmToEvm && this.isTransferPage) ? 'default' : this.data.depositType,
         )
     }
 

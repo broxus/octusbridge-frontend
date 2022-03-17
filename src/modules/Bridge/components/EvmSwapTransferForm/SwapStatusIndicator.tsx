@@ -167,7 +167,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
                                         disabled={transfer.swapState?.isWithdrawing}
                                         key="wtons"
                                         type="tertiary"
-                                        onClick={transfer.withdrawWtons}
+                                        onClick={transfer.withdrawWevers}
                                     >
                                         {intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_WTON_BTN_TEXT',
@@ -179,7 +179,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
                                         disabled={transfer.swapState?.isWithdrawing}
                                         key="ton"
                                         type="tertiary"
-                                        onClick={transfer.withdrawTons}
+                                        onClick={transfer.withdrawEvers}
                                     >
                                         {intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_TONS_BTN_TEXT',
