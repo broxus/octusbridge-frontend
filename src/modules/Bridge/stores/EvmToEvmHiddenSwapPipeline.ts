@@ -37,8 +37,13 @@ import {
 import { getCreditFactoryContract } from '@/modules/Bridge/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TokensCacheService } from '@/stores/TokensCacheService'
-import { debug, error, isGoodBignumber } from '@/utils'
+import { Pipeline, TokensCacheService } from '@/stores/TokensCacheService'
+import {
+    debug,
+    error,
+    getEverscaleMainNetwork,
+    isGoodBignumber,
+} from '@/utils'
 
 
 // noinspection DuplicatedCode
@@ -92,6 +97,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
+            || this.tokensCache.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -107,6 +113,8 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
 
             if (tx == null || tx.to == null) {
+                debug('Transaction not found. Run check transaction runner')
+                await this.checkTransaction()
                 return
             }
 
@@ -116,23 +124,26 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             )
 
             if (token === undefined) {
+                debug('Token not found. Exit resolve')
                 return
             }
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
-
             this.setData('token', token)
+
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
 
             if (methodCall?.name !== 'depositToFactory') {
+                debug('Is not a deposit to factory method call. Exit resolve')
                 return
             }
 
             const ethereumConfiguration = this.pipeline?.ethereumConfiguration
 
             if (ethereumConfiguration === undefined) {
+                debug('Cannon find ethereum configuration in pipeline. Exit resolve')
                 return
             }
 
@@ -144,11 +155,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
-            this.setData('amount', methodCall?.params[0].value)
-            this.setData('tokenAmount', methodCall?.params[5].value)
-            this.setData('leftAddress', tx.from.toLowerCase())
-
-            const layer3 = methodCall?.params[10].value.substr(2, methodCall?.params[10].value.length)
+            const layer3 = methodCall?.params[10].value.substring(2, methodCall?.params[10].value.length)
             const event = await rpc.unpackFromCell({
                 allowPartial: true,
                 boc: Buffer.from(layer3, 'hex').toString('base64'),
@@ -160,17 +167,16 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 ] as const,
             })
 
-            this.setData(
-                'rightAddress',
-                `0x${new BigNumber(event.data.evmAddress).toString(16).padStart(40, '0')}`.toLowerCase(),
-            )
-
             const targetWid = methodCall?.params[1].value
             const targetAddress = methodCall?.params[2].value
-            this.setData(
-                'everscaleAddress',
-                `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
-            )
+
+            this.setData({
+                amount: methodCall?.params[0].value,
+                everscaleAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
+                leftAddress: tx.from.toLowerCase(),
+                rightAddress: `0x${new BigNumber(event.data.evmAddress).toString(16).padStart(40, '0')}`.toLowerCase(),
+                tokenAmount: methodCall?.params[5].value,
+            })
 
             this.setState('transferState', {
                 confirmedBlocksCount: 0,
@@ -259,7 +265,6 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 await vaultContract.methods.saveWithdraw(
                     this.data.encodedEvent,
                     signatures.map(({ signature }) => signature),
-                    0,
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
@@ -309,6 +314,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                     try {
                         const { blockNumber } = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
                         const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
+
                         this.setState('transferState', {
                             ...this.transferState,
                             confirmedBlocksCount: networkBlockNumber - blockNumber,
@@ -327,7 +333,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                         } as EvmSwapTransferStoreState['prepareState'])
                     }
                     catch (e) {
-
+                        error('Credit processor updater error', e)
                     }
                 }
 
@@ -359,19 +365,20 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             this.setState('creditProcessorState', state)
 
             if (isCancelled || isProcessed) {
-                this.setState('prepareState', {
-                    status: 'confirmed',
-                })
-                this.setState('eventState', {
-                    confirmations: this.eventState?.confirmations || 0,
-                    requiredConfirmations: this.eventState?.requiredConfirmations || 0,
-                    status: 'confirmed',
-                })
-
-                this.setState('swapState', {
-                    ...this.swapState,
-                    isStuck: false,
-                    status: isCancelled ? 'disabled' : 'pending',
+                this.setState({
+                    prepareState: {
+                        status: 'confirmed',
+                    },
+                    eventState: {
+                        confirmations: this.eventState?.confirmations || 0,
+                        requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                        status: 'confirmed',
+                    },
+                    swapState: {
+                        ...this.swapState,
+                        isStuck: false,
+                        status: isCancelled ? 'disabled' : 'pending',
+                    },
                 })
 
                 if (isCancelled) {
@@ -406,6 +413,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                     this.setState('secondPrepareState', {
                         status: 'pending',
                     })
+
                     this.runContractUpdater()
                 }
 
@@ -544,15 +552,18 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             }
 
             this.setData('contractAddress', new Address(transfer.tonEventContractAddress))
-            this.setState('secondPrepareState', {
-                status: 'confirmed',
+
+            this.setState({
+                secondPrepareState: {
+                    status: 'confirmed',
+                },
+                secondEventState: {
+                    confirmations: this.secondEventState?.confirmations || 0,
+                    requiredConfirmations: this.secondEventState?.requiredConfirmations || 0,
+                    status: 'pending',
+                },
             })
 
-            this.setState('secondEventState', {
-                confirmations: this.secondEventState?.confirmations || 0,
-                requiredConfirmations: this.secondEventState?.requiredConfirmations || 0,
-                status: 'pending',
-            })
             this.runEventUpdater()
         })().finally(() => {
             if (
@@ -617,7 +628,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
+            const proxyContract = new rpc.Contract(TokenAbi.EvmTokenTransferProxy, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -631,7 +642,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails._config.tonConfiguration)
+            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails.value0.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -654,8 +665,8 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                 eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                 eventData: eventDataEncoded,
-                configurationWid: proxyDetails._config.tonConfiguration.toString().split(':')[0],
-                configurationAddress: `0x${proxyDetails._config.tonConfiguration.toString().split(':')[1]}`,
+                configurationWid: proxyDetails.value0.tonConfiguration.toString().split(':')[0],
+                configurationAddress: `0x${proxyDetails.value0.tonConfiguration.toString().split(':')[1]}`,
                 eventContractWid: this.contractAddress.toString().split(':')[0],
                 eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                 proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -663,8 +674,10 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             }])
             const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
 
-            this.setData('encodedEvent', encodedEvent)
-            this.setData('withdrawalId', withdrawalId)
+            this.setData({
+                encodedEvent,
+                withdrawalId,
+            })
 
             if (this.evmWallet.isConnected && this.secondEventState?.status === 'confirmed') {
                 this.runReleaseUpdater()
@@ -765,8 +778,10 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             })).state
 
             debug('Sync pair')
-            this.setData('pairAddress', pairAddress)
-            this.setData('pairState', pairState)
+            this.setData({
+                pairAddress,
+                pairState,
+            })
         }
         catch (e) {
             error('Sync pair error', e)
@@ -808,12 +823,37 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 }),
             ]).then(r => r.map(i => (i.status === 'fulfilled' ? i.value : undefined)))
 
-            this.setData('minTransferFee', results[0]?.expected_amount)
-            this.setData('maxTransferFee', results[1]?.expected_amount)
+            this.setData({
+                minTransferFee: results[0]?.expected_amount,
+                maxTransferFee: results[1]?.expected_amount,
+            })
         }
         catch (e) {
             error('Sync transfers fee error', e)
         }
+    }
+
+    public get pipeline(): Pipeline | undefined {
+        if (
+            this.token?.root === undefined
+            || this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.rightNetwork?.type === undefined
+            || this.rightNetwork?.chainId === undefined
+        ) {
+            return undefined
+        }
+
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+
+        return this.tokensCache.pipeline(
+            this.token.root,
+            this.isEvmToEvm
+                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                : `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.depositType,
+        )
     }
 
     public get contractAddress(): EvmHiddenSwapTransferStoreData['contractAddress'] {
@@ -850,6 +890,10 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
     public get releaseState(): EvmHiddenSwapTransferStoreState['releaseState'] {
         return this.state.releaseState
+    }
+
+    public get isEvmToEvm(): boolean {
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
     protected get debt(): BigNumber {

@@ -36,6 +36,7 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
         const summaryDisposer = reaction(
             () => ({
                 amount: pipeline.amount,
+                depositType: pipeline.depositType,
                 everscaleAddress: (pipeline as EvmToEvmHiddenSwapPipeline).everscaleAddress,
                 leftAddress: pipeline.leftAddress,
                 leftNetwork: pipeline.leftNetwork,

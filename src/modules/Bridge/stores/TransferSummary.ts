@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx'
+import { computed, makeObservable, observable } from 'mobx'
 
 import {
     DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
@@ -7,6 +7,7 @@ import {
 import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
 import { Pipeline, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { getEverscaleMainNetwork } from '@/utils'
 
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
@@ -19,6 +20,28 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         makeObservable<TransferSummary, 'data' | 'state'>(this, {
             data: observable,
             state: observable,
+            amount: computed,
+            bridgeFee: computed,
+            everscaleAddress: computed,
+            maxTransferFee: computed,
+            minTransferFee: computed,
+            leftAddress: computed,
+            leftNetwork: computed,
+            rightAddress: computed,
+            rightNetwork: computed,
+            pipeline: computed,
+            swapAmount: computed,
+            token: computed,
+            tokenAmount: computed,
+            isTransferPage: computed,
+            isTransferReleased: computed,
+            vaultBalance: computed,
+            evmTokenDecimals: computed,
+            isEverscaleBasedToken: computed,
+            isEvmToEvm: computed,
+            isEvmToEverscale: computed,
+            isFromEverscale: computed,
+            isEverscaleToEvm: computed,
         })
     }
 
@@ -74,11 +97,17 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             return undefined
         }
 
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+
         return this.tokensCache.pipeline(
             this.token.root,
-            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            // this.depositType,
+            (this.isEvmToEvm && this.isTransferPage)
+                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                : `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+            (this.isEvmToEvm && !this.isTransferPage)
+                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.data.depositType,
         )
     }
 

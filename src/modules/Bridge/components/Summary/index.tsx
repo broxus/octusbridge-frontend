@@ -324,7 +324,7 @@ export function Summary(): JSX.Element {
                                         })}
                                 </li>
                                 <li>
-                                    <b className="text-lg text-truncate">
+                                    <b className="text-lg text-truncate" data-amount={summary.tokenAmount}>
                                         {(summary.tokenAmount !== undefined && summary.tokenAmount !== '0')
                                             ? formattedAmount(
                                                 summary.tokenAmount,

@@ -115,9 +115,9 @@ export class EvmToEverscaleSwapPipeline<
                 && this.everWallet.isConnected
                 && value === this.leftNetwork?.chainId
             ) {
-                await this.resolve()
+                await this.checkTransaction()
             }
-        })
+        }, { delay: 30 })
 
         this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
             if (
@@ -125,9 +125,9 @@ export class EvmToEverscaleSwapPipeline<
                 && this.everWallet.isConnected
                 && this.evmWallet.chainId === this.leftNetwork?.chainId
             ) {
-                await this.resolve()
+                await this.checkTransaction()
             }
-        })
+        }, { delay: 30 })
 
         this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, async isConnected => {
             if (
@@ -135,9 +135,9 @@ export class EvmToEverscaleSwapPipeline<
                 && this.evmWallet.isConnected
                 && this.evmWallet.chainId === this.leftNetwork?.chainId
             ) {
-                await this.resolve()
+                await this.checkTransaction()
             }
-        })
+        }, { delay: 30 })
 
         this.#tokensDisposer = reaction(() => this.tokensCache.tokens, async () => {
             if (
@@ -145,16 +145,16 @@ export class EvmToEverscaleSwapPipeline<
                 && this.everWallet.isConnected
                 && this.evmWallet.chainId === this.leftNetwork?.chainId
             ) {
-                await this.resolve()
+                await this.checkTransaction()
             }
-        })
+        }, { delay: 30 })
 
         if (
             this.evmWallet.isConnected
             && this.everWallet.isConnected
             && this.evmWallet.chainId === this.leftNetwork?.chainId
         ) {
-            await this.resolve()
+            await this.checkTransaction()
         }
     }
 
@@ -189,6 +189,7 @@ export class EvmToEverscaleSwapPipeline<
         try {
             const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
 
+
             if (txReceipt == null || txReceipt.to == null) {
                 setTimeout(async () => {
                     await this.checkTransaction(true)
@@ -210,6 +211,7 @@ export class EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
+            || this.tokensCache.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -238,9 +240,9 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
-
             this.setData('token', token)
+
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -712,11 +714,12 @@ export class EvmToEverscaleSwapPipeline<
 
                 this.setData('creditProcessorAddress', creditProcessorAddress)
 
-                this.setState('transferState', transferState)
-
-                this.setState('prepareState', {
-                    status: 'pending',
-                })
+                this.setState({
+                    transferState,
+                    prepareState: {
+                        status: 'pending',
+                    },
+                } as U)
 
                 this.runCreditProcessorUpdater()
             }
@@ -780,7 +783,6 @@ export class EvmToEverscaleSwapPipeline<
                             (await this.evmWallet.web3.eth.getBlock(blockNumber)).timestamp.toString(),
                             10,
                         )
-
                         debug('Outdated ts', (Date.now() / 1000) - ts)
 
                         this.setState('prepareState', {
@@ -821,20 +823,21 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('creditProcessorState', state)
 
             if (isCancelled || isProcessed) {
-                this.setState('prepareState', {
-                    status: 'confirmed',
-                })
-                this.setState('eventState', {
-                    confirmations: this.eventState?.confirmations || 0,
-                    requiredConfirmations: this.eventState?.requiredConfirmations || 0,
-                    status: 'confirmed',
-                })
-
-                this.setState('swapState', {
-                    ...this.swapState,
-                    isStuck: false,
-                    status: isCancelled ? 'disabled' : 'pending',
-                })
+                this.setState({
+                    eventState: {
+                        confirmations: this.eventState?.confirmations || 0,
+                        requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                        status: 'confirmed',
+                    },
+                    prepareState: {
+                        status: 'confirmed',
+                    },
+                    swapState: {
+                        ...this.swapState,
+                        isStuck: false,
+                        status: isCancelled ? 'disabled' : 'pending',
+                    },
+                } as U)
 
                 if (isCancelled) {
                     await this.checkWithdrawBalances()
@@ -934,9 +937,9 @@ export class EvmToEverscaleSwapPipeline<
                     status: 'pending',
                 })
             }
-            else {
-                this.setState('swapState', this.swapState)
-            }
+            // else {
+            //     this.setState('swapState', this.swapState)
+            // }
         })().finally(() => {
             if (
                 this.swapState?.status !== 'confirmed'
@@ -1187,6 +1190,10 @@ export class EvmToEverscaleSwapPipeline<
         return this.swapState?.owner?.toString().toLowerCase() === this.everWallet.address?.toLowerCase()
     }
 
+    public get depositType(): EvmTransferQueryParams['depositType'] | undefined {
+        return this.params?.depositType
+    }
+
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
@@ -1216,7 +1223,7 @@ export class EvmToEverscaleSwapPipeline<
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.params?.depositType,
+            this.depositType,
         )
     }
 

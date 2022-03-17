@@ -62,8 +62,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     ) {
         super()
 
-        this.data = DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA
-        this.state = DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE
+        this.reset()
 
         makeObservable<
             CrosschainBridge,
@@ -581,7 +580,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
         this.setState('isProcessing', true)
 
-        const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, new Address(this.pipeline.proxy))
+        const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, new Address(this.pipeline.proxy))
 
         this.pipeline.everscaleConfiguration = (await proxyContract.methods.getDetails({
             answerId: 0,
@@ -1563,8 +1562,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected reset(): void {
-        this.data = DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA
-        this.state = DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE
+        this.setData(DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA)
+        this.setState(DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE)
     }
 
 
@@ -1648,10 +1647,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return undefined
         }
 
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+
         return this.tokensCache.pipeline(
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.isEvmToEvm
+                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
             this.depositType,
         )
     }

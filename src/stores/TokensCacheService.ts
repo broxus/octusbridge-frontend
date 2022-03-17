@@ -4,7 +4,7 @@ import {
     computed,
     makeObservable,
     observable,
-    reaction,
+    reaction, runInAction,
 } from 'mobx'
 import { Address, Contract, Subscription } from 'everscale-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
@@ -20,7 +20,7 @@ import {
 import { BaseStore } from '@/stores/BaseStore'
 import { TokensListService } from '@/stores/TokensListService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { error, findNetwork } from '@/utils'
+import { error, findNetwork, getEverscaleMainNetwork } from '@/utils'
 import { NetworkType } from '@/types'
 
 import { EverWalletService, useEverWallet } from './EverWalletService'
@@ -213,6 +213,9 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
                 }),
         )
 
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+        const everscaleMainNetworkId = `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+
         this.setData(
             'pipelines',
             Object.entries(this.assets).reduce(
@@ -236,13 +239,13 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
                             acc.push(
                                 {
                                     ...pl,
-                                    from: tokenBase === 'everscale' ? 'everscale-1' : `${tokenBase}-${vault.chainId}`,
-                                    to: to === 'everscale' ? 'everscale-1' : `${to}-${vault.chainId}`,
+                                    from: tokenBase === 'everscale' ? everscaleMainNetworkId : `${tokenBase}-${vault.chainId}`,
+                                    to: to === 'everscale' ? everscaleMainNetworkId : `${to}-${vault.chainId}`,
                                 },
                                 {
                                     ...pl,
-                                    from: to === 'everscale' ? 'everscale-1' : `${to}-${vault.chainId}`,
-                                    to: tokenBase === 'everscale' ? 'everscale-1' : `${tokenBase}-${vault.chainId}`,
+                                    from: to === 'everscale' ? everscaleMainNetworkId : `${to}-${vault.chainId}`,
+                                    to: tokenBase === 'everscale' ? everscaleMainNetworkId : `${tokenBase}-${vault.chainId}`,
                                 },
                             )
                         })
@@ -527,16 +530,23 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
         }
 
         try {
-            await Promise.allSettled([
+            await Promise.all([
                 this.syncEvmTokenDecimals(pipeline),
                 this.syncEvmTokenBalance(pipeline),
                 this.syncEvmTokenVaultBalance(pipeline),
-                this.syncEvmTokenVaultLimit(pipeline),
             ])
         }
         catch (e) {
             error('Sync EVM token decimals, balance, vault balance or vault wrapper error', e)
         }
+
+        try {
+            await this.syncEvmTokenVaultLimit(pipeline)
+        }
+        catch (e) {
+            // error('Sync EVM token vault limit error', e)
+        }
+
     }
 
     /**
@@ -552,8 +562,21 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
             return
         }
 
-        // eslint-disable-next-line no-param-reassign
-        pipeline.evmTokenAddress = await this.getEvmTokenVaultContract(pipeline)?.methods.token().call()
+        const evmTokenAddress = await this.getEvmTokenVaultContract(pipeline)?.methods.token().call()
+
+        // Force update
+        runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.evmTokenAddress = evmTokenAddress
+        })
+
+        this.setData('pipelines', this.pipelines.map(
+            pl => ((
+                pl.chainId === pipeline.chainId
+                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
+                && pl.vault === pipeline.vault
+            ) ? { ...pl, evmTokenAddress } : pl),
+        ))
     }
 
     /**
@@ -567,10 +590,21 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         const tokenContract = await this.getEvmTokenContract(pipeline)
 
-        const decimals = await tokenContract?.methods.decimals().call()
+        const evmTokenDecimals = await tokenContract?.methods.decimals().call()
 
-        // eslint-disable-next-line no-param-reassign
-        pipeline.evmTokenDecimals = parseInt(decimals, 10)
+        // Force update
+        runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.evmTokenDecimals = parseInt(evmTokenDecimals, 10)
+        })
+
+        this.setData('pipelines', this.pipelines.map(
+            pl => ((
+                pl.chainId === pipeline.chainId
+                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
+                && pl.vault === pipeline.vault
+            ) ? { ...pl, evmTokenDecimals: parseInt(evmTokenDecimals, 10) } : pl),
+        ))
     }
 
     /**
@@ -584,14 +618,25 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         const tokenContract = await this.getEvmTokenContract(pipeline)
 
-        const balance = await tokenContract?.methods.balanceOf(this.evmWallet.address).call()
+        const evmTokenBalance = await tokenContract?.methods.balanceOf(this.evmWallet.address).call()
 
-        if (balance === undefined) {
+        if (evmTokenBalance === undefined) {
             return
         }
 
-        // eslint-disable-next-line no-param-reassign
-        pipeline.evmTokenBalance = balance
+        // Force update
+        runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.evmTokenBalance = evmTokenBalance
+        })
+
+        this.setData('pipelines', this.pipelines.map(
+            pl => ((
+                pl.chainId === pipeline.chainId
+                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
+                && pl.vault === pipeline.vault
+            ) ? { ...pl, evmTokenBalance } : pl),
+        ))
     }
 
     /**
@@ -605,14 +650,25 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         const tokenContract = await this.getEvmTokenContract(pipeline)
 
-        const balance = await tokenContract?.methods.balanceOf(pipeline.vault).call()
+        const vaultBalance = await tokenContract?.methods.balanceOf(pipeline.vault).call()
 
-        if (balance === undefined) {
+        if (vaultBalance === undefined) {
             return
         }
 
-        // eslint-disable-next-line no-param-reassign
-        pipeline.vaultBalance = balance
+        // Force update
+        runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.vaultBalance = vaultBalance
+        })
+
+        this.setData('pipelines', this.pipelines.map(
+            pl => ((
+                pl.chainId === pipeline.chainId
+                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
+                && pl.vault === pipeline.vault
+            ) ? { ...pl, vaultBalance } : pl),
+        ))
     }
 
     /**
@@ -624,16 +680,27 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
             return
         }
 
-        const tokenVaultContract = await this.getEvmTokenVaultContract(pipeline)
+        const tokenVaultContract = this.getEvmTokenVaultContract(pipeline)
 
-        const limit = await tokenVaultContract?.methods.availableDepositLimit().call()
+        const vaultLimit = await tokenVaultContract?.methods.availableDepositLimit().call()
 
-        if (limit === undefined) {
+        if (vaultLimit === undefined) {
             return
         }
 
-        // eslint-disable-next-line no-param-reassign
-        pipeline.vaultLimit = limit
+        // Force update
+        runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.vaultLimit = vaultLimit
+        })
+
+        this.setData('pipelines', this.pipelines.map(
+            pl => ((
+                pl.chainId === pipeline.chainId
+                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
+                && pl.vault === pipeline.vault
+            ) ? { ...pl, vaultLimit } : pl),
+        ))
     }
 
     /**
@@ -707,7 +774,7 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
             })
         }
         catch (e) {
-            error('Token balance update error', e)
+            // error('Token balance update error', e)
             token.balance = undefined
         }
         finally {

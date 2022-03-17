@@ -149,6 +149,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
+            || this.tokensCache.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -185,9 +186,9 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 return
             }
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
-
             this.setData('token', token)
+
+            await this.tokensCache.syncEvmToken(this.pipeline)
 
             const ethereumConfiguration = this.pipeline?.ethereumConfiguration
 
@@ -506,6 +507,10 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         return this.state.transferState
     }
 
+    public get depositType(): EvmTransferQueryParams['depositType'] {
+        return this.params?.depositType
+    }
+
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
@@ -535,7 +540,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.params?.depositType,
+            this.depositType,
         )
     }
 

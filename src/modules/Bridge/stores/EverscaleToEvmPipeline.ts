@@ -149,6 +149,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             this.evmWallet.web3 === undefined
             || this.contractAddress === undefined
             || this.leftNetwork === undefined
+            || this.tokensCache.tokens.length === 0
             || this.prepareState?.status === 'confirmed'
         ) {
             return
@@ -169,7 +170,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         } = eventData
 
         const proxyAddress = eventDetails._initializer
-        const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
+        const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, proxyAddress)
 
         const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -338,7 +339,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = new rpc.Contract(TokenAbi.ProxyTokenTransferEverscale, proxyAddress)
+            const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -481,6 +482,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.state.releaseState
     }
 
+    public get depositType(): EverscaleTransferQueryParams['depositType'] {
+        return this.params?.depositType
+    }
+
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
@@ -510,7 +515,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.params?.depositType,
+            this.depositType,
         )
     }
 
