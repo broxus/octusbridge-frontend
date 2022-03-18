@@ -136,10 +136,10 @@ function SwapStatusIndicatorInner(): JSX.Element {
                             new BigNumber(transfer.swapState?.tokenBalance || 0),
                         )
                         const hasTons = isGoodBignumber(
-                            new BigNumber(transfer.swapState?.tonBalance || 0),
+                            new BigNumber(transfer.swapState?.everBalance || 0),
                         )
                         const hasWtons = isGoodBignumber(
-                            new BigNumber(transfer.swapState?.wtonBalance || 0),
+                            new BigNumber(transfer.swapState?.weverBalance || 0),
                         )
 
                         if (!hasTokens && !hasTons && !hasWtons) {

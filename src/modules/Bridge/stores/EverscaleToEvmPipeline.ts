@@ -31,7 +31,6 @@ import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
 
 
-// noinspection DuplicatedCode
 export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData, EverscaleTransferStoreState> {
 
     protected eventUpdater: ReturnType<typeof setTimeout> | undefined

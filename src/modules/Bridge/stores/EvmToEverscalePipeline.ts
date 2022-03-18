@@ -35,7 +35,6 @@ import { EverWalletService } from '@/stores/EverWalletService'
 import { BaseStore } from '@/stores/BaseStore'
 
 
-// noinspection DuplicatedCode
 export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmTransferStoreState> {
 
     protected txTransferUpdater: ReturnType<typeof setTimeout> | undefined

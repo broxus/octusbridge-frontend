@@ -46,7 +46,6 @@ import {
 } from '@/utils'
 
 
-// noinspection DuplicatedCode
 export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
     EvmHiddenSwapTransferStoreData,
     EvmHiddenSwapTransferStoreState
@@ -325,7 +324,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                             10,
                         )
 
-                        debug('Outdated ts', (Date.now() / 1000) - ts)
+                        debug('Outdated ts', `${(Date.now() / 1000) - ts} / 600`)
 
                         this.setState('prepareState', {
                             ...this.prepareState,
@@ -476,7 +475,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             const isStuckNow = this.swapState?.isStuck
             const isStuck = ((Date.now() / 1000) - tx.createdAt) >= 600 && !isCancelled && !isProcessed
 
-            debug('Stuck ts', (Date.now() / 1000) - tx.createdAt)
+            debug('Stuck ts', `${(Date.now() / 1000) - tx.createdAt} / 600`)
 
             if ([
                 CreditProcessorState.EventConfirmed,

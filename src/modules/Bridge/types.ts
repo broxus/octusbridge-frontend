@@ -133,8 +133,8 @@ export type EvmSwapTransferStoreState = {
         status: SwapStateStatus;
         tokenBalance?: string;
         tokenWallet?: Address;
-        tonBalance?: string;
-        wtonBalance?: string;
+        everBalance?: string;
+        weverBalance?: string;
         weverWallet?: Address;
     };
 }

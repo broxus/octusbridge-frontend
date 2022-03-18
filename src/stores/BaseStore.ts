@@ -1,6 +1,6 @@
 import { action, makeObservable } from 'mobx'
 
-export class BaseStore<T extends {}, U extends {}> {
+export class BaseStore<T extends { [p: string]: any }, U extends { [p: string]: any }> {
 
     /**
      * Store data (e.g. user data, account data, form data etc.)
@@ -14,7 +14,7 @@ export class BaseStore<T extends {}, U extends {}> {
      */
     protected state: U = {} as U
 
-    constructor() {
+    protected constructor() {
         makeObservable(this, {
             setData: action.bound,
             setState: action.bound,
@@ -32,18 +32,19 @@ export class BaseStore<T extends {}, U extends {}> {
     /**
      * Set partial data with `key:value` hash.
      * @template {object} T
-     * @param {Partial<T>} data
+     * @template {keyof T & string} K
+     * @param {Partial<Pick<T, K>> | T} data
      */
-    public setData(data: Partial<T>): this;
+    public setData<K extends keyof T & string>(data: Partial<Pick<T, K>> | T): this;
     /**
      * Pass `key:value` hash  (one or many keys) of the data.
      * You may also pass individual keys and values to change data.
      * @template {object} T
      * @template {keyof T & string} K
-     * @param {K | Partial<T>} keyOrData
+     * @param {K | (Partial<Pick<T, K>> | T)} keyOrData
      * @param {T[K]} [value]
      */
-    public setData<K extends keyof T & string>(keyOrData: K | Partial<T>, value?: T[K]): this {
+    public setData<K extends keyof T & string>(keyOrData: K | (Partial<Pick<T, K>> | T), value?: T[K]): this {
         if (typeof keyOrData === 'string') {
             this.data = {
                 ...this.data,
@@ -64,24 +65,25 @@ export class BaseStore<T extends {}, U extends {}> {
      * @template {object} U
      * @template {keyof U & string} K
      * @param {K} key
-     * @param {U[k]} [value]
+     * @param {U[K]} [value]
      */
     public setState<K extends keyof U & string>(key: K, value?: U[K]): this;
     /**
      * Set partial state with `key:value` hash.
      * @template {object} U
-     * @param {U} state
+     * @template {keyof U & string} K
+     * @param {Partial<Pick<U, K>> | U} state
      */
-    public setState(state: Partial<U>): this;
+    public setState<K extends keyof U & string>(state: Partial<Pick<U, K>> | U): this;
     /**
      * Pass `key:value` hash  (one or many keys) of the state.
      * You may also pass individual keys and values to change state.
      * @template {object} U
      * @template {keyof U & string} K
-     * @param {K | Partial<U>} keyOrState
+     * @param {K | (Partial<Pick<U, K>> | U)} keyOrState
      * @param {U[K]} [value]
      */
-    public setState<K extends keyof U & string>(keyOrState: K | Partial<U>, value?: U[K]): this {
+    public setState<K extends keyof U & string>(keyOrState: K | (Partial<Pick<U, K>> | U), value?: U[K]): this {
         if (typeof keyOrState === 'string') {
             this.state = {
                 ...this.state,

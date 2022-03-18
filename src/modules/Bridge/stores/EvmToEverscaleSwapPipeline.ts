@@ -50,10 +50,9 @@ import {
 } from '@/utils'
 
 
-// noinspection DuplicatedCode
 export class EvmToEverscaleSwapPipeline<
-    T extends EvmSwapTransferStoreData = EvmSwapTransferStoreData,
-    U extends EvmSwapTransferStoreState = EvmSwapTransferStoreState
+    T extends EvmSwapTransferStoreData | { [p: string]: any },
+    U extends EvmSwapTransferStoreState | { [p: string]: any }
 > extends BaseStore<T, U> {
 
     protected txCreditProcessorUpdater: ReturnType<typeof setTimeout> | undefined
@@ -70,11 +69,11 @@ export class EvmToEverscaleSwapPipeline<
     ) {
         super()
 
-        this.data = DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA as T
-        this.state = DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE as U
+        this.setData(DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA)
+        this.setState(DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE)
 
         makeObservable<
-            EvmToEverscaleSwapPipeline,
+            EvmToEverscaleSwapPipeline<T, U>,
             | 'data'
             | 'state'
             | 'creditProcessorContract'
@@ -191,7 +190,7 @@ export class EvmToEverscaleSwapPipeline<
                 eventBlocksToConfirm: this.transferState?.eventBlocksToConfirm || 0,
                 status: this.transferState?.status || 'pending',
             },
-        } as U)
+        })
 
         try {
             const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
@@ -278,7 +277,7 @@ export class EvmToEverscaleSwapPipeline<
                 amount: methodCall?.params[0].value,
                 leftAddress: tx.from.toLowerCase(),
                 rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
-            } as T)
+            })
 
             this.setState('transferState', {
                 confirmedBlocksCount: 0,
@@ -311,7 +310,7 @@ export class EvmToEverscaleSwapPipeline<
         this.setState('prepareState', {
             ...this.prepareState,
             isBroadcasting: true,
-        } as EvmSwapTransferStoreState['prepareState'])
+        })
 
         try {
             const creditFactoryContract = new rpc.Contract(
@@ -332,7 +331,7 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('prepareState', {
                 ...this.prepareState,
                 isBroadcasting: false,
-            } as EvmSwapTransferStoreState['prepareState'])
+            })
             error('Broadcasting error', e)
         }
     }
@@ -350,7 +349,7 @@ export class EvmToEverscaleSwapPipeline<
         this.setState('swapState', {
             ...this.swapState,
             isProcessing: true,
-        } as EvmSwapTransferStoreState['swapState'])
+        })
 
         try {
             await this.creditProcessorContract.methods.process({}).send({
@@ -368,7 +367,7 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('swapState', {
                 ...this.swapState,
                 isProcessing: false,
-            } as EvmSwapTransferStoreState['swapState'])
+            })
             error('Process error', e)
         }
     }
@@ -386,7 +385,7 @@ export class EvmToEverscaleSwapPipeline<
         this.setState('swapState', {
             ...this.swapState,
             isCanceling: true,
-        } as EvmSwapTransferStoreState['swapState'])
+        })
 
         try {
             const creditProcessorDetails = (await this.creditProcessorContract.methods.getDetails({
@@ -396,7 +395,7 @@ export class EvmToEverscaleSwapPipeline<
             await this.checkWithdrawBalances()
 
             const gasAmount = BigNumber.max(
-                new BigNumber(creditProcessorDetails.debt).minus(this.swapState?.tonBalance || 0).plus('300000000'),
+                new BigNumber(creditProcessorDetails.debt).minus(this.swapState?.everBalance || 0).plus('300000000'),
                 new BigNumber('100000000'),
             )
 
@@ -409,13 +408,13 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('swapState', {
                 ...this.swapState,
                 isStuck: false,
-            }as EvmSwapTransferStoreState['swapState'])
+            })
         }
         catch (e) {
             this.setState('swapState', {
                 ...this.swapState,
                 isCanceling: false,
-            } as EvmSwapTransferStoreState['swapState'])
+            })
             error('Cancel error', e)
         }
     }
@@ -460,7 +459,7 @@ export class EvmToEverscaleSwapPipeline<
         const deployGrams = !isDeployed ? '100000000' : '0'
         const proxyGasValue = !isDeployed ? '600000000' : '500000000'
         const gasAmount = BigNumber.max(
-            new BigNumber('750000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('750000000').minus(this.swapState?.everBalance || 0),
             new BigNumber('50000000'),
         )
 
@@ -542,19 +541,19 @@ export class EvmToEverscaleSwapPipeline<
         const deployGrams = !isDeployed ? '100000000' : '0'
         const proxyGasValue = !isDeployed ? '600000000' : '500000000'
         const gasAmount = BigNumber.max(
-            new BigNumber('750000000').minus(this.swapState?.tonBalance || 0),
+            new BigNumber('750000000').minus(this.swapState?.everBalance || 0),
             new BigNumber('50000000'),
         )
 
         try {
-            if (!isGoodBignumber(new BigNumber(this.swapState.wtonBalance || 0))) {
+            if (!isGoodBignumber(new BigNumber(this.swapState.weverBalance || 0))) {
                 this.stopWithdrawUpdater()
-                throwException(`Invalid amount: ${this.swapState.wtonBalance}`)
+                throwException(`Invalid amount: ${this.swapState.weverBalance}`)
                 return
             }
 
             await this.creditProcessorContract.methods.proxyTokensTransfer({
-                _amount: this.swapState.wtonBalance || 0,
+                _amount: this.swapState.weverBalance || 0,
                 _deployWalletValue: deployGrams,
                 _remainingGasTo: this.everWallet.account.address,
                 _gasValue: proxyGasValue,
@@ -583,7 +582,7 @@ export class EvmToEverscaleSwapPipeline<
 
     public async withdrawEvers(): Promise<void> {
         if (
-            this.swapState?.tonBalance === undefined
+            this.swapState?.everBalance === undefined
             || this.swapState.isWithdrawing
             || this.creditProcessorContract === undefined
             || this.everWallet.account?.address === undefined
@@ -726,7 +725,7 @@ export class EvmToEverscaleSwapPipeline<
                     prepareState: {
                         status: 'pending',
                     },
-                } as U)
+                })
 
                 this.runCreditProcessorUpdater()
             }
@@ -784,18 +783,18 @@ export class EvmToEverscaleSwapPipeline<
                         this.setState('transferState', {
                             ...this.transferState,
                             confirmedBlocksCount: networkBlockNumber - blockNumber,
-                        } as EvmSwapTransferStoreState['transferState'])
+                        })
 
                         const ts = parseInt(
                             (await this.evmWallet.web3.eth.getBlock(blockNumber)).timestamp.toString(),
                             10,
                         )
-                        debug('Outdated ts', (Date.now() / 1000) - ts)
+                        debug('Outdated ts', `${(Date.now() / 1000) - ts} / 600`)
 
                         this.setState('prepareState', {
                             ...this.prepareState,
                             isOutdated: ((Date.now() / 1000) - ts) >= 600,
-                        } as EvmSwapTransferStoreState['prepareState'])
+                        })
                     }
                     catch (e) {
 
@@ -824,7 +823,7 @@ export class EvmToEverscaleSwapPipeline<
                     ...this.swapState,
                     isCanceling: false,
                     isProcessing: false,
-                } as EvmSwapTransferStoreState['swapState'])
+                })
             }
 
             this.setState('creditProcessorState', state)
@@ -844,7 +843,7 @@ export class EvmToEverscaleSwapPipeline<
                         isStuck: false,
                         status: isCancelled ? 'disabled' : 'pending',
                     },
-                } as U)
+                })
 
                 if (isCancelled) {
                     await this.checkWithdrawBalances()
@@ -911,12 +910,12 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('swapState', {
                 ...this.swapState,
                 deployer: creditProcessorDetails.deployer,
-            } as EvmSwapTransferStoreState['swapState'])
+            })
 
             const isStuckNow = this.swapState?.isStuck
             const isStuck = ((Date.now() / 1000) - tx.createdAt) >= 600 && !isCancelled && !isProcessed
 
-            debug('Stuck ts', (Date.now() / 1000) - tx.createdAt)
+            debug('Stuck ts', `${(Date.now() / 1000) - tx.createdAt} / 600`)
 
             if ([
                 CreditProcessorState.EventConfirmed,
@@ -936,7 +935,7 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('swapState', {
                 ...this.swapState,
                 isStuck: isStuckNow,
-            } as EvmSwapTransferStoreState['swapState'])
+            })
 
             if (this.eventState?.status === 'confirmed') {
                 this.setState('swapState', {
@@ -982,7 +981,7 @@ export class EvmToEverscaleSwapPipeline<
                     ...this.swapState,
                     isWithdrawing,
                     status: isWithdrawing ? 'pending' : status,
-                } as EvmSwapTransferStoreState['swapState'])
+                })
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
                     if (
@@ -995,7 +994,7 @@ export class EvmToEverscaleSwapPipeline<
                         this.setState('swapState', {
                             ...this.swapState,
                             status,
-                        } as EvmSwapTransferStoreState['swapState'])
+                        })
                     }
                 }, 5000)
             })
@@ -1014,17 +1013,17 @@ export class EvmToEverscaleSwapPipeline<
 
             (async () => {
                 await this.checkWithdrawBalances()
-                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.wtonBalance || 0))
+                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.weverBalance || 0))
                 this.setState('swapState', {
                     ...this.swapState,
                     isWithdrawing,
                     status: isWithdrawing ? 'pending' : status,
-                } as EvmSwapTransferStoreState['swapState'])
+                })
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
                     if (
                         this.swapState?.isWithdrawing
-                        && isGoodBignumber(new BigNumber(this.swapState.wtonBalance || 0))
+                        && isGoodBignumber(new BigNumber(this.swapState.weverBalance || 0))
                     ) {
                         runWithdrawWtonUpdater()
                     }
@@ -1032,7 +1031,7 @@ export class EvmToEverscaleSwapPipeline<
                         this.setState('swapState', {
                             ...this.swapState,
                             status,
-                        } as EvmSwapTransferStoreState['swapState'])
+                        })
                     }
                 }, 5000)
             })
@@ -1051,17 +1050,17 @@ export class EvmToEverscaleSwapPipeline<
 
             (async () => {
                 await this.checkWithdrawBalances()
-                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.tonBalance || 0))
+                const isWithdrawing = isGoodBignumber(new BigNumber(this.swapState?.everBalance || 0))
                 this.setState('swapState', {
                     ...this.swapState,
                     isWithdrawing,
                     status: isWithdrawing ? 'pending' : status,
-                } as EvmSwapTransferStoreState['swapState'])
+                })
             })().finally(() => {
                 this.withdrawUpdater = setTimeout(() => {
                     if (
                         this.swapState?.isWithdrawing
-                        && isGoodBignumber(new BigNumber(this.swapState.tonBalance || 0))
+                        && isGoodBignumber(new BigNumber(this.swapState.everBalance || 0))
                     ) {
                         runWithdrawTonUpdater()
                     }
@@ -1069,7 +1068,7 @@ export class EvmToEverscaleSwapPipeline<
                         this.setState('swapState', {
                             ...this.swapState,
                             status,
-                        } as EvmSwapTransferStoreState['swapState'])
+                        })
                     }
                 }, 5000)
             })
@@ -1098,7 +1097,7 @@ export class EvmToEverscaleSwapPipeline<
             this.setState('swapState', {
                 ...this.swapState,
                 owner,
-            } as EvmSwapTransferStoreState['swapState'])
+            })
         }
         catch (e) {
             error('Check owner error', e)
@@ -1118,7 +1117,7 @@ export class EvmToEverscaleSwapPipeline<
             const [
                 tokenBalance,
                 { state: creditState },
-                wtonBalance,
+                weverBalance,
             ] = await Promise.all([
                 TokenWallet.balance({
                     wallet: creditProcessorDetails.tokenWallet,
@@ -1135,10 +1134,10 @@ export class EvmToEverscaleSwapPipeline<
                 ...this.swapState,
                 tokenBalance,
                 tokenWallet: creditProcessorDetails.tokenWallet,
-                tonBalance: creditState?.balance,
-                wtonBalance,
-                wtonWallet: creditProcessorDetails.wtonWallet,
-            } as EvmSwapTransferStoreState['swapState'])
+                everBalance: creditState?.balance,
+                weverBalance,
+                weverWallet: creditProcessorDetails.wtonWallet,
+            })
         }
         catch (e) {
             error('Balances update error', e)

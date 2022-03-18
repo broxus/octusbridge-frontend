@@ -52,7 +52,6 @@ import { LabeledNetwork } from '@/types'
 import { EverWalletService } from '@/stores/EverWalletService'
 
 
-// noinspection DuplicatedCode
 export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, CrosschainBridgeStoreState> {
 
     constructor(
