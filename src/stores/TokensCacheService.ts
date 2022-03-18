@@ -216,6 +216,12 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
         const everscaleMainNetwork = getEverscaleMainNetwork()
         const everscaleMainNetworkId = `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
 
+        const pipelinesHash: Record<string, Pipeline> = {}
+
+        this.pipelines.forEach(pipeline => {
+            pipelinesHash[`${pipeline.everscaleTokenRoot}-${pipeline.vault}`] = pipeline
+        })
+
         this.setData(
             'pipelines',
             Object.entries(this.assets).reduce(
@@ -223,18 +229,20 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
                     Object.entries(pipelines).forEach(([key, pipeline]) => {
                         const [tokenBase, to] = key.split('_') as NetworkType[]
                         pipeline.vaults.forEach(vault => {
+                            const cached = pipelinesHash[`${tokenRoot}-${vault.vault}`]
                             const pl = {
                                 chainId: vault.chainId,
                                 depositType: vault.depositType,
                                 ethereumConfiguration: vault.ethereumConfiguration,
+                                everscaleConfiguration: cached?.everscaleConfiguration,
                                 everscaleTokenRoot: tokenRoot,
                                 evmTokenAddress: vault.tokenAddress,
-                                evmTokenDecimals: vault.decimals,
+                                evmTokenDecimals: cached?.evmTokenDecimals || vault.decimals,
                                 proxy: pipeline.proxy,
                                 tokenBase,
                                 vault: vault.vault,
-                                vaultBalance: vault.balance,
-                                vaultLimit: vault.limit,
+                                vaultBalance: cached?.vaultBalance || vault.balance,
+                                vaultLimit: cached?.vaultLimit || vault.limit,
                             }
                             acc.push(
                                 {

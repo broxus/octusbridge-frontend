@@ -9,7 +9,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import { Address } from 'everscale-inpage-provider'
+import { Address, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 
 import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc'
@@ -305,6 +305,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 || !this.everWallet.isConnected
                 || this.evmWallet.web3 === undefined
                 || this.contractAddress === undefined
+                || this.pipeline === undefined
             ) {
                 return
             }
@@ -338,7 +339,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             }
 
             const proxyAddress = eventDetails._initializer
-            const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, proxyAddress)
+            const abi = this.isEverscaleBasedToken
+                ? TokenAbi.EverscaleTokenTransferProxy
+                : TokenAbi.EvmTokenTransferProxy
+            const proxyContract = new rpc.Contract(abi, proxyAddress)
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
@@ -352,7 +356,18 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails._config.tonConfiguration)
+            if (this.isEverscaleBasedToken) {
+                this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                    typeof TokenAbi.EverscaleTokenTransferProxy, 'getDetails'
+                >)._config.tonConfiguration
+            }
+            else {
+                this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                    typeof TokenAbi.EvmTokenTransferProxy, 'getDetails'
+                >).value0.tonConfiguration
+            }
+
+            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, this.pipeline.everscaleConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -375,8 +390,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                 eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                 eventData: eventDataEncoded,
-                configurationWid: proxyDetails._config.tonConfiguration.toString().split(':')[0],
-                configurationAddress: `0x${proxyDetails._config.tonConfiguration.toString().split(':')[1]}`,
+                configurationWid: this.pipeline.everscaleConfiguration.toString().split(':')[0],
+                configurationAddress: `0x${this.pipeline.everscaleConfiguration.toString().split(':')[1]}`,
                 eventContractWid: this.contractAddress.toString().split(':')[0],
                 eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                 proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -516,6 +531,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
             this.depositType,
         )
+    }
+
+    public get isEverscaleBasedToken(): boolean {
+        return this.pipeline?.tokenBase === 'everscale'
     }
 
     public get token(): TokenCache | undefined {

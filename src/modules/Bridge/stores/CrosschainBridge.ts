@@ -9,7 +9,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import { Address, Contract } from 'everscale-inpage-provider'
+import { Address, Contract, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 import { Contract as EthContract } from 'web3-eth-contract'
 
 import rpc from '@/hooks/useRpcClient'
@@ -353,7 +353,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Common transfer tokens from EVM to Everscale.
      * @param {() => void} reject
      */
-    public async transfer(reject?: () => void): Promise<void> {
+    public async transfer(reject?: (e: any) => void): Promise<void> {
         let tries = 0
 
         const send = async (transactionType?: string) => {
@@ -391,7 +391,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     await send('0x0')
                 }
                 else {
-                    reject?.()
+                    reject?.(e)
                     error('Transfer deposit error', e)
                 }
             }
@@ -407,7 +407,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Transfer from EVM to Everscale with swap tokens between selected token and EVERs.
      * @param {() => void} reject
      */
-    public async transferWithSwap(reject?: () => void): Promise<void> {
+    public async transferWithSwap(reject?: (e: any) => void): Promise<void> {
         let tries = 0
 
         const send = async (transactionType?: string) => {
@@ -455,7 +455,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     await send('0x0')
                 }
                 else {
-                    reject?.()
+                    reject?.(e)
                     error('Transfer deposit to factory error', e)
                 }
             }
@@ -471,7 +471,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Transfer from EVM to EVM with the Hidden Bridge strategy.
      * @param {() => void} reject
      */
-    public async transferWithHiddenSwap(reject?: () => void): Promise<void> {
+    public async transferWithHiddenSwap(reject?: (e: any) => void): Promise<void> {
         let tries = 0
 
         const send = async (transactionType?: string) => {
@@ -549,7 +549,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     await send('0x0')
                 }
                 else {
-                    reject?.()
+                    reject?.(e)
                     error('Transfer deposit to factory error', e)
                 }
             }
@@ -567,7 +567,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * - For Everscale-based token we should transfer everscale token to proxy.
      * @param {() => void} reject
      */
-    public async prepareEverscaleToEvm(reject?: () => void): Promise<void> {
+    public async prepareEverscaleToEvm(reject?: (e: any) => void): Promise<void> {
         if (
             this.rightNetwork?.chainId === undefined
             || this.token === undefined
@@ -579,11 +579,21 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
         this.setState('isProcessing', true)
 
-        const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, new Address(this.pipeline.proxy))
+        const abi = this.isEverscaleBasedToken ? TokenAbi.EverscaleTokenTransferProxy : TokenAbi.EvmTokenTransferProxy
+        const proxyContract = new rpc.Contract(abi, new Address(this.pipeline.proxy))
 
-        this.pipeline.everscaleConfiguration = (await proxyContract.methods.getDetails({
-            answerId: 0,
-        }).call())._config.tonConfiguration
+        const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
+
+        if (this.isEverscaleBasedToken) {
+            this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                typeof TokenAbi.EverscaleTokenTransferProxy, 'getDetails'
+            >)._config.tonConfiguration
+        }
+        else {
+            this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                typeof TokenAbi.EvmTokenTransferProxy, 'getDetails'
+            >).value0.tonConfiguration
+        }
 
         if (this.pipeline.everscaleConfiguration === undefined) {
             this.setState('isProcessing', false)
@@ -700,7 +710,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             this.setData('txHash', eventAddress.toString())
         }
         catch (e) {
-            reject?.()
+            reject?.(e)
             error('Prepare Everscale to EVM error', e)
             await subscriber.unsubscribe()
         }
@@ -1379,6 +1389,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected async syncMinAmount(): Promise<void> {
+        if (!this.everWallet.isConnected) {
+            this.setData('minAmount', undefined)
+            return
+        }
+
         if (
             this.data.pairAddress === undefined
             || this.pairContract === undefined
