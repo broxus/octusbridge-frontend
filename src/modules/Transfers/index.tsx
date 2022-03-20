@@ -5,7 +5,6 @@ import { observer } from 'mobx-react-lite'
 import { Container } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { useTextParam } from '@/hooks'
-import { PendingTransfers } from '@/modules/Transfers/components/PendingTransfers'
 import { TransfersStats } from '@/modules/Transfers/components/Stats'
 import { TransfersList } from '@/modules/Transfers/components/Transfers'
 import { TransfersProvider } from '@/modules/Transfers/providers'
@@ -33,10 +32,6 @@ function TransfersInner(): JSX.Element {
             />
 
             <TransfersStats />
-
-            <TransfersProvider>
-                <PendingTransfers />
-            </TransfersProvider>
 
             <TransfersProvider>
                 <TransfersList />
