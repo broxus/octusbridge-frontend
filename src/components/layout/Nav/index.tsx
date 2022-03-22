@@ -4,14 +4,12 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Observer } from 'mobx-react-lite'
 
 import { Icon } from '@/components/common/Icon'
-import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 export function Nav(): JSX.Element {
     const intl = useIntl()
     const location = useLocation()
-    const tonWallet = useEverWallet()
     const splitLocation = location.pathname.split('/')
 
     return (
@@ -41,19 +39,11 @@ export function Nav(): JSX.Element {
                             <Observer>
                                 {() => (
                                     <li>
-                                        {tonWallet.address ? (
-                                            <NavLink to={`/transfers?user=${encodeURIComponent(tonWallet.address)}`}>
-                                                {intl.formatMessage({
-                                                    id: 'NAV_LINK_TEXT_HISTORY',
-                                                })}
-                                            </NavLink>
-                                        ) : (
-                                            <NavLink to="/transfers">
-                                                {intl.formatMessage({
-                                                    id: 'NAV_LINK_TEXT_HISTORY',
-                                                })}
-                                            </NavLink>
-                                        )}
+                                        <NavLink to="/transfers">
+                                            {intl.formatMessage({
+                                                id: 'NAV_LINK_TEXT_HISTORY',
+                                            })}
+                                        </NavLink>
                                     </li>
                                 )}
                             </Observer>
