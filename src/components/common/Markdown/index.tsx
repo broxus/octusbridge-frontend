@@ -1,5 +1,6 @@
 import * as React from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 import './index.scss'
 
@@ -11,7 +12,7 @@ export function Markdown({
     value,
 }: Props): JSX.Element {
     return (
-        <ReactMarkdown className="markdown">
+        <ReactMarkdown className="markdown" plugins={[remarkGfm]}>
             {value}
         </ReactMarkdown>
     )

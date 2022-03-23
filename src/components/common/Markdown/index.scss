@@ -43,4 +43,16 @@
     img {
         max-width: 500px;
     }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    td, th {
+        padding: 10px;
+    }
 }
