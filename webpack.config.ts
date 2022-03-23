@@ -256,6 +256,9 @@ export default (_: any, options: any): WebpackConfig => {
             historyApiFallback: true,
             liveReload: false,
             hot: false,
+            client: {
+                overlay: false,
+            },
         }
     }
 

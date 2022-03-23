@@ -102,7 +102,7 @@ export function App(): JSX.Element {
                             <Route exact path="/governance/proposals/create">
                                 <ProposalCreate />
                             </Route>
-                            <Route exact path="/governance/proposals/:id">
+                            <Route exact path="/governance/proposals/:id([0-9]+)?">
                                 <Proposal />
                             </Route>
                         </Switch>
