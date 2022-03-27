@@ -3,162 +3,104 @@ import {
     action,
     computed,
     makeObservable,
-    observable,
-    reaction, runInAction,
+    reaction,
+    runInAction,
 } from 'mobx'
 import { Address, Contract, Subscription } from 'everscale-inpage-provider'
-import { Contract as EthContract } from 'web3-eth-contract'
-import Web3 from 'web3'
 
+import { TokenListURI } from '@/config'
 import rpc from '@/hooks/useRpcClient'
-import {
-    BridgeConstants,
-    EthAbi,
-    TokenAbi,
-    TokenWallet,
-} from '@/misc'
+import { TokenAbi, TokenWallet } from '@/misc'
 import { BaseStore } from '@/stores/BaseStore'
+import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { TokensListService } from '@/stores/TokensListService'
-import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { error, findNetwork, getEverscaleMainNetwork } from '@/utils'
-import { NetworkType } from '@/types'
+import {
+    debug,
+    error,
+    isEverscaleAddressValid,
+    sliceAddress,
+    storage,
+    warn,
+} from '@/utils'
+import { Token } from '@/types'
 
-import { EverWalletService, useEverWallet } from './EverWalletService'
 
-export type BridgeTokenAssetsManifest = {
-    name: string;
-    token: TokenAssets;
+export type TokensCacheData<T> = {
+    tokens: T[];
 }
 
-export type TokenAssets = {
-    [tokenRoot: string]: TokenPipelines;
-}
-
-export type TokenAssetVault = {
-    balance?: string;
-    chainId: string;
-    decimals?: number;
-    depositType: string;
-    ethereumConfiguration: string;
-    limit?: string;
-    tokenAddress?: string;
-    tokenBalance?: string;
-    vault: string;
-}
-
-export type TokenPipelines = {
-    [pipeline: string]: {
-        proxy: string;
-        vaults: TokenAssetVault[];
-    }
-}
-
-export type TokenCache = {
-    balance?: string;
-    decimals: number;
-    icon?: string;
-    name: string;
-    pipelines: TokenPipelines;
-    root: string;
-    symbol: string;
-    updatedAt: number;
-    wallet?: string;
-}
-
-export type Pipeline = {
-    depositType: string;
-    chainId?: string;
-    ethereumConfiguration: string;
-    everscaleConfiguration?: Address;
-    everscaleTokenRoot: string;
-    evmTokenAddress?: string;
-    evmTokenBalance?: string;
-    evmTokenDecimals?: number;
-    from: string;
-    proxy: string;
-    to: string;
-    tokenBase: string;
-    vault: string;
-    vaultBalance?: string;
-    vaultLimit?: string;
-}
-
-type TokensCacheStoreData = {
-    assets: TokenAssets;
-    pipelines: Pipeline[];
-    tokens: TokenCache[];
-}
-
-type TokensCacheStoreState = {
-    isFetchingAssets: boolean;
+export type TokensCacheState<T> = {
+    isImporting: boolean;
+    isReady: boolean;
+    queue: T[];
     updatingTokens: Map<string, boolean>;
     updatingTokensBalance: Map<string, boolean>;
     updatingTokensWallet: Map<string, boolean>;
 }
 
+export type TokensCacheCtorOptions = {
+    useBuildListener?: boolean;
+    withImportedTokens: boolean;
+}
 
-export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCacheStoreState> {
 
-    /**
-     * Current data of the tokens cache
-     * @type {TokensCacheStoreData}
-     * @protected
-     */
-    protected data: TokensCacheStoreData = {
-        assets: {},
-        pipelines: [],
-        tokens: [],
-    }
+export const IMPORTED_TOKENS_STORAGE_KEY = 'imported_tokens'
 
-    /**
-     * Current state if the tokens cache
-     * @protected
-     */
-    protected state: TokensCacheStoreState = {
-        isFetchingAssets: false,
-        updatingTokens: new Map<string, boolean>(),
-        updatingTokensBalance: new Map<string, boolean>(),
-        updatingTokensWallet: new Map<string, boolean>(),
-    }
+
+export function getImportedTokens(): string[] {
+    return JSON.parse(storage.get(IMPORTED_TOKENS_STORAGE_KEY) || '[]')
+}
+
+
+export class TokensCacheService<
+    T extends Token | Record<string, any> = Token,
+    U extends TokensCacheData<T> | Record<string, any> = TokensCacheData<T>,
+    V extends TokensCacheState<T> | Record<string, any> = TokensCacheState<T>
+> extends BaseStore<U, V> {
 
     constructor(
-        protected readonly everWallet: EverWalletService,
-        protected readonly evmWallet: EvmWalletService,
+        protected readonly wallet: EverWalletService,
         protected readonly tokensList: TokensListService,
-        protected readonly tokensAssetsURI: string,
+        protected readonly options?: TokensCacheCtorOptions,
     ) {
         super()
 
-        makeObservable<TokensCacheService, '_byRoot' | 'data' | 'state'>(this, {
+        this.setData('tokens', [])
+
+        this.setState({
+            isImporting: false,
+            isReady: false,
+            queue: [],
+            updatingTokens: new Map<string, boolean>(),
+            updatingTokensBalance: new Map<string, boolean>(),
+            updatingTokensWallet: new Map<string, boolean>(),
+        })
+
+        makeObservable<TokensCacheService<T, U, V>, '_byRoot' | '_verifiedByRoot'>(this, {
             _byRoot: computed,
-            data: observable,
-            state: observable,
+            _verifiedByRoot: computed,
             add: action.bound,
             tokens: computed,
-            pipelines: computed,
+            verifiedBroxusTokens: computed,
+            roots: computed,
+            isFetching: computed,
+            isImporting: computed,
+            isReady: computed,
+            queue: computed,
+            currentImportingToken: computed,
+            onImportConfirm: action.bound,
+            onImportDismiss: action.bound,
         })
 
         // When the Tokens List Service has loaded the list of
         // available tokens, we will start creating a token map
         reaction(
-            () => [
-                tokensList.time,
-                tokensList.tokens,
-                everWallet.address,
-                evmWallet.address,
-                this.assets,
-            ],
+            () => [tokensList.time, tokensList.tokens, wallet.address],
             async (
-                [time, tokens, tonAddress, evmAddress, assets],
-                [prevTime, prevTokens, prevTonAddress, prevEvmAddress, prevAssets],
+                [time, tokens, address],
+                [prevTime, prevTokens, prevAddress],
             ) => {
-                if (
-                    time !== prevTime
-                    || tokens !== prevTokens
-                    || tonAddress !== prevTonAddress
-                    || evmAddress !== prevEvmAddress
-                    || assets !== prevAssets
-                ) {
+                if (time !== prevTime || tokens !== prevTokens || address !== prevAddress) {
                     await this.build()
                 }
             },
@@ -167,110 +109,61 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         this.#tokensBalancesSubscribers = new Map<string, Subscription<'contractStateChanged'>>()
         this.#tokensBalancesSubscribersMutex = new Mutex()
-
-        this.fetchAssets(tokensAssetsURI).catch(reason => {
-            error(reason)
-        })
     }
 
     /**
      * Create a tokens list based on the loaded list of
      * tokens in the related `TokensListCache` service.
-     *
-     * Reduce all possible pipelines for all tokens vaults
      * @protected
      */
     protected async build(): Promise<void> {
         if (this.tokensList.tokens.length === 0) {
+            this.setState('isReady', false)
             return
         }
 
-        this.setData(
-            'tokens',
-            this.tokensList.tokens
-                .filter(token => token.vendor === 'broxus' && token.verified)
-                .map(token => {
-                    const assetPipelines = this.assets[token.address]
-                    const cachedToken = this.get(token.address)
-                    const pipelines = { ...(cachedToken?.pipelines || assetPipelines || {}) }
-                    Object.values(pipelines).forEach(pipeline => {
-                    // eslint-disable-next-line no-param-reassign
-                        pipeline.vaults = pipeline.vaults?.map(
-                            vault => ({ balance: undefined, ...vault }),
-                        ) || []
-                    })
-                    return {
-                        decimals: token.decimals,
-                        icon: token.logoURI,
-                        isUpdating: false,
-                        isUpdatingWalletAddress: false,
-                        name: token.name,
-                        pipelines,
-                        root: token.address,
-                        symbol: token.symbol,
-                        updatedAt: -1,
-                    }
-                }),
-        )
+        this.setState('isReady', false)
 
-        const everscaleMainNetwork = getEverscaleMainNetwork()
-        const everscaleMainNetworkId = `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+        this.setData('tokens', this.tokensList?.tokens.map(token => ({
+            balance: undefined,
+            decimals: token.decimals,
+            icon: token.logoURI,
+            name: token.name,
+            root: token.address,
+            symbol: token.symbol,
+            updatedAt: -1,
+            vendor: token.vendor,
+            verified: token.verified,
+            wallet: undefined,
+        })))
 
-        const pipelinesHash: Record<string, Pipeline> = {}
+        if (this.options?.withImportedTokens) {
+            const importedTokens = getImportedTokens()
 
-        this.pipelines.forEach(pipeline => {
-            pipelinesHash[`${pipeline.everscaleTokenRoot}-${pipeline.vault}`] = pipeline
-        })
+            if (importedTokens.length > 0) {
+                importedTokens.forEach(root => {
+                    this.add({ root } as T)
+                })
 
-        this.setData(
-            'pipelines',
-            Object.entries(this.assets).reduce(
-                (acc: Pipeline[], [tokenRoot, pipelines]) => {
-                    Object.entries(pipelines).forEach(([key, pipeline]) => {
-                        const [tokenBase, to] = key.split('_') as NetworkType[]
-                        pipeline.vaults.forEach(vault => {
-                            const cached = pipelinesHash[`${tokenRoot}-${vault.vault}`]
-                            const pl = {
-                                chainId: vault.chainId,
-                                depositType: vault.depositType,
-                                ethereumConfiguration: vault.ethereumConfiguration,
-                                everscaleConfiguration: cached?.everscaleConfiguration,
-                                everscaleTokenRoot: tokenRoot,
-                                evmTokenAddress: vault.tokenAddress,
-                                evmTokenDecimals: cached?.evmTokenDecimals || vault.decimals,
-                                proxy: pipeline.proxy,
-                                tokenBase,
-                                vault: vault.vault,
-                                vaultBalance: cached?.vaultBalance || vault.balance,
-                                vaultLimit: cached?.vaultLimit || vault.limit,
-                            }
-                            acc.push(
-                                {
-                                    ...pl,
-                                    from: tokenBase === 'everscale' ? everscaleMainNetworkId : `${tokenBase}-${vault.chainId}`,
-                                    to: to === 'everscale' ? everscaleMainNetworkId : `${to}-${vault.chainId}`,
-                                },
-                                {
-                                    ...pl,
-                                    from: to === 'everscale' ? everscaleMainNetworkId : `${to}-${vault.chainId}`,
-                                    to: tokenBase === 'everscale' ? everscaleMainNetworkId : `${tokenBase}-${vault.chainId}`,
-                                },
-                            )
-                        })
-                    })
-                    return acc
-                },
-                [],
-            ),
-        )
+                const results = await Promise.allSettled(
+                    importedTokens.map(root => TokenWallet.getTokenFullDetails(root)),
+                ).then(response => response.map(
+                    r => (r.status === 'fulfilled' ? r.value : undefined),
+                ).filter(e => e !== undefined)) as T[]
+
+                results.forEach(this.add)
+            }
+        }
+
+        this.setState('isReady', true)
     }
 
     /**
      * Returns tokens map where key is a token root address.
      * @protected
      */
-    protected get _byRoot(): Record<string, TokensCacheStoreData['tokens'][number]> {
-        const entries: Record<string, TokensCacheStoreData['tokens'][number]> = {}
+    protected get _byRoot(): Record<string, T> {
+        const entries: Record<string, T> = {}
         this.tokens.forEach(token => {
             entries[token.root] = token
         })
@@ -278,39 +171,126 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
     }
 
     /**
-     * Returns Bridge token assets.
-     * @returns {TokensCacheStoreData['assets']}
+     * Returns verified tokens map where key is a token root address.
+     * @protected
      */
-    public get assets(): TokensCacheStoreData['assets'] {
-        return this.data.assets
+    protected get _verifiedByRoot(): Record<string, T> {
+        const entries: Record<string, T> = {}
+        this.tokens.forEach(token => {
+            if (token.verified) {
+                entries[token.root] = token
+            }
+        })
+        return entries
     }
 
     /**
      * Returns list of the cached tokens list.
-     * @returns {TokensCacheStoreData['tokens']}
+     * @template T
+     * @returns {T['tokens']}
      */
-    public get tokens(): TokensCacheStoreData['tokens'] {
+    public get tokens(): T[] {
         return this.data.tokens
     }
 
     /**
-     * Returns List of all possible pipelines
-     * @returns {Pipeline[]}
+     * Returns only verified tokens and tokens were vendor is Broxus
      */
-    public get pipelines(): TokensCacheStoreData['pipelines'] {
-        return this.data.pipelines
+    public get verifiedBroxusTokens(): T[] {
+        return this.tokens.filter(token => (token.verified && token.vendor === 'broxus'))
     }
 
     /**
-     * Returns `true` if tokens list was loaded and tokens build.
+     * Returns list of the cached tokens root addresses.
+     * @returns {string[]}
      */
-    public get isInitialized(): boolean {
-        return this.tokens.length > 0
+    public get roots(): string[] {
+        return this.tokens.map(token => token.root)
+    }
+
+    /**
+     * Returns token by the given token root address.
+     * @template T
+     * @param {string} [root]
+     * @param {boolean} [verified]
+     * @returns {T}
+     */
+    public get(root?: string, verified: boolean = false): T | undefined {
+        if (root === undefined) {
+            return undefined
+        }
+        if (verified) {
+            return this._verifiedByRoot[root]
+        }
+        return this._byRoot[root]
+    }
+
+    /**
+     * Check if token was stored to the cache.
+     * @param {string} [root]
+     * @returns {boolean}
+     */
+    public has(root?: string): boolean {
+        return this.get(root) !== undefined
+    }
+
+    /**
+     * Add a new token to the tokens list.
+     * @template T
+     * @param {T} token
+     */
+    public add(token: T): void {
+        if (this.has(token.root)) {
+            this.setData('tokens', this.tokens.map(item => {
+                if (item.root === token.root) {
+                    return { ...item, ...token }
+                }
+                return item
+            }))
+        }
+        else {
+            const tokens = this.tokens.slice()
+            tokens.push(token)
+            this.setData('tokens', tokens)
+        }
+    }
+
+    /**
+     * Remove a given token from the tokens list.
+     * @template T
+     * @param {T} token
+     */
+    public remove(token: T): void {
+        this.setData('tokens', this.tokens.filter(item => item.root !== token.root))
+    }
+
+    /**
+     * Update token field by the given root address, key and value.
+     * @template T
+     * @template {K extends keyof T & string} K
+     * @param {string} root
+     * @param {K} key
+     * @param {T[K]} value
+     */
+    public update<K extends keyof T & string>(root: string, key: K, value: T[K]): void {
+        this.setData('tokens', this.tokens.map(token => {
+            if (token.root === root) {
+                return { ...token, [key]: value }
+            }
+            return token
+        }))
     }
 
     /**
      *
-     * @param root
+     */
+    public get isFetching(): boolean {
+        return this.tokensList.isFetching
+    }
+
+    /**
+     *
+     * @param {string} root
      */
     public isTokenUpdating(root: string): boolean {
         return this.state.updatingTokens.get(root) || false
@@ -318,186 +298,18 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
     /**
      *
-     * @param root
+     * @param {string} root
      */
-    public isTokenUpdatingBalance(root: string): boolean {
-        return this.state.updatingTokensBalance.get(root) || false
+    public isTokenUpdatingBalance(root?: string): boolean {
+        return (root === undefined ? false : this.state.updatingTokensBalance.get(root)) || false
     }
 
     /**
      *
-     * @param root
-     */
-    public isTokenUpdatingWallet(root: string): boolean {
-        return this.state.updatingTokensWallet.get(root) || false
-    }
-
-    /**
-     * Returns token by the given token root address.
      * @param {string} root
-     * @returns {TokensCacheStoreData['tokens'][number] | undefined}
      */
-    public get(root: string): TokensCacheStoreData['tokens'][number] | undefined {
-        return this._byRoot[root]
-    }
-
-    /**
-     * Check if token was stored to the cache.
-     * @param {string} root
-     * @returns {boolean}
-     */
-    public has(root: string): boolean {
-        return this.get(root) !== undefined
-    }
-
-    /**
-     * Add a new token to the tokens list.
-     * @param {TokensCacheStoreData['tokens'][number]} token
-     */
-    public add(token: TokensCacheStoreData['tokens'][number]): void {
-        const tokens = this.tokens.slice()
-        tokens.push(token)
-        this.data.tokens = tokens
-    }
-
-    /**
-     * Returns token pipeline by the given token `root` address, `from` and `to` network (`<networkType>-<chainId>`) keys,
-     * and optionally `depositType` (Default: default)
-     * @param {string} root
-     * @param {string} from
-     * @param {string} to
-     * @param {string} [depositType]
-     */
-    public pipeline(
-        root: string,
-        from: string,
-        to: string,
-        depositType: string = 'default',
-    ): Pipeline | undefined {
-        return this.pipelines.find(pipeline => (
-            pipeline.everscaleTokenRoot === root
-            && pipeline.from === from
-            && pipeline.to === to
-            && pipeline.depositType === depositType
-        ))
-    }
-
-    /**
-     * Search token by the given query string.
-     * Query string can be a token symbol, name or address.
-     * @param {string} query
-     * @returns {TokensCacheStoreData['tokens'][number][]}
-     */
-    public async search(query: string): Promise<TokensCacheStoreData['tokens'][number][]> {
-        return this.tokens.filter(token => (
-            token.symbol?.toLowerCase?.().includes(query?.toLowerCase?.())
-            || token.name?.toLowerCase?.().includes(query?.toLowerCase?.())
-            || token.root?.toLowerCase?.().includes(query?.toLowerCase?.())
-        ))
-    }
-
-    /**
-     * Returns filtered tokens by the given `chainId` and optional `pipeline` key
-     * @param {string} chainId
-     * @param {string} [pipeline]
-     */
-    public filterTokensByChainId(chainId: string, pipeline?: string): TokensCacheStoreData['tokens'] {
-        return this.tokens.filter(
-            token => {
-                if (pipeline === undefined) {
-                    return Object.values(token.pipelines).some(
-                        pl => (
-                            pl.vaults.some(vault => vault.chainId === chainId)
-                        ),
-                    )
-                }
-
-                return token.pipelines[pipeline]?.vaults.some(
-                    vault => vault.chainId === chainId,
-                )
-            },
-        )
-    }
-
-    /**
-     * Returns token by the given vault `address`, `chainId` and optional `pipeline` key
-     * @param {string} address
-     * @param {string} chainId
-     * @param {string} [pipeline]
-     */
-    public findTokenByVaultAddress(
-        address: string,
-        chainId: string,
-        pipeline?: string,
-    ): TokensCacheStoreData['tokens'][number] | undefined {
-        return this.tokens.find(
-            token => {
-                if (pipeline === undefined) {
-                    return Object.values(token.pipelines).some(
-                        pl => (
-                            pl.vaults.some(vault => (
-                                vault.vault.toLowerCase() === address.toLowerCase()
-                                && vault.chainId === chainId
-                            ))
-                        ),
-                    )
-                }
-
-                return token.pipelines[pipeline]?.vaults.some(
-                    vault => (
-                        vault.vault.toLowerCase() === address.toLowerCase()
-                        && vault.chainId === chainId
-                    ),
-                )
-            },
-        )
-    }
-
-    /**
-     * If EVM Wallet is connected, web3 service is defined, token vault exist, vault has token
-     * address (sync, if it has not) - returns `ERC20 Contract`, otherwise `undefined`
-     * @param {Pipeline} [pipeline]
-     */
-    public async getEvmTokenContract(pipeline?: Pipeline): Promise<EthContract | undefined> {
-        if (this.evmWallet.web3 === undefined || pipeline?.chainId === undefined) {
-            return undefined
-        }
-
-        if (pipeline?.evmTokenAddress === undefined) {
-            await this.syncEvmTokenAddress(pipeline)
-        }
-
-        if (pipeline?.evmTokenAddress === undefined) {
-            return undefined
-        }
-
-        const network = findNetwork(pipeline.chainId, 'evm')
-
-        if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== pipeline.chainId) {
-            const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
-            return new web3.eth.Contract(EthAbi.ERC20, pipeline.evmTokenAddress)
-        }
-
-        return new this.evmWallet.web3.eth.Contract(EthAbi.ERC20, pipeline.evmTokenAddress)
-    }
-
-    /**
-     * Returns Eth token vault Contract by the given token `root` address, `chainId` and `depositType`
-     * @param {Pipeline} [pipeline]
-     */
-    public getEvmTokenVaultContract(pipeline?: Pipeline): EthContract | undefined {
-        if (this.evmWallet.web3 === undefined || pipeline?.chainId === undefined) {
-            return undefined
-        }
-
-        const network = findNetwork(pipeline.chainId, 'evm')
-
-        if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== pipeline.chainId) {
-            const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
-            return new web3.eth.Contract(EthAbi.Vault, pipeline.vault)
-        }
-
-        return new this.evmWallet.web3.eth.Contract(EthAbi.Vault, pipeline.vault)
+    public isTokenUpdatingWallet(root?: string): boolean {
+        return (root === undefined ? false : this.state.updatingTokensWallet.get(root)) || false
     }
 
     /**
@@ -508,7 +320,7 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
         let wallet = this.get(root)?.wallet
 
         if (wallet === undefined) {
-            await this.syncEverscaleTokenWalletAddress(root)
+            await this.syncTokenWalletAddress(root)
         }
 
         wallet = this.get(root)?.wallet
@@ -521,211 +333,50 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
     }
 
     /**
-     * Sync EVM token data
-     * @param {Pipeline} [pipeline]
+     * Search token by the given query string.
+     * Query string can be a token symbol, name or address.
+     * @template T
+     * @param {string} query
+     * @returns {Promise<T[]>}
      */
-    public async syncEvmToken(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined) {
-            return
-        }
-
-        try {
-            await this.syncEvmTokenAddress(pipeline)
-        }
-        catch (e) {
-            error('Sync EVM token address error', e)
-            return
-        }
-
-        try {
-            await Promise.all([
-                this.syncEvmTokenDecimals(pipeline),
-                this.syncEvmTokenBalance(pipeline),
-                this.syncEvmTokenVaultBalance(pipeline),
-            ])
-        }
-        catch (e) {
-            error('Sync EVM token decimals, balance, vault balance or vault wrapper error', e)
-        }
-
-        try {
-            await this.syncEvmTokenVaultLimit(pipeline)
-        }
-        catch (e) {
-            // error('Sync EVM token vault limit error', e)
-        }
-
-    }
-
-    /**
-     * Sync EVM token address
-     * @param {Pipeline} [pipeline]
-     */
-    public async syncEvmTokenAddress(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined) {
-            return
-        }
-
-        if (pipeline?.evmTokenAddress !== undefined) {
-            return
-        }
-
-        const evmTokenAddress = await this.getEvmTokenVaultContract(pipeline)?.methods.token().call()
-
-        // Force update
-        runInAction(() => {
-            // eslint-disable-next-line no-param-reassign
-            pipeline.evmTokenAddress = evmTokenAddress
-        })
-
-        this.setData('pipelines', this.pipelines.map(
-            pl => ((
-                pl.chainId === pipeline.chainId
-                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
-                && pl.vault === pipeline.vault
-            ) ? { ...pl, evmTokenAddress } : pl),
+    public async search(query: string): Promise<T[]> {
+        const filtered = this.tokens.filter(token => (
+            token.symbol?.toLowerCase?.().includes(query?.toLowerCase?.())
+            || token.name?.toLowerCase?.().includes(query?.toLowerCase?.())
+            || token.root?.toLowerCase?.().includes(query?.toLowerCase?.())
         ))
+
+        if (filtered.length === 0 && isEverscaleAddressValid(query)) {
+            try {
+                const token = await TokenWallet.getTokenFullDetails(query)
+                if (token !== undefined) {
+                    filtered.push(token as T)
+                }
+            }
+            catch (e) {}
+        }
+
+        return filtered
     }
 
     /**
-     * Sync EVM token decimals
-     * @param {Pipeline} [pipeline]
-     */
-    public async syncEvmTokenDecimals(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined || pipeline?.evmTokenDecimals !== undefined) {
-            return
-        }
-
-        const tokenContract = await this.getEvmTokenContract(pipeline)
-
-        const evmTokenDecimals = await tokenContract?.methods.decimals().call()
-
-        // Force update
-        runInAction(() => {
-            // eslint-disable-next-line no-param-reassign
-            pipeline.evmTokenDecimals = parseInt(evmTokenDecimals, 10)
-        })
-
-        this.setData('pipelines', this.pipelines.map(
-            pl => ((
-                pl.chainId === pipeline.chainId
-                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
-                && pl.vault === pipeline.vault
-            ) ? { ...pl, evmTokenDecimals: parseInt(evmTokenDecimals, 10) } : pl),
-        ))
-    }
-
-    /**
-     * Sync EVM token balance
-     * @param {Pipeline} [pipeline]
-     */
-    public async syncEvmTokenBalance(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined) {
-            return
-        }
-
-        const tokenContract = await this.getEvmTokenContract(pipeline)
-
-        const evmTokenBalance = await tokenContract?.methods.balanceOf(this.evmWallet.address).call()
-
-        if (evmTokenBalance === undefined) {
-            return
-        }
-
-        // Force update
-        runInAction(() => {
-            // eslint-disable-next-line no-param-reassign
-            pipeline.evmTokenBalance = evmTokenBalance
-        })
-
-        this.setData('pipelines', this.pipelines.map(
-            pl => ((
-                pl.chainId === pipeline.chainId
-                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
-                && pl.vault === pipeline.vault
-            ) ? { ...pl, evmTokenBalance } : pl),
-        ))
-    }
-
-    /**
-     * Sync EVM token vault balance by the given token `root` address and `chainId`.
-     * @param {Pipeline} [pipeline]
-     */
-    public async syncEvmTokenVaultBalance(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined) {
-            return
-        }
-
-        const tokenContract = await this.getEvmTokenContract(pipeline)
-
-        const vaultBalance = await tokenContract?.methods.balanceOf(pipeline.vault).call()
-
-        if (vaultBalance === undefined) {
-            return
-        }
-
-        // Force update
-        runInAction(() => {
-            // eslint-disable-next-line no-param-reassign
-            pipeline.vaultBalance = vaultBalance
-        })
-
-        this.setData('pipelines', this.pipelines.map(
-            pl => ((
-                pl.chainId === pipeline.chainId
-                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
-                && pl.vault === pipeline.vault
-            ) ? { ...pl, vaultBalance } : pl),
-        ))
-    }
-
-    /**
-     * Sync EVM token vault balance limit by the given token root address and chainId.
-     * @param {Pipeline} [pipeline]
-     */
-    public async syncEvmTokenVaultLimit(pipeline?: Pipeline): Promise<void> {
-        if (pipeline === undefined) {
-            return
-        }
-
-        const tokenVaultContract = this.getEvmTokenVaultContract(pipeline)
-
-        const vaultLimit = await tokenVaultContract?.methods.availableDepositLimit().call()
-
-        if (vaultLimit === undefined) {
-            return
-        }
-
-        // Force update
-        runInAction(() => {
-            // eslint-disable-next-line no-param-reassign
-            pipeline.vaultLimit = vaultLimit
-        })
-
-        this.setData('pipelines', this.pipelines.map(
-            pl => ((
-                pl.chainId === pipeline.chainId
-                && pl.everscaleTokenRoot === pipeline.everscaleTokenRoot
-                && pl.vault === pipeline.vault
-            ) ? { ...pl, vaultLimit } : pl),
-        ))
-    }
-
-    /**
-     * Sync TON token balance with balance in network by the given token root address.
+     * Sync token balance with balance in the network by the given token root address.
      * Pass `true` in second parameter to force update.
      * @param {string} root
+     * @param {boolean} force
+     * @returns {Promise<void>}
      */
-    public async syncEverscaleToken(root: string): Promise<void> {
-        if (this.everWallet.address === undefined) {
+    public async syncToken(root: string, force?: boolean): Promise<void> {
+        if (this.wallet.address === undefined) {
             return
         }
 
-        let token: TokenCache | undefined
+        const token = this.get(root)
 
-        token = this.get(root)
-
-        if (token === undefined || this.isTokenUpdating(root)) {
+        if (
+            token === undefined
+            || (!force && (this.isTokenUpdating(root) || Date.now() - (token.updatedAt || 0) < 60 * 1000))
+        ) {
             return
         }
 
@@ -733,39 +384,168 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         if (token.wallet === undefined && !this.isTokenUpdatingWallet(root)) {
             try {
-                await this.syncEverscaleTokenWalletAddress(root)
+                await this.syncTokenWalletAddress(root)
             }
             catch (e) {
                 error('Sync token wallet address error', e)
-                token.wallet = undefined
+                this.update(root, 'wallet', undefined)
             }
         }
 
-        token = this.get(root)
-
-        if (token && token.wallet !== undefined && !this.isTokenUpdatingBalance(root)) {
+        if (token.wallet !== undefined && !this.isTokenUpdatingBalance(root)) {
             try {
-                await this.syncEverscaleTokenBalance(root)
+                await this.syncTokenBalance(root)
             }
             catch (e) {
-                error('Sync token balance error', e)
-                token.balance = undefined
+                warn('Sync token balance error', e)
+                this.update(root, 'balance', undefined)
             }
         }
 
-        if (token !== undefined) {
-            token.updatedAt = Date.now()
-            this.state.updatingTokens.set(root, false)
+        this.update(root, 'updatedAt', Date.now())
+        this.state.updatingTokens.set(root, false)
+    }
+
+    /**
+     * Sync custom token
+     * @param {string} root
+     * @returns {Promise<void>}
+     */
+    public async syncCustomToken(root: string): Promise<void> {
+        try {
+            if (this.has(root)) {
+                return
+            }
+
+            const token = await TokenWallet.getTokenFullDetails(root)
+
+            if (token === undefined || this.has(token.root)) {
+                return
+            }
+
+            this.add(token as T)
+        }
+        catch (e) {
+            error('Sync custom token error', e)
         }
     }
 
     /**
-     * Sync TON token balance by the given token root address.
+     * Start to watch token balance updates by the given token root address.
+     * @param {string} [root]
+     * @param {string} [prefix]
+     * @returns {Promise<void>}
+     */
+    public async watch(root?: string, prefix: string = ''): Promise<void> {
+        if (this.wallet.address === undefined || root === undefined) {
+            return
+        }
+
+        const token = this.get(root)
+
+        if (token === undefined) {
+            return
+        }
+
+        try {
+            await this.syncToken(root)
+        }
+        catch (e) {}
+
+        if (token.wallet !== undefined) {
+            const key = `${prefix}-${(root)}`
+
+            await this.#tokensBalancesSubscribersMutex.use(async () => {
+                const entry = this.#tokensBalancesSubscribers.get(key)
+
+                if (entry != null || token.wallet === undefined) {
+                    debug('Reset token subscription')
+                    return
+                }
+
+                const address = new Address(token.wallet)
+
+                const subscription = (await rpc.subscribe('contractStateChanged', {
+                    address,
+                })).on('data', async event => {
+                    debug(
+                        `'%cRPC%c %c${token.symbol}%c \`contractStateChanged\` event was captured'`,
+                        'font-weight: bold; background: #4a5772; color: #fff; border-radius: 2px; padding: 3px 6.5px',
+                        'color: #c5e4f3',
+                        'color: #bae701',
+                        'color: #c5e4f3',
+                        event,
+                    )
+                    await this.syncToken(root, true)
+                })
+
+                this.#tokensBalancesSubscribers.set(key, subscription)
+
+                debug(
+                    `%cRPC%c Subscribe to the %c${token.symbol}%c token wallet %c${sliceAddress(token.wallet)}%c balance updates with key %c${prefix}-${sliceAddress(root)}`,
+                    'font-weight: bold; background: #4a5772; color: #fff; border-radius: 2px; padding: 3px 6.5px',
+                    'color: #c5e4f3',
+                    'color: #bae701',
+                    'color: #c5e4f3',
+                    'color: #bae701',
+                    'color: #c5e4f3',
+                    'color: #bae701',
+                )
+            })
+        }
+    }
+
+    /**
+     * Stop watching token balance updates by the given token root address.
+     * @param {string} [root]
+     * @param {string} [prefix]
+     * @returns {Promise<void>}
+     */
+    public async unwatch(root?: string, prefix: string = ''): Promise<void> {
+        if (this.wallet.address === undefined || root === undefined) {
+            return
+        }
+
+        const token = this.get(root)
+
+        if (token === undefined) {
+            return
+        }
+
+        const key = `${prefix}-${token.root}`
+
+        await this.#tokensBalancesSubscribersMutex.use(async () => {
+            const subscriber = this.#tokensBalancesSubscribers.get(key)
+
+            try {
+                await subscriber?.unsubscribe()
+            }
+            catch (e) {
+                error('Cannot unsubscribe from token balance update', e)
+            }
+
+            this.#tokensBalancesSubscribers.delete(key)
+
+            debug(
+                `%cRPC%c Unsubscribe from the %c${token.symbol}%c token wallet %c${sliceAddress(token.wallet)}%c balance updates with key %c${prefix}-${sliceAddress(root)}`,
+                'font-weight: bold; background: #4a5772; color: #fff; border-radius: 2px; padding: 3px 6.5px',
+                'color: #c5e4f3',
+                'color: #bae701',
+                'color: #c5e4f3',
+                'color: #bae701',
+                'color: #c5e4f3',
+                'color: #bae701',
+            )
+        })
+    }
+
+    /**
+     * Directly update token balance by the given token root address.
      * It updates balance in the tokens list.
      * @param {string} root
      */
-    public async syncEverscaleTokenBalance(root: string): Promise<void> {
-        if (root === undefined || this.everWallet.account?.address === undefined || this.isTokenUpdatingBalance(root)) {
+    public async syncTokenBalance(root: string): Promise<void> {
+        if (root === undefined || this.wallet.account?.address === undefined || this.isTokenUpdatingBalance(root)) {
             return
         }
 
@@ -777,13 +557,21 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 
         try {
             this.state.updatingTokensBalance.set(root, true)
-            token.balance = await TokenWallet.balance({
+
+            const balance = await TokenWallet.balance({
                 wallet: new Address(token.wallet),
             })
+
+            // Force update
+            runInAction(() => {
+                token.balance = balance
+            })
+
+            this.update(root, 'balance', balance)
         }
-        catch (e) {
-            // error('Token balance update error', e)
-            token.balance = undefined
+        catch (e: any) {
+            warn('Cannot update token balance. Wallet account of this token not created yet ->', e.message)
+            this.update(root, 'balance', undefined)
         }
         finally {
             this.state.updatingTokensBalance.set(root, false)
@@ -791,11 +579,12 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
     }
 
     /**
-     * Sync TON token wallet address by the given token root address, and current wallet address.
+     * Update token wallet address by the given token root address and current wallet address.
      * @param {string} root
+     * @returns {Promise<void>}
      */
-    public async syncEverscaleTokenWalletAddress(root: string): Promise<void> {
-        if (root === undefined || this.everWallet.account?.address === undefined || this.isTokenUpdatingWallet(root)) {
+    public async syncTokenWalletAddress(root: string): Promise<void> {
+        if (root === undefined || this.wallet.account?.address === undefined || this.isTokenUpdatingWallet(root)) {
             return
         }
 
@@ -809,10 +598,17 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
             this.state.updatingTokensWallet.set(root, true)
 
             try {
-                token.wallet = (await TokenWallet.walletAddress({
-                    owner: this.everWallet.account.address,
+                const address = await TokenWallet.walletAddress({
+                    owner: this.wallet.account.address,
                     root: new Address(token.root),
-                })).toString()
+                })
+
+                // Force update
+                runInAction(() => {
+                    token.wallet = address.toString()
+                })
+
+                this.update(root, 'wallet', address.toString())
             }
             catch (e) {
                 error('Token wallet address update error', e)
@@ -824,24 +620,103 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
     }
 
     /**
-     * Fetch Bridge assets
-     * @param uri
+     * Import custom token to the list.
+     * Saves token root address to the localStorage.
+     * @template T
+     * @param {T} token
      */
-    public async fetchAssets(uri: string): Promise<void> {
-        if (this.state.isFetchingAssets) {
+    public import(token: T): void {
+        try {
+            const importedTokens = getImportedTokens()
+            if (!importedTokens.includes(token.root)) {
+                importedTokens.push(token.root)
+                storage.set(IMPORTED_TOKENS_STORAGE_KEY, JSON.stringify(importedTokens))
+            }
+            this.add(token)
+        }
+        catch (e) {
+            error('Can\'t import token', e)
+        }
+    }
+
+    /**
+     *
+     */
+    public get isImporting(): TokensCacheState<T>['isImporting'] {
+        return this.state.isImporting
+    }
+
+    /**
+     *
+     */
+    public get isReady(): TokensCacheState<T>['isReady'] {
+        return this.state.isReady
+    }
+
+    /**
+     *
+     */
+    public get queue(): TokensCacheState<T>['queue'] {
+        return this.state.queue
+    }
+
+    /**
+     *
+     */
+    public get currentImportingToken(): T | undefined {
+        return this.queue.slice().shift()
+    }
+
+    /**
+     *
+     * @param {string} [root]
+     */
+    public async addToImportQueue(root?: string): Promise<void> {
+        if (root === undefined || !isEverscaleAddressValid(root)) {
             return
         }
 
-        this.setState('isFetchingAssets', true)
+        try {
+            const customToken = await TokenWallet.getTokenFullDetails(root)
 
-        fetch(uri, { method: 'GET' }).then(
-            value => value.json(),
-        ).then((value: BridgeTokenAssetsManifest) => {
-            this.setData('assets', value.token)
-            this.setState('isFetchingAssets', false)
-        }).catch(reason => {
-            error('Cannot load bridge token assets list', reason)
-            this.setState('isFetchingAssets', false)
+            if (customToken) {
+                const filtered = this.queue.filter(token => token.root !== root)
+                filtered.push(customToken as T)
+                this.setState('queue', filtered)
+                this.setState('isImporting', true)
+            }
+            else {
+                this.setState('isImporting', this.queue.length > 0)
+            }
+        }
+        catch (e) {
+            error(e)
+            this.setState('isImporting', this.queue.length > 0)
+        }
+    }
+
+    /**
+     *
+     */
+    public onImportDismiss(): void {
+        const queue = this.queue.slice()
+        queue.shift()
+        this.setState({
+            isImporting: queue.length > 0,
+            queue,
+        })
+    }
+
+    /**
+     *
+     */
+    public onImportConfirm(token: T): void {
+        this.import(token)
+        const queue = this.queue.slice()
+        queue.shift()
+        this.setState({
+            isImporting: queue.length > 0,
+            queue,
         })
     }
 
@@ -862,13 +737,15 @@ export class TokensCacheService extends BaseStore<TokensCacheStoreData, TokensCa
 }
 
 
-const TokensCacheServiceStore = new TokensCacheService(
-    useEverWallet(),
-    useEvmWallet(),
-    new TokensListService(BridgeConstants.TokenListURI),
-    BridgeConstants.TokenAssetsURI,
-)
+let service: TokensCacheService
 
 export function useTokensCache(): TokensCacheService {
-    return TokensCacheServiceStore
+    if (service === undefined) {
+        service = new TokensCacheService(
+            useEverWallet(),
+            new TokensListService(TokenListURI),
+            { withImportedTokens: true },
+        )
+    }
+    return service
 }

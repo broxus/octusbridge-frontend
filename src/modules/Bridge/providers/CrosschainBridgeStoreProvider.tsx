@@ -5,14 +5,14 @@ import { useHistory } from 'react-router-dom'
 import { CrosschainBridge, useSummary } from '@/modules/Bridge/stores'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 
 
 export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge>(
     new CrosschainBridge(
         useEvmWallet(),
         useEverWallet(),
-        useTokensCache(),
+        useTokensAssets(),
     ),
 )
 
@@ -25,7 +25,7 @@ type Props = {
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
-    tokensCache: TokensCacheService;
+    tokensAssets: TokensAssetsService;
 }
 
 
@@ -36,7 +36,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
     const bridge = React.useMemo(() => new CrosschainBridge(
         props.evmWallet,
         props.everWallet,
-        props.tokensCache,
+        props.tokensAssets,
     ), [])
 
     React.useEffect(() => {

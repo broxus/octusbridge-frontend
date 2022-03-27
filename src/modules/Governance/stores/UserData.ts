@@ -8,10 +8,12 @@ import {
 } from '@/misc'
 import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import { handleProposalsCount, handleStakeholder } from '@/modules/Governance/utils'
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TokensCacheService } from '@/stores/TokensCacheService'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { Token } from '@/types'
+
 
 export class UserDataStore {
 
@@ -117,7 +119,7 @@ export class UserDataStore {
             if (!this.data.stakingDetails?.tokenRoot) {
                 throwException('Staking details must be defined in data')
             }
-            await this.tokensCache.syncEverscaleToken(this.data.stakingDetails.tokenRoot.toString())
+            await this.tokensCache.syncToken(this.data.stakingDetails.tokenRoot.toString())
         }
         catch (e) {
             error(e)
@@ -176,10 +178,10 @@ export class UserDataStore {
     }
 
     public get isConnected(): boolean {
-        return this.tokensCache.isInitialized && this.tonWallet.isConnected
+        return this.tokensCache.isReady && this.tonWallet.isConnected
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): Token | undefined {
         if (!this.data.stakingDetails) {
             return undefined
         }

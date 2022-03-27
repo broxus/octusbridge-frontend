@@ -1,6 +1,6 @@
-import { action, makeObservable } from 'mobx'
+import { action, makeObservable, observable } from 'mobx'
 
-export class BaseStore<T extends { [p: string]: any }, U extends { [p: string]: any }> {
+export class BaseStore<T extends Record<string, any>, U extends Record<string, any>> {
 
     /**
      * Store data (e.g. user data, account data, form data etc.)
@@ -14,8 +14,14 @@ export class BaseStore<T extends { [p: string]: any }, U extends { [p: string]: 
      */
     protected state: U = {} as U
 
-    protected constructor() {
-        makeObservable(this, {
+    constructor() {
+        makeObservable<
+            BaseStore<T, U>,
+            | 'data'
+            | 'state'
+        >(this, {
+            data: observable,
+            state: observable,
             setData: action.bound,
             setState: action.bound,
         })

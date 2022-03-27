@@ -1,6 +1,7 @@
-import { makeAutoObservable, runInAction } from 'mobx'
+import { computed, makeObservable } from 'mobx'
 
 import { error } from '@/utils'
+import { BaseStore } from '@/stores/BaseStore'
 
 
 export type TonToken = {
@@ -38,60 +39,51 @@ export type TokensListState = {
 }
 
 
-export class TokensListService<T = TonToken> {
-
-    /**
-     * Current state of the token list data
-     * @type {TokensListData}
-     * @protected
-     */
-    protected data: TokensListData<T> = {
-        tokens: [],
-    }
-
-    /**
-     * Current state of the token list
-     * @type {TokensListState}
-     * @protected
-     */
-    protected state: TokensListState = {
-        isFetching: false,
-    }
+export class TokensListService<T = TonToken> extends BaseStore<TokensListData<T>, TokensListState> {
 
     constructor(uri: string) {
-        makeAutoObservable(this)
-        this.fetch(uri)
+        super()
+
+        this.setData('tokens', [])
+
+        this.setState('isFetching', false)
+
+        makeObservable(this, {
+            isFetching: computed,
+            time: computed,
+            tokens: computed,
+        });
+
+        (async () => {
+            await this.fetch(uri)
+        })()
     }
 
     /**
      * Fetch tokens list manifest by the given URI
      * @param {string} uri
      */
-    public fetch(uri: string): void {
+    public async fetch(uri: string): Promise<void> {
         if (this.isFetching) {
             return
         }
 
-        this.state.isFetching = true
+        this.setState('isFetching', true)
 
-        fetch(uri, {
+        await fetch(uri, {
             method: 'GET',
         }).then(
             value => value.json(),
         ).then((value: TonTokenListManifest<T>) => {
-            runInAction(() => {
-                this.data.tokens = value.tokens
-                this.state = {
-                    isFetching: false,
-                    time: new Date().getTime(),
-                    uri,
-                }
+            this.setData('tokens', value.tokens)
+            this.setState({
+                isFetching: false,
+                time: new Date().getTime(),
+                uri,
             })
         }).catch(reason => {
             error('Cannot load token list', reason)
-            runInAction(() => {
-                this.state.isFetching = false
-            })
+            this.setState('isFetching', false)
         })
     }
 

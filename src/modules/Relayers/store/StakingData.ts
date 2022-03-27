@@ -5,7 +5,7 @@ import { Address, FullContractState } from 'everscale-inpage-provider'
 import { addABI, decodeLogs, keepNonDecodedLogs } from 'abi-decoder'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TokensCacheService } from '@/stores/TokensCacheService'
 import { StakingDataStoreData, StakingDataStoreState } from '@/modules/Relayers/types'
 import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
@@ -20,6 +20,7 @@ import {
 import { Web3Url } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { Token } from '@/types'
 
 export class StakingDataStore {
 
@@ -225,7 +226,7 @@ export class StakingDataStore {
                 : undefined
 
             if (stackingDetails) {
-                await this.tokensCache.syncEverscaleToken(stackingDetails.tokenRoot.toString())
+                await this.tokensCache.syncToken(stackingDetails.tokenRoot.toString())
             }
 
             if (this.isConnected) {
@@ -331,11 +332,11 @@ export class StakingDataStore {
 
     public get isConnected(): boolean {
         return this.tonWallet.isInitialized
-            && this.tokensCache.isInitialized
+            && this.tokensCache.isReady
             && this.tonWallet.isConnected
     }
 
-    public get stakingToken(): TokenCache | undefined {
+    public get stakingToken(): Token | undefined {
         if (!this.data.stackingDetails) {
             return undefined
         }

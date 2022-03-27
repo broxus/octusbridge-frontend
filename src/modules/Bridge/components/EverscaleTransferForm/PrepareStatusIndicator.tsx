@@ -6,7 +6,7 @@ import { Button } from '@/components/common/Button'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { useBridge, useEverscaleTransfer } from '@/modules/Bridge/providers'
 import { PrepareStateStatus } from '@/modules/Bridge/types'
-import { isTonAddressValid } from '@/utils'
+import { isEverscaleAddressValid } from '@/utils'
 
 
 function PrepareStatusIndicatorInner(): JSX.Element {
@@ -18,7 +18,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
 
     const isTransferPage = (
         transfer.contractAddress !== undefined
-        && isTonAddressValid(transfer.contractAddress.toString())
+        && isEverscaleAddressValid(transfer.contractAddress.toString())
     )
     const everWallet = isTransferPage ? transfer.useEverWallet : bridge.useEverWallet
     const status = isTransferPage ? (transfer.prepareState?.status || 'disabled') : prepareStatus

@@ -83,7 +83,8 @@ export function TokensUpgradeModal(): JSX.Element {
                                             <span>
                                                 {formattedAmount(
                                                     token.balance,
-                                                    token.decimals, {
+                                                    token.decimals,
+                                                    {
                                                         target: 'token',
                                                     },
                                                 )}

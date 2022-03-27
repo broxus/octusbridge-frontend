@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
-import { Token } from '@/components/common/Token'
+import { TokenBadge } from '@/components/common/TokenBadge'
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 
 import './index.scss'
@@ -30,7 +30,7 @@ export function EventInformation(): JSX.Element {
                                 })}
                             </span>
                             <span>
-                                <Token
+                                <TokenBadge
                                     address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
                                     symbol="USDT"
                                     size="xsmall"

@@ -4,13 +4,13 @@ import {
     BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
 } from '@/misc'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { TokenCache } from '@/stores/TokensCacheService'
 import { VotingStoreState } from '@/modules/Governance/types'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { error, throwException } from '@/utils'
 import { GasToCastVote } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import { Token } from '@/types'
 
 export class VotingStore {
 
@@ -199,7 +199,7 @@ export class VotingStore {
         return this.userData.lockedTokens
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): Token | undefined {
         return this.userData.token
     }
 

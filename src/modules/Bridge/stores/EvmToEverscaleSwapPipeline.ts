@@ -11,7 +11,6 @@ import {
     computed,
     IReactionDisposer,
     makeObservable,
-    observable,
     reaction,
     toJS,
 } from 'mobx'
@@ -39,7 +38,7 @@ import {
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokensCacheService } from '@/stores/TokensCacheService'
+import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
 import {
     debug,
@@ -51,8 +50,8 @@ import {
 
 
 export class EvmToEverscaleSwapPipeline<
-    T extends EvmSwapTransferStoreData | { [p: string]: any },
-    U extends EvmSwapTransferStoreState | { [p: string]: any }
+    T extends EvmSwapTransferStoreData | Record<string, any> = EvmSwapTransferStoreData,
+    U extends EvmSwapTransferStoreState | Record<string, any> = EvmSwapTransferStoreState
 > extends BaseStore<T, U> {
 
     protected txCreditProcessorUpdater: ReturnType<typeof setTimeout> | undefined
@@ -64,7 +63,7 @@ export class EvmToEverscaleSwapPipeline<
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
-        protected readonly tokensCache: TokensCacheService,
+        protected readonly tokensAssets: TokensAssetsService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
         super()
@@ -74,12 +73,8 @@ export class EvmToEverscaleSwapPipeline<
 
         makeObservable<
             EvmToEverscaleSwapPipeline<T, U>,
-            | 'data'
-            | 'state'
             | 'creditProcessorContract'
         >(this, {
-            data: observable,
-            state: observable,
             broadcast: action.bound,
             process: action.bound,
             cancel: action.bound,
@@ -106,7 +101,7 @@ export class EvmToEverscaleSwapPipeline<
             txHash: computed,
             useEverWallet: computed,
             useEvmWallet: computed,
-            useTokensCache: computed,
+            useTokensAssets: computed,
         })
     }
 
@@ -145,7 +140,7 @@ export class EvmToEverscaleSwapPipeline<
             }
         }, { delay: 30 })
 
-        this.#tokensDisposer = reaction(() => this.tokensCache.tokens, async () => {
+        this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
             if (
                 this.evmWallet.isConnected
                 && this.everWallet.isConnected
@@ -217,7 +212,7 @@ export class EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.tokensCache.tokens.length === 0
+            || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -237,7 +232,7 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const token = this.tokensCache.findTokenByVaultAddress(
+            const token = this.tokensAssets.findTokenByVaultAddress(
                 tx.to,
                 this.leftNetwork.chainId,
             )
@@ -248,7 +243,7 @@ export class EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -441,7 +436,7 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensCache.syncEverscaleToken(this.token.root)
+        await this.tokensAssets.syncToken(this.token.root)
 
         if (this.token.wallet === undefined) {
             this.stopWithdrawUpdater()
@@ -520,9 +515,9 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensCache.syncEverscaleToken(DexConstants.WTONRootAddress.toString())
+        await this.tokensAssets.syncToken(DexConstants.WTONRootAddress.toString())
 
-        const wtonToken = this.tokensCache.get(DexConstants.WTONRootAddress.toString())
+        const wtonToken = this.tokensAssets.get(DexConstants.WTONRootAddress.toString())
 
         if (wtonToken?.wallet === undefined) {
             this.stopWithdrawUpdater()
@@ -1225,7 +1220,7 @@ export class EvmToEverscaleSwapPipeline<
             return undefined
         }
 
-        return this.tokensCache.pipeline(
+        return this.tokensAssets.pipeline(
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
@@ -1245,8 +1240,8 @@ export class EvmToEverscaleSwapPipeline<
         return this.evmWallet
     }
 
-    public get useTokensCache(): TokensCacheService {
-        return this.tokensCache
+    public get useTokensAssets(): TokensAssetsService {
+        return this.tokensAssets
     }
 
     protected get creditProcessorContract(): Contract<typeof TokenAbi.CreditProcessor> | undefined {

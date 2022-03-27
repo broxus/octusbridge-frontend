@@ -166,7 +166,9 @@ export class ProposalStore {
 
             while (this.state !== 'Canceled') {
                 await this.sync()
-                await new Promise(r => setTimeout(r, 2000))
+                await new Promise(r => {
+                    setTimeout(r, 2000)
+                })
             }
         }
         catch (e) {
@@ -215,7 +217,9 @@ export class ProposalStore {
             await successStream
             while (this.state !== 'Queued') {
                 await this.sync()
-                await new Promise(r => setTimeout(r, 2000))
+                await new Promise(r => {
+                    setTimeout(r, 2000)
+                })
             }
         }
         catch (e) {
@@ -263,7 +267,9 @@ export class ProposalStore {
             await successStream
             while (this.state !== 'Executed') {
                 await this.sync()
-                await new Promise(r => setTimeout(r, 2000))
+                await new Promise(r => {
+                    setTimeout(r, 2000)
+                })
             }
         }
         catch (e) {

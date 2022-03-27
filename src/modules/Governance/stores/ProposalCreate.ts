@@ -5,7 +5,6 @@ import BigNumber from 'bignumber.js'
 import {
     EthAction, ProposalCreateStoreState, TonAction,
 } from '@/modules/Governance/types'
-import { TokenCache } from '@/stores/TokensCacheService'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
 import { DaoAbi, DexConstants } from '@/misc'
@@ -13,6 +12,7 @@ import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { Token } from '@/types'
 
 export class ProposalCreateStore {
 
@@ -132,7 +132,7 @@ export class ProposalCreateStore {
         return !!this.state.createLoading
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): Token | undefined {
         return this.userData.token
     }
 

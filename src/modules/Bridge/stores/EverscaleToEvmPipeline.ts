@@ -5,7 +5,6 @@ import {
     computed,
     IReactionDisposer,
     makeObservable,
-    observable,
     reaction,
     toJS,
 } from 'mobx'
@@ -26,7 +25,7 @@ import {
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { Pipeline, TokenAsset, TokensAssetsService } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
 
@@ -40,7 +39,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
     constructor(
         protected readonly everWallet: EverWalletService,
         protected readonly evmWallet: EvmWalletService,
-        protected readonly tokensCache: TokensCacheService,
+        protected readonly tokensAssets: TokensAssetsService,
         protected readonly params?: EverscaleTransferQueryParams,
     ) {
         super()
@@ -48,13 +47,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         this.data = DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA
         this.state = DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE
 
-        makeObservable<
-            EverscaleToEvmPipeline,
-            | 'data'
-            | 'state'
-        >(this, {
-            data: observable,
-            state: observable,
+        makeObservable<EverscaleToEvmPipeline>(this, {
             amount: computed,
             leftAddress: computed,
             rightAddress: computed,
@@ -148,7 +141,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             this.evmWallet.web3 === undefined
             || this.contractAddress === undefined
             || this.leftNetwork === undefined
-            || this.tokensCache.tokens.length === 0
+            || this.tokensAssets.tokens.length === 0
             || this.prepareState?.status === 'confirmed'
         ) {
             return
@@ -173,7 +166,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
         const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
-        const token = this.tokensCache.get(tokenAddress.toString())
+        const token = this.tokensAssets.get(tokenAddress.toString())
 
         if (token === undefined) {
             return
@@ -202,7 +195,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         })
 
         if (this.evmWallet.chainId === chainId) {
-            await this.tokensCache.syncEvmToken(this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline)
             this.runEventUpdater()
         }
     }
@@ -255,7 +248,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 return -1
             })
 
-            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
+            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipeline)
 
             if (vaultContract === undefined) {
                 this.setState('releaseState', {
@@ -346,13 +339,13 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
-            const token = this.tokensCache.get(tokenAddress.toString())
+            const token = this.tokensAssets.get(tokenAddress.toString())
 
             if (token === undefined) {
                 return
             }
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline)
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
@@ -439,7 +432,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipeline)
+                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipeline)
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
@@ -525,7 +518,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             return undefined
         }
 
-        return this.tokensCache.pipeline(
+        return this.tokensAssets.pipeline(
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
@@ -537,7 +530,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.pipeline?.tokenBase === 'everscale'
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): TokenAsset | undefined {
         return this.data.token
     }
 
@@ -555,8 +548,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.evmWallet
     }
 
-    public get useTokensCache(): TokensCacheService {
-        return this.tokensCache
+    public get useTokensCache(): TokensAssetsService {
+        return this.tokensAssets
     }
 
     #chainIdDisposer: IReactionDisposer | undefined

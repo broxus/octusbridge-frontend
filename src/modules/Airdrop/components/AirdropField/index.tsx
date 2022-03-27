@@ -1,8 +1,8 @@
 import * as React from 'react'
 import classNames from 'classnames'
 
-import { Token } from '@/components/common/Token'
-import { TokenCache } from '@/stores/TokensCacheService'
+import { TokenBadge } from '@/components/common/TokenBadge'
+import { Token } from '@/types'
 
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
     id?: string;
     isValid?: boolean;
     readOnly?: boolean;
-    token?: TokenCache;
+    token?: Token;
     value?: string;
     onChange?: (value: string) => void;
     onToggleTokensList?: () => void;
@@ -46,7 +46,7 @@ export function AirdropField({
                     />
                     <div className="form-airdrop__token">
                         {token && (
-                            <Token
+                            <TokenBadge
                                 uri={token.icon}
                                 address={token.root}
                                 symbol={token.symbol}

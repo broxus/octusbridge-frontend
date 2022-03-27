@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from 'mobx'
+import { computed, makeObservable } from 'mobx'
 
 import {
     DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
@@ -6,20 +6,18 @@ import {
 } from '@/modules/Bridge/constants'
 import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { Pipeline, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { Pipeline, TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 import { getEverscaleMainNetwork } from '@/utils'
 
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
 
-    constructor(protected readonly tokensCache: TokensCacheService) {
+    constructor(protected readonly tokensCache: TokensAssetsService) {
         super()
 
         this.reset()
 
-        makeObservable<TransferSummary, 'data' | 'state'>(this, {
-            data: observable,
-            state: observable,
+        makeObservable<TransferSummary>(this, {
             amount: computed,
             bridgeFee: computed,
             everscaleAddress: computed,
@@ -159,8 +157,8 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
 }
 
-const TransferSummaryStore = new TransferSummary(useTokensCache())
+const summary = new TransferSummary(useTokensAssets())
 
 export function useSummary(): TransferSummary {
-    return TransferSummaryStore
+    return summary
 }

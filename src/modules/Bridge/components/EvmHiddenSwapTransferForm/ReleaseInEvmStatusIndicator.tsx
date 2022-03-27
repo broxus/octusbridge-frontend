@@ -9,7 +9,7 @@ import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
-import { isTonAddressValid } from '@/utils'
+import { isEverscaleAddressValid } from '@/utils'
 
 
 function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
@@ -18,7 +18,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
 
     const isTransferPage = (
         transfer.contractAddress !== undefined
-        && isTonAddressValid(transfer.contractAddress.toString())
+        && isEverscaleAddressValid(transfer.contractAddress.toString())
     )
     const evmWallet = transfer.useEvmWallet
     const everWallet = transfer.useEverWallet

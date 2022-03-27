@@ -6,13 +6,14 @@ import BigNumber from 'bignumber.js'
 
 import { AccountDataStoreData, AccountDataStoreState, CurrencyResponse } from '@/modules/Staking/types'
 import { getStakingContract, handleCurrency } from '@/modules/Staking/utils'
-import { TokenCache, TokensCacheService } from '@/stores/TokensCacheService'
+import { TokensCacheService } from '@/stores/TokensCacheService'
 import {
     CastedVotes, PendingReward, RelayConfig, StackingDetails, UserDataAbi, UserDetails,
 } from '@/misc'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { Token } from '@/types'
 
 export class AccountDataStore {
 
@@ -176,7 +177,7 @@ export class AccountDataStore {
             if (stakingDetails) {
                 [currency] = await Promise.all([
                     handleCurrency(stakingDetails.tokenRoot.toString()).catch(_ => undefined),
-                    await this.tokensCache.syncEverscaleToken(stakingDetails.tokenRoot.toString()),
+                    await this.tokensCache.syncToken(stakingDetails.tokenRoot.toString()),
                 ])
             }
 
@@ -217,10 +218,10 @@ export class AccountDataStore {
     }
 
     public get isConnected(): boolean {
-        return this.tokensCache.isInitialized && this.tonWallet.isConnected
+        return this.tokensCache.isReady && this.tonWallet.isConnected
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): Token | undefined {
         if (!this.data.stakingDetails) {
             return undefined
         }

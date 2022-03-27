@@ -7,22 +7,7 @@ import {
 import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc/abi'
 import { debug, error } from '@/utils'
-
-
-export type Token = {
-    balance?: string;
-    decimals: number;
-    icon?: string;
-    isUpdating?: boolean;
-    isUpdatingWalletAddress?: boolean;
-    name?: string;
-    root: string;
-    symbol: string;
-    updatedAt?: number;
-    wallet?: string;
-    totalSupply?: string;
-    rootOwnerAddress?: Address;
-}
+import { Token } from '@/types'
 
 export type BalanceWalletRequest = {
     wallet: Address;

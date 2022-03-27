@@ -5,7 +5,6 @@ import isEqual from 'lodash.isequal'
 import {
     computed,
     makeObservable,
-    override,
     toJS,
 } from 'mobx'
 import { Address, Contract } from 'everscale-inpage-provider'
@@ -37,7 +36,7 @@ import {
 import { getCreditFactoryContract } from '@/modules/Bridge/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokensCacheService } from '@/stores/TokensCacheService'
+import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
 import {
     debug,
     error,
@@ -60,23 +59,19 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
-        protected readonly tokensCache: TokensCacheService,
+        protected readonly tokensAssets: TokensAssetsService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
-        super(evmWallet, everWallet, tokensCache, params)
+        super(evmWallet, everWallet, tokensAssets, params)
 
         this.data = DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA
         this.state = DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_STATE
 
         makeObservable<
             EvmToEvmHiddenSwapPipeline,
-            | 'data'
-            | 'state'
             | 'debt'
             | 'pairContract'
         >(this, {
-            data: override,
-            state: override,
             contractAddress: computed,
             everscaleAddress: computed,
             maxTransferFee: computed,
@@ -96,7 +91,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.tokensCache.tokens.length === 0
+            || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -117,7 +112,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const token = this.tokensCache.findTokenByVaultAddress(
+            const token = this.tokensAssets.findTokenByVaultAddress(
                 tx.to,
                 this.leftNetwork.chainId,
             )
@@ -129,7 +124,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            await this.tokensCache.syncEvmToken(this.pipelineCredit)
+            await this.tokensAssets.syncEvmToken(this.pipelineCredit)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -248,7 +243,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return -1
             })
 
-            const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipelineDefault)
+            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipelineDefault)
 
             if (vaultContract === undefined) {
                 this.setState('releaseState', {
@@ -631,7 +626,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
-            const token = this.tokensCache.get(tokenAddress.toString())
+            const token = this.tokensAssets.get(tokenAddress.toString())
 
             if (token === undefined) {
                 return
@@ -707,7 +702,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensCache.getEvmTokenVaultContract(this.pipelineDefault)
+                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipelineDefault)
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
@@ -843,7 +838,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
         const everscaleMainNetwork = getEverscaleMainNetwork()
 
-        return this.tokensCache.pipeline(
+        return this.tokensAssets.pipeline(
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
@@ -864,7 +859,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
         const everscaleMainNetwork = getEverscaleMainNetwork()
 
-        return this.tokensCache.pipeline(
+        return this.tokensAssets.pipeline(
             this.token.root,
             `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,

@@ -1,3 +1,20 @@
+import { Address } from 'everscale-inpage-provider'
+
+export type Token = {
+    balance?: string;
+    decimals: number;
+    icon?: string;
+    name?: string;
+    root: string;
+    rootOwnerAddress?: Address;
+    symbol: string;
+    totalSupply?: string;
+    updatedAt?: number;
+    vendor?: string | null;
+    verified?: boolean;
+    wallet?: string;
+}
+
 export type NetworkType = 'evm' | 'everscale' & string
 
 export type NetworkShape = {

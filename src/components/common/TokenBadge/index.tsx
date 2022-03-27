@@ -11,7 +11,7 @@ type Props = {
     size?: TokenIconProps['size'];
 }
 
-export function Token({
+export function TokenBadge({
     address,
     uri,
     symbol,

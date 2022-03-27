@@ -2,9 +2,9 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
-import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTokensCache } from '@/stores/TokensCacheService'
 import { useEverWallet } from '@/stores/EverWalletService'
+import { useEvmWallet } from '@/stores/EvmWalletService'
+import { useTokensAssets } from '@/stores/TokensAssetsService'
 
 
 export default function Page(): JSX.Element {
@@ -23,7 +23,7 @@ export default function Page(): JSX.Element {
             <CrosschainBridgeStoreProvider
                 evmWallet={useEvmWallet()}
                 everWallet={useEverWallet()}
-                tokensCache={useTokensCache()}
+                tokensAssets={useTokensAssets()}
             >
                 <Bridge />
             </CrosschainBridgeStoreProvider>

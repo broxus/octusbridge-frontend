@@ -6,7 +6,7 @@ import { EvmToEverscaleSwapPipeline } from '@/modules/Bridge/stores'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 import { isEvmTxHashValid } from '@/utils'
 
 
@@ -14,7 +14,7 @@ export const EvmSwapTransferContext = React.createContext<EvmToEverscaleSwapPipe
     new EvmToEverscaleSwapPipeline(
         useEvmWallet(),
         useEverWallet(),
-        useTokensCache(),
+        useTokensAssets(),
     ),
 )
 
@@ -26,7 +26,7 @@ type Props = {
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
-    tokensCache: TokensCacheService;
+    tokensAssets: TokensAssetsService;
 }
 
 export function EvmSwapTransferStoreProvider({ children, ...props }: Props): JSX.Element {
@@ -39,7 +39,7 @@ export function EvmSwapTransferStoreProvider({ children, ...props }: Props): JSX
     const transfer = React.useMemo(() => new EvmToEverscaleSwapPipeline(
         props.evmWallet,
         props.everWallet,
-        props.tokensCache,
+        props.tokensAssets,
         params,
     ), [params])
 

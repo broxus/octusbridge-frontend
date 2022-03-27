@@ -1,14 +1,14 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Token } from '@/components/common/Token'
+import { TokenBadge } from '@/components/common/TokenBadge'
 import { Select } from '@/components/common/Select'
-import { TokenCache } from '@/stores/TokensCacheService'
+import { Token } from '@/types'
 
 import './index.scss'
 
 type Props = {
-    tokens: TokenCache[];
+    tokens: Token[];
     tokenAddress?: string;
     onChange: (tokenAddress: string) => void;
 }
@@ -25,7 +25,7 @@ export function TokenFilter({
             allowClear
             options={tokens.map(({ root, icon, symbol }) => ({
                 label: (
-                    <Token
+                    <TokenBadge
                         address={root}
                         symbol={symbol}
                         uri={icon}

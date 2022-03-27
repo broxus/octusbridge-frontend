@@ -113,7 +113,9 @@ export class StakingFormStore {
 
             while (this.accountData.tokenStakingBalance === tokenStakingBalance) {
                 await this.accountData.sync()
-                await new Promise(r => setTimeout(r, 1000))
+                await new Promise(r => {
+                    setTimeout(r, 1000)
+                })
             }
 
             this.setAmount('')

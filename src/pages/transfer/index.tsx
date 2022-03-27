@@ -12,10 +12,10 @@ import {
     EvmToEvmHiddenSwap,
     EvmTransferStoreProvider,
 } from '@/modules/Bridge'
-import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTokensCache } from '@/stores/TokensCacheService'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 import { useEverWallet } from '@/stores/EverWalletService'
+import { useEvmWallet } from '@/stores/EvmWalletService'
+import { useTokensAssets } from '@/stores/TokensAssetsService'
 
 
 export default function Page(): JSX.Element | null {
@@ -53,7 +53,7 @@ export default function Page(): JSX.Element | null {
                         <EvmSwapTransferStoreProvider
                             evmWallet={useEvmWallet()}
                             everWallet={useEverWallet()}
-                            tokensCache={useTokensCache()}
+                            tokensAssets={useTokensAssets()}
                         >
                             <EvmToEverscaleSwap />
                         </EvmSwapTransferStoreProvider>
@@ -61,7 +61,7 @@ export default function Page(): JSX.Element | null {
                         <EvmTransferStoreProvider
                             evmWallet={useEvmWallet()}
                             everWallet={useEverWallet()}
-                            tokensCache={useTokensCache()}
+                            tokensAssets={useTokensAssets()}
                         >
                             <EvmToEverscale />
                         </EvmTransferStoreProvider>
@@ -83,7 +83,7 @@ export default function Page(): JSX.Element | null {
                     <EvmHiddenSwapTransferStoreProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
-                        tokensCache={useTokensCache()}
+                        tokensAssets={useTokensAssets()}
                     >
                         <EvmToEvmHiddenSwap />
                     </EvmHiddenSwapTransferStoreProvider>
@@ -104,7 +104,7 @@ export default function Page(): JSX.Element | null {
                     <EverscaleTransferStoreProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
-                        tokensCache={useTokensCache()}
+                        tokensAssets={useTokensAssets()}
                     >
                         <EverscaleToEvm />
                     </EverscaleTransferStoreProvider>

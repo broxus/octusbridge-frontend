@@ -32,14 +32,14 @@ import {
     TransferType,
 } from '@/modules/Transfers/types'
 import { useEverWallet } from '@/stores/EverWalletService'
-import { TokenCache, useTokensCache } from '@/stores/TokensCacheService'
+import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
 import { error } from '@/utils'
 
 
 function TransfersListInner(): JSX.Element {
     const intl = useIntl()
     const transfers = useTransfersContext()
-    const tokensCache = useTokensCache()
+    const tokensAssets = useTokensAssets()
     const tonWallet = useEverWallet()
 
     const pagination = usePagination(transfers.totalCount)
@@ -54,12 +54,8 @@ function TransfersListInner(): JSX.Element {
     const [createdAtLe] = useDateParam('createdle')
 
     const [tonTokenAddress] = useTextParam('token')
-    const [status] = useDictParam<TransfersRequestStatus>(
-        'status', ['confirmed', 'pending', 'rejected'],
-    )
-    const [transferType] = useDictParam<TransferType>(
-        'type', ['Credit', 'Default', 'Transit'],
-    )
+    const [status] = useDictParam<TransfersRequestStatus>('status', ['confirmed', 'pending', 'rejected'])
+    const [transferType] = useDictParam<TransferType>('type', ['Credit', 'Default', 'Transit'])
 
     const [fromId] = useTextParam('from')
     const [toId] = useTextParam('to')
@@ -67,15 +63,15 @@ function TransfersListInner(): JSX.Element {
     const tokens = React.useMemo(() => (
         networks
             .filter(item => item.type === 'evm')
-            .flatMap(({ chainId }) => tokensCache.filterTokensByChainId(chainId))
-            .reduce<TokenCache[]>((acc, token) => {
+            .flatMap(({ chainId }) => tokensAssets.filterTokensByChainId(chainId))
+            .reduce<TokenAsset[]>((acc, token) => {
                 if (acc.findIndex(({ root }) => root === token.root) > -1) {
                     return acc
                 }
                 acc.push(token)
                 return acc
             }, [])
-    ), [tokensCache.tokens])
+    ), [tokensAssets.tokens])
 
     let titleId = 'TRANSFERS_ALL_TITLE'
 
@@ -182,8 +178,8 @@ function TransfersListInner(): JSX.Element {
         return { ethTonChainId, tonEthChainId, transferKinds }
     }
 
-    const fetchAll = async () => {
-        if (!tokensCache.isInitialized) {
+    const fetchAll = React.useCallback(async () => {
+        if (!tokensAssets.isReady) {
             return
         }
 
@@ -203,7 +199,7 @@ function TransfersListInner(): JSX.Element {
         catch (e) {
             error(e)
         }
-    }
+    }, [tokensAssets.isReady])
 
     const changeFilters = (filters: TransfersFilters) => {
         pagination.submit(1)
@@ -234,7 +230,7 @@ function TransfersListInner(): JSX.Element {
         pagination.limit,
         pagination.offset,
         tableOrder.order,
-        tokensCache.isInitialized,
+        tokensAssets.isReady,
     ])
 
     return (

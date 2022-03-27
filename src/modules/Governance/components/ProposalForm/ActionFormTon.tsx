@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { TextField } from '@/modules/Governance/components/ProposalForm/TextField'
 import { TonAction } from '@/modules/Governance/types'
-import { isGoodBignumber, isTonAddressValid } from '@/utils'
+import { isEverscaleAddressValid, isGoodBignumber } from '@/utils'
 
 import './index.scss'
 
@@ -23,7 +23,7 @@ export function ActionFormTon({
         value: action?.value || '',
     })
 
-    const targetIsValid = isTonAddressValid(localAction.target)
+    const targetIsValid = isEverscaleAddressValid(localAction.target)
     const valueIsValid = isGoodBignumber(localAction.value, false)
     // const payloadIsValid = localAction.payload.length > 0
 

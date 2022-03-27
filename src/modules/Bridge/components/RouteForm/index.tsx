@@ -8,7 +8,7 @@ import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { LabeledNetwork, NetworkShape } from '@/types'
-import { isEvmAddressValid, isTonAddressValid } from '@/utils'
+import { isEverscaleAddressValid, isEvmAddressValid } from '@/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
 
 
@@ -53,7 +53,7 @@ export function RouteForm({
             }
 
             if (network?.type === 'everscale') {
-                return isTonAddressValid(address)
+                return isEverscaleAddressValid(address)
             }
         }
 

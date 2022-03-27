@@ -8,13 +8,13 @@ import {
     computed,
     IReactionDisposer,
     makeObservable,
-    observable,
     reaction,
     toJS,
 } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
 
+import rpc from '@/hooks/useRpcClient'
 import { EthAbi, TokenAbi } from '@/misc'
 import {
     DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA,
@@ -26,13 +26,12 @@ import {
     EvmTransferStoreData,
     EvmTransferStoreState,
 } from '@/modules/Bridge/types'
+import { BaseStore } from '@/stores/BaseStore'
+import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokensCacheService } from '@/stores/TokensCacheService'
+import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { BaseStore } from '@/stores/BaseStore'
 
 
 export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmTransferStoreState> {
@@ -44,7 +43,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
-        protected readonly tokensCache: TokensCacheService,
+        protected readonly tokensAssets: TokensAssetsService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
         super()
@@ -52,13 +51,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         this.data = DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA
         this.state = DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE
 
-        makeObservable<
-            EvmToEverscalePipeline,
-            | 'data'
-            | 'state'
-        >(this, {
-            data: observable,
-            state: observable,
+        makeObservable<EvmToEverscalePipeline>(this, {
             amount: computed,
             deriveEventAddress: computed,
             leftAddress: computed,
@@ -73,7 +66,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             txHash: computed,
             useEverWallet: computed,
             useEvmWallet: computed,
-            useTokensCache: computed,
+            useTokensAssets: computed,
         })
     }
 
@@ -88,7 +81,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             }
         }, { delay: 30 })
 
-        this.#tokensDisposer = reaction(() => this.tokensCache.tokens, async () => {
+        this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
             if (this.evmWallet.isConnected) {
                 await this.checkTransaction()
             }
@@ -148,7 +141,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.tokensCache.tokens.length === 0
+            || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -176,7 +169,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 return
             }
 
-            const token = this.tokensCache.findTokenByVaultAddress(
+            const token = this.tokensAssets.findTokenByVaultAddress(
                 depositLog.address,
                 this.leftNetwork.chainId,
             )
@@ -187,7 +180,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
             this.setData('token', token)
 
-            await this.tokensCache.syncEvmToken(this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline)
 
             const ethereumConfiguration = this.pipeline?.ethereumConfiguration
 
@@ -535,7 +528,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             return undefined
         }
 
-        return this.tokensCache.pipeline(
+        return this.tokensAssets.pipeline(
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
@@ -555,8 +548,8 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         return this.evmWallet
     }
 
-    public get useTokensCache(): TokensCacheService {
-        return this.tokensCache
+    public get useTokensAssets(): TokensAssetsService {
+        return this.tokensAssets
     }
 
     #evmWalletDisposer: IReactionDisposer | undefined

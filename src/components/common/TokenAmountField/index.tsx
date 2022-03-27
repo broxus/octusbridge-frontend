@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { AmountField } from '@/components/common/AmountField'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { TokenCache } from '@/stores/TokensCacheService'
+import { Token } from '@/types'
 
 import './index.scss'
 
@@ -17,7 +17,7 @@ type Props = {
     placeholder?: string;
     readOnly?: boolean;
     suffix?: React.ReactNode;
-    token?: TokenCache;
+    token?: Token;
     size?: 'sm' | 'md' | 'lg';
     value?: string;
     onClickMax?: () => void;

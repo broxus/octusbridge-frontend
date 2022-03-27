@@ -2,7 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { isTonAddressValid } from '@/utils'
+import { isEverscaleAddressValid } from '@/utils'
 
 import './index.scss'
 
@@ -35,7 +35,7 @@ export function TokenIcon({
         )
     }
 
-    return (address && isTonAddressValid(address)) ? (
+    return (address && isEverscaleAddressValid(address)) ? (
         <UserAvatar address={address} size={size} />
     ) : null
 }

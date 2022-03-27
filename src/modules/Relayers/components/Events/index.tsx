@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Header, Section, Title } from '@/components/common/Section'
-import { Token } from '@/components/common/Token'
+import { TokenBadge } from '@/components/common/TokenBadge'
 import { Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
@@ -66,7 +66,7 @@ export function Events(): JSX.Element {
                             />,
                             <TransactionExplorerLink id="0:ef8635871613be03181667d967fceda1b4a1d98e6811552d2c31adfc2cbcf9b1" />,
                             <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />,
-                            <Token
+                            <TokenBadge
                                 address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
                                 symbol="EVER"
                                 size="small"

@@ -1,7 +1,7 @@
 import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-inpage-provider'
 
 import { TokenAbi } from '@/misc'
-import { TokenCache } from '@/stores/TokensCacheService'
+import { TokenAsset } from '@/stores/TokensAssetsService'
 import { NetworkShape, NetworkType } from '@/types'
 
 
@@ -82,7 +82,7 @@ export type EvmTransferStoreData = {
     eventVoteData?: EventVoteData;
     leftAddress?: string;
     rightAddress?: string;
-    token?: TokenCache;
+    token?: TokenAsset;
 }
 
 export type EvmTransferStoreState = {
@@ -174,7 +174,7 @@ export type EverscaleTransferStoreData = {
     encodedEvent?: string;
     leftAddress?: string;
     rightAddress?: string;
-    token?: TokenCache;
+    token?: TokenAsset;
     withdrawalId?: string;
 }
 
@@ -209,7 +209,7 @@ export type TransferSummaryData = {
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     swapAmount?: string;
-    token?: TokenCache;
+    token?: TokenAsset;
     tokenAmount?: string;
 }
 

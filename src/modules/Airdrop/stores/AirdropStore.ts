@@ -8,8 +8,9 @@ import { AirdropContractAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { TokenWallet, TonAirdrop } from '@/misc'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
-import { TokenCache, TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
+import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 import { error, isGoodBignumber } from '@/utils'
+import { Token } from '@/types'
 
 
 export type AirdropStoreData = {
@@ -127,7 +128,7 @@ export class AirdropStore {
         }
     }
 
-    public get token(): TokenCache | undefined {
+    public get token(): Token | undefined {
         return this.data.tokenRoot ? this.tokenCache.get(this.data.tokenRoot) : undefined
     }
 
