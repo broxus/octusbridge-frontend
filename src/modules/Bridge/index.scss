@@ -1,12 +1,10 @@
 .crosschain-transfer {
     display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
+    flex-flow: column wrap;
     gap: 16px;
 
     @media only screen and (min-width: 960px) {
-        flex-direction: row;
-        flex-wrap: nowrap;
+        flex-flow: row nowrap;
         justify-content: space-between;
     }
 
@@ -32,14 +30,12 @@
 
     &__controls {
         display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
+        flex-flow: column wrap;
         gap: 16px;
         justify-content: space-between;
 
         @media only screen and (min-width: 640px) {
-            flex-direction: row;
-            flex-wrap: nowrap;
+            flex-flow: row nowrap;
         }
     }
 
@@ -127,8 +123,7 @@
 
     &__status {
         display: flex;
-        flex-direction: column;
-        flex-wrap: nowrap;
+        flex-flow: column nowrap;
         gap: 12px;
 
         &.cancelled { opacity: 0.5; }
@@ -197,6 +192,32 @@
             height: 20px;
             line-height: normal;
             padding: 0 8px;
+        }
+    }
+
+    .rc-select-assets.rc-select-focused .rc-select-selector .token-select-label {
+        opacity: 0.6;
+    }
+
+    .rc-select-assets .rc-select-selection-search {
+        padding-left: 26px;
+    }
+
+    .rc-select-assets .rc-select-selection-placeholder {
+        height: 100%;
+        line-height: 42px;
+        padding-left: 30px;
+        position: relative;
+
+        &::before {
+            background-color: rgb(5 10 46 / 30%);
+            border-radius: 30px;
+            content: '';
+            height: 20px;
+            left: 0;
+            position: absolute;
+            top: 11px;
+            width: 20px;
         }
     }
 }

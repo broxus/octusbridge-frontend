@@ -10,8 +10,6 @@ import {
     HiddenBridgeStrategyFactory,
     HiddenBridgeStrategyGas,
     StakingAccountAddress,
-    TokenAssetsURI,
-    TokenListURI,
 } from '@/config'
 
 export class BridgeConstants {
@@ -36,10 +34,6 @@ export class BridgeConstants {
     static HiddenBridgeStrategyFactory = HiddenBridgeStrategyFactory
 
     static StakingAccountAddress = StakingAccountAddress
-
-    static TokenAssetsURI = TokenAssetsURI
-
-    static TokenListURI = TokenListURI
 
     static DaoRootContractAddress = DaoRootContractAddress
 

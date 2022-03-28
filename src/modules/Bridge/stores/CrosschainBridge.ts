@@ -247,7 +247,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
             this.setState('isPendingApproval', true)
 
-            const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.pipeline)
+            const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline)
 
             if (evmTokenContract === undefined) {
                 this.setState('isPendingApproval', false)
@@ -311,7 +311,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return
         }
 
-        const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.pipeline)
+        const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline)
 
         if (evmTokenContract === undefined) {
             return
@@ -653,7 +653,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 return undefined
             })
 
-            const walletContract = await this.tokensAssets.getEverscaleTokenWalletContract(this.token.root)
+            const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
 
             if (walletContract === undefined) {
                 throwException('Cannot define token wallet contract.')
@@ -1041,6 +1041,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isFetching', true)
 
+            this.tokensAssets.buildPipeline(selectedToken)
+
             if (this.isFromEvm && this.isCreditAvailable) {
                 if (this.isEvmToEvm) {
                     await Promise.all([
@@ -1074,8 +1076,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             this.setState('isFetching', false)
             debug(
                 'Suggested pipelines',
-                toJS(this.tokensAssets.pipelines.filter(
-                    pl => pl.everscaleTokenRoot === selectedToken,
+                toJS(this.token?.pipelines.filter(
+                    pl => pl.everscaleTokenAddress === selectedToken,
                 ).map(pl => toJS(pl))),
             )
             debug('Current pipeline', toJS(this.pipeline))
@@ -1545,20 +1547,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         try {
-            if (this.leftNetwork?.type === 'everscale') {
-                await this.tokensAssets.syncToken(this.token.root)
-                debug('Sync TON token')
-            }
-
-            if (this.leftNetwork?.type === 'evm') {
-                debug('Sync EVM token by left network', this.depositType)
-                await this.tokensAssets.syncEvmToken(this.pipeline)
-            }
-
-            if (this.rightNetwork?.type === 'evm') {
-                debug('Sync EVM token by right network', this.depositType)
-                await this.tokensAssets.syncEvmToken(this.pipeline)
-            }
+            await Promise.all([
+                isEverscaleAddressValid(this.token.root) && this.tokensAssets.syncToken(this.token.root),
+                this.tokensAssets.syncEvmToken(this.token.root, this.pipeline),
+            ])
         }
         catch (e) {
             this.setState('isLocked', true)
@@ -1742,7 +1734,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Otherwise, Everscale token balance
      */
     public get balance(): string | undefined {
-        if (this.isFromEvm) {
+        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
             return this.pipeline?.evmTokenBalance
         }
         return this.token?.balance
@@ -1760,7 +1752,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Otherwise, Everscale token decimals
      */
     public get decimals(): number | undefined {
-        if (this.isFromEvm) {
+        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
             return this.pipeline?.evmTokenDecimals
         }
         return this.token?.decimals
@@ -1904,9 +1896,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return false
         }
 
-        return this.tokensAssets.pipelines?.some(
+        return this.token.pipelines?.some(
             pipeline => (
-                pipeline.everscaleTokenRoot === this.token?.root
+                pipeline.everscaleTokenAddress === this.token?.root
                 && pipeline.depositType === 'credit'
             ),
         )
@@ -1984,8 +1976,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     public get vaultLimitNumber(): BigNumber {
-        return new BigNumber(this.vaultLimit ?? 0)
-            .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
+        return new BigNumber(this.vaultLimit || 0)
+            .shiftedBy(this.pipeline?.evmTokenDecimals === undefined ? 0 : -this.pipeline.evmTokenDecimals)
             .shiftedBy(this.amountMinDecimals)
             .dp(0, BigNumber.ROUND_DOWN)
     }
@@ -1998,8 +1990,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return this.tokensAssets.tokens.filter(
                 token => Object.values(token.pipelines).some(
                     pipeline => (
-                        pipeline.vaults.some(vault => (vault.chainId === leftChainId && vault.depositType === 'credit'))
-                        && pipeline.vaults.some(vault => (vault.chainId === rightChainId && vault.depositType === 'default'))
+                        (pipeline.chainId === leftChainId && pipeline.depositType === 'credit')
+                        || (pipeline.chainId === rightChainId && pipeline.depositType === 'default')
                     ) || false,
                 ),
             )

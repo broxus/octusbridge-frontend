@@ -23,6 +23,8 @@
         "order/properties-alphabetical-order": true,
         "selector-pseudo-class-no-unknown": [true, {
             "ignorePseudoClasses": ["global", "local"]
-        }]
+        }],
+        "property-no-vendor-prefix": null,
+        "value-no-vendor-prefix": null
     }
 }

@@ -2,6 +2,7 @@ import { Address } from 'everscale-inpage-provider'
 
 export type Token = {
     balance?: string;
+    chainId?: string;
     decimals: number;
     icon?: string;
     name?: string;

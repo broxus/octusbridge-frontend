@@ -111,7 +111,9 @@ export function AmountFieldset(): JSX.Element {
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT',
+                                                    id: isGoodBignumber(bridge.balance || 0)
+                                                        ? 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT'
+                                                        : 'CROSSCHAIN_TRANSFER_ASSET_INVALID_AMOUNT_HINT',
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(

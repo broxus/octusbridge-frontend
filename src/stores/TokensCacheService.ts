@@ -40,7 +40,7 @@ export type TokensCacheState<T> = {
 
 export type TokensCacheCtorOptions = {
     useBuildListener?: boolean;
-    withImportedTokens: boolean;
+    withImportedTokens?: boolean;
 }
 
 
@@ -64,6 +64,8 @@ export class TokensCacheService<
         protected readonly options?: TokensCacheCtorOptions,
     ) {
         super()
+
+        const { useBuildListener = true } = { ...options }
 
         this.setData('tokens', [])
 
@@ -92,20 +94,22 @@ export class TokensCacheService<
             onImportDismiss: action.bound,
         })
 
-        // When the Tokens List Service has loaded the list of
-        // available tokens, we will start creating a token map
-        reaction(
-            () => [tokensList.time, tokensList.tokens, wallet.address],
-            async (
-                [time, tokens, address],
-                [prevTime, prevTokens, prevAddress],
-            ) => {
-                if (time !== prevTime || tokens !== prevTokens || address !== prevAddress) {
-                    await this.build()
-                }
-            },
-            { delay: 100 },
-        )
+        if (useBuildListener) {
+            // When the Tokens List Service has loaded the list of
+            // available tokens, we will start creating a token map
+            reaction(
+                () => [tokensList.time, tokensList.tokens, wallet.address],
+                async (
+                    [time, tokens, address],
+                    [prevTime, prevTokens, prevAddress],
+                ) => {
+                    if (time !== prevTime || tokens !== prevTokens || address !== prevAddress) {
+                        await this.build()
+                    }
+                },
+                { delay: 100 },
+            )
+        }
 
         this.#tokensBalancesSubscribers = new Map<string, Subscription<'contractStateChanged'>>()
         this.#tokensBalancesSubscribersMutex = new Mutex()
@@ -316,7 +320,7 @@ export class TokensCacheService<
      * Returns Everscale token wallet Contract by the given token `root`
      * @param {string} root
      */
-    public async getEverscaleTokenWalletContract(root: string): Promise<Contract<typeof TokenAbi.Wallet> | undefined> {
+    public async getTokenWalletContract(root: string): Promise<Contract<typeof TokenAbi.Wallet> | undefined> {
         let wallet = this.get(root)?.wallet
 
         if (wallet === undefined) {

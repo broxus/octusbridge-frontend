@@ -63,7 +63,7 @@ function TransfersListInner(): JSX.Element {
     const tokens = React.useMemo(() => (
         networks
             .filter(item => item.type === 'evm')
-            .flatMap(({ chainId }) => tokensAssets.filterTokensByChainId(chainId))
+            .flatMap(network => tokensAssets.filterTokensByChainId(network.chainId))
             .reduce<TokenAsset[]>((acc, token) => {
                 if (acc.findIndex(({ root }) => root === token.root) > -1) {
                     return acc

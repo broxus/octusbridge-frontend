@@ -67,7 +67,7 @@ export class StakingFormStore {
                 throwException('Token address must be defined in account data')
             }
 
-            const walletContract = await this.tokensCache.getEverscaleTokenWalletContract(
+            const walletContract = await this.tokensCache.getTokenWalletContract(
                 this.accountData.tokenAddress,
             )
 
