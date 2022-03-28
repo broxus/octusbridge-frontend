@@ -88,6 +88,7 @@ export type Pipeline = {
     evmTokenBalance?: string;
     evmTokenDecimals?: number;
     from: string;
+    isBlacklisted: boolean;
     isNative: boolean;
     proxy: string;
     to: string;
@@ -292,6 +293,7 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
                         ethereumConfiguration: vault.ethereumConfiguration,
                         everscaleTokenAddress: isEverscaleToken ? token.root : undefined,
                         evmTokenAddress: isEvmToken ? token.root : vault.tokenAddress,
+                        isBlacklisted: false,
                         isNative: false,
                         proxy: pipeline.proxy,
                         tokenBase,
@@ -491,7 +493,7 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
 
         if (isEvmAddressValid(root)) {
             try {
-                await this.syncEvmTokenType(root, pipeline)
+                await this.syncEvmTokenAccessibility(root, pipeline)
             }
             catch (e) {
                 error('Sync EVM token type error', e)
@@ -602,11 +604,11 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
     }
 
     /**
-     * Sync Multi token type
+     * Sync token accessibility flags by the given Evm token `root` and `pipeline`
      * @param {string} [root]
      * @param {Pipeline} [pipeline]
      */
-    public async syncEvmTokenType(root?: string, pipeline?: Pipeline): Promise<void> {
+    public async syncEvmTokenAccessibility(root?: string, pipeline?: Pipeline): Promise<void> {
         if (root === undefined || pipeline === undefined) {
             return
         }
@@ -617,18 +619,22 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
             return
         }
 
-        const tokenInfo = await this.getEvmTokenMultiVaultContract(pipeline)?.methods.tokens(root).call()
+        const response = await this.getEvmTokenMultiVaultContract(pipeline)?.methods.tokens(root).call()
 
         // Force update
         runInAction(() => {
             token.pipelines = token.pipelines.map(
                 p => ((p.chainId === pipeline.chainId && p.vault === pipeline.vault) ? {
-                    ...p, isNative: tokenInfo?.isNative,
+                    ...p,
+                    isBlacklisted: response?.blacklisted,
+                    isNative: response?.isNative,
                 } : p),
             )
 
             // eslint-disable-next-line no-param-reassign
-            pipeline.isNative = tokenInfo?.isNative
+            pipeline.isBlacklisted = response?.blacklisted
+            // eslint-disable-next-line no-param-reassign
+            pipeline.isNative = response?.isNative
         })
     }
 
