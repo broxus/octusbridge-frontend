@@ -246,7 +246,7 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
     public buildPipeline(root?: string): void {
         const tokenRoot = root?.toLowerCase?.()
 
-        if (tokenRoot === undefined/* || (isEverscaleAddressValid(tokenRoot) && !(tokenRoot in this.data.assets)) */) {
+        if (tokenRoot === undefined || (isEverscaleAddressValid(tokenRoot) && !(tokenRoot in this.data.assets))) {
             return
         }
 
