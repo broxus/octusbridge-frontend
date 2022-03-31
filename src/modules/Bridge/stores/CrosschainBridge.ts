@@ -311,11 +311,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             this.token === undefined
             || this.pipeline?.chainId === undefined
             || this.pipeline.evmTokenDecimals === undefined
+            || this.pipeline.evmTokenAddress === undefined
         ) {
             return
         }
 
-        const evmTokenContract = this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline.chainId)
+        const evmTokenContract = this.tokensAssets.getEvmTokenContract(
+            this.pipeline.evmTokenAddress,
+            this.pipeline.chainId,
+        )
 
         if (evmTokenContract === undefined) {
             return

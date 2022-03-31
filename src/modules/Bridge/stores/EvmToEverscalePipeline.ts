@@ -441,6 +441,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                         if (state === undefined) {
                             this.stopTransferUpdater()
+                            await this.subscribeAlienTokenRootDeploy()
                             return
                         }
                     }
@@ -605,9 +606,11 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
     protected async subscribeAlienTokenRootDeploy(): Promise<void> {
         await this.unsubscribeAlienTokenRootDeploy()
+
         if (this.pipeline?.everscaleTokenAddress === undefined) {
             return
         }
+
         try {
             this.#alienTokenRootDeploySubscriber = (await rpc.subscribe('contractStateChanged', {
                 address: new Address(this.pipeline?.everscaleTokenAddress),
