@@ -14,7 +14,7 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import { Address, Contract } from 'everscale-inpage-provider'
+import { Contract } from 'everscale-inpage-provider'
 
 import rpc from '@/hooks/useRpcClient'
 import {
@@ -212,6 +212,7 @@ export class EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
+            || this.pipeline === undefined
             || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
@@ -243,7 +244,8 @@ export class EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            await this.tokensAssets.syncEvmToken(this.pipeline)
+            await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline.evmTokenAddress, this.pipeline)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -252,17 +254,11 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const ethereumConfiguration = this.pipeline?.ethereumConfiguration
-
-            if (ethereumConfiguration === undefined) {
+            if (this.pipeline?.ethereumConfiguration === undefined) {
                 return
             }
 
-            const ethConfigAddress = new Address(ethereumConfiguration)
-
-            this.setData('ethConfigAddress', ethConfigAddress)
-
-            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, this.pipeline?.ethereumConfiguration)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
             const targetWid = methodCall?.params[1].value
@@ -296,7 +292,7 @@ export class EvmToEverscaleSwapPipeline<
         if (
             this.prepareState?.isBroadcasting
             || this.data.eventVoteData === undefined
-            || this.data.ethConfigAddress === undefined
+            || this.pipeline?.ethereumConfiguration === undefined
             || this.everWallet.account?.address === undefined
         ) {
             return
@@ -315,7 +311,7 @@ export class EvmToEverscaleSwapPipeline<
 
             await creditFactoryContract.methods.deployProcessorForUser({
                 eventVoteData: this.data.eventVoteData,
-                configuration: this.data.ethConfigAddress,
+                configuration: this.pipeline?.ethereumConfiguration,
             }).send({
                 amount: '5500000000',
                 bounce: true,
@@ -669,13 +665,13 @@ export class EvmToEverscaleSwapPipeline<
                     l => l !== undefined && l.name === 'FactoryDeposit',
                 )]
 
-                if (log?.data == null || this.data.ethConfigAddress === undefined) {
+                if (log?.data == null || this.pipeline?.ethereumConfiguration === undefined) {
                     return
                 }
 
                 const ethConfig = new rpc.Contract(
                     TokenAbi.EthEventConfig,
-                    this.data.ethConfigAddress,
+                    this.pipeline?.ethereumConfiguration,
                 )
 
                 const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
@@ -710,7 +706,7 @@ export class EvmToEverscaleSwapPipeline<
                 const creditProcessorAddress = (await creditFactoryContract.methods.getCreditProcessorAddress({
                     answerId: 0,
                     eventVoteData,
-                    configuration: this.data.ethConfigAddress,
+                    configuration: this.pipeline?.ethereumConfiguration,
                 }).call()).value0
 
                 this.setData('creditProcessorAddress', creditProcessorAddress)

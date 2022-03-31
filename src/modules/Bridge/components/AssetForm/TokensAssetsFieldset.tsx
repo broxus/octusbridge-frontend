@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { Alert } from '@/components/common/Alert'
 import { Select } from '@/components/common/Select'
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { useBridge } from '@/modules/Bridge/providers'
@@ -66,6 +67,28 @@ export function TokensAssetsFieldset(): JSX.Element {
                                 virtual
                                 onChange={onChangeToken}
                             />
+                        )}
+                    </Observer>
+
+                    <Observer>
+                        {() => (
+                            <>
+                                {bridge.pipeline?.isBlacklisted && (
+                                    <Alert
+                                        className="margin-top"
+                                        text={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT',
+                                        }, {
+                                            blockchain: bridge.rightNetwork?.label,
+                                            symbol: bridge.token?.symbol,
+                                        }, { ignoreTag: true })}
+                                        title={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE',
+                                        })}
+                                        type="danger"
+                                    />
+                                )}
+                            </>
                         )}
                     </Observer>
                 </div>

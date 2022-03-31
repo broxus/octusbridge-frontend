@@ -66,6 +66,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             CrosschainBridge,
             | 'debt'
             | 'pairContract'
+            | 'multiVaultContract'
             | 'vaultContract'
             | 'handleChangeToken'
             | 'handleEvmWalletConnection'
@@ -134,6 +135,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             eversAmountNumber: computed,
             debt: computed,
             pairContract: computed,
+            multiVaultContract: computed,
             vaultContract: computed,
             useEverWallet: computed,
             useEvmWallet: computed,
@@ -240,14 +242,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 || this.token === undefined
                 || this.leftNetwork === undefined
                 || this.rightNetwork === undefined
-                || this.pipeline?.evmTokenDecimals === undefined
+                || this.pipeline?.chainId === undefined
+                || this.pipeline.evmTokenDecimals === undefined
             ) {
                 return
             }
 
             this.setState('isPendingApproval', true)
 
-            const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline)
+            const evmTokenContract = this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline.chainId)
 
             if (evmTokenContract === undefined) {
                 this.setState('isPendingApproval', false)
@@ -306,12 +309,13 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     public async checkAllowance(): Promise<void> {
         if (
             this.token === undefined
-            || this.pipeline?.evmTokenDecimals === undefined
+            || this.pipeline?.chainId === undefined
+            || this.pipeline.evmTokenDecimals === undefined
         ) {
             return
         }
 
-        const evmTokenContract = await this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline)
+        const evmTokenContract = this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline.chainId)
 
         if (evmTokenContract === undefined) {
             return
@@ -712,6 +716,60 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         finally {
             this.setState('isProcessing', false)
         }
+    }
+
+    /**
+     *
+     */
+    public async transferViaMultiVault(reject?: (e: any) => void): Promise<void> {
+        let tries = 0
+
+        const send = async (transactionType?: string) => {
+            if (
+                tries >= 2
+                || this.token === undefined
+                || this.pipeline?.evmTokenDecimals === undefined
+                || this.multiVaultContract === undefined
+            ) {
+                return
+            }
+
+            const target = this.rightAddress.split(':')
+
+            this.setState('isProcessing', true)
+
+            try {
+                tries += 1
+
+                await this.multiVaultContract.methods.deposit(
+                    [target[0], `0x${target[1]}`],
+                    this.pipeline.evmTokenAddress,
+                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                        .dp(0, BigNumber.ROUND_DOWN)
+                        .toFixed(),
+                ).send({
+                    from: this.evmWallet.address,
+                    type: transactionType,
+                }).once('transactionHash', (transactionHash: string) => {
+                    this.setData('txHash', transactionHash)
+                })
+            }
+            catch (e: any) {
+                if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
+                    error('Transfer deposit error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.(e)
+                    error('Transfer deposit error', e)
+                }
+            }
+            finally {
+                this.setState('isProcessing', false)
+            }
+        }
+
+        await send(this.leftNetwork?.transactionType)
     }
 
     /**
@@ -1546,16 +1604,63 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return
         }
 
-        try {
-            await Promise.all([
-                isEverscaleAddressValid(this.token.root) && this.tokensAssets.syncToken(this.token.root),
-                this.tokensAssets.syncEvmToken(this.token.root, this.pipeline),
-            ])
+        if (isEverscaleAddressValid(this.token.root)) {
+            try {
+                // sync everscale token balance and wallet
+                await this.tokensAssets.syncToken(this.token.root, true)
+            }
+            catch (e) {
+                error('Sync Everscale token error', e)
+            }
         }
-        catch (e) {
-            this.setState('isLocked', true)
-            error('Sync token error', e)
+
+        if (this.pipeline?.isMultiVault) {
+            try {
+                await this.tokensAssets.syncEvmTokenBalance(this.pipeline?.evmTokenAddress, this.pipeline)
+            }
+            catch (e) {
+
+            }
+
+            try {
+                await this.tokensAssets.syncEvmTokenAccessibility(this.pipeline?.evmTokenAddress, this.pipeline)
+            }
+            catch (e) {
+                error('Sync EVM token accessibility error', e)
+            }
         }
+        else {
+            try {
+                await this.tokensAssets.syncEvmTokenAddress(this.token.root, this.pipeline)
+                await this.tokensAssets.syncEvmTokenDecimals(this.pipeline?.evmTokenAddress, this.pipeline)
+                await this.tokensAssets.syncEvmTokenBalance(this.pipeline?.evmTokenAddress, this.pipeline)
+            }
+            catch (e) {
+                this.setState('isLocked', true)
+                error('Sync Evm token error', e)
+                return
+            }
+
+            try {
+                await Promise.all([
+                    // sync token vault limit for non-everscale-based tokens
+                    !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultLimit(
+                        this.pipeline?.vault,
+                        this.pipeline,
+                    ),
+                    // sync token vault balance for non-everscale-based tokens
+                    !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultBalance(
+                        this.pipeline?.evmTokenAddress,
+                        this.pipeline,
+                    ),
+                ])
+            }
+            catch (e) {
+                error('Sync vault balance or limit error', e)
+            }
+        }
+
+        console.log(toJS(this.token))
     }
 
     /**
@@ -1849,6 +1954,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             && this.data.selectedToken !== undefined
             && this.amount.length > 0
             && isGoodBignumber(this.amountNumber)
+            && (this.pipeline?.isMultiVault ? !this.pipeline?.isBlacklisted : true)
             && (this.isSwapEnabled
                 ? (this.isAmountValid && this.isTokensAmountValid && this.isEversAmountValid)
                 : this.isAmountValid)
@@ -2029,11 +2135,18 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             : undefined
     }
 
-    /**
-     * @protected
-     */
+    protected get multiVaultContract(): EthContract | undefined {
+        if (this.pipeline?.vault === undefined || this.pipeline.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensAssets.getEvmTokenMultiVaultContract(this.pipeline.vault, this.pipeline.chainId)
+    }
+
     protected get vaultContract(): EthContract | undefined {
-        return this.tokensAssets.getEvmTokenVaultContract(this.pipeline)
+        if (this.pipeline?.vault === undefined || this.pipeline.chainId === undefined) {
+            return undefined
+        }
+        return this.tokensAssets.getEvmTokenVaultContract(this.pipeline.vault, this.pipeline.chainId)
     }
 
     public get useEverWallet(): EverWalletService {

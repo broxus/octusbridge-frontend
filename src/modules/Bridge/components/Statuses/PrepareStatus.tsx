@@ -15,6 +15,7 @@ type Props = {
     isCancelled?: boolean;
     isDeployed?: boolean
     isDeploying?: boolean;
+    isTokenDeploying?: boolean;
     isTransferPage: boolean;
     note?: React.ReactNode;
     status: PrepareStateStatus;
@@ -29,6 +30,7 @@ export function PrepareStatus({
     isCancelled,
     isDeployed,
     isDeploying,
+    isTokenDeploying,
     isTransferPage,
     note,
     status,
@@ -79,6 +81,12 @@ export function PrepareStatus({
                                         if (isBroadcasting) {
                                             return intl.formatMessage({
                                                 id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_BROADCASTING',
+                                            })
+                                        }
+
+                                        if (isTokenDeploying) {
+                                            return intl.formatMessage({
+                                                id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_DEPLOYING',
                                             })
                                         }
 

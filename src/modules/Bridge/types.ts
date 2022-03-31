@@ -78,7 +78,7 @@ export type EvmTransferQueryParams = {
 export type EvmTransferStoreData = {
     amount: string;
     deriveEventAddress?: Address;
-    ethConfigAddress?: Address;
+    // ethConfigAddress?: Address;
     eventVoteData?: EventVoteData;
     leftAddress?: string;
     rightAddress?: string;
@@ -97,6 +97,8 @@ export type EvmTransferStoreState = {
         errorMessage?: string;
         isDeployed?: boolean;
         isDeploying?: boolean;
+        isTokenDeployed?: boolean;
+        isTokenDeploying?: boolean;
         status: PrepareStateStatus;
     };
     transferState?: {

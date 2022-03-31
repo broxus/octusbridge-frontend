@@ -100,6 +100,10 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE: 'Available instant liquidity in the vault<br>{value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT: 'If you require a more significant withdrawal amount, you will be able to request additional liquidity or run the margin call at the next step.',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE: 'Transfer not available',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT: 'The <b>{symbol}</b> token is blacklisted and its further transfer to the <b>{blockchain}</b> blockchain is unavailable.',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TITLE: 'Token is not deployed',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TEXT: 'The <b>{symbol}</b> token is not yet deployed into the <b>{blockchain}</b> blockchain. To continue you should deploy token root.',
 
     CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing EVERs to pay gas fees?',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',
@@ -132,6 +136,7 @@ export default {
     CROSSCHAIN_TRANSFER_STATUS_TRANSFER_BTN_TEXT: 'Transfer',
 
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_DISABLED: 'Awaiting',
+    CROSSCHAIN_TRANSFER_STATUS_PREPARE_DEPLOYING: 'Deploying',
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING: 'Pending',
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_CONFIRMED: 'Deployed',
     CROSSCHAIN_TRANSFER_STATUS_PREPARE_REJECTED: 'Canceled',
@@ -202,9 +207,11 @@ export default {
     CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT: 'Transfer',
 
     CROSSCHAIN_TRANSFER_SUMMARY_FROM: 'From address',
-    CROSSCHAIN_TRANSFER_SUMMARY_FROM_NETWORK: 'From <abbr>{name}</abbr>',
+    CROSSCHAIN_TRANSFER_SUMMARY_FROM_BLOCKCHAIN: 'From <abbr>{blockchainName}</abbr>',
     CROSSCHAIN_TRANSFER_SUMMARY_TO: 'To address',
-    CROSSCHAIN_TRANSFER_SUMMARY_TO_NETWORK: 'To <abbr>{name}</abbr>',
+    CROSSCHAIN_TRANSFER_SUMMARY_TO_BLOCKCHAIN: 'To <abbr>{blockchainName}</abbr>',
+    CROSSCHAIN_TRANSFER_SUMMARY_TOKENS: 'Token',
+    CROSSCHAIN_TRANSFER_SUMMARY_TOKEN: '{blockchainName} token',
     CROSSCHAIN_TRANSFER_SUMMARY_EVERSCALE_ADDRESS: 'Everscale address',
     CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE: 'Vault balance, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_FEES: 'Fees',

@@ -56,7 +56,6 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState =
 export const DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA: EvmTransferStoreData = {
     amount: '',
     deriveEventAddress: undefined,
-    ethConfigAddress: undefined,
     eventVoteData: undefined,
     leftAddress: undefined,
     rightAddress: undefined,
@@ -74,7 +73,6 @@ export const DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA: EvmSwapTransferStoreData = {
     amount: '',
     creditProcessorAddress: undefined,
     deriveEventAddress: undefined,
-    ethConfigAddress: undefined,
     eventVoteData: undefined,
     leftAddress: undefined,
     rightAddress: undefined,
@@ -94,7 +92,6 @@ export const DEFAULT_EVM_HIDDEN_SWAP_TRANSFER_STORE_DATA: EvmHiddenSwapTransferS
     amount: '',
     creditProcessorAddress: undefined,
     deriveEventAddress: undefined,
-    ethConfigAddress: undefined,
     eventVoteData: undefined,
     leftAddress: undefined,
     maxTransferFee: undefined,

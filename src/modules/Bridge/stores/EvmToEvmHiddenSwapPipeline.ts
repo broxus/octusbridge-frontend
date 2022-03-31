@@ -124,7 +124,8 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             this.setData('token', token)
 
-            await this.tokensAssets.syncEvmToken(this.pipelineCredit)
+            await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipelineCredit)
+            await this.tokensAssets.syncEvmToken(this.pipelineCredit?.evmTokenAddress, this.pipelineCredit)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
@@ -134,18 +135,12 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const ethereumConfiguration = this.pipelineCredit?.ethereumConfiguration
-
-            if (ethereumConfiguration === undefined) {
+            if (this.pipelineCredit?.ethereumConfiguration === undefined) {
                 debug('Cannon find ethereum configuration in pipeline. Exit resolve')
                 return
             }
 
-            const ethConfigAddress = new Address(ethereumConfiguration)
-
-            this.setData('ethConfigAddress', ethConfigAddress)
-
-            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, ethConfigAddress)
+            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, this.pipelineCredit?.ethereumConfiguration)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
@@ -206,6 +201,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 || this.rightNetwork === undefined
                 || this.contractAddress === undefined
                 || this.token === undefined
+                || this.pipelineDefault === undefined
                 || this.data.encodedEvent === undefined
             ) {
                 return
@@ -243,7 +239,10 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 return -1
             })
 
-            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipelineDefault)
+            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
+                this.pipelineDefault.vault,
+                this.pipelineDefault.chainId,
+            )
 
             if (vaultContract === undefined) {
                 this.setState('releaseState', {
@@ -700,9 +699,13 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                 this.data.withdrawalId !== undefined
                 && this.token !== undefined
                 && this.rightNetwork !== undefined
+                && this.pipelineDefault !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipelineDefault)
+                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
+                    this.pipelineDefault.vault,
+                    this.pipelineDefault.chainId,
+                )
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {

@@ -46,9 +46,16 @@ function TransferStatusIndicatorInner(): JSX.Element {
 
         try {
             setTransferStatus('pending')
-            await bridge.transfer(() => {
-                setTransferStatus('disabled')
-            })
+            if (bridge.pipeline?.isMultiVault) {
+                await bridge.transferViaMultiVault(() => {
+                    setTransferStatus('disabled')
+                })
+            }
+            else {
+                await bridge.transfer(() => {
+                    setTransferStatus('disabled')
+                })
+            }
         }
         catch (e) {
             setTransferStatus('disabled')

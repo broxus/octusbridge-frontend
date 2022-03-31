@@ -210,6 +210,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 || this.leftNetwork === undefined
                 || this.rightNetwork === undefined
                 || this.contractAddress === undefined
+                || this.pipeline === undefined
                 || this.token === undefined
                 || this.data.encodedEvent === undefined
             ) {
@@ -248,7 +249,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 return -1
             })
 
-            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipeline)
+            const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
+                this.pipeline.vault,
+                this.pipeline.chainId,
+            )
 
             if (vaultContract === undefined) {
                 this.setState('releaseState', {
@@ -429,10 +433,14 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             if (
                 this.data.withdrawalId !== undefined
                 && this.token !== undefined
+                && this.pipeline !== undefined
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(this.pipeline)
+                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
+                    this.pipeline.vault,
+                    this.pipeline.chainId,
+                )
                 const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {

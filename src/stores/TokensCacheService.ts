@@ -6,7 +6,12 @@ import {
     reaction,
     runInAction,
 } from 'mobx'
-import { Address, Contract, Subscription } from 'everscale-inpage-provider'
+import {
+    Address,
+    Contract,
+    ProviderEventData,
+    Subscription,
+} from 'everscale-inpage-provider'
 
 import { TokenListURI } from '@/config'
 import rpc from '@/hooks/useRpcClient'
@@ -133,7 +138,7 @@ export class TokensCacheService<
             decimals: token.decimals,
             icon: token.logoURI,
             name: token.name,
-            root: token.address,
+            root: token.address.toLowerCase?.(),
             symbol: token.symbol,
             updatedAt: -1,
             vendor: token.vendor,
@@ -224,9 +229,9 @@ export class TokensCacheService<
             return undefined
         }
         if (verified) {
-            return this._verifiedByRoot[root]
+            return this._verifiedByRoot[root.toLowerCase?.()]
         }
-        return this._byRoot[root]
+        return this._byRoot[root.toLowerCase?.()]
     }
 
     /**
@@ -246,7 +251,7 @@ export class TokensCacheService<
     public add(token: T): void {
         if (this.has(token.root)) {
             this.setData('tokens', this.tokens.map(item => {
-                if (item.root === token.root) {
+                if (item.root === token.root.toLowerCase?.()) {
                     return { ...item, ...token }
                 }
                 return item
@@ -254,7 +259,7 @@ export class TokensCacheService<
         }
         else {
             const tokens = this.tokens.slice()
-            tokens.push(token)
+            tokens.push({ ...token, root: token.root?.toLowerCase?.() })
             this.setData('tokens', tokens)
         }
     }
@@ -265,7 +270,7 @@ export class TokensCacheService<
      * @param {T} token
      */
     public remove(token: T): void {
-        this.setData('tokens', this.tokens.filter(item => item.root !== token.root))
+        this.setData('tokens', this.tokens.filter(item => item.root !== token.root?.toLowerCase?.()))
     }
 
     /**
@@ -278,7 +283,7 @@ export class TokensCacheService<
      */
     public update<K extends keyof T & string>(root: string, key: K, value: T[K]): void {
         this.setData('tokens', this.tokens.map(token => {
-            if (token.root === root) {
+            if (token.root === root.toLowerCase?.()) {
                 return { ...token, [key]: value }
             }
             return token
@@ -379,16 +384,16 @@ export class TokensCacheService<
 
         if (
             token === undefined
-            || (!force && (this.isTokenUpdating(root) || Date.now() - (token.updatedAt || 0) < 60 * 1000))
+            || (!force && (this.isTokenUpdating(root) || (Date.now() - (token.updatedAt || 0) < 60 * 1000)))
         ) {
             return
         }
 
         this.state.updatingTokens.set(root, true)
 
-        if (token.wallet === undefined && !this.isTokenUpdatingWallet(root)) {
+        if (token.wallet === undefined) {
             try {
-                await this.syncTokenWalletAddress(root)
+                await this.syncTokenWalletAddress(root, force)
             }
             catch (e) {
                 error('Sync token wallet address error', e)
@@ -396,9 +401,9 @@ export class TokensCacheService<
             }
         }
 
-        if (token.wallet !== undefined && !this.isTokenUpdatingBalance(root)) {
+        if (token.wallet !== undefined) {
             try {
-                await this.syncTokenBalance(root)
+                await this.syncTokenBalance(root, force)
             }
             catch (e) {
                 warn('Sync token balance error', e)
@@ -438,9 +443,14 @@ export class TokensCacheService<
      * Start to watch token balance updates by the given token root address.
      * @param {string} [root]
      * @param {string} [prefix]
+     * @param [callback]
      * @returns {Promise<void>}
      */
-    public async watch(root?: string, prefix: string = ''): Promise<void> {
+    public async watch(
+        root?: string,
+        callback?: (data: ProviderEventData<'contractStateChanged'>) => void,
+        prefix: string = '',
+    ): Promise<void> {
         if (this.wallet.address === undefined || root === undefined) {
             return
         }
@@ -448,6 +458,7 @@ export class TokensCacheService<
         const token = this.get(root)
 
         if (token === undefined) {
+            debugger
             return
         }
 
@@ -480,6 +491,7 @@ export class TokensCacheService<
                         'color: #c5e4f3',
                         event,
                     )
+                    callback?.(event)
                     await this.syncToken(root, true)
                 })
 
@@ -547,9 +559,13 @@ export class TokensCacheService<
      * Directly update token balance by the given token root address.
      * It updates balance in the tokens list.
      * @param {string} root
+     * @param {boolean} [force]
      */
-    public async syncTokenBalance(root: string): Promise<void> {
-        if (root === undefined || this.wallet.account?.address === undefined || this.isTokenUpdatingBalance(root)) {
+    public async syncTokenBalance(root: string, force: boolean = false): Promise<void> {
+        if (
+            root === undefined
+            || (!force && this.isTokenUpdatingBalance(root))
+        ) {
             return
         }
 
@@ -585,10 +601,14 @@ export class TokensCacheService<
     /**
      * Update token wallet address by the given token root address and current wallet address.
      * @param {string} root
-     * @returns {Promise<void>}
+     * @param {boolean} [force]
      */
-    public async syncTokenWalletAddress(root: string): Promise<void> {
-        if (root === undefined || this.wallet.account?.address === undefined || this.isTokenUpdatingWallet(root)) {
+    public async syncTokenWalletAddress(root: string, force: boolean = false): Promise<void> {
+        if (
+            root === undefined
+            || this.wallet.account?.address === undefined
+            || (!force && this.isTokenUpdatingWallet(root))
+        ) {
             return
         }
 
