@@ -434,7 +434,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         this.setState({
                             prepareState: {
                                 ...this.prepareState,
-                                isTokenDeployed: state?.isDeployed,
+                                isTokenDeployed: state?.isDeployed ?? false,
                             } as EvmTransferStoreState['prepareState'],
                             transferState,
                         })
