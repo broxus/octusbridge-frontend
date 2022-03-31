@@ -8654,9 +8654,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -8686,9 +8686,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -8834,9 +8834,9 @@ export class EthAbi {
                         {
                             components: [
                                 {
-                                    internalType: 'int8',
+                                    internalType: 'int128',
                                     name: 'wid',
-                                    type: 'int8',
+                                    type: 'int128',
                                 },
                                 {
                                     internalType: 'uint256',
@@ -8877,86 +8877,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256[]',
-                    name: 'amount',
-                    type: 'uint256[]',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple[]',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -8989,6 +8912,83 @@ export class EthAbi {
                     internalType: 'struct IVault.PendingWithdrawalId',
                     name: 'pendingWithdrawalId',
                     type: 'tuple',
+                },
+            ],
+            name: 'deposit',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int128',
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IEverscale.EverscaleAddress',
+                    name: 'recipient',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'deposit',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'int128',
+                            name: 'wid',
+                            type: 'int128',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IEverscale.EverscaleAddress',
+                    name: 'recipient',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256[]',
+                    name: 'amount',
+                    type: 'uint256[]',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IVault.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalId',
+                    type: 'tuple[]',
                 },
             ],
             name: 'deposit',
@@ -9218,9 +9218,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -9468,9 +9468,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -9555,9 +9555,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -9775,9 +9775,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -9805,9 +9805,9 @@ export class EthAbi {
                 {
                     components: [
                         {
-                            internalType: 'int8',
+                            internalType: 'int128',
                             name: 'wid',
-                            type: 'int8',
+                            type: 'int128',
                         },
                         {
                             internalType: 'uint256',
@@ -9973,9 +9973,9 @@ export class EthAbi {
                         {
                             components: [
                                 {
-                                    internalType: 'int8',
+                                    internalType: 'int128',
                                     name: 'wid',
-                                    type: 'int8',
+                                    type: 'int128',
                                 },
                                 {
                                     internalType: 'uint256',

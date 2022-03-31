@@ -26,7 +26,7 @@ export function Tokens(): JSX.Element {
                             <li key="min-max-transfer-fees-header" className="header">
                                 {intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKENS',
-                                })}
+                                }, { symbol: summary.token?.symbol })}
                             </li>
                         </>
                     )}

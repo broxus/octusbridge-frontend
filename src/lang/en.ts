@@ -210,7 +210,7 @@ export default {
     CROSSCHAIN_TRANSFER_SUMMARY_FROM_BLOCKCHAIN: 'From <abbr>{blockchainName}</abbr>',
     CROSSCHAIN_TRANSFER_SUMMARY_TO: 'To address',
     CROSSCHAIN_TRANSFER_SUMMARY_TO_BLOCKCHAIN: 'To <abbr>{blockchainName}</abbr>',
-    CROSSCHAIN_TRANSFER_SUMMARY_TOKENS: 'Token',
+    CROSSCHAIN_TRANSFER_SUMMARY_TOKENS: 'Token, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_TOKEN: '{blockchainName} token',
     CROSSCHAIN_TRANSFER_SUMMARY_EVERSCALE_ADDRESS: 'Everscale address',
     CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE: 'Vault balance, {symbol}',

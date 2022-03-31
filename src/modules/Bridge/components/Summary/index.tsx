@@ -23,9 +23,9 @@ export function Summary(): JSX.Element {
             </h3>
             <ul className="summary">
                 <Networks />
-                <Tokens />
                 <TransitDetails />
                 <VaultDetails />
+                <Tokens />
                 <Amount />
                 <FeesDetails />
                 <SwapDetails />
