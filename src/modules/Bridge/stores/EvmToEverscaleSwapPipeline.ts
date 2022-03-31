@@ -212,7 +212,6 @@ export class EvmToEverscaleSwapPipeline<
             this.evmWallet.web3 === undefined
             || this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.pipeline === undefined
             || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
@@ -227,7 +226,6 @@ export class EvmToEverscaleSwapPipeline<
 
         try {
             const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
-
             if (tx == null || tx.to == null) {
                 await this.checkTransaction()
                 return
@@ -245,7 +243,7 @@ export class EvmToEverscaleSwapPipeline<
             this.setData('token', token)
 
             await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
-            await this.tokensAssets.syncEvmToken(this.pipeline.evmTokenAddress, this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
 
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
