@@ -244,13 +244,17 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 || this.rightNetwork === undefined
                 || this.pipeline?.chainId === undefined
                 || this.pipeline.evmTokenDecimals === undefined
+                || this.pipeline.evmTokenAddress === undefined
             ) {
                 return
             }
 
             this.setState('isPendingApproval', true)
 
-            const evmTokenContract = this.tokensAssets.getEvmTokenContract(this.token.root, this.pipeline.chainId)
+            const evmTokenContract = this.tokensAssets.getEvmTokenContract(
+                this.pipeline.evmTokenAddress,
+                this.pipeline.chainId,
+            )
 
             if (evmTokenContract === undefined) {
                 this.setState('isPendingApproval', false)
@@ -1623,7 +1627,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 await this.tokensAssets.syncEvmTokenBalance(this.pipeline?.evmTokenAddress, this.pipeline)
             }
             catch (e) {
+                error('Sync EVM token balance error', e)
+            }
 
+            try {
+                await this.tokensAssets.syncEverscaleTokenAddress(this.pipeline?.evmTokenAddress, this.pipeline)
+            }
+            catch (e) {
+                error('Sync Everscale token root error', e)
             }
 
             try {
