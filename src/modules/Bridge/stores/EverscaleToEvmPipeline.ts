@@ -195,7 +195,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         })
 
         if (this.evmWallet.chainId === chainId) {
-            await this.tokensAssets.syncEvmToken(this.token?.root, this.pipeline)
+            await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
+            await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
             this.runEventUpdater()
         }
     }
@@ -348,8 +349,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             if (token === undefined) {
                 return
             }
-
-            await this.tokensAssets.syncEvmToken(this.token?.root, this.pipeline)
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 

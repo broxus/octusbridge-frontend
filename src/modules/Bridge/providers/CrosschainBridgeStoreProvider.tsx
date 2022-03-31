@@ -83,6 +83,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
             redirectDisposer()
             summaryDisposer()
             bridge.dispose()
+            summary.reset()
         }
     }, [])
 
