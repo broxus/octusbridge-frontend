@@ -6,7 +6,7 @@ import {
 } from '@/modules/Bridge/constants'
 import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { Pipeline, TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
+import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
 import { getEverscaleMainNetwork } from '@/utils'
 
 
@@ -68,6 +68,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get minTransferFee(): TransferSummaryData['minTransferFee'] {
         return this.data.minTransferFee
+    }
+
+    public get withdrawFee(): TransferSummaryData['withdrawFee'] {
+        return this.data.withdrawFee
     }
 
     public get leftAddress(): TransferSummaryData['leftAddress'] {
@@ -157,10 +161,4 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
     }
 
-}
-
-const summary = new TransferSummary(useTokensAssets())
-
-export function useSummary(): TransferSummary {
-    return summary
 }

@@ -2,13 +2,13 @@ import * as React from 'react'
 import { reaction } from 'mobx'
 import { useParams } from 'react-router-dom'
 
+import { useBridge } from '@/modules/Bridge/providers/CrosschainBridgeStoreProvider'
 import type {
     EverscaleToEvmPipeline,
     EvmToEverscalePipeline,
     EvmToEverscaleSwapPipeline,
     EvmToEvmHiddenSwapPipeline,
 } from '@/modules/Bridge/stores'
-import { useSummary } from '@/modules/Bridge/stores'
 import { EverscaleTransferQueryParams, EvmTransferQueryParams } from '@/modules/Bridge/types'
 
 
@@ -18,6 +18,7 @@ type Pipeline = EverscaleToEvmPipeline
     | EvmToEvmHiddenSwapPipeline
 
 export function useTransferLifecycle(pipeline: Pipeline): void {
+    const { summary } = useBridge()
     const params = useParams<EvmTransferQueryParams | EverscaleTransferQueryParams>()
 
     React.useEffect(() => {
@@ -31,7 +32,6 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
     }, [params])
 
     React.useEffect(() => {
-        const summary = useSummary()
         summary.setState('isTransferPage', true)
         const summaryDisposer = reaction(
             () => ({

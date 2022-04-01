@@ -15,7 +15,7 @@ import {
 
 export function AmountFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const onChangeAmount = debounce(() => {
         (async () => {
@@ -25,6 +25,17 @@ export function AmountFieldset(): JSX.Element {
 
     const onChange = (value: string) => {
         bridge.setData('amount', value)
+
+        const withdrawFee = bridge.amountNumber
+            .times(new BigNumber(100).div(1000).times(bridge.pipeline?.withdrawFee ?? 0))
+            .dp(0, BigNumber.ROUND_DOWN)
+            .toFixed()
+
+        bridge.setData(
+            'withdrawFee',
+            isGoodBignumber(withdrawFee) ? withdrawFee : undefined,
+        )
+
         if (bridge.isSwapEnabled || bridge.isEvmToEvm) {
             onChangeAmount()
         }

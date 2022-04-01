@@ -18,7 +18,7 @@ import './index.scss'
 
 
 export function Bridge(): JSX.Element {
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     return (
         <section className="section">

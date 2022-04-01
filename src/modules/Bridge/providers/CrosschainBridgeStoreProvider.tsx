@@ -2,21 +2,27 @@ import * as React from 'react'
 import { reaction } from 'mobx'
 import { useHistory } from 'react-router-dom'
 
-import { CrosschainBridge, useSummary } from '@/modules/Bridge/stores'
+import { CrosschainBridge, TransferSummary } from '@/modules/Bridge/stores'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 
 
-export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge>(
-    new CrosschainBridge(
+export type CrosschainBridgeContextConsumerProps = {
+    bridge: CrosschainBridge;
+    summary: TransferSummary;
+}
+
+export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridgeContextConsumerProps>({
+    bridge: new CrosschainBridge(
         useEvmWallet(),
         useEverWallet(),
         useTokensAssets(),
     ),
-)
+    summary: new TransferSummary(useTokensAssets()),
+})
 
-export function useBridge(): CrosschainBridge {
+export function useBridge(): CrosschainBridgeContextConsumerProps {
     return React.useContext(CrosschainBridgeStoreContext)
 }
 
@@ -31,13 +37,16 @@ type Props = {
 
 export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JSX.Element {
     const history = useHistory()
-    const summary = useSummary()
 
     const bridge = React.useMemo(() => new CrosschainBridge(
         props.evmWallet,
         props.everWallet,
         props.tokensAssets,
     ), [])
+
+    const summary = React.useMemo(() => new TransferSummary(bridge.useTokensAssets), [bridge.useTokensAssets])
+
+    const context = React.useMemo(() => ({ bridge, summary }), [bridge, summary])
 
     React.useEffect(() => {
         bridge.init()
@@ -73,6 +82,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 tokenAmount: bridge.tokenAmountNumber
                     .shiftedBy(bridge.token?.decimals || 0)
                     .toFixed(),
+                withdrawFee: bridge.withdrawFee,
             }),
             data => {
                 summary.setData(data)
@@ -85,10 +95,10 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
             bridge.dispose()
             summary.reset()
         }
-    }, [])
+    }, [bridge, summary])
 
     return (
-        <CrosschainBridgeStoreContext.Provider value={bridge}>
+        <CrosschainBridgeStoreContext.Provider value={context}>
             {children}
         </CrosschainBridgeStoreContext.Provider>
     )

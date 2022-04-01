@@ -89,6 +89,7 @@ export type Pipeline = {
     vault: string;
     vaultBalance?: string;
     vaultLimit?: string;
+    withdrawFee?: string;
 }
 
 export type ComposedPipelinesHash = {
@@ -118,6 +119,13 @@ export function alienTokenProxyContract(
     root: string,
 ): Contract<typeof MultiVault.AlienProxy> {
     return new Contract(provider, MultiVault.AlienProxy, new Address(root))
+}
+
+export function nativeTokenProxyContract(
+    provider: ProviderRpcClient,
+    root: string,
+): Contract<typeof MultiVault.NativeProxy> {
+    return new Contract(provider, MultiVault.NativeProxy, new Address(root))
 }
 
 
@@ -561,25 +569,37 @@ export class TokensAssetsService extends TokensCacheService<TokenAsset, TokensAs
     }
 
     /**
-     * Sync token accessibility flags by the given Evm token `root` and `pipeline`
+     * Sync token accessibility flags, metadata and fee by the given Evm token `root`
+     * and `pipeline` in Multi Vault
      * @param {string} [root]
      * @param {Pipeline} [pipeline]
      */
-    public async syncEvmTokenAccessibility(root?: string, pipeline?: Pipeline): Promise<void> {
+    public async syncEvmTokenMultiVaultMeta(root?: string, pipeline?: Pipeline): Promise<void> {
         if (root === undefined || pipeline?.chainId === undefined) {
             return
         }
 
-        const response = await this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+        const meta = await this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
             .tokens(root)
             .call()
+
+        let { withdrawFee } = meta
+
+        // eslint-disable-next-line eqeqeq
+        if (meta.activation == '0') {
+            withdrawFee = await this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                .defaultWithdrawFee()
+                .call()
+        }
 
         // Force update
         runInAction(() => {
             // eslint-disable-next-line no-param-reassign
-            pipeline.isBlacklisted = response?.blacklisted
+            pipeline.isBlacklisted = meta?.blacklisted
             // eslint-disable-next-line no-param-reassign
-            pipeline.isNative = response?.isNative
+            pipeline.isNative = meta?.isNative
+            // eslint-disable-next-line no-param-reassign
+            pipeline.withdrawFee = withdrawFee
         })
     }
 

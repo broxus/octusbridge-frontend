@@ -8,7 +8,7 @@ import { useBridge } from '@/modules/Bridge/providers'
 
 export function MinReceiveTokensFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     return (
         <fieldset className="form-fieldset">

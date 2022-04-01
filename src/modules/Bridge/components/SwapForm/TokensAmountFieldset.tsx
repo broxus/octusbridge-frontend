@@ -15,7 +15,7 @@ import {
 
 export function TokensAmountFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const onChangeTokensAmount = debounce(() => {
         (async () => {

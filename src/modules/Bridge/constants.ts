@@ -20,8 +20,10 @@ import {
 export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     amount: '',
     bridgeFee: undefined,
-    depositType: 'default',
     creditFactoryFee: undefined,
+    depositType: 'default',
+    eversAmount: undefined,
+    isTokenChainSameToTargetChain: false,
     leftAddress: '',
     leftNetwork: undefined,
     minAmount: undefined,
@@ -38,7 +40,6 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     selectedToken: undefined,
     swapType: '0',
     tokenAmount: undefined,
-    eversAmount: undefined,
     txHash: undefined,
 }
 

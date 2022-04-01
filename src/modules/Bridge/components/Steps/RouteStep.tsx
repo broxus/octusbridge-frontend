@@ -19,7 +19,7 @@ import { EverWalletService } from '@/stores/EverWalletService'
 
 export function RouteStep(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
     const evmWallet = bridge.useEvmWallet
     const everWallet = bridge.useEverWallet
 

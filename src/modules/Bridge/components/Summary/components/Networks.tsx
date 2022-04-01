@@ -4,12 +4,12 @@ import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
-import { useSummary } from '@/modules/Bridge/stores'
+import { useBridge } from '@/modules/Bridge/providers'
 
 
 export function Networks(): JSX.Element {
     const intl = useIntl()
-    const summary = useSummary()
+    const { summary } = useBridge()
 
     return (
         <>

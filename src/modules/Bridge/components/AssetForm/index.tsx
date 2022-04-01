@@ -11,7 +11,7 @@ import { useBridge } from '@/modules/Bridge/providers'
 
 export function AssetForm(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     return (
         <div className="card card--flat card--small crosschain-transfer">

@@ -18,7 +18,7 @@ import {
 
 export function EversAmountFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const changeTonsAmountRecalculate = debounce(() => {
         (async () => {

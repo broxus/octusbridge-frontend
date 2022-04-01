@@ -14,7 +14,7 @@ import { isEvmTxHashValid } from '@/utils'
 
 function TransferStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
     const transfer = useEvmTransfer()
 
     const [transferStatus, setTransferStatus] = React.useState<TransferStateStatus>('disabled')
@@ -47,7 +47,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
         try {
             setTransferStatus('pending')
             if (bridge.pipeline?.isMultiVault) {
-                await bridge.transferViaMultiVault(() => {
+                await bridge.transferAlienMultiToken(() => {
                     setTransferStatus('disabled')
                 })
             }

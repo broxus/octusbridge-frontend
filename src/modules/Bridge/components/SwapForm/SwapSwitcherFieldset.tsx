@@ -12,7 +12,7 @@ import { useBridge } from '@/modules/Bridge/providers'
 
 export function SwapSwitcherFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
     const everWallet = bridge.useEverWallet
 
     const onSwitch = async () => {

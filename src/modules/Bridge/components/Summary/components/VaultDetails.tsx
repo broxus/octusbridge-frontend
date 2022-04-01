@@ -2,22 +2,19 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
+import { useBridge } from '@/modules/Bridge/providers'
 import { formattedAmount } from '@/utils'
-import { useSummary } from '@/modules/Bridge/stores'
 
 
 export function VaultDetails(): JSX.Element {
     const intl = useIntl()
-    const summary = useSummary()
+    const { summary } = useBridge()
 
     return (
         <Observer>
             {() => (
                 <>
-                    {((
-                        summary.isEvmToEverscale
-                        || summary.isEverscaleToEvm
-                    ) && !summary.isEverscaleBasedToken && summary.vaultBalance !== undefined) && (
+                    {(!summary.isEverscaleBasedToken && summary.vaultBalance !== undefined) && (
                         <li key="vault-balance">
                             <div className="text-muted">
                                 {intl.formatMessage({

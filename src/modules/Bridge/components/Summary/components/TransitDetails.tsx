@@ -3,12 +3,12 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
-import { useSummary } from '@/modules/Bridge/stores'
+import { useBridge } from '@/modules/Bridge/providers'
 
 
 export function TransitDetails(): JSX.Element {
     const intl = useIntl()
-    const summary = useSummary()
+    const { summary } = useBridge()
 
     return (
         <Observer>

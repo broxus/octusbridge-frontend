@@ -20,6 +20,7 @@ export type CrosschainBridgeStoreData = {
     creditFactoryFee?: string;
     depositType: 'default' | 'credit';
     eversAmount?: string;
+    isTokenChainSameToTargetChain: boolean;
     leftAddress: string;
     leftNetwork?: NetworkShape;
     maxEversAmount?: string;
@@ -37,6 +38,7 @@ export type CrosschainBridgeStoreData = {
     swapType: '0' | '1';
     tokenAmount?: string;
     txHash?: string;
+    withdrawFee?: string;
 }
 
 export type CrosschainBridgeStoreState = {
@@ -213,6 +215,7 @@ export type TransferSummaryData = {
     swapAmount?: string;
     token?: TokenAsset;
     tokenAmount?: string;
+    withdrawFee?: string;
 }
 
 export type TransferSummaryState = {

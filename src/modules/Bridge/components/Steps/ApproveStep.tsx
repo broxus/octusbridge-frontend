@@ -11,7 +11,7 @@ import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 
 export function ApproveStep(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const nextStep = async () => {
         await bridge.approveAmount()

@@ -10,7 +10,7 @@ import { useBridge } from '@/modules/Bridge/providers'
 
 export function TokensAssetsFieldset(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const onChangeToken = (value?: string) => {
         bridge.setData('selectedToken', value)

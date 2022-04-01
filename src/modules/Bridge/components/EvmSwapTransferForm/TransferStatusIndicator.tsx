@@ -14,7 +14,7 @@ import { isEvmTxHashValid } from '@/utils'
 
 function TransferStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
     const transfer = useEvmSwapTransfer()
 
     const [transferStatus, setTransferStatus] = React.useState<TransferStateStatus>('disabled')

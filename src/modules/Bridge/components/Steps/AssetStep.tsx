@@ -12,7 +12,7 @@ import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 
 export function AssetStep(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     const nextStep = async () => {
         if (

@@ -11,7 +11,7 @@ import { isEverscaleAddressValid } from '@/utils'
 
 function PrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
     const transfer = useEverscaleTransfer()
 
     const [prepareStatus, setPrepareStatus] = React.useState<PrepareStateStatus>('disabled')
@@ -34,9 +34,18 @@ function PrepareStatusIndicatorInner(): JSX.Element {
 
         try {
             setPrepareStatus('pending')
-            await bridge.prepareEverscaleToEvm(() => {
+            const reject = () => {
                 setPrepareStatus('disabled')
-            })
+            }
+            if (bridge.pipeline?.isNative === false && bridge.isTokenChainSameToTargetChain) {
+                // await bridge.burnViaAlienProxy(reject)
+            }
+            else if (bridge.pipeline?.isNative === true) {
+                await bridge.transferNativeMultiToken(reject)
+            }
+            else {
+                await bridge.prepareEverscaleToEvm(reject)
+            }
         }
         catch (e) {
             setPrepareStatus('disabled')

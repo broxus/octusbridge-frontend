@@ -10,7 +10,7 @@ import { EversAmountFieldset } from '@/modules/Bridge/components/SwapForm/EversA
 
 export function SwapForm(): JSX.Element {
     const intl = useIntl()
-    const bridge = useBridge()
+    const { bridge } = useBridge()
 
     return (
         <div className="card card--flat card--small crosschain-transfer">

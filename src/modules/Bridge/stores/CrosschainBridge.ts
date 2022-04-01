@@ -35,7 +35,9 @@ import { getCreditFactoryContract, unshiftedAmountWithSlippage } from '@/modules
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokenAsset, TokensAssetsService } from '@/stores/TokensAssetsService'
+import {
+    nativeTokenProxyContract, Pipeline, TokenAsset, TokensAssetsService,
+} from '@/stores/TokensAssetsService'
 import { LabeledNetwork } from '@/types'
 import {
     debug,
@@ -45,7 +47,6 @@ import {
     isEverscaleAddressValid,
     isEvmAddressValid,
     isGoodBignumber,
-    log,
     throwException,
     validateMaxValue,
     validateMinValue,
@@ -730,7 +731,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     /**
      *
      */
-    public async transferViaMultiVault(reject?: (e: any) => void): Promise<void> {
+    public async transferAlienMultiToken(reject?: (e: any) => void): Promise<void> {
         let tries = 0
 
         const send = async (transactionType?: string) => {
@@ -779,6 +780,138 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         await send(this.leftNetwork?.transactionType)
+    }
+
+    public async transferNativeMultiToken(reject?: (e: any) => void): Promise<void> {
+        if (
+            this.rightNetwork?.chainId === undefined
+            || this.token === undefined
+            || this.pipeline?.proxy === undefined
+            || this.everWallet.address === undefined
+        ) {
+            return
+        }
+
+        this.setState('isProcessing', true)
+
+        const proxyContract = nativeTokenProxyContract(rpc, this.pipeline.proxy)
+
+        this.pipeline.everscaleConfiguration = (await proxyContract.methods
+            .getConfiguration({ answerId: 0 })
+            .call())
+            .value0
+            .everscaleConfiguration
+
+        if (this.pipeline.everscaleConfiguration === undefined) {
+            this.setState('isProcessing', false)
+            return
+        }
+
+        const everscaleConfigurationContract = new rpc.Contract(
+            TokenAbi.EverscaleEventConfig,
+            this.pipeline.everscaleConfiguration,
+        )
+
+        const everscaleConfigurationState = (await rpc.getFullContractState({
+            address: everscaleConfigurationContract.address,
+        })).state
+
+        const subscriber = new rpc.Subscriber()
+
+        try {
+            const oldStream = subscriber.oldTransactions(
+                everscaleConfigurationContract.address,
+                {
+                    fromLt: everscaleConfigurationState?.lastTransactionId?.lt,
+                },
+            )
+            const eventStream = oldStream.merge(subscriber.transactions(
+                everscaleConfigurationContract.address,
+            )).flatMap(item => item.transactions).filterMap(async tx => {
+                const decodedTx = await everscaleConfigurationContract.decodeTransaction({
+                    methods: ['deployEvent'],
+                    transaction: tx,
+                })
+
+                if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                    const { eventData } = decodedTx.input.eventVoteData
+                    const event = await rpc.unpackFromCell({
+                        allowPartial: true,
+                        boc: eventData,
+                        structure: [
+                            { name: 'wid', type: 'int8' },
+                            { name: 'addr', type: 'uint256' },
+                            { name: 'tokens', type: 'uint128' },
+                            { name: 'eth_addr', type: 'uint160' },
+                            { name: 'chainId', type: 'uint32' },
+                        ] as const,
+                    })
+                    const checkAddress = `${event.data.wid}:${new BigNumber(event.data.addr).toString(16).padStart(64, '0')}`
+                    const checkEvmAddress = `0x${new BigNumber(event.data.eth_addr).toString(16).padStart(40, '0')}`
+
+                    if (
+                        checkAddress.toLowerCase() === this.leftAddress.toLowerCase()
+                        && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                    ) {
+                        const eventAddress = await everscaleConfigurationContract.methods.deriveEventAddress({
+                            answerId: 0,
+                            eventVoteData: decodedTx.input.eventVoteData,
+                        }).call()
+
+                        return eventAddress.eventContract
+                    }
+                    return undefined
+                }
+                return undefined
+            })
+
+            const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
+
+            if (walletContract === undefined) {
+                throwException('Cannot define token wallet contract.')
+                return
+            }
+
+            const data = await rpc.packIntoCell({
+                data: {
+                    addr: this.rightAddress,
+                    chainId: this.rightNetwork.chainId,
+                },
+                structure: [
+                    { name: 'addr', type: 'uint160' },
+                    { name: 'chainId', type: 'uint32' },
+                ] as const,
+            })
+
+            await walletContract.methods.transfer({
+                amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                deployWalletValue: '200000000',
+                notify: true,
+                payload: data.boc,
+                recipient: new Address(this.pipeline.proxy),
+                remainingGasTo: new Address(this.everWallet.address),
+            }).send({
+                amount: '6000000000',
+                bounce: true,
+                from: new Address(this.leftAddress),
+            })
+
+            const eventAddress = await eventStream.first()
+
+            this.setData('txHash', eventAddress.toString())
+        }
+        catch (e) {
+            reject?.(e)
+            error('Transfer Native Proxy MultiToken error', e)
+            await subscriber.unsubscribe()
+        }
+        finally {
+            this.setState('isProcessing', false)
+        }
+    }
+
+    public async burnViaAlienProxy(reject?: (e: any) => void): Promise<void> {
+        // todo
     }
 
     /**
@@ -1066,6 +1199,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             amount: '',
             bridgeFee: undefined,
             depositType: this.isEvmToEvm ? 'credit' : 'default',
+            isTokenChainSameToTargetChain: undefined,
             maxTokenAmount: undefined,
             maxEversAmount: undefined,
             minAmount: undefined,
@@ -1076,6 +1210,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             eversAmount: undefined,
             pairAddress: undefined,
             pairState: undefined,
+            withdrawFee: undefined,
         })
         this.setState({
             isCalculating: false,
@@ -1609,9 +1744,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected async syncToken(): Promise<void> {
-        if (this.token === undefined) {
+        if (this.token === undefined || this.pipeline === undefined) {
             return
         }
+
+        console.log(toJS(this.token))
 
         // sync everscale token only if transfer from the everscale
         if (this.isFromEverscale && isEverscaleAddressValid(this.token.root)) {
@@ -1625,12 +1762,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         // some logic to sync token for multi vault pipeline
-        if (this.pipeline?.isMultiVault) {
+        if (this.pipeline.isMultiVault) {
             if (this.isFromEvm) {
                 try {
-                    await this.tokensAssets.syncEvmTokenBalance(this.pipeline?.evmTokenAddress, this.pipeline)
-                    await this.tokensAssets.syncEverscaleTokenAddress(this.pipeline?.evmTokenAddress, this.pipeline)
-                    await this.tokensAssets.syncEvmTokenAccessibility(this.pipeline?.evmTokenAddress, this.pipeline)
+                    await this.tokensAssets.syncEvmTokenBalance(this.pipeline.evmTokenAddress, this.pipeline)
+                    await this.tokensAssets.syncEverscaleTokenAddress(this.pipeline.evmTokenAddress, this.pipeline)
+                    await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline.evmTokenAddress, this.pipeline)
                 }
                 catch (e) {
                     error('Sync EVM token error', e)
@@ -1640,24 +1777,49 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 try {
                     const rootContract = new rpc.Contract(TokenAbi.AlienRoot, new Address(this.token.root))
                     const meta = await rootContract.methods.meta({ answerId: 0 }).call()
-                    this.pipeline.evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(64, '0')}`
+
+                    runInAction(() => {
+                        this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
+                            .toString(16)
+                            .padStart(64, '0')}`
+                    })
+
+                    this.setData(
+                        'isTokenChainSameToTargetChain',
+                        meta.base_chainId.toString() === this.rightNetwork?.chainId,
+                    )
                 }
                 catch (e) {
-                    this.pipeline.isNative = true
+                    runInAction(() => {
+                        this.pipeline!.isNative = true
+                    })
                 }
 
                 if (this.pipeline.isNative) {
                     try {
-                        this.pipeline.evmTokenAddress = await this.multiVaultContract?.methods
-                            .getNativeToken(
-                                this.token.root.split(':')[0],
-                                `0x${this.token.root.split(':')[1]}`,
-
-                            )
-                            .call()
+                        await runInAction(async () => {
+                            this.pipeline!.evmTokenAddress = await this.multiVaultContract?.methods
+                                .getNativeToken(
+                                    this.token!.root.split(':')[0],
+                                    `0x${this.token!.root.split(':')[1]}`,
+                                )
+                                .call()
+                        })
                     }
                     catch (e) {
                         error(e)
+                    }
+                }
+
+                if (this.pipeline.isNative || this.data.isTokenChainSameToTargetChain) {
+                    try {
+                        await this.tokensAssets.syncEvmTokenMultiVaultMeta(
+                            this.pipeline.evmTokenAddress,
+                            this.pipeline,
+                        )
+                    }
+                    catch (e) {
+
                     }
                 }
             }
@@ -1665,8 +1827,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         else {
             try {
                 await this.tokensAssets.syncEvmTokenAddress(this.token.root, this.pipeline)
-                await this.tokensAssets.syncEvmTokenDecimals(this.pipeline?.evmTokenAddress, this.pipeline)
-                await this.tokensAssets.syncEvmTokenBalance(this.pipeline?.evmTokenAddress, this.pipeline)
+                await this.tokensAssets.syncEvmTokenDecimals(this.pipeline.evmTokenAddress, this.pipeline)
+                await this.tokensAssets.syncEvmTokenBalance(this.pipeline.evmTokenAddress, this.pipeline)
             }
             catch (e) {
                 this.setState('isLocked', true)
@@ -1678,12 +1840,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 await Promise.all([
                     // sync token vault limit for non-everscale-based tokens
                     !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultLimit(
-                        this.pipeline?.vault,
+                        this.pipeline.vault,
                         this.pipeline,
                     ),
                     // sync token vault balance for non-everscale-based tokens
                     !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultBalance(
-                        this.pipeline?.evmTokenAddress,
+                        this.pipeline.evmTokenAddress,
                         this.pipeline,
                     ),
                 ])
@@ -1691,9 +1853,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             catch (e) {
                 error('Sync vault balance or limit error', e)
             }
+
         }
 
-        console.log(toJS(this.token))
     }
 
     /**
@@ -1747,6 +1909,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.data.minTransferFee
     }
 
+    public get withdrawFee(): CrosschainBridgeStoreData['withdrawFee'] {
+        return this.data.withdrawFee
+    }
+
     /**
      * Returns non-shifted receive tokens amount
      */
@@ -1763,6 +1929,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get depositType(): CrosschainBridgeStoreData['depositType'] {
         return this.data.depositType
+    }
+
+    public get isTokenChainSameToTargetChain(): CrosschainBridgeStoreData['isTokenChainSameToTargetChain'] {
+        return this.data.isTokenChainSameToTargetChain
     }
 
     public get minReceiveTokens(): CrosschainBridgeStoreData['minReceiveTokens'] {
@@ -2093,15 +2263,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     public get token(): TokenAsset | undefined {
-        if (this.data.selectedToken === undefined) {
-            return undefined
-        }
-
-        if (this.isFromEvm && this.leftNetwork !== undefined) {
-            return this.tokensAssets.filterTokensByChainId(this.leftNetwork.chainId).find(
-                ({ root }) => root === this.data.selectedToken,
-            )
-        }
+        // if (this.isFromEvm && this.leftNetwork !== undefined) {
+        //     return this.tokensAssets.filterTokensByChainId(this.leftNetwork.chainId).find(
+        //         ({ root }) => root === this.data.selectedToken,
+        //     )
+        // }
 
         // if (this.isEverscaleToEvm && this.rightNetwork !== undefined) {
         //     return this.tokensAssets.filterTokensByChainId(this.rightNetwork.chainId).find(
@@ -2128,26 +2294,28 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         const rightChainId = this.rightNetwork?.chainId
 
         if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
-            return this.tokensAssets.tokens.filter(
+            return this.tokensAssets.verifiedTokens.filter(
                 token => Object.values(token.pipelines).some(
                     pipeline => (
                         (pipeline.chainId === leftChainId && pipeline.depositType === 'credit')
                         || (pipeline.chainId === rightChainId && pipeline.depositType === 'default')
-                    ) || false,
+                    ),
                 ),
             )
         }
 
         if (this.isEvmToEverscale && leftChainId !== undefined) {
-            return this.tokensAssets.filterTokensByChainId(leftChainId)
+            return this.tokensAssets.tokens.filter(
+                token => (
+                    isEverscaleAddressValid(token.root)
+                        ? token.verified && (token.chainId === leftChainId || token.pipelines.some(
+                            pipeline => pipeline.chainId === leftChainId,
+                        ))
+                        : token.chainId === leftChainId),
+            )
         }
 
-        if (this.isEverscaleToEvm) {
-            return this.tokensAssets.verifiedTokens
-        }
-
-        log('Returns all tokens')
-        return this.tokensAssets.tokens
+        return this.tokensAssets.verifiedTokens
     }
 
     public get tokenAmountNumber(): BigNumber {
