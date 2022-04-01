@@ -88,7 +88,7 @@ export class TokensCacheService<
             _verifiedByRoot: computed,
             add: action.bound,
             tokens: computed,
-            verifiedBroxusTokens: computed,
+            verifiedTokens: computed,
             roots: computed,
             isFetching: computed,
             isImporting: computed,
@@ -203,10 +203,10 @@ export class TokensCacheService<
     }
 
     /**
-     * Returns only verified tokens and tokens were vendor is Broxus
+     * Returns only verified tokens
      */
-    public get verifiedBroxusTokens(): T[] {
-        return this.tokens.filter(token => (token.verified && token.vendor === 'broxus'))
+    public get verifiedTokens(): T[] {
+        return this.tokens.filter(token => token.verified)
     }
 
     /**
@@ -458,7 +458,6 @@ export class TokensCacheService<
         const token = this.get(root)
 
         if (token === undefined) {
-            debugger
             return
         }
 

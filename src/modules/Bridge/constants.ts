@@ -126,11 +126,7 @@ export const DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE: EverscaleTransferStoreStat
     releaseState: undefined,
 }
 
-export const DEFAULT_TRANSFER_SUMMARY_STORE_DATA: TransferSummaryData = {
-    amount: '',
-    leftAddress: '',
-    rightAddress: '',
-}
+export const DEFAULT_TRANSFER_SUMMARY_STORE_DATA: TransferSummaryData = {}
 
 export const DEFAULT_TRANSFER_SUMMARY_STORE_STATE: TransferSummaryState = {
     isTransferPage: false,

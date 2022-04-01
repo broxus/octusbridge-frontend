@@ -179,10 +179,6 @@ function TransfersListInner(): JSX.Element {
     }
 
     const fetchAll = React.useCallback(async () => {
-        if (!tokensAssets.isReady) {
-            return
-        }
-
         try {
             await transfers.fetch({
                 status,
@@ -199,7 +195,14 @@ function TransfersListInner(): JSX.Element {
         catch (e) {
             error(e)
         }
-    }, [tokensAssets.isReady])
+    }, [
+        status,
+        createdAtGe,
+        createdAtLe,
+        userAddress,
+        tonTokenAddress,
+        pagination,
+    ])
 
     const changeFilters = (filters: TransfersFilters) => {
         pagination.submit(1)
@@ -217,7 +220,9 @@ function TransfersListInner(): JSX.Element {
     }
 
     React.useEffect(() => {
-        fetchAll()
+        (async () => {
+            await fetchAll()
+        })()
     }, [
         status,
         transferType,
@@ -230,7 +235,6 @@ function TransfersListInner(): JSX.Element {
         pagination.limit,
         pagination.offset,
         tableOrder.order,
-        tokensAssets.isReady,
     ])
 
     return (

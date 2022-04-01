@@ -1,4 +1,4 @@
-import { computed, makeObservable } from 'mobx'
+import { computed, makeObservable, runInAction } from 'mobx'
 
 import {
     DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
@@ -44,8 +44,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public reset(): void {
-        this.setData(DEFAULT_TRANSFER_SUMMARY_STORE_DATA)
-        this.setState(DEFAULT_TRANSFER_SUMMARY_STORE_STATE)
+        runInAction(() => {
+            this.data = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
+            this.state = DEFAULT_TRANSFER_SUMMARY_STORE_STATE
+        })
     }
 
     public get amount(): TransferSummaryData['amount'] {
