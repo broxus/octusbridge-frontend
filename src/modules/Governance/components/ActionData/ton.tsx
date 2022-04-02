@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { DexConstants } from '@/misc'
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Summary } from '@/components/common/Summary'
 import { TonAction } from '@/modules/Governance/types'
 import { formattedAmount } from '@/utils'
@@ -36,7 +36,7 @@ export function TonActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_TARGET',
                 }),
-                value: <TonscanAccountLink copy address={target} />,
+                value: <EverscanAccountLink copy address={target} />,
             }, {
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_VALUE',

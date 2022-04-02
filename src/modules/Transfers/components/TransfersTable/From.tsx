@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { getFromAddress, getFromNetwork } from '@/modules/Transfers/utils'
 import { Transfer } from '@/modules/Transfers/types'
@@ -46,7 +46,7 @@ export function From({
                             baseUrl={fromNetwork.explorerBaseUrl}
                         />
                     ) : (
-                        <TonscanAccountLink
+                        <EverscanAccountLink
                             copy
                             address={fromAddress}
                         />

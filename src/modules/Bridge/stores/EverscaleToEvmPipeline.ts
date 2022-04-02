@@ -1,17 +1,17 @@
 import BigNumber from 'bignumber.js'
-import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import isEqual from 'lodash.isequal'
 import {
     computed,
     IReactionDisposer,
     makeObservable,
-    reaction,
+    reaction, runInAction,
     toJS,
 } from 'mobx'
 import { Address, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
+import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 
 import rpc from '@/hooks/useRpcClient'
-import { TokenAbi } from '@/misc'
+import { MultiVault, TokenAbi } from '@/misc'
 import {
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA,
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE,
@@ -127,12 +127,21 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             }
             else {
                 this.setState('isCheckingContract', false)
-                await this.resolve()
             }
         }
         catch (e) {
             error('Check contract error', e)
             this.setState('isCheckingContract', false)
+            return
+        }
+
+        if (!this.state.isCheckingContract) {
+            try {
+                await this.resolve()
+            }
+            catch (e) {
+                error('Resolve error', e)
+            }
         }
     }
 
@@ -148,57 +157,206 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         }
 
         const eventContract = new rpc.Contract(TokenAbi.TokenTransferTonEvent, this.contractAddress)
+        const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
 
-        const [eventDetails, eventData] = await Promise.all([
-            eventContract.methods.getDetails({ answerId: 0 }).call(),
-            eventContract.methods.getDecodedData({ answerId: 0 }).call(),
-        ])
+        const eventConfig = new rpc.Contract(
+            TokenAbi.EverscaleEventConfiguration,
+            eventDetails._eventInitData.configuration,
+        )
+        const proxyAddress = (await eventConfig.methods
+            .getDetails({ answerId: 0 })
+            .call())
+            ._networkConfiguration
+            .eventEmitter
+        const pipelineType = this.tokensAssets.getPipelineType(proxyAddress.toString())
 
-        const {
-            chainId,
-            ethereum_address,
-            owner_address,
-            tokens,
-        } = eventData
+        if (pipelineType === 'evm_everscale') {
+            const eventData = await eventContract.methods.getDecodedData({ answerId: 0 }).call()
 
-        const proxyAddress = eventDetails._initializer
-        const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, proxyAddress)
+            const {
+                chainId,
+                ethereum_address,
+                owner_address,
+                tokens,
+            } = eventData
 
-        const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
+            const proxyContract = new rpc.Contract(TokenAbi.EverscaleTokenTransferProxy, proxyAddress)
 
-        const token = this.tokensAssets.get(tokenAddress.toString())
+            const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
-        if (token === undefined) {
-            return
+            const token = this.tokensAssets.get(tokenAddress.toString())
+
+            if (token === undefined) {
+                return
+            }
+
+            const leftAddress = owner_address.toString()
+            const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
+
+            this.setData({
+                amount: tokens,
+                chainId,
+                leftAddress: leftAddress.toLowerCase(),
+                rightAddress: rightAddress.toLowerCase(),
+                token,
+            })
+
+            this.setState({
+                eventState: {
+                    confirmations: this.eventState?.confirmations || 0,
+                    requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                    status: this.eventState?.status || 'pending',
+                },
+                prepareState: {
+                    status: 'confirmed',
+                },
+            })
+
+            if (this.evmWallet.chainId === chainId) {
+                await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
+                await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
+                this.runEventUpdater()
+            }
+        }
+        else if (pipelineType === 'multi_everscale_evm') {
+            const multiEventContract = new rpc.Contract(MultiVault.EverscaleEventNative, this.contractAddress)
+            const eventData = await multiEventContract.methods.getDecodedData({ answerId: 0 }).call()
+
+            const {
+                chainId_: chainId,
+                recipient_: ethereum_address,
+                remainingGasTo_: owner_address,
+                amount_: tokens,
+                token_: tokenAddress,
+            } = eventData
+
+            const token = this.tokensAssets.get(tokenAddress.toString())
+
+            if (token === undefined) {
+                return
+            }
+
+            this.tokensAssets.buildPipelines(token.root)
+
+            const leftAddress = owner_address.toString()
+            const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
+
+            this.setData({
+                amount: tokens,
+                chainId,
+                leftAddress: leftAddress.toLowerCase(),
+                rightAddress: rightAddress.toLowerCase(),
+                token,
+            })
+
+            this.setState({
+                eventState: {
+                    confirmations: this.eventState?.confirmations || 0,
+                    requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                    status: this.eventState?.status || 'pending',
+                },
+                prepareState: {
+                    status: 'confirmed',
+                },
+            })
+            if (this.evmWallet.chainId === chainId) {
+                try {
+                    await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
+                    await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline?.evmTokenAddress, this.pipeline)
+                    try {
+                        const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(this.token!.root))
+                        const meta = await rootContract.methods.meta({ answerId: 0 }).call()
+
+                        runInAction(() => {
+                            this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
+                                .toString(16)
+                                .padStart(64, '0')}`
+                            this.token!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
+                        })
+                    }
+                    catch (e) {
+                        runInAction(() => {
+                            this.token!.isNative = true
+                        })
+                    }
+                }
+                catch (e) {
+                    error(e)
+                }
+                this.runEventUpdater()
+            }
+        }
+        else if (pipelineType === 'multi_evm_everscale') {
+            const multiEventContract = new rpc.Contract(MultiVault.EverscaleEventAlien, this.contractAddress)
+            const eventData = await multiEventContract.methods.getDecodedData({ answerId: 0 }).call()
+
+            const {
+                recipient_: ethereum_address,
+                remainingGasTo_: owner_address,
+                amount_: tokens,
+                token_: tokenAddress,
+                base_chainId_: chainId,
+            } = eventData
+
+            const token = this.tokensAssets.get(tokenAddress.toString())
+
+            if (token === undefined) {
+                return
+            }
+
+            this.tokensAssets.buildPipelines(token.root)
+
+            const leftAddress = owner_address.toString()
+            const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
+
+            this.setData({
+                amount: tokens,
+                chainId,
+                leftAddress: leftAddress.toLowerCase(),
+                rightAddress: rightAddress.toLowerCase(),
+                token,
+            })
+
+            this.setState({
+                eventState: {
+                    confirmations: this.eventState?.confirmations || 0,
+                    requiredConfirmations: this.eventState?.requiredConfirmations || 0,
+                    status: this.eventState?.status || 'pending',
+                },
+                prepareState: {
+                    status: 'confirmed',
+                },
+            })
+            if (this.evmWallet.chainId === chainId) {
+                try {
+                    await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
+                    await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline?.evmTokenAddress, this.pipeline)
+                    try {
+                        const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(this.token!.root))
+                        const meta = await rootContract.methods.meta({ answerId: 0 }).call()
+
+                        runInAction(() => {
+                            this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
+                                .toString(16)
+                                .padStart(40, '0')}`
+                            this.token!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
+                        })
+                    }
+                    catch (e) {
+                        runInAction(() => {
+                            this.token!.isNative = true
+                        })
+                    }
+                }
+                catch (e) {
+                    error(e)
+                }
+                this.runEventUpdater()
+            }
+
+
         }
 
-        const leftAddress = owner_address.toString()
-        const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
-
-        this.setData({
-            amount: tokens,
-            chainId,
-            leftAddress: leftAddress.toLowerCase(),
-            rightAddress: rightAddress.toLowerCase(),
-            token,
-        })
-
-        this.setState({
-            eventState: {
-                confirmations: this.eventState?.confirmations || 0,
-                requiredConfirmations: this.eventState?.requiredConfirmations || 0,
-                status: this.eventState?.status || 'pending',
-            },
-            prepareState: {
-                status: 'confirmed',
-            },
-        })
-
-        if (this.evmWallet.chainId === chainId) {
-            await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
-            await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
-            this.runEventUpdater()
-        }
     }
 
     public async release(): Promise<void> {
@@ -254,8 +412,12 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 this.pipeline.vault,
                 this.pipeline.chainId,
             )
+            const multiVaultContract = this.tokensAssets.getEvmTokenMultiVaultContract(
+                this.pipeline.vault,
+                this.pipeline.chainId,
+            )
 
-            if (vaultContract === undefined) {
+            if ((this.pipeline.isMultiVault && multiVaultContract === undefined) || vaultContract === undefined) {
                 this.setState('releaseState', {
                     ...this.releaseState,
                     status: 'disabled',
@@ -266,13 +428,35 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             try {
                 tries += 1
 
-                await vaultContract.methods.saveWithdraw(
-                    this.data.encodedEvent,
-                    signatures.map(({ signature }) => signature),
-                ).send({
-                    from: this.evmWallet.address,
-                    type: transactionType,
-                })
+                if (this.pipeline.isMultiVault) {
+                    if (this.token.isNative) {
+                        await multiVaultContract?.methods.saveWithdrawNative(
+                            this.data.encodedEvent,
+                            signatures.map(({ signature }) => signature),
+                        ).send({
+                            from: this.evmWallet.address,
+                            type: transactionType,
+                        })
+                    }
+                    else {
+                        await multiVaultContract?.methods.saveWithdrawAlien(
+                            this.data.encodedEvent,
+                            signatures.map(({ signature }) => signature),
+                        ).send({
+                            from: this.evmWallet.address,
+                            type: transactionType,
+                        })
+                    }
+                }
+                else {
+                    await vaultContract.methods.saveWithdraw(
+                        this.data.encodedEvent,
+                        signatures.map(({ signature }) => signature),
+                    ).send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                }
             }
             catch (e: any) {
                 if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
@@ -336,76 +520,191 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 })
             }
 
-            const proxyAddress = eventDetails._initializer
-            const abi = this.isEverscaleBasedToken
-                ? TokenAbi.EverscaleTokenTransferProxy
-                : TokenAbi.EvmTokenTransferProxy
-            const proxyContract = new rpc.Contract(abi, proxyAddress)
+            const pipelineType = this.tokensAssets.getPipelineType(this.pipeline.proxy)
 
-            const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
+            if (pipelineType === 'multi_everscale_evm') {
+                const proxyContract = new rpc.Contract(MultiVault.NativeProxy, eventDetails._initializer)
+                const configurations = (await proxyContract.methods.getConfiguration({ answerId: 0 }).call()).value0
+                this.pipeline.everscaleConfiguration = configurations.everscaleConfiguration
 
-            const token = this.tokensAssets.get(tokenAddress.toString())
 
-            if (token === undefined) {
-                return
+                const eventConfig = new rpc.Contract(
+                    TokenAbi.EverscaleEventConfiguration,
+                    this.pipeline.everscaleConfiguration,
+                )
+                const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
+                const eventDataEncoded = mapTonCellIntoEthBytes(
+                    Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
+                    eventDetails._eventInitData.voteData.eventData,
+                )
+
+                const encodedEvent = this.evmWallet.web3.eth.abi.encodeParameters([{
+                    TONEvent: {
+                        eventTransactionLt: 'uint64',
+                        eventTimestamp: 'uint32',
+                        eventData: 'bytes',
+                        configurationWid: 'int8',
+                        configurationAddress: 'uint256',
+                        eventContractWid: 'int8',
+                        eventContractAddress: 'uint256',
+                        proxy: 'address',
+                        round: 'uint32',
+                    },
+                }], [{
+                    eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
+                    eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
+                    eventData: eventDataEncoded,
+                    configurationWid: this.pipeline.everscaleConfiguration.toString().split(':')[0],
+                    configurationAddress: `0x${this.pipeline.everscaleConfiguration.toString().split(':')[1]}`,
+                    eventContractWid: this.contractAddress.toString().split(':')[0],
+                    eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
+                    proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
+                    round: (await eventContract.methods.round_number({}).call()).round_number,
+                }])
+                const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
+
+                this.setData({
+                    encodedEvent,
+                    withdrawalId,
+                })
+
+                if (
+                    this.evmWallet.isConnected
+                    && this.evmWallet.chainId === this.rightNetwork?.chainId
+                    && this.eventState?.status === 'confirmed'
+                ) {
+                    this.runReleaseUpdater()
+                }
             }
+            else if (pipelineType === 'multi_evm_everscale') {
+                const proxyContract = new rpc.Contract(MultiVault.AlienProxy, eventDetails._initializer)
+                const configurations = (await proxyContract.methods.getConfiguration({ answerId: 0 }).call()).value0
+                this.pipeline.everscaleConfiguration = configurations.everscaleConfiguration
 
-            const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            if (this.isEverscaleBasedToken) {
-                this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
-                    typeof TokenAbi.EverscaleTokenTransferProxy, 'getDetails'
-                >)._config.tonConfiguration
+                const eventConfig = new rpc.Contract(
+                    TokenAbi.EverscaleEventConfiguration,
+                    this.pipeline.everscaleConfiguration,
+                )
+                const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
+                const eventDataEncoded = mapTonCellIntoEthBytes(
+                    Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
+                    eventDetails._eventInitData.voteData.eventData,
+                )
+
+                const encodedEvent = this.evmWallet.web3.eth.abi.encodeParameters([{
+                    TONEvent: {
+                        eventTransactionLt: 'uint64',
+                        eventTimestamp: 'uint32',
+                        eventData: 'bytes',
+                        configurationWid: 'int8',
+                        configurationAddress: 'uint256',
+                        eventContractWid: 'int8',
+                        eventContractAddress: 'uint256',
+                        proxy: 'address',
+                        round: 'uint32',
+                    },
+                }], [{
+                    eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
+                    eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
+                    eventData: eventDataEncoded,
+                    configurationWid: this.pipeline.everscaleConfiguration.toString().split(':')[0],
+                    configurationAddress: `0x${this.pipeline.everscaleConfiguration.toString().split(':')[1]}`,
+                    eventContractWid: this.contractAddress.toString().split(':')[0],
+                    eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
+                    proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
+                    round: (await eventContract.methods.round_number({}).call()).round_number,
+                }])
+                const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
+
+                this.setData({
+                    encodedEvent,
+                    withdrawalId,
+                })
+
+                if (
+                    this.evmWallet.isConnected
+                    && this.evmWallet.chainId === this.rightNetwork?.chainId
+                    && this.eventState?.status === 'confirmed'
+                ) {
+                    this.runReleaseUpdater()
+                }
             }
             else {
-                this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
-                    typeof TokenAbi.EvmTokenTransferProxy, 'getDetails'
-                >).value0.tonConfiguration
-            }
 
-            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, this.pipeline.everscaleConfiguration)
-            const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
-            const eventDataEncoded = mapTonCellIntoEthBytes(
-                Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
-                eventDetails._eventInitData.voteData.eventData,
-            )
+                const abi = this.isEverscaleBasedToken
+                    ? TokenAbi.EverscaleTokenTransferProxy
+                    : TokenAbi.EvmTokenTransferProxy
+                const proxyContract = new rpc.Contract(abi, eventDetails._initializer)
 
-            const encodedEvent = this.evmWallet.web3.eth.abi.encodeParameters([{
-                TONEvent: {
-                    eventTransactionLt: 'uint64',
-                    eventTimestamp: 'uint32',
-                    eventData: 'bytes',
-                    configurationWid: 'int8',
-                    configurationAddress: 'uint256',
-                    eventContractWid: 'int8',
-                    eventContractAddress: 'uint256',
-                    proxy: 'address',
-                    round: 'uint32',
-                },
-            }], [{
-                eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
-                eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
-                eventData: eventDataEncoded,
-                configurationWid: this.pipeline.everscaleConfiguration.toString().split(':')[0],
-                configurationAddress: `0x${this.pipeline.everscaleConfiguration.toString().split(':')[1]}`,
-                eventContractWid: this.contractAddress.toString().split(':')[0],
-                eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
-                proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
-                round: (await eventContract.methods.round_number({}).call()).round_number,
-            }])
-            const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
+                const tokenAddress = (await proxyContract.methods.getTokenRoot({ answerId: 0 }).call()).value0
 
-            this.setData({
-                encodedEvent,
-                withdrawalId,
-            })
+                const token = this.tokensAssets.get(tokenAddress.toString())
 
-            if (
-                this.evmWallet.isConnected
+                if (token === undefined) {
+                    return
+                }
+
+                const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
+
+                if (this.isEverscaleBasedToken) {
+                    this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                        typeof TokenAbi.EverscaleTokenTransferProxy, 'getDetails'
+                    >)._config.tonConfiguration
+                }
+                else {
+                    this.pipeline.everscaleConfiguration = (proxyDetails as DecodedAbiFunctionOutputs<
+                        typeof TokenAbi.EvmTokenTransferProxy, 'getDetails'
+                    >).value0.tonConfiguration
+                }
+
+                const eventConfig = new rpc.Contract(
+                    TokenAbi.EverscaleEventConfiguration,
+                    this.pipeline.everscaleConfiguration,
+                )
+                const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
+                const eventDataEncoded = mapTonCellIntoEthBytes(
+                    Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
+                    eventDetails._eventInitData.voteData.eventData,
+                )
+
+                const encodedEvent = this.evmWallet.web3.eth.abi.encodeParameters([{
+                    TONEvent: {
+                        eventTransactionLt: 'uint64',
+                        eventTimestamp: 'uint32',
+                        eventData: 'bytes',
+                        configurationWid: 'int8',
+                        configurationAddress: 'uint256',
+                        eventContractWid: 'int8',
+                        eventContractAddress: 'uint256',
+                        proxy: 'address',
+                        round: 'uint32',
+                    },
+                }], [{
+                    eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
+                    eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
+                    eventData: eventDataEncoded,
+                    configurationWid: this.pipeline.everscaleConfiguration.toString().split(':')[0],
+                    configurationAddress: `0x${this.pipeline.everscaleConfiguration.toString().split(':')[1]}`,
+                    eventContractWid: this.contractAddress.toString().split(':')[0],
+                    eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
+                    proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
+                    round: (await eventContract.methods.round_number({}).call()).round_number,
+                }])
+                const withdrawalId = this.evmWallet.web3.utils.keccak256(encodedEvent)
+
+                this.setData({
+                    encodedEvent,
+                    withdrawalId,
+                })
+
+                if (
+                    this.evmWallet.isConnected
                 && this.evmWallet.chainId === this.rightNetwork?.chainId
                 && this.eventState?.status === 'confirmed'
-            ) {
-                this.runReleaseUpdater()
+                ) {
+                    this.runReleaseUpdater()
+                }
             }
         })().finally(() => {
             if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
@@ -436,24 +735,48 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 && this.rightNetwork !== undefined
                 && isEqual(this.rightNetwork.chainId, this.evmWallet.chainId)
             ) {
-                const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
-                    this.pipeline.vault,
-                    this.pipeline.chainId,
-                )
-                const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
+                if (this.pipeline.isMultiVault) {
+                    const multiVaultContract = this.tokensAssets.getEvmTokenMultiVaultContract(
+                        this.pipeline.vault,
+                        this.pipeline.chainId,
+                    )
 
-                if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
-                    this.setState('releaseState', {
-                        isReleased,
-                        status: isReleased ? 'confirmed' : 'disabled',
-                    })
+                    const isReleased = await multiVaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
+
+                    if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
+                        this.setState('releaseState', {
+                            isReleased,
+                            status: isReleased ? 'confirmed' : 'disabled',
+                        })
+                    }
+
+                    if (isReleased) {
+                        this.setState('releaseState', {
+                            isReleased: true,
+                            status: 'confirmed',
+                        })
+                    }
                 }
+                else {
+                    const vaultContract = this.tokensAssets.getEvmTokenVaultContract(
+                        this.pipeline.vault,
+                        this.pipeline.chainId,
+                    )
+                    const isReleased = await vaultContract?.methods.withdrawalIds(this.data.withdrawalId).call()
 
-                if (isReleased) {
-                    this.setState('releaseState', {
-                        isReleased: true,
-                        status: 'confirmed',
-                    })
+                    if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
+                        this.setState('releaseState', {
+                            isReleased,
+                            status: isReleased ? 'confirmed' : 'disabled',
+                        })
+                    }
+
+                    if (isReleased) {
+                        this.setState('releaseState', {
+                            isReleased: true,
+                            status: 'confirmed',
+                        })
+                    }
                 }
             }
         })().finally(() => {
@@ -529,6 +852,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             this.depositType,
         )
     }

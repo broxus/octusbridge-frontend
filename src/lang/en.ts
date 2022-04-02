@@ -1,5 +1,5 @@
 export default {
-    OPEN_IN_EXPLORER: 'Open in TON Scan',
+    OPEN_IN_EXPLORER: 'Open in EVER Scan',
     OPEN_IN_ETHERSCAN: 'Open in Etherscan',
     BEFORE_UNLOAD_ALERT: 'Are you sure you want to leave?',
 

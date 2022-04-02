@@ -109,6 +109,7 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             this.isEvmToEvm
                 ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
                 : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             (this.isEvmToEvm && this.isTransferPage) ? 'default' : this.data.depositType,
         )
     }

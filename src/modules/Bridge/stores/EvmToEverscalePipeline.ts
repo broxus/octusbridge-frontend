@@ -188,7 +188,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                 this.setData('token', token)
 
-                this.tokensAssets.buildPipeline(this.token?.root)
+                this.tokensAssets.buildPipelines(this.token?.root)
 
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
                 await this.tokensAssets.syncEverscaleTokenAddress(token.root, this.pipeline)
@@ -221,7 +221,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                 this.setData('token', token)
 
-                this.tokensAssets.buildPipeline(this.token?.root)
+                this.tokensAssets.buildPipelines(this.token?.root)
 
                 await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
@@ -713,6 +713,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             this.depositType,
         )
     }

@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { useBridge } from '@/modules/Bridge/providers'
 import { sliceAddress } from '@/utils'
 
@@ -14,24 +14,32 @@ export function Tokens(): JSX.Element {
 
     return (
         <Observer>
-            {() => (
-                <>
-                    {(
-                        (summary.leftNetwork !== undefined && summary.pipeline !== undefined)
-                        || (summary.rightNetwork !== undefined && summary.pipeline !== undefined)
-                    ) && (
-                        <>
-                            <li key="min-max-transfer-fees-divider" className="divider" />
+            {() => {
+                if (
+                    summary.leftNetwork === undefined
+                    || summary.rightNetwork === undefined
+                    || summary.pipeline === undefined
+                ) {
+                    return null
+                }
 
-                            <li key="min-max-transfer-fees-header" className="header">
-                                {intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKENS',
-                                }, { symbol: summary.token?.symbol })}
-                            </li>
-                        </>
-                    )}
+                const isLeftEverscale = summary.leftNetwork.type === 'everscale'
+                const isRightEverscale = summary.rightNetwork.type === 'everscale'
+                const isLeftEvm = summary.leftNetwork.type === 'evm'
+                const isRightEvm = summary.rightNetwork.type === 'evm'
 
-                    {(summary.leftNetwork !== undefined && summary.pipeline !== undefined) && (
+                const { everscaleTokenAddress, evmTokenAddress } = summary.pipeline
+
+                return (
+                    <>
+                        <li key="min-max-transfer-fees-divider" className="divider" />
+
+                        <li key="min-max-transfer-fees-header" className="header">
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKENS',
+                            }, { symbol: summary.token?.symbol })}
+                        </li>
+
                         <li>
                             <div
                                 className="text-muted"
@@ -44,36 +52,33 @@ export function Tokens(): JSX.Element {
                                 }}
                             />
 
-                            {(summary.leftNetwork.type === 'evm' && summary.pipeline.evmTokenAddress !== undefined) && (
+                            {/* eslint-disable-next-line no-nested-ternary */}
+                            {(isLeftEvm && evmTokenAddress !== undefined) ? (
                                 <div>
                                     <BlockScanAddressLink
                                         key="token-link"
                                         className="text-regular"
                                         baseUrl={summary.leftNetwork.explorerBaseUrl}
-                                        address={summary.pipeline.evmTokenAddress}
+                                        address={evmTokenAddress}
                                         copy
                                     >
-                                        {sliceAddress(summary.pipeline.evmTokenAddress)}
+                                        {sliceAddress(evmTokenAddress)}
                                     </BlockScanAddressLink>
                                 </div>
-                            )}
-
-                            {(summary.leftNetwork.type === 'everscale' && summary.pipeline.everscaleTokenAddress !== undefined) && (
+                            ) : (isLeftEverscale && everscaleTokenAddress !== undefined) ? (
                                 <div>
-                                    <TonscanAccountLink
+                                    <EverscanAccountLink
                                         key="token-link"
                                         className="text-regular"
-                                        address={summary.pipeline.everscaleTokenAddress}
+                                        address={everscaleTokenAddress}
                                         copy
                                     >
-                                        {sliceAddress(summary.pipeline.everscaleTokenAddress)}
-                                    </TonscanAccountLink>
+                                        {sliceAddress(everscaleTokenAddress)}
+                                    </EverscanAccountLink>
                                 </div>
-                            )}
+                            ) : <div>-</div>}
                         </li>
-                    )}
 
-                    {(summary.rightNetwork !== undefined && summary.pipeline !== undefined) && (
                         <li>
                             <div
                                 className="text-muted"
@@ -86,36 +91,35 @@ export function Tokens(): JSX.Element {
                                 }}
                             />
 
-                            {(summary.rightNetwork.type === 'evm' && summary.pipeline.evmTokenAddress !== undefined) && (
-                                <div key="evm-token">
+                            {/* eslint-disable-next-line no-nested-ternary */}
+                            {(isRightEvm && evmTokenAddress !== undefined) ? (
+                                <div>
                                     <BlockScanAddressLink
                                         key="token-link"
                                         className="text-regular"
                                         baseUrl={summary.rightNetwork.explorerBaseUrl}
-                                        address={summary.pipeline.evmTokenAddress}
+                                        address={evmTokenAddress}
                                         copy
                                     >
-                                        {sliceAddress(summary.pipeline.evmTokenAddress)}
+                                        {sliceAddress(evmTokenAddress)}
                                     </BlockScanAddressLink>
                                 </div>
-                            )}
-
-                            {(summary.rightNetwork.type === 'everscale' && summary.pipeline.everscaleTokenAddress !== undefined) && (
-                                <div key="everscale">
-                                    <TonscanAccountLink
+                            ) : (isRightEverscale && everscaleTokenAddress !== undefined) ? (
+                                <div>
+                                    <EverscanAccountLink
                                         key="token-link"
                                         className="text-regular"
-                                        address={summary.pipeline.everscaleTokenAddress}
+                                        address={everscaleTokenAddress}
                                         copy
                                     >
-                                        {sliceAddress(summary.pipeline.everscaleTokenAddress)}
-                                    </TonscanAccountLink>
+                                        {sliceAddress(everscaleTokenAddress)}
+                                    </EverscanAccountLink>
                                 </div>
-                            )}
+                            ) : <div>-</div>}
                         </li>
-                    )}
-                </>
-            )}
+                    </>
+                )
+            }}
         </Observer>
     )
 }

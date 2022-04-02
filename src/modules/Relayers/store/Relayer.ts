@@ -32,7 +32,7 @@ export class RelayerStore {
     }
 
     public get explorerLink(): string | undefined {
-        return 'https://tonscan.io/accounts/0:ce3f2b748de60355ba885dd88614c61f8698806cd05a66dc349de43b9b60f259'
+        return 'https://everscan.io/accounts/0:ce3f2b748de60355ba885dd88614c61f8698806cd05a66dc349de43b9b60f259'
     }
 
     public get isAdmin(): boolean | undefined {

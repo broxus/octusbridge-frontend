@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Summary } from '@/components/common/Summary'
 import { useProposalContext } from '@/modules/Governance/providers'
 import { dateFormat } from '@/utils'
@@ -31,7 +31,7 @@ export function ProposalInfoInner(): JSX.Element | null {
                         id: 'PROPOSAL_INFO_ADDRESS',
                     }),
                     value: proposal.proposalAddress ? (
-                        <TonscanAccountLink copy address={proposal.proposalAddress} />
+                        <EverscanAccountLink copy address={proposal.proposalAddress} />
                     ) : noValue,
                 }, {
                     key: intl.formatMessage({

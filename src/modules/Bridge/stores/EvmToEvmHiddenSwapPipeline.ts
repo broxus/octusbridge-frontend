@@ -633,7 +633,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
 
             const proxyDetails = await proxyContract.methods.getDetails({ answerId: 0 }).call()
 
-            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfig, proxyDetails.value0.tonConfiguration)
+            const eventConfig = new rpc.Contract(TokenAbi.EverscaleEventConfiguration, proxyDetails.value0.tonConfiguration)
             const eventConfigDetails = await eventConfig.methods.getDetails({ answerId: 0 }).call()
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -845,6 +845,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             'credit',
         )
     }
@@ -866,6 +867,7 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             this.token.root,
             `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             'default',
         )
     }

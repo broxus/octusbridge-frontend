@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { useBridge } from '@/modules/Bridge/providers'
 
 
@@ -33,7 +33,7 @@ export function Networks(): JSX.Element {
                             {(summary.leftNetwork?.name !== undefined && summary.leftAddress !== undefined) ? (
                                 <div>
                                     {summary.leftNetwork?.type === 'everscale' && (
-                                        <TonscanAccountLink
+                                        <EverscanAccountLink
                                             key="ton-address"
                                             address={summary.leftAddress}
                                             copy
@@ -75,7 +75,7 @@ export function Networks(): JSX.Element {
                             {(summary.rightNetwork?.name !== undefined && summary.rightAddress !== undefined) ? (
                                 <div>
                                     {summary.rightNetwork?.type === 'everscale' && (
-                                        <TonscanAccountLink
+                                        <EverscanAccountLink
                                             key="ton-address"
                                             address={summary.rightAddress}
                                             copy

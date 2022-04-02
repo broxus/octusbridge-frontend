@@ -73,7 +73,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <>
-                                {bridge.pipeline?.isBlacklisted && (
+                                {bridge.token?.isBlacklisted && (
                                     <Alert
                                         className="margin-top"
                                         text={intl.formatMessage({

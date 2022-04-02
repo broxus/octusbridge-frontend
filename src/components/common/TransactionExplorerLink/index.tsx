@@ -23,7 +23,7 @@ export function TransactionExplorerLink({
     withIcon,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const href = `https://tonscan.io/transactions/${id}`
+    const href = `https://everscan.io/transactions/${id}`
     const title = intl.formatMessage({ id: 'OPEN_IN_EXPLORER' })
 
     return (

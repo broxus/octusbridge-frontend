@@ -51,8 +51,8 @@ export const networks: NetworkShape[] = [
     {
         chainId: '1',
         currencySymbol: 'EVER',
-        explorerBaseUrl: 'https://tonscan.io/',
-        id: 'ton-1',
+        explorerBaseUrl: 'https://everscan.io/',
+        id: 'everscan-1',
         label: 'Everscale',
         name: 'Everscale',
         rpcUrl: '',

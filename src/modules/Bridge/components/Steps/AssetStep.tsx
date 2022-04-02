@@ -25,7 +25,7 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isFromEvm && (!bridge.isEverscaleBasedToken || !bridge.pipeline?.isNative)) {
+        if (bridge.isFromEvm && (!bridge.isEverscaleBasedToken || !bridge.token?.isNative)) {
             await bridge.checkAllowance()
         }
         else {

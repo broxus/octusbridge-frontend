@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { BeforeUnloadAlert } from '@/modules/Bridge/components/BeforeUnloadAlert'
 import { PrepareStateStatus } from '@/modules/Bridge/types'
 import { sliceAddress } from '@/utils'
@@ -128,14 +128,14 @@ export function PrepareStatus({
                         })}
                     </div>
                     {txHash !== undefined && (
-                        <TonscanAccountLink
+                        <EverscanAccountLink
                             key="contract-link"
                             address={txHash}
                             className="text-muted"
                             copy
                         >
                             {sliceAddress(txHash)}
-                        </TonscanAccountLink>
+                        </EverscanAccountLink>
                     )}
                 </div>
 

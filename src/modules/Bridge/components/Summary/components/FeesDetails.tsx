@@ -69,7 +69,7 @@ export function FeesDetails(): JSX.Element {
                     )}
                     {(
                         summary.pipeline?.isMultiVault
-                        && summary.pipeline?.isNative
+                        && summary.token?.isNative
                         && summary.withdrawFee !== undefined
                     ) && (
                         <>

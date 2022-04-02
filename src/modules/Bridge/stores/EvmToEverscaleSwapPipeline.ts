@@ -1218,6 +1218,7 @@ export class EvmToEverscaleSwapPipeline<
             this.token.root,
             `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
             this.depositType,
         )
     }

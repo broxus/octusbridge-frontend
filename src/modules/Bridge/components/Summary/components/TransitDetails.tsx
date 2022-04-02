@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { TonscanAccountLink } from '@/components/common/TonscanAccountLink'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { useBridge } from '@/modules/Bridge/providers'
 
 
@@ -22,7 +22,7 @@ export function TransitDetails(): JSX.Element {
                                 })}
                             </div>
                             <div className="text-truncate">
-                                <TonscanAccountLink
+                                <EverscanAccountLink
                                     key="everscale-address"
                                     address={summary.everscaleAddress}
                                     copy
