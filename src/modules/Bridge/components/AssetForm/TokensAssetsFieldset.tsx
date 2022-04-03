@@ -1,19 +1,158 @@
 import * as React from 'react'
+import BigNumber from 'bignumber.js'
+import { Address } from 'everscale-inpage-provider'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Alert } from '@/components/common/Alert'
-import { Select } from '@/components/common/Select'
+import { Button } from '@/components/common/Button'
+import { BaseSelectRef, Select } from '@/components/common/Select'
 import { TokenIcon } from '@/components/common/TokenIcon'
+import rpc from '@/hooks/useRpcClient'
+import { TokenAbi, TokenWallet } from '@/misc'
+import { TokenImportPopup } from '@/modules/Bridge/components/TokenImportPopup'
 import { useBridge } from '@/modules/Bridge/providers'
+import { TokenAsset } from '@/stores/TokensAssetsService'
+import {
+    isEverscaleAddressValid,
+    isEvmAddressValid,
+    sliceAddress,
+    storage,
+} from '@/utils'
 
 
 export function TokensAssetsFieldset(): JSX.Element {
     const intl = useIntl()
     const { bridge } = useBridge()
+    const tokensAssets = bridge.useTokensAssets
+
+    const selectRef = React.useRef<BaseSelectRef>(null)
+    const [token, setToken] = React.useState<TokenAsset | undefined>()
+    const [isImporting, setImporting] = React.useState(false)
 
     const onChangeToken = (value?: string) => {
         bridge.setData('selectedToken', value)
+    }
+
+    const onClear = () => {
+        setToken(undefined)
+    }
+
+    const onImport = () => {
+        setImporting(true)
+    }
+
+    const onConfirmImport = () => {
+        if (token === undefined) {
+            return
+        }
+        const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+        importedAssets[token.key] = {
+            decimals: token.decimals,
+            name: token.name,
+            root: token.root,
+            icon: token.icon,
+            symbol: token.symbol,
+            chainId: token.chainId,
+            key: token.key,
+        }
+
+        storage.set('imported_assets', JSON.stringify(importedAssets))
+        tokensAssets.add(token)
+        bridge.setData('selectedToken', token.root)
+        setImporting(false)
+        setToken(undefined)
+    }
+
+    const onCloseImportPopup = () => {
+        setImporting(false)
+    }
+
+    const onSearch = async (value: string) => {
+        if (bridge.leftNetwork?.type === undefined || bridge.leftNetwork.chainId === undefined) {
+            return
+        }
+        const { type, chainId } = bridge.leftNetwork
+        const key = `${type}-${chainId}-${value}`
+        if (tokensAssets.has(key)) {
+            bridge.setData('selectedToken', value)
+        }
+        else if (bridge.isFromEverscale && isEverscaleAddressValid(value)) {
+            try {
+                const asset = await TokenWallet.getTokenFullDetails(value) as TokenAsset
+
+                try {
+                    const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
+                    const meta = await rootContract.methods.meta({ answerId: 0 }).call()
+                    const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
+                    const evmToken = tokensAssets.get('evm', meta.base_chainId, evmTokenAddress)
+                    asset.icon = evmToken?.icon
+                }
+                catch (e) {
+                    //
+                }
+
+                setToken({
+                    ...asset,
+                    key,
+                    chainId,
+                    pipelines: [],
+                })
+                selectRef.current?.blur()
+            }
+            catch (e) {
+                //
+            }
+        }
+        else if (bridge.isFromEvm && isEvmAddressValid(value)) {
+            try {
+                const contract = tokensAssets.getEvmTokenContract(value, bridge.leftNetwork.chainId)
+                const [name, symbol, decimals] = await Promise.all([
+                    contract?.methods.name().call(),
+                    contract?.methods.symbol().call(),
+                    contract?.methods.decimals().call(),
+                ])
+
+                const asset = {
+                    root: value,
+                    decimals: parseInt(decimals, 10),
+                    name,
+                    symbol,
+                } as TokenAsset
+
+                try {
+                    const vault = tokensAssets.multiAssets.evm_everscale.vaults.find(v => (
+                        v.chainId === bridge.leftNetwork?.chainId
+                    ))
+
+                    if (vault !== undefined) {
+                        const vaultContract = tokensAssets.getEvmTokenMultiVaultContract(
+                            vault.vault,
+                            bridge.leftNetwork.chainId,
+                        )
+                        const result = await vaultContract?.methods.natives(value).call()
+                        const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
+                        const everscaleToken = tokensAssets.get('everscale', '1', everscaleAddress)
+                        asset.icon = everscaleToken?.icon
+                    }
+                }
+                catch (e) {
+                    //
+                }
+
+                setToken({
+                    ...asset,
+                    key,
+                    chainId,
+                    pipelines: [],
+                })
+                selectRef.current?.blur()
+            }
+            catch (e) {
+                //
+            }
+        }
     }
 
     return (
@@ -28,10 +167,32 @@ export function TokensAssetsFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <Select
+                                ref={selectRef}
                                 className="rc-select-assets rc-select--md"
-                                // filterSort={(a, b) => a.search.localeCompare(b.search)}
+                                notFoundContent="Token not found"
                                 optionFilterProp="search"
-                                options={bridge.tokens.map(({
+                                options={token !== undefined ? [{
+                                    label: (
+                                        <div className="token-select-label">
+                                            <TokenIcon
+                                                address={token.root}
+                                                size="xsmall"
+                                                uri={token.icon}
+                                            />
+                                            <div className="token-select-label__symbol text-truncate">
+                                                {`${token.symbol} (${sliceAddress(token.root)})`}
+                                            </div>
+                                            {bridge.leftNetwork?.tokenType !== undefined && (
+                                                <div className="token-select-label__badge">
+                                                    <span>
+                                                        {bridge.leftNetwork?.tokenType}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ),
+                                    value: token.root,
+                                }] : bridge.tokens.map(({
                                     icon,
                                     name,
                                     root,
@@ -56,16 +217,19 @@ export function TokensAssetsFieldset(): JSX.Element {
                                             )}
                                         </div>
                                     ),
-                                    search: `${symbol} ${name}`,
+                                    search: `${symbol} ${name} ${root}`,
                                     value: root,
                                 }))}
                                 placeholder={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
-                                })}
-                                value={bridge.token?.root}
+                                }, { blockchainName: bridge.leftNetwork?.name ?? '' })}
                                 showSearch
+                                allowClear
+                                value={token?.root ?? bridge.token?.root}
                                 virtual
-                                onChange={onChangeToken}
+                                onChange={token === undefined ? onChangeToken : undefined}
+                                onClear={onClear}
+                                onSearch={onSearch}
                             />
                         )}
                     </Observer>
@@ -92,6 +256,26 @@ export function TokensAssetsFieldset(): JSX.Element {
                         )}
                     </Observer>
                 </div>
+                {token !== undefined && (
+                    <>
+                        <div className="crosschain-transfer__wallet">
+                            <Button
+                                size="md"
+                                type="primary"
+                                onClick={onImport}
+                            >
+                                Import
+                            </Button>
+                        </div>
+                        {isImporting && (
+                            <TokenImportPopup
+                                token={token}
+                                onClose={onCloseImportPopup}
+                                ocConfirm={onConfirmImport}
+                            />
+                        )}
+                    </>
+                )}
             </div>
         </fieldset>
     )

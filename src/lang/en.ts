@@ -81,7 +81,7 @@ export default {
     CROSSCHAIN_TRANSFER_STEP_2_TITLE: 'Select token and amount',
     CROSSCHAIN_TRANSFER_ASSET_ASSET_LABEL: 'Asset',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_LABEL: 'Token',
-    CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER: 'Select a token',
+    CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER: 'Select a token from {blockchainName}',
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_LABEL: 'Amount',
     CROSSCHAIN_TRANSFER_ASSET_MIN_RECEIVE_TOKENS_LABEL: 'Minimum receive in <abbr>{network}</abbr>',
     CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_PLACEHOLDER: 'Enter an amount',
@@ -745,6 +745,9 @@ export default {
     TOP_VOTERS_VOTE_WEIGHT: 'Vote weight',
     TOP_VOTERS_PROPOSALS_VOTED: 'Proposals voted',
 
+    TOKENS_POPUP_CONFIRM_BTN_TEXT: 'Import',
+    TOKENS_POPUP_IMPORT_TOKEN_TITLE: 'Import token',
+    TOKENS_POPUP_IMPORT_TOKEN_WARNING: 'This token doesn’t appear on the active token list(s). Make sure this is the token that you want to trade.',
 
     DATE_INPUT_PLACEHOLDER: 'YYYY.MM.DD',
 

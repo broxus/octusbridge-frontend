@@ -5,6 +5,8 @@ import { Icon } from '@/components/common/Icon'
 
 import './index.scss'
 
+export { Option } from 'rc-select'
+export type { BaseSelectRef } from 'rc-select'
 
 function InternalSelect<T>(props: SelectProps<T>, ref: React.Ref<BaseSelectRef>): JSX.Element {
     const { allowClear, value } = props

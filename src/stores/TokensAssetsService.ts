@@ -26,7 +26,7 @@ import {
     findNetwork,
     getEverscaleMainNetwork,
     isEverscaleAddressValid,
-    isEvmAddressValid, warn,
+    isEvmAddressValid, storage, warn,
 } from '@/utils'
 import { BaseStore } from '@/stores/BaseStore'
 
@@ -150,6 +150,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         const {
             assetsUri,
             primaryTokensList,
+            alienTokensLists,
         } = _options
 
         this.tokensList = primaryTokensList
@@ -170,9 +171,9 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         // When the Tokens List Service has loaded the list of
         // available tokens, we will start creating a token map
         reaction(
-            () => primaryTokensList.tokens,
-            async (tokens, prevTokens) => {
-                if (tokens !== prevTokens) {
+            () => [primaryTokensList.tokens, alienTokensLists],
+            async ([tokens, aliens], [prevTokens, prevAliens]) => {
+                if (tokens !== prevTokens || aliens !== prevAliens) {
                     await this.build()
                 }
             },
@@ -219,7 +220,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
         const exists = new Set<string>()
 
-        Object.entries(this.data.assets).forEach(([tokenRoot, pipelines]) => {
+        Object.entries(this.assets).forEach(([tokenRoot, pipelines]) => {
             const cachedToken = this.get('everscale', '1', tokenRoot)
             if (cachedToken !== undefined) {
                 Object.entries(pipelines).forEach(([_, pipeline]) => {
@@ -248,25 +249,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             }
         })
 
-        // const ada = await TokenWallet.getTokenFullDetails('0:dfc7308cce17dcc6d53031acb0d52badadbcb667e36d6715441603aabfb111c9') as TokenAsset
-        // ada.pipelines = []
-        // this.add({
-        //     ...ada,
-        //     chainId: '1',
-        //     key: `everscale-1-${ada.root.toLowerCase()}`,
-        // })
-        // this.buildPipelines('everscale', '1', ada.root.toLowerCase())
-
         const alienTokens: TokenAsset[] = this.tokens.slice()
-
-        // const alienAda = {
-        //     ...ada,
-        //     chainId: '250',
-        //     pipelines: [],
-        //     decimals: 18,
-        //     root: '0x0Ae1FD3fDc9d93fa4284e1B423279B94e199b409'.toLowerCase(),
-        //     key: 'evm-250-0x0Ae1FD3fDc9d93fa4284e1B423279B94e199b409'.toLowerCase(),
-        // }
 
         this._options.alienTokensLists?.forEach(list => {
             list.tokens.forEach(token => {
@@ -290,7 +273,15 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             })
         })
 
-        // alienTokens.unshift(alienAda)
+        try {
+            const importedTokens = JSON.parse(storage.get('imported_assets') || '{}')
+            Object.values<TokenAsset>({ ...importedTokens }).forEach(token => {
+                alienTokens.push({ ...token, pipelines: [] })
+            })
+        }
+        catch (e) {
+
+        }
 
         this.setData('tokens', alienTokens)
         this.setState('isReady', true)
@@ -368,7 +359,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             return
         }
 
-        const bridgeAssets = this.data.assets[assetRoot ?? tokenRoot]
+        const bridgeAssets = this.assets[assetRoot ?? tokenRoot]
 
         const pipelinesHash: Record<string, Pipeline> = {}
 
@@ -437,10 +428,21 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             if (bridgeAssets !== undefined) {
                 token.pipelines = Object.entries({ ...bridgeAssets }).reduce(reducer, [])
             }
-            else {
-                // token.pipelines = Object.entries({ ...this.data.multiAssets }).reduce(reducer, [])
-            }
         })
+    }
+
+    /**
+     *
+     */
+    public get assets(): TokensAssetsStoreData['assets'] {
+        return this.data.assets
+    }
+
+    /**
+     *
+     */
+    public get multiAssets(): TokensAssetsStoreData['multiAssets'] {
+        return this.data.multiAssets
     }
 
     /**
@@ -482,13 +484,13 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             const [fromNetworkType, fromChainId] = from.split('-')
             const [toNetworkType, toChainId] = to.split('-')
             if (isEvmAddressValid(root)) {
-                const p = this.data.multiAssets[`${fromNetworkType}_${toNetworkType}`]
+                const p = this.multiAssets[`${fromNetworkType}_${toNetworkType}`]
                 const v = p.vaults.find(item => item.chainId === fromChainId && item.depositType === depositType)
                 if (v !== undefined) {
                     const contract = this.getEvmTokenMultiVaultContract(v.vault, fromChainId)
                     const meta = await contract?.methods.tokens(root).call()
                     if (meta.isNative) {
-                        const pp = this.data.multiAssets[`${toNetworkType}_${fromNetworkType}`]
+                        const pp = this.multiAssets[`${toNetworkType}_${fromNetworkType}`]
                         const vv = pp.vaults.find(
                             item => item.chainId === fromChainId
                                 && item.depositType === depositType,
@@ -540,7 +542,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 catch (e) {}
 
                 if (alien) {
-                    const p = this.data.multiAssets[`${toNetworkType}_${fromNetworkType}`]
+                    const p = this.multiAssets[`${toNetworkType}_${fromNetworkType}`]
                     if (p !== undefined) {
                         const v = p.vaults.find(item => item.chainId === toChainId && item.depositType === depositType)
                         if (v !== undefined) {
@@ -561,7 +563,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                     }
                 }
                 else {
-                    const p = this.data.multiAssets[`${fromNetworkType}_${toNetworkType}`]
+                    const p = this.multiAssets[`${fromNetworkType}_${toNetworkType}`]
                     if (p !== undefined) {
                         const v = p.vaults.find(item => item.chainId === toChainId && item.depositType === depositType)
                         if (v !== undefined) {
@@ -593,7 +595,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
     public getPipelineType(address: string): string | undefined {
         let pipelineType: string | undefined
 
-        Object.entries(this.data.assets).some(([, pipelines]) => {
+        Object.entries(this.assets).some(([, pipelines]) => {
             Object.entries(pipelines).some(([key, pipeline]) => {
                 if (pipeline.proxy === address) {
                     pipelineType = key
@@ -605,7 +607,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         })
 
         if (pipelineType === undefined) {
-            Object.entries(this.data.multiAssets).some(([key, pipeline]) => {
+            Object.entries(this.multiAssets).some(([key, pipeline]) => {
                 if (pipeline.proxy === address) {
                     pipelineType = `multi_${key}`
                     return true
@@ -663,7 +665,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      */
     public findAssetRootByVaultTokenAndChain(root: string, chainId: string): string | undefined {
         let assetRoot: string | undefined
-        Object.entries(this.data.assets).some(
+        Object.entries(this.assets).some(
             ([tokenRoot, pipelines]) => Object.values(pipelines).some(
                 pipeline => pipeline.vaults.some(vault => {
                     if (vault.token === root && vault.chainId === chainId) {

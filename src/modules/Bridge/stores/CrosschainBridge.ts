@@ -1352,6 +1352,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             eversAmount: undefined,
             pairAddress: undefined,
             pairState: undefined,
+            pipeline: undefined,
             withdrawFee: undefined,
         })
         this.setState({
@@ -2466,15 +2467,23 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
 
             return this.tokensAssets.tokens.filter(
-                token => isEvmAddressValid(token.root) && token.chainId === this.leftNetwork?.chainId && Object.values(token.pipelines).some(
-                    pipeline => (
-                        (pipeline.chainId === leftChainId && pipeline.depositType === 'credit' && pipeline.tokenBase === 'evm')
-                    ),
-                ) && Object.values(token.pipelines).some(
-                    pipeline => (
-                        (pipeline.chainId === rightChainId && pipeline.depositType === 'default' && pipeline.tokenBase === 'evm')
-                    ),
-                ),
+                token => (
+                    isEvmAddressValid(token.root)
+                    && token.chainId === this.leftNetwork?.chainId
+                    && Object.values(token.pipelines).some(
+                        pipeline => (
+                            pipeline.chainId === leftChainId
+                            && pipeline.depositType === 'credit'
+                            && pipeline.tokenBase === 'evm'
+                        ),
+                    )
+                    && Object.values(token.pipelines).some(
+                        pipeline => (
+                            pipeline.chainId === rightChainId
+                            && pipeline.depositType === 'default'
+                            && pipeline.tokenBase === 'evm'
+                        ),
+                    )),
             )
         }
 
