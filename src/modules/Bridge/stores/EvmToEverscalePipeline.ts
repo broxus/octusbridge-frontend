@@ -30,7 +30,7 @@ import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import {
-    alienTokenProxyContract, Pipeline, TokenAsset, TokensAssetsService,
+    alienTokenProxyContract, TokenAsset, TokensAssetsService,
 } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
 import { debug, error, findNetwork } from '@/utils'
@@ -179,6 +179,8 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
             if (alienTransfer != null) {
                 token = this.tokensAssets.get(
+                    this.leftNetwork.type,
+                    this.leftNetwork.chainId,
                     `0x${new BigNumber(alienTransfer.events[1].value).toString(16).padStart(40, '0')}`.toLowerCase(),
                 )
 
@@ -188,7 +190,22 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                 this.setData('token', token)
 
-                this.tokensAssets.buildPipelines(this.token?.root)
+                if (
+                    this.token?.root !== undefined
+                    && this.leftNetwork?.type !== undefined
+                    && this.leftNetwork?.chainId !== undefined
+                    && this.rightNetwork?.type !== undefined
+                    && this.rightNetwork?.chainId !== undefined
+                ) {
+                    const pipeline = await this.tokensAssets.pipeline(
+                        this.token.root,
+                        `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                        `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                        this.depositType,
+                    )
+
+                    this.setData('pipeline', pipeline)
+                }
 
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
                 await this.tokensAssets.syncEverscaleTokenAddress(token.root, this.pipeline)
@@ -207,7 +224,50 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 })
             }
             else if (nativeTransfer) {
-                console.log(nativeTransfer)
+                token = this.tokensAssets.get(
+                    this.leftNetwork.type,
+                    this.leftNetwork.chainId,
+                    depositLog.events[2].value.toLowerCase(),
+                )
+
+                if (token === undefined) {
+                    return
+                }
+
+                this.setData('token', token)
+
+                if (
+                    this.token?.root !== undefined
+                    && this.leftNetwork?.type !== undefined
+                    && this.leftNetwork?.chainId !== undefined
+                    && this.rightNetwork?.type !== undefined
+                    && this.rightNetwork?.chainId !== undefined
+                ) {
+                    const pipeline = await this.tokensAssets.pipeline(
+                        this.token.root,
+                        `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                        `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                        this.depositType,
+                    )
+
+                    this.setData('pipeline', pipeline)
+                }
+
+                await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
+                await this.tokensAssets.syncEverscaleTokenAddress(token.root, this.pipeline)
+
+                const amount = new BigNumber(nativeTransfer.events[2].value || 0)
+                    .shiftedBy(-token.decimals)
+                    .shiftedBy(this.pipeline?.evmTokenDecimals ?? 0)
+
+                const targetWid = nativeTransfer.events[3].value
+                const targetAddress = nativeTransfer.events[4].value
+
+                this.setData({
+                    amount: amount.toFixed(),
+                    leftAddress: txReceipt.from.toLowerCase(),
+                    rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
+                })
             }
             else {
                 token = this.tokensAssets.findTokenByVaultAddress(
@@ -221,7 +281,22 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                 this.setData('token', token)
 
-                this.tokensAssets.buildPipelines(this.token?.root)
+                if (
+                    this.token?.root !== undefined
+                    && this.leftNetwork?.type !== undefined
+                    && this.leftNetwork?.chainId !== undefined
+                    && this.rightNetwork?.type !== undefined
+                    && this.rightNetwork?.chainId !== undefined
+                ) {
+                    const pipeline = await this.tokensAssets.pipeline(
+                        this.token.root,
+                        `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                        `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                        this.depositType,
+                    )
+
+                    this.setData('pipeline', pipeline)
+                }
 
                 await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
@@ -648,6 +723,10 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         }
     }
 
+    public get pipeline(): EvmTransferStoreData['pipeline'] {
+        return this.data.pipeline
+    }
+
     public get amount(): EvmTransferStoreData['amount'] {
         return this.data.amount
     }
@@ -696,26 +775,6 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             return undefined
         }
         return findNetwork(this.params.toId, this.params.toType)
-    }
-
-    public get pipeline(): Pipeline | undefined {
-        if (
-            this.token?.root === undefined
-            || this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || this.rightNetwork?.type === undefined
-            || this.rightNetwork?.chainId === undefined
-        ) {
-            return undefined
-        }
-
-        return this.tokensAssets.pipeline(
-            this.token.root,
-            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
-            this.depositType,
-        )
     }
 
     public get txHash(): EvmTransferQueryParams['txHash'] | undefined {

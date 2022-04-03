@@ -6,8 +6,7 @@ import {
 } from '@/modules/Bridge/constants'
 import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
-import { getEverscaleMainNetwork } from '@/utils'
+import { TokensAssetsService } from '@/stores/TokensAssetsService'
 
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
@@ -90,28 +89,12 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.data.rightNetwork
     }
 
-    public get pipeline(): Pipeline | undefined {
-        if (
-            this.token?.root === undefined
-            || this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || this.rightNetwork?.type === undefined
-            || this.rightNetwork?.chainId === undefined
-        ) {
-            return undefined
-        }
+    public get pipeline(): TransferSummaryData['pipeline'] {
+        return this.data.pipeline
+    }
 
-        const everscaleMainNetwork = getEverscaleMainNetwork()
-
-        return this.tokensCache.pipeline(
-            this.token.root,
-            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            this.isEvmToEvm
-                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
-            (this.isEvmToEvm && this.isTransferPage) ? 'default' : this.data.depositType,
-        )
+    public get hiddenBridgePipeline(): TransferSummaryData['hiddenBridgePipeline'] {
+        return this.data.hiddenBridgePipeline
     }
 
     public get swapAmount(): TransferSummaryData['swapAmount'] {

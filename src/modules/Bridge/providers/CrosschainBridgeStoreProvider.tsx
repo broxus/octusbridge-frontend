@@ -76,6 +76,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 leftNetwork: bridge.leftNetwork,
                 maxTransferFee: bridge.maxTransferFee,
                 minTransferFee: bridge.minTransferFee,
+                pipeline: bridge.pipeline,
                 rightAddress: bridge.rightAddress,
                 rightNetwork: bridge.rightNetwork,
                 token: bridge.token,

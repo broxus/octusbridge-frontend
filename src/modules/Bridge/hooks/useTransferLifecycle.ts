@@ -42,6 +42,8 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
                 leftNetwork: pipeline.leftNetwork,
                 maxTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).maxTransferFee,
                 minTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).minTransferFee,
+                pipeline: pipeline.pipeline,
+                hiddenBridgePipeline: (pipeline as EvmToEvmHiddenSwapPipeline).pipelineDefault,
                 rightAddress: pipeline.rightAddress,
                 rightNetwork: pipeline.rightNetwork,
                 swapAmount: (pipeline as EvmToEvmHiddenSwapPipeline).swapAmount,

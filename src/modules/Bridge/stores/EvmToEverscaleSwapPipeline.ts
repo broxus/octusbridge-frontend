@@ -16,10 +16,10 @@ import {
 } from 'mobx'
 import { Contract } from 'everscale-inpage-provider'
 
+import { WEVERRootAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import {
     BridgeConstants,
-    DexConstants,
     EthAbi,
     TokenAbi,
     TokenWallet,
@@ -38,7 +38,7 @@ import {
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { Pipeline, TokensAssetsService } from '@/stores/TokensAssetsService'
+import { TokensAssetsService } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
 import {
     debug,
@@ -110,11 +110,11 @@ export class EvmToEverscaleSwapPipeline<
             return
         }
 
-        this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async value => {
+        this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async () => {
             if (
                 this.evmWallet.isConnected
                 && this.everWallet.isConnected
-                && value === this.leftNetwork?.chainId
+                // && value === this.leftNetwork?.chainId
             ) {
                 await this.checkTransaction()
             }
@@ -190,7 +190,6 @@ export class EvmToEverscaleSwapPipeline<
         try {
             const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
 
-
             if (txReceipt == null || txReceipt.to == null) {
                 setTimeout(async () => {
                     await this.checkTransaction(true)
@@ -241,6 +240,23 @@ export class EvmToEverscaleSwapPipeline<
             }
 
             this.setData('token', token)
+
+            if (
+                this.token?.root !== undefined
+                && this.leftNetwork?.type !== undefined
+                && this.leftNetwork?.chainId !== undefined
+                && this.rightNetwork?.type !== undefined
+                && this.rightNetwork?.chainId !== undefined
+            ) {
+                const pipeline = await this.tokensAssets.pipeline(
+                    this.token.root,
+                    `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                    `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                    this.depositType,
+                )
+
+                this.setData('pipeline', pipeline)
+            }
 
             await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
             await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
@@ -430,7 +446,7 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensAssets.syncToken(this.token.root)
+        await this.tokensAssets.syncEverscaleToken(this.token.root)
 
         if (this.token.wallet === undefined) {
             this.stopWithdrawUpdater()
@@ -495,6 +511,7 @@ export class EvmToEverscaleSwapPipeline<
             || this.creditProcessorContract === undefined
             || this.everWallet.account?.address === undefined
             || this.token === undefined
+            || this.leftNetwork === undefined
         ) {
             return
         }
@@ -509,11 +526,15 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensAssets.syncToken(DexConstants.WTONRootAddress.toString())
+        await this.tokensAssets.syncEverscaleToken(WEVERRootAddress.toString())
 
-        const wtonToken = this.tokensAssets.get(DexConstants.WTONRootAddress.toString())
+        const weverToken = this.tokensAssets.get(
+            this.leftNetwork?.type,
+            this.leftNetwork?.chainId,
+            WEVERRootAddress.toString(),
+        )
 
-        if (wtonToken?.wallet === undefined) {
+        if (weverToken?.wallet === undefined) {
             this.stopWithdrawUpdater()
 
             this.setState('swapState', {
@@ -525,7 +546,7 @@ export class EvmToEverscaleSwapPipeline<
             return
         }
 
-        const isDeployed = wtonToken.balance !== undefined
+        const isDeployed = weverToken.balance !== undefined
 
         const deployGrams = !isDeployed ? '100000000' : '0'
         const proxyGasValue = !isDeployed ? '600000000' : '500000000'
@@ -1137,6 +1158,10 @@ export class EvmToEverscaleSwapPipeline<
         return this.data.amount
     }
 
+    public get pipeline(): EvmSwapTransferStoreData['pipeline'] {
+        return this.data.pipeline
+    }
+
     public get creditProcessorAddress(): EvmSwapTransferStoreData['creditProcessorAddress'] {
         return this.data.creditProcessorAddress
     }
@@ -1201,26 +1226,6 @@ export class EvmToEverscaleSwapPipeline<
             return undefined
         }
         return findNetwork(this.params.toId, this.params.toType)
-    }
-
-    public get pipeline(): Pipeline | undefined {
-        if (
-            this.token?.root === undefined
-            || this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || this.rightNetwork?.type === undefined
-            || this.rightNetwork?.chainId === undefined
-        ) {
-            return undefined
-        }
-
-        return this.tokensAssets.pipeline(
-            this.token.root,
-            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
-            this.depositType,
-        )
     }
 
     public get txHash(): EvmTransferQueryParams['txHash'] | undefined {

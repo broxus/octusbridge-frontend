@@ -23,10 +23,10 @@ export function Tokens(): JSX.Element {
                     return null
                 }
 
-                const isLeftEverscale = summary.leftNetwork.type === 'everscale'
-                const isRightEverscale = summary.rightNetwork.type === 'everscale'
-                const isLeftEvm = summary.leftNetwork.type === 'evm'
-                const isRightEvm = summary.rightNetwork.type === 'evm'
+                const isLeftEverscale = summary.leftNetwork?.type === 'everscale'
+                const isRightEverscale = summary.rightNetwork?.type === 'everscale'
+                const isLeftEvm = summary.leftNetwork?.type === 'evm'
+                const isRightEvm = summary.rightNetwork?.type === 'evm'
 
                 const { everscaleTokenAddress, evmTokenAddress } = summary.pipeline
 
@@ -41,16 +41,9 @@ export function Tokens(): JSX.Element {
                         </li>
 
                         <li>
-                            <div
-                                className="text-muted"
-                                dangerouslySetInnerHTML={{
-                                    __html: intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKEN',
-                                    }, {
-                                        blockchainName: summary.leftNetwork?.name || '',
-                                    }),
-                                }}
-                            />
+                            <div className="text-muted">
+                                {summary.leftNetwork?.name}
+                            </div>
 
                             {/* eslint-disable-next-line no-nested-ternary */}
                             {(isLeftEvm && evmTokenAddress !== undefined) ? (
@@ -80,16 +73,9 @@ export function Tokens(): JSX.Element {
                         </li>
 
                         <li>
-                            <div
-                                className="text-muted"
-                                dangerouslySetInnerHTML={{
-                                    __html: intl.formatMessage({
-                                        id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKEN',
-                                    }, {
-                                        blockchainName: summary.rightNetwork?.name || '',
-                                    }),
-                                }}
-                            />
+                            <div className="text-muted">
+                                {summary.rightNetwork?.name}
+                            </div>
 
                             {/* eslint-disable-next-line no-nested-ternary */}
                             {(isRightEvm && evmTokenAddress !== undefined) ? (
@@ -98,10 +84,14 @@ export function Tokens(): JSX.Element {
                                         key="token-link"
                                         className="text-regular"
                                         baseUrl={summary.rightNetwork.explorerBaseUrl}
-                                        address={evmTokenAddress}
+                                        address={summary.isEvmToEvm
+                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
+                                            : evmTokenAddress}
                                         copy
                                     >
-                                        {sliceAddress(evmTokenAddress)}
+                                        {sliceAddress(summary.isEvmToEvm
+                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
+                                            : evmTokenAddress)}
                                     </BlockScanAddressLink>
                                 </div>
                             ) : (isRightEverscale && everscaleTokenAddress !== undefined) ? (

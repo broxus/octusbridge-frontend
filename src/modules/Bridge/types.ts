@@ -1,7 +1,7 @@
 import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-inpage-provider'
 
 import { TokenAbi } from '@/misc'
-import { TokenAsset } from '@/stores/TokensAssetsService'
+import { Pipeline, TokenAsset } from '@/stores/TokensAssetsService'
 import { NetworkShape, NetworkType } from '@/types'
 
 
@@ -32,6 +32,7 @@ export type CrosschainBridgeStoreData = {
     minTransferFee?: string;
     pairAddress?: Address;
     pairState?: FullContractState;
+    pipeline?: Pipeline;
     rightAddress: string;
     rightNetwork?: NetworkShape;
     selectedToken?: string;
@@ -83,6 +84,7 @@ export type EvmTransferStoreData = {
     // ethConfigAddress?: Address;
     eventVoteData?: EventVoteData;
     leftAddress?: string;
+    pipeline?: Pipeline;
     rightAddress?: string;
     token?: TokenAsset;
 }
@@ -152,6 +154,8 @@ export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
     minTransferFee?: string;
     pairAddress?: Address;
     pairState?: FullContractState;
+    pipelineCredit?: Pipeline;
+    pipelineDefault?: Pipeline;
     swapAmount?: string;
     tokenAmount?: string;
     withdrawalId?: string;
@@ -177,6 +181,7 @@ export type EverscaleTransferStoreData = {
     chainId?: string;
     encodedEvent?: string;
     leftAddress?: string;
+    pipeline?: Pipeline;
     rightAddress?: string;
     token?: TokenAsset;
     withdrawalId?: string;
@@ -206,10 +211,12 @@ export type TransferSummaryData = {
     bridgeFee?: string;
     depositType?: string;
     everscaleAddress?: string;
-    minTransferFee?: string;
-    maxTransferFee?: string;
+    hiddenBridgePipeline?: Pipeline;
     leftAddress?: string;
     leftNetwork?: NetworkShape;
+    maxTransferFee?: string;
+    minTransferFee?: string;
+    pipeline?: Pipeline;
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     swapAmount?: string;

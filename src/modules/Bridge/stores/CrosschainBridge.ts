@@ -12,6 +12,7 @@ import {
 } from 'mobx'
 import { Contract as EthContract } from 'web3-eth-contract'
 
+import { WEVERRootAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import {
     BridgeConstants,
@@ -37,7 +38,10 @@ import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import {
     alienTokenProxyContract,
-    nativeTokenProxyContract, Pipeline, TokenAsset, TokensAssetsService,
+    nativeTokenProxyContract,
+    Pipeline,
+    TokenAsset,
+    TokensAssetsService,
 } from '@/stores/TokensAssetsService'
 import { LabeledNetwork } from '@/types'
 import {
@@ -491,7 +495,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 || this.token === undefined
                 || this.rightNetwork === undefined
                 || this.pipeline?.evmTokenDecimals === undefined
-                || this.pipeline?.proxy === undefined
+                || this.pipeline.proxy === undefined
+                || this.pipeline.everscaleTokenAddress === undefined
                 || this.vaultContract === undefined
             ) {
                 return
@@ -511,7 +516,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                 const recipient = (await hiddenBridgeFactoryContract.methods.getStrategyAddress({
                     answerId: 0,
-                    tokenRoot: new Address(this.token.root),
+                    tokenRoot: new Address(this.pipeline.everscaleTokenAddress),
                 }).call()).value0
 
                 const hiddenBridgeStrategyContract = new rpc.Contract(
@@ -985,13 +990,13 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         boc: eventData,
                         structure: [
                             { name: 'proxy', type: 'address' },
-                            { name: 'tokenWallet', type: 'address' },
                             { name: 'token', type: 'address' },
                             { name: 'remainingGasTo', type: 'address' },
                             { name: 'amount', type: 'uint128' },
                             { name: 'recipient', type: 'uint160' },
                         ] as const,
                     })
+
                     const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
 
                     if (
@@ -1181,7 +1186,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         .shiftedBy(DexConstants.CoinDecimals)
                         .dp(0, BigNumber.ROUND_UP)
                         .toFixed(),
-                    receive_token_root: DexConstants.WTONRootAddress,
+                    receive_token_root: WEVERRootAddress,
                 }).call({
                     cachedState: toJS(this.data.pairState),
                 })
@@ -1247,7 +1252,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .shiftedBy(DexConstants.CoinDecimals)
                     .dp(0, BigNumber.ROUND_UP)
                     .toFixed(),
-                receive_token_root: DexConstants.WTONRootAddress,
+                receive_token_root: WEVERRootAddress,
             }).call({
                 cachedState: toJS(this.data.pairState),
             })
@@ -1279,7 +1284,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .shiftedBy(DexConstants.CoinDecimals)
                     .dp(0, BigNumber.ROUND_UP)
                     .toFixed(),
-                receive_token_root: DexConstants.WTONRootAddress,
+                receive_token_root: WEVERRootAddress,
             }).call({
                 cachedState: toJS(this.data.pairState),
             })
@@ -1371,7 +1376,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     protected async handleChangeToken(selectedToken?: string): Promise<void> {
         debug('handleChangeToken', selectedToken)
 
-        if (selectedToken === undefined) {
+        if (
+            this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || selectedToken === undefined
+        ) {
             return
         }
 
@@ -1380,7 +1389,30 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isFetching', true)
 
-            this.tokensAssets.buildPipelines(selectedToken)
+            this.tokensAssets.buildPipelines(this.leftNetwork.type, this.leftNetwork.chainId, selectedToken)
+
+            if (
+                this.token?.root !== undefined
+                && this.leftNetwork?.type !== undefined
+                && this.leftNetwork?.chainId !== undefined
+                && this.rightNetwork?.type !== undefined
+                && this.rightNetwork?.chainId !== undefined
+            ) {
+                const everscaleMainNetwork = getEverscaleMainNetwork()
+
+                const pipeline = await this.tokensAssets.pipeline(
+                    this.token.root,
+                    `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                    this.isEvmToEvm
+                        ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                        : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                    this.depositType,
+                )
+
+
+                this.setData('pipeline', pipeline)
+
+            }
 
             if (this.isFromEvm && this.isCreditAvailable) {
                 if (this.isEvmToEvm) {
@@ -1422,7 +1454,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             debug('Current pipeline', toJS(this.pipeline))
         }
 
-        debug(toJS(this.tokensAssets.pipelines))
+        debug(toJS(this.token?.pipelines))
     }
 
     /**
@@ -1610,7 +1642,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.debt.plus(this.eversAmountNumber),
                     BridgeConstants.DepositToFactoryMaxSlippage,
                 ).toFixed(),
-                receive_token_root: DexConstants.WTONRootAddress,
+                receive_token_root: WEVERRootAddress,
             }).call({
                 cachedState: toJS(this.data.pairState),
             })).expected_amount
@@ -1652,7 +1684,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.debt.plus(this.eversAmountNumber),
                     BridgeConstants.DepositToFactoryMinSlippage,
                 ).toFixed(),
-                receive_token_root: DexConstants.WTONRootAddress,
+                receive_token_root: WEVERRootAddress,
             }).call({
                 cachedState: toJS(this.data.pairState),
             })).expected_amount
@@ -1750,7 +1782,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMaxSlippage))
                     .dp(0, BigNumber.ROUND_UP)
                     .toFixed(),
-                receive_token_root: DexConstants.WTONRootAddress,
+                receive_token_root: WEVERRootAddress,
             }).call({
                 cachedState: toJS(this.data.pairState),
             })).expected_amount
@@ -1812,7 +1844,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMinSlippage))
                         .dp(0, BigNumber.ROUND_UP)
                         .toFixed(),
-                    receive_token_root: DexConstants.WTONRootAddress,
+                    receive_token_root: WEVERRootAddress,
                 }).call({
                     cachedState: toJS(this.data.pairState),
                 }),
@@ -1825,7 +1857,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         .div(new BigNumber(100).minus(BridgeConstants.DepositToFactoryMaxSlippage))
                         .dp(0, BigNumber.ROUND_UP)
                         .toFixed(),
-                    receive_token_root: DexConstants.WTONRootAddress,
+                    receive_token_root: WEVERRootAddress,
                 }).call({
                     cachedState: toJS(this.data.pairState),
                 }),
@@ -1848,14 +1880,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected async syncPair(): Promise<void> {
-        if (this.token?.root === undefined) {
+        if (this.pipeline?.everscaleTokenAddress === undefined) {
             return
         }
 
         try {
             const pairAddress = await Dex.checkPair(
-                DexConstants.WTONRootAddress,
-                new Address(this.token.root),
+                WEVERRootAddress,
+                new Address(this.pipeline.everscaleTokenAddress),
             )
 
             if (pairAddress === undefined) {
@@ -1891,7 +1923,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.isFromEverscale && isEverscaleAddressValid(this.token.root)) {
             try {
                 // sync everscale token balance and wallet
-                await this.tokensAssets.syncToken(this.token.root, true)
+                await this.tokensAssets.syncEverscaleToken(this.token.root)
             }
             catch (e) {
                 error('Sync Everscale token error', e)
@@ -1902,6 +1934,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.pipeline.isMultiVault) {
             if (this.isFromEvm) {
                 try {
+                    await this.tokensAssets.syncEvmTokenDecimals(this.pipeline.evmTokenAddress, this.pipeline)
                     await this.tokensAssets.syncEvmTokenBalance(this.pipeline.evmTokenAddress, this.pipeline)
                     await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline.evmTokenAddress, this.pipeline)
                     await this.tokensAssets.syncEverscaleTokenAddress(this.pipeline.evmTokenAddress, this.pipeline)
@@ -1916,10 +1949,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     const meta = await rootContract.methods.meta({ answerId: 0 }).call()
 
                     runInAction(() => {
+                        this.pipeline!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
                         this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
                             .toString(16)
                             .padStart(40, '0')}`
-                        this.token!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
                     })
 
                     this.setData(
@@ -1929,11 +1962,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 catch (e) {
                     runInAction(() => {
-                        this.token!.isNative = true
+                        this.pipeline!.isNative = true
                     })
                 }
 
-                if (this.token.isNative) {
+                if (this.pipeline.isNative) {
                     try {
                         await runInAction(async () => {
                             this.pipeline!.evmTokenAddress = await this.multiVaultContract?.methods
@@ -1949,7 +1982,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     }
                 }
 
-                if (this.token.isNative || this.data.isTokenChainSameToTargetChain) {
+                if (this.pipeline.isNative || this.data.isTokenChainSameToTargetChain) {
                     try {
                         await this.tokensAssets.syncEvmTokenMultiVaultMeta(
                             this.pipeline.evmTokenAddress,
@@ -1974,6 +2007,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 return
             }
 
+            runInAction(() => {
+                this.pipeline!.isNative = this.pipeline?.tokenBase === 'everscale'
+            })
+
             try {
                 await Promise.all([
                     // sync token vault limit for non-everscale-based tokens
@@ -1994,7 +2031,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         debug('Synced token', toJS(this.token))
-
     }
 
     /**
@@ -2086,28 +2122,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.data.leftNetwork
     }
 
-    public get pipeline(): Pipeline | undefined {
-        if (
-            this.token?.root === undefined
-            || this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || this.rightNetwork?.type === undefined
-            || this.rightNetwork?.chainId === undefined
-        ) {
-            return undefined
-        }
-
-        const everscaleMainNetwork = getEverscaleMainNetwork()
-
-        return this.tokensAssets.pipeline(
-            this.token.root,
-            `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-            this.isEvmToEvm
-                ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-            this.token.isNative ? this.leftNetwork.type : this.rightNetwork.type,
-            this.depositType,
-        )
+    public get pipeline(): CrosschainBridgeStoreData['pipeline'] {
+        return this.data.pipeline
     }
 
     public get rightAddress(): CrosschainBridgeStoreData['rightAddress'] {
@@ -2299,7 +2315,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             && this.data.selectedToken !== undefined
             && this.amount.length > 0
             && isGoodBignumber(this.amountNumber)
-            && (this.pipeline?.isMultiVault ? !this.token?.isBlacklisted : true)
+            && (this.pipeline?.isMultiVault ? !this.pipeline?.isBlacklisted : true)
             && (this.isSwapEnabled
                 ? (this.isAmountValid && this.isTokensAmountValid && this.isEversAmountValid)
                 : this.isAmountValid)
@@ -2346,7 +2362,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.token === undefined) {
             return false
         }
-
+        if (isEvmAddressValid(this.token.root)) {
+            return this.token.pipelines?.some(
+                pipeline => (
+                    pipeline.evmTokenAddress === this.token?.root
+                    && pipeline.depositType === 'credit'
+                ),
+            )
+        }
         return this.token.pipelines?.some(
             pipeline => (
                 pipeline.everscaleTokenAddress === this.token?.root
@@ -2414,8 +2437,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         //         ({ root }) => root === this.data.selectedToken,
         //     )
         // }
+        if (
+            this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.data.selectedToken === undefined
+        ) {
+            return undefined
+        }
 
-        return this.tokensAssets.get(this.data.selectedToken)
+        return this.tokensAssets.get(this.leftNetwork.type, this.leftNetwork.chainId, this.data.selectedToken)
     }
 
     public get vaultLimit(): Pipeline['vaultLimit'] {
@@ -2433,14 +2463,16 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         const leftChainId = this.leftNetwork?.chainId
         const rightChainId = this.rightNetwork?.chainId
 
-        const assetsRoots = Object.keys(this.tokensAssets.assets)
-
         if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
-            return this.tokensAssets.verifiedTokens.filter(
-                token => Object.values(token.pipelines).some(
+
+            return this.tokensAssets.tokens.filter(
+                token => isEvmAddressValid(token.root) && token.chainId === this.leftNetwork?.chainId && Object.values(token.pipelines).some(
                     pipeline => (
-                        (pipeline.chainId === leftChainId && pipeline.depositType === 'credit')
-                        || (pipeline.chainId === rightChainId && pipeline.depositType === 'default')
+                        (pipeline.chainId === leftChainId && pipeline.depositType === 'credit' && pipeline.tokenBase === 'evm')
+                    ),
+                ) && Object.values(token.pipelines).some(
+                    pipeline => (
+                        (pipeline.chainId === rightChainId && pipeline.depositType === 'default' && pipeline.tokenBase === 'evm')
                     ),
                 ),
             )
@@ -2448,23 +2480,17 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
         if (this.isFromEvm && leftChainId !== undefined) {
             return this.tokensAssets.tokens.filter(
-                token => (
-                    isEverscaleAddressValid(token.root)
-                        ? assetsRoots.includes(token.root) && (token.chainId === leftChainId || token.pipelines.some(
-                            pipeline => pipeline.chainId === leftChainId,
-                        ))
-                        : token.chainId === leftChainId),
+                token => isEvmAddressValid(token.root) && token.chainId === leftChainId,
             )
         }
 
-        if (this.isFromEverscale) {
+        if (this.isFromEverscale && leftChainId !== undefined) {
             return this.tokensAssets.tokens.filter(
-                token => isEverscaleAddressValid(token.root),
+                token => isEverscaleAddressValid(token.root) && token.chainId === leftChainId,
             )
         }
 
-        debug('Display all tokens')
-        return this.tokensAssets.verifiedTokens
+        return this.tokensAssets.tokens
     }
 
     public get tokenAmountNumber(): BigNumber {

@@ -37,10 +37,10 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             const reject = () => {
                 setPrepareStatus('disabled')
             }
-            if (bridge.token?.isNative === false && bridge.isTokenChainSameToTargetChain) {
+            if (bridge.pipeline?.isNative === false && bridge.isTokenChainSameToTargetChain) {
                 await bridge.burnViaAlienProxy(reject)
             }
-            else if (bridge.token?.isNative === true) {
+            else if (bridge.pipeline?.isNative === true) {
                 await bridge.transferNativeMultiToken(reject)
             }
             else {

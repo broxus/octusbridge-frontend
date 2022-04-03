@@ -33,7 +33,7 @@ export function Amount(): JSX.Element {
             <li>
                 <Observer>
                     {() => (
-                        <b className="text-lg text-truncate">
+                        <b className="text-lg text-truncate" data-decimals={`${summary.evmTokenDecimals}`}>
                             {(summary.amount && summary.amount !== '0')
                                 ? formattedAmount(
                                     summary.amount,

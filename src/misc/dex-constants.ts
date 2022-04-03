@@ -1,10 +1,8 @@
-import { DexRootAddress, WTONRootAddress } from '@/config'
+import { DexRootAddress } from '@/config'
 
 export class DexConstants {
 
     static DexRootAddress = DexRootAddress
-
-    static WTONRootAddress = WTONRootAddress
 
     static CoinDecimals = 9
 
