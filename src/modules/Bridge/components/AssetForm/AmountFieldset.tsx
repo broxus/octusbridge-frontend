@@ -26,17 +26,21 @@ export function AmountFieldset(): JSX.Element {
     const onChange = (value: string) => {
         bridge.setData('amount', value)
 
-        const withdrawFee = bridge.amountNumber
-            .shiftedBy(bridge.token?.decimals || 0)
-            .div(10000)
-            .times(bridge.pipeline?.withdrawFee ?? 0)
-            .dp(0, BigNumber.ROUND_DOWN)
-            .toFixed()
-
-        bridge.setData(
-            'withdrawFee',
-            isGoodBignumber(withdrawFee) ? withdrawFee : undefined,
-        )
+        // if (bridge.pipeline?.isMultiVault) {
+        //     if (bridge.isFromEvm) {
+        //         const withdrawFee = bridge.amountNumber
+        //             .shiftedBy(bridge.token?.decimals || 0)
+        //             .div(10000)
+        //             .times(bridge.pipeline?.withdrawFee ?? 0)
+        //             .dp(0, BigNumber.ROUND_DOWN)
+        //             .toFixed()
+        //
+        //         bridge.setData(
+        //             'withdrawFee',
+        //             isGoodBignumber(withdrawFee) ? withdrawFee : undefined,
+        //         )
+        //     }
+        // }
 
         if (bridge.isSwapEnabled || bridge.isEvmToEvm) {
             onChangeAmount()
@@ -165,7 +169,8 @@ export function AmountFieldset(): JSX.Element {
                         {() => (
                             <>
                                 {(
-                                    bridge.isEverscaleToEvm
+                                    !bridge.pipeline?.isMultiVault
+                                    && bridge.isEverscaleToEvm
                                     && bridge.isInsufficientVaultBalance
                                     && !bridge.isEverscaleBasedToken
                                 ) && (

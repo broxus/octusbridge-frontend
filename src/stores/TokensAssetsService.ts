@@ -78,8 +78,9 @@ export type TokenAsset = Token & {
 }
 
 export type Pipeline = {
-    depositType: string;
     chainId: string;
+    depositFee?: string;
+    depositType: string;
     ethereumConfiguration: Address;
     everscaleConfiguration?: Address;
     everscaleTokenAddress?: string;
@@ -276,7 +277,9 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         try {
             const importedTokens = JSON.parse(storage.get('imported_assets') || '{}')
             Object.values<TokenAsset>({ ...importedTokens }).forEach(token => {
-                alienTokens.push({ ...token, pipelines: [] })
+                if (!this.has(token.key)) {
+                    alienTokens.push({ ...token, pipelines: [] })
+                }
             })
         }
         catch (e) {
@@ -1006,17 +1009,24 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             .tokens(root)
             .call()
 
-        let { withdrawFee } = meta
+        let { depositFee, withdrawFee } = meta
 
         // eslint-disable-next-line eqeqeq
         if (meta.activation == '0') {
-            withdrawFee = await this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
-                .defaultWithdrawFee()
-                .call()
+            [depositFee, withdrawFee] = await Promise.all([
+                this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                    .defaultDepositFee()
+                    .call(),
+                this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                    .defaultWithdrawFee()
+                    .call(),
+            ])
         }
 
         // Force update
         runInAction(() => {
+            // eslint-disable-next-line no-param-reassign
+            pipeline.depositFee = depositFee
             // eslint-disable-next-line no-param-reassign
             pipeline.isBlacklisted = meta?.blacklisted
             // eslint-disable-next-line no-param-reassign

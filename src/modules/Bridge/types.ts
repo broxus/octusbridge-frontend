@@ -18,6 +18,7 @@ export type CrosschainBridgeStoreData = {
     amount: string;
     bridgeFee?: string;
     creditFactoryFee?: string;
+    depositFee?: string;
     depositType: 'default' | 'credit';
     eversAmount?: string;
     isTokenChainSameToTargetChain: boolean;

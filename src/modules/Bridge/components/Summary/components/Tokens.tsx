@@ -29,9 +29,9 @@ export function Tokens(): JSX.Element {
             return
         }
 
-        const asset = tokensAssets.get('evm', summary.pipeline?.chainId, address.toLowerCase())
+        const asset = tokensAssets.get('evm', summary.pipeline.chainId, address.toLowerCase())
         try {
-            const contract = tokensAssets.getEvmTokenContract(address, summary.pipeline?.chainId)
+            const contract = tokensAssets.getEvmTokenContract(address, summary.pipeline.chainId)
             const symbol = await contract?.methods.symbol().call()
             await evmWallet.addAsset({
                 address,

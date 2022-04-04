@@ -26,8 +26,8 @@ export function Summary(): JSX.Element {
                 <TransitDetails />
                 <VaultDetails />
                 <Tokens />
-                <Amount />
                 <FeesDetails />
+                <Amount />
                 <SwapDetails />
                 <TokenAmountDetails />
             </ul>

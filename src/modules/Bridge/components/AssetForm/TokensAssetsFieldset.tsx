@@ -36,6 +36,7 @@ export function TokensAssetsFieldset(): JSX.Element {
 
     const onClear = () => {
         setToken(undefined)
+        bridge.setData('selectedToken', undefined)
     }
 
     const onImport = () => {
@@ -139,8 +140,11 @@ export function TokensAssetsFieldset(): JSX.Element {
                     }
                 }
                 catch (e) {
+                    console.log(e)
                     //
                 }
+
+                console.log(asset)
 
                 setToken({
                     ...asset,
@@ -225,7 +229,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                     id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
                                 }, { blockchainName: bridge.leftNetwork?.name ?? '' })}
                                 showSearch
-                                allowClear
+                                allowClear={token !== undefined}
                                 value={token?.root ?? bridge.token?.root}
                                 virtual
                                 onChange={token === undefined ? onChangeToken : undefined}
