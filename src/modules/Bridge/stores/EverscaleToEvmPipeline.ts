@@ -267,22 +267,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                     await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
                     await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline?.evmTokenAddress, this.pipeline)
-                    try {
-                        const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(this.token!.root))
-                        const meta = await rootContract.methods.meta({ answerId: 0 }).call()
-
-                        runInAction(() => {
-                            this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
-                                .toString(16)
-                                .padStart(40, '0')}`
-                            this.pipeline!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
-                        })
-                    }
-                    catch (e) {
-                        runInAction(() => {
-                            this.pipeline!.isNative = true
-                        })
-                    }
                 }
                 catch (e) {
                     error(e)
@@ -302,11 +286,34 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 base_chainId_: chainId,
             } = eventData
 
-            const token = this.tokensAssets.get(
+            let token = this.tokensAssets.get(
                 this.leftNetwork.type,
                 this.leftNetwork.chainId,
                 tokenAddress.toString(),
             )
+
+            if (token === undefined) {
+                try {
+                    const { decimals, name, symbol } = await TokenWallet.getTokenFullDetails(
+                        tokenAddress.toString(),
+                    ) as TokenAsset
+
+                    token = {
+                        chainId: this.leftNetwork.chainId,
+                        decimals,
+                        key: `${this.leftNetwork.type}-${this.leftNetwork.chainId}-${tokenAddress.toString()}`,
+                        name,
+                        pipelines: [],
+                        root: tokenAddress.toString(),
+                        symbol,
+                    } as TokenAsset
+
+                    this.tokensAssets.add(token)
+                }
+                catch (e) {
+
+                }
+            }
 
             if (token === undefined) {
                 return

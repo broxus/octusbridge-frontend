@@ -186,11 +186,35 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             let token: TokenAsset | undefined
 
             if (alienTransfer != null) {
-                token = this.tokensAssets.get(
-                    this.leftNetwork.type,
-                    this.leftNetwork.chainId,
-                    `0x${new BigNumber(alienTransfer.events[1].value).toString(16).padStart(40, '0')}`.toLowerCase(),
-                )
+                const root = `0x${new BigNumber(alienTransfer.events[1].value).toString(16).padStart(40, '0')}`.toLowerCase()
+                const { chainId, type } = this.leftNetwork
+                token = this.tokensAssets.get(type, chainId, root)
+
+                if (token === undefined) {
+                    try {
+                        const contract = this.tokensAssets.getEvmTokenContract(root, chainId)
+                        const [name, symbol, decimals] = await Promise.all([
+                            contract?.methods.name().call(),
+                            contract?.methods.symbol().call(),
+                            contract?.methods.decimals().call(),
+                        ])
+
+                        token = {
+                            root,
+                            decimals: parseInt(decimals, 10),
+                            name,
+                            symbol,
+                            key: `${type}-${chainId}-${root}`,
+                            chainId,
+                            pipelines: [],
+                        } as TokenAsset
+
+                        this.tokensAssets.add(token)
+                    }
+                    catch (e) {
+                        //
+                    }
+                }
 
                 if (token === undefined) {
                     return

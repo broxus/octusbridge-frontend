@@ -25,22 +25,23 @@ export function Tokens(): JSX.Element {
     }
 
     const addToEvmAsset = (address: string) => async () => {
-        if (summary.token?.icon === undefined || summary.rightNetwork?.chainId === undefined) {
-            debugger
+        if (summary.token === undefined || summary.rightNetwork?.chainId === undefined) {
             return
         }
+        const asset = tokensAssets.get(summary.rightNetwork.type, summary.rightNetwork.chainId, address.toLowerCase())
         try {
             const contract = tokensAssets.getEvmTokenContract(address, summary.rightNetwork?.chainId)
             const symbol = await contract?.methods.symbol().call()
             await evmWallet.addAsset({
                 address: address.toLowerCase(),
                 decimals: summary.token.decimals,
-                image: summary.token.icon,
+                image: asset?.icon || '',
                 symbol,
             })
 
         }
         catch (e) {
+            //
         }
     }
 
@@ -82,10 +83,12 @@ export function Tokens(): JSX.Element {
                                 <div>
                                     <BlockScanAddressLink
                                         key="token-link"
+                                        addAsset={summary.pipeline.isMultiVault}
+                                        address={evmTokenAddress}
                                         className="text-regular"
                                         baseUrl={summary.leftNetwork.explorerBaseUrl}
-                                        address={evmTokenAddress}
-                                        copy
+                                        copy={!summary.pipeline.isMultiVault}
+                                        onAddAsset={addToEvmAsset(evmTokenAddress)}
                                     >
                                         {sliceAddress(evmTokenAddress)}
                                     </BlockScanAddressLink>
@@ -94,9 +97,11 @@ export function Tokens(): JSX.Element {
                                 <div>
                                     <EverscanAccountLink
                                         key="token-link"
-                                        className="text-regular"
+                                        addAsset={summary.pipeline.isMultiVault}
                                         address={everscaleTokenAddress}
-                                        copy
+                                        className="text-regular"
+                                        copy={!summary.pipeline.isMultiVault}
+                                        onAddAsset={addToEverAsset(everscaleTokenAddress)}
                                     >
                                         {sliceAddress(everscaleTokenAddress)}
                                     </EverscanAccountLink>
@@ -132,9 +137,9 @@ export function Tokens(): JSX.Element {
                                 <div>
                                     <EverscanAccountLink
                                         key="token-link"
-                                        className="text-regular"
                                         addAsset={summary.pipeline.isMultiVault}
                                         address={everscaleTokenAddress}
+                                        className="text-regular"
                                         copy={!summary.pipeline.isMultiVault}
                                         onAddAsset={addToEverAsset(everscaleTokenAddress)}
                                     >
