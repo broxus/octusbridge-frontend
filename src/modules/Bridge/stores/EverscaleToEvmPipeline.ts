@@ -4,7 +4,8 @@ import {
     computed,
     IReactionDisposer,
     makeObservable,
-    reaction, runInAction,
+    reaction,
+    runInAction,
     toJS,
 } from 'mobx'
 import { Address, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
@@ -27,7 +28,13 @@ import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { TokenAsset, TokensAssetsService } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
-import { debug, error, findNetwork } from '@/utils'
+import {
+    debug,
+    error,
+    findNetwork,
+    isEvmAddressValid,
+    storage,
+} from '@/utils'
 
 
 export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData, EverscaleTransferStoreState> {
@@ -825,6 +832,57 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         isReleased: true,
                         status: 'confirmed',
                     })
+
+                    const { chainId, type } = this.rightNetwork
+                    const root = this.pipeline.evmTokenAddress
+                    const key = `${type}-${chainId}-${root}`
+
+                    if (
+                        this.pipeline.isMultiVault
+                        && root !== undefined
+                        && isEvmAddressValid(root)
+                        && !this.tokensAssets.has(key)
+                    ) {
+                        try {
+                            const contract = this.tokensAssets.getEvmTokenContract(root, chainId)
+                            const [name, symbol, decimals] = await Promise.all([
+                                contract?.methods.name().call(),
+                                contract?.methods.symbol().call(),
+                                contract?.methods.decimals().call(),
+                            ])
+
+                            const asset = {
+                                root,
+                                decimals: parseInt(decimals, 10),
+                                name,
+                                symbol,
+                                key,
+                                chainId,
+                                pipelines: [],
+                            } as TokenAsset
+
+                            try {
+                                const result = await vaultContract?.methods.natives(root).call()
+                                const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
+                                const everscaleToken = this.tokensAssets.get('everscale', '1', everscaleAddress)
+                                asset.icon = everscaleToken?.icon
+                            }
+                            catch (e) {
+                                //
+                            }
+
+                            this.tokensAssets.add(asset)
+
+                            const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                            importedAssets[key] = asset
+
+                            storage.set('imported_assets', JSON.stringify(importedAssets))
+                        }
+                        catch (e) {
+                            //
+                        }
+                    }
                 }
             }
         })().finally(() => {

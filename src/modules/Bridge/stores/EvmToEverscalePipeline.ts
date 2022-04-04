@@ -15,7 +15,7 @@ import {
 import { Address, Subscription } from 'everscale-inpage-provider'
 
 import rpc from '@/hooks/useRpcClient'
-import { EthAbi, TokenAbi } from '@/misc'
+import { EthAbi, TokenAbi, TokenWallet } from '@/misc'
 import {
     DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA,
     DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE,
@@ -30,10 +30,18 @@ import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import {
-    alienTokenProxyContract, TokenAsset, TokensAssetsService,
+    alienTokenProxyContract,
+    TokenAsset,
+    TokensAssetsService,
 } from '@/stores/TokensAssetsService'
 import { NetworkShape } from '@/types'
-import { debug, error, findNetwork } from '@/utils'
+import {
+    debug,
+    error,
+    findNetwork,
+    isEverscaleAddressValid,
+    storage,
+} from '@/utils'
 
 
 export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmTransferStoreState> {
@@ -591,7 +599,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         this.stopPrepareUpdater();
 
         (async () => {
-            if (this.prepareState?.isDeploying === true) {
+            if (this.rightNetwork === undefined || this.prepareState?.isDeploying === true) {
                 return
             }
 
@@ -660,6 +668,50 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             }
 
             this.setState('eventState', eventState)
+
+            const { chainId, type } = this.rightNetwork
+            const root = this.pipeline?.everscaleTokenAddress
+            const key = `${type}-${chainId}-${root}`
+
+            if (
+                this.pipeline?.isMultiVault
+                && root !== undefined
+                && isEverscaleAddressValid(root)
+                && !this.tokensAssets.has(key)
+            ) {
+                try {
+                    let asset = await TokenWallet.getTokenFullDetails(root) as TokenAsset
+
+                    asset = {
+                        ...asset,
+                        key,
+                        chainId,
+                        pipelines: [],
+                    }
+
+                    try {
+                        const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
+                        const meta = await rootContract.methods.meta({ answerId: 0 }).call()
+                        const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
+                        const evmToken = this.tokensAssets.get('evm', meta.base_chainId, evmTokenAddress)
+                        asset.icon = evmToken?.icon
+                    }
+                    catch (e) {
+                        //
+                    }
+
+                    this.tokensAssets.add(asset)
+
+                    const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                    importedAssets[key] = asset
+
+                    storage.set('imported_assets', JSON.stringify(importedAssets))
+                }
+                catch (e) {
+                    //
+                }
+            }
         })().finally(() => {
             if (
                 this.eventState?.status !== 'confirmed'
