@@ -548,6 +548,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         type: transactionType,
                     })
                 }
+
             }
             catch (e: any) {
                 if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
@@ -796,8 +797,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                 if (
                     this.evmWallet.isConnected
-                && this.evmWallet.chainId === this.rightNetwork?.chainId
-                && this.eventState?.status === 'confirmed'
+                    && this.evmWallet.chainId === this.rightNetwork?.chainId
+                    && this.eventState?.status === 'confirmed'
                 ) {
                     this.runReleaseUpdater()
                 }
@@ -848,13 +849,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         isReleased,
                         status: isReleased ? 'confirmed' : 'disabled',
                     })
-                }
-
-                if (isReleased) {
-                    this.setState('releaseState', {
-                        isReleased: true,
-                        status: 'confirmed',
-                    })
 
                     const { chainId, type } = this.rightNetwork
                     const root = this.pipeline.evmTokenAddress?.toLowerCase()
@@ -867,6 +861,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         && !this.tokensAssets.has(key)
                     ) {
                         try {
+                            // fixme: chainId ?
                             const contract = this.tokensAssets.getEvmTokenContract(root, chainId)
                             const [name, symbol, decimals] = await Promise.all([
                                 contract?.methods.name().call(),
@@ -905,6 +900,15 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                             //
                         }
                     }
+                }
+
+                if (isReleased) {
+                    this.setState('releaseState', {
+                        isReleased: true,
+                        status: 'confirmed',
+                    })
+
+
                 }
             }
         })().finally(() => {
