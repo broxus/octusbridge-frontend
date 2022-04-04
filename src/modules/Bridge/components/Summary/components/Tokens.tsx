@@ -25,24 +25,23 @@ export function Tokens(): JSX.Element {
     }
 
     const addToEvmAsset = (address: string) => async () => {
-        if (summary.token === undefined || summary.rightNetwork?.chainId === undefined) {
+        if (summary.token === undefined || summary.pipeline?.chainId === undefined) {
             return
         }
-        const asset = tokensAssets.get(summary.rightNetwork.type, summary.rightNetwork.chainId, address.toLowerCase())
+
+        const asset = tokensAssets.get('evm', summary.pipeline?.chainId, address.toLowerCase())
         try {
-            const contract = tokensAssets.getEvmTokenContract(address, summary.rightNetwork?.chainId)
+            const contract = tokensAssets.getEvmTokenContract(address, summary.pipeline?.chainId)
             const symbol = await contract?.methods.symbol().call()
             await evmWallet.addAsset({
-                address: address.toLowerCase(),
+                address,
                 decimals: summary.token.decimals,
                 image: asset?.icon || '',
                 symbol,
             })
 
         }
-        catch (e) {
-            //
-        }
+        catch (e) {}
     }
 
     return (
