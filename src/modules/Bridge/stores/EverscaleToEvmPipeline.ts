@@ -834,7 +834,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     })
 
                     const { chainId, type } = this.rightNetwork
-                    const root = this.pipeline.evmTokenAddress
+                    const root = this.pipeline.evmTokenAddress?.toLowerCase()
                     const key = `${type}-${chainId}-${root}`
 
                     if (
@@ -858,7 +858,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                                 symbol,
                                 key,
                                 chainId,
-                                pipelines: [],
                             } as TokenAsset
 
                             try {
@@ -871,7 +870,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                                 //
                             }
 
-                            this.tokensAssets.add(asset)
+                            this.tokensAssets.add({ ...asset, pipelines: [] })
 
                             const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
 

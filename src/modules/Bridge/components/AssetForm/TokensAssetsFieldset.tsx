@@ -73,14 +73,15 @@ export function TokensAssetsFieldset(): JSX.Element {
         if (bridge.leftNetwork?.type === undefined || bridge.leftNetwork.chainId === undefined) {
             return
         }
+        const root = value.toLowerCase()
         const { type, chainId } = bridge.leftNetwork
-        const key = `${type}-${chainId}-${value}`
+        const key = `${type}-${chainId}-${root}`
         if (tokensAssets.has(key)) {
-            bridge.setData('selectedToken', value)
+            bridge.setData('selectedToken', root)
         }
-        else if (bridge.isFromEverscale && isEverscaleAddressValid(value)) {
+        else if (bridge.isFromEverscale && isEverscaleAddressValid(root)) {
             try {
-                const asset = await TokenWallet.getTokenFullDetails(value) as TokenAsset
+                const asset = await TokenWallet.getTokenFullDetails(root) as TokenAsset
 
                 try {
                     const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
@@ -105,9 +106,9 @@ export function TokensAssetsFieldset(): JSX.Element {
                 //
             }
         }
-        else if (bridge.isFromEvm && isEvmAddressValid(value)) {
+        else if (bridge.isFromEvm && isEvmAddressValid(root)) {
             try {
-                const contract = tokensAssets.getEvmTokenContract(value, bridge.leftNetwork.chainId)
+                const contract = tokensAssets.getEvmTokenContract(root, bridge.leftNetwork.chainId)
                 const [name, symbol, decimals] = await Promise.all([
                     contract?.methods.name().call(),
                     contract?.methods.symbol().call(),
@@ -115,7 +116,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                 ])
 
                 const asset = {
-                    root: value,
+                    root,
                     decimals: parseInt(decimals, 10),
                     name,
                     symbol,
@@ -131,7 +132,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                             vault.vault,
                             bridge.leftNetwork.chainId,
                         )
-                        const result = await vaultContract?.methods.natives(value).call()
+                        const result = await vaultContract?.methods.natives(root).call()
                         const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
                         const everscaleToken = tokensAssets.get('everscale', '1', everscaleAddress)
                         asset.icon = everscaleToken?.icon

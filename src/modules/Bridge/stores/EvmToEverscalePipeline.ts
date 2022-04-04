@@ -670,7 +670,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             this.setState('eventState', eventState)
 
             const { chainId, type } = this.rightNetwork
-            const root = this.pipeline?.everscaleTokenAddress
+            const root = this.pipeline?.everscaleTokenAddress?.toLowerCase()
             const key = `${type}-${chainId}-${root}`
 
             if (
@@ -687,7 +687,6 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         decimals,
                         key,
                         name,
-                        pipelines: [],
                         root,
                         symbol,
                     } as TokenAsset
@@ -703,7 +702,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         //
                     }
 
-                    this.tokensAssets.add(asset)
+                    this.tokensAssets.add({ ...asset, pipelines: [] })
 
                     const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
 
