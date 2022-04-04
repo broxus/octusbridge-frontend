@@ -13,7 +13,7 @@ import {
 type Asset = {
     address: string; // The address of the token contract
     decimals: number; // The number of token decimals
-    image: string; // A string url of the token logo
+    image?: string; // A string url of the token logo
     symbol: string; // A ticker symbol or shorthand, up to 5 characters
 }
 

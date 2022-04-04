@@ -180,7 +180,7 @@ export function AmountFieldset(): JSX.Element {
                                             symbol: bridge.token?.symbol,
                                             value: formattedAmount(
                                                 bridge.pipeline?.vaultBalance,
-                                                bridge.pipeline?.evmTokenDecimals,
+                                                bridge.evmTokenDecimals,
                                             ),
                                         }, {
                                             ignoreTag: true,
@@ -194,6 +194,33 @@ export function AmountFieldset(): JSX.Element {
 
                     {process.env.NODE_ENV !== 'production' && (
                         <>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {`> Multi: ${bridge.pipeline?.isMultiVault}`}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {`> Native: ${bridge.pipeline?.isNative}`}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {`> Blacklisted: ${bridge.pipeline?.isBlacklisted}`}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
                             <div className="crosschain-transfer__control-hint">
                                 <Observer>
                                     {() => (

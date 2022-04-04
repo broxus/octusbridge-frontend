@@ -725,7 +725,6 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 this.pipeline?.isMultiVault
                 && root !== undefined
                 && isEverscaleAddressValid(root)
-                && !this.tokensAssets.has(key)
             ) {
                 try {
                     const { decimals, name, symbol } = await TokenWallet.getTokenFullDetails(root) as TokenAsset
@@ -746,9 +745,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         const evmToken = this.tokensAssets.get('evm', meta.base_chainId, evmTokenAddress)
                         asset.icon = evmToken?.icon
                     }
-                    catch (e) {
-                        //
-                    }
+                    catch (e) {}
 
                     this.tokensAssets.add({ ...asset, pipelines: [] })
 
@@ -758,9 +755,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                     storage.set('imported_assets', JSON.stringify(importedAssets))
                 }
-                catch (e) {
-                    //
-                }
+                catch (e) {}
             }
         })().finally(() => {
             if (

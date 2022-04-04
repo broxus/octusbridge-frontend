@@ -1943,6 +1943,26 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 catch (e) {
                     error('Sync EVM token error', e)
                 }
+
+                if (this.pipeline.isNative) {
+                    try {
+                        await Promise.all([
+                            // sync token vault limit for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultLimit(
+                                this.pipeline.vault,
+                                this.pipeline,
+                            ),
+                            // sync token vault balance for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultBalance(
+                                this.pipeline.evmTokenAddress,
+                                this.pipeline,
+                            ),
+                        ])
+                    }
+                    catch (e) {
+                        error('Sync vault balance or limit error', e)
+                    }
+                }
             }
             else if (this.isFromEverscale && isEverscaleAddressValid(this.token.root)) {
                 try {
@@ -2012,22 +2032,24 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 this.pipeline!.isNative = this.pipeline?.tokenBase === 'everscale'
             })
 
-            try {
-                await Promise.all([
-                    // sync token vault limit for non-everscale-based tokens
-                    !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultLimit(
-                        this.pipeline.vault,
-                        this.pipeline,
-                    ),
-                    // sync token vault balance for non-everscale-based tokens
-                    !this.isEverscaleBasedToken && this.tokensAssets.syncEvmTokenVaultBalance(
-                        this.pipeline.evmTokenAddress,
-                        this.pipeline,
-                    ),
-                ])
-            }
-            catch (e) {
-                error('Sync vault balance or limit error', e)
+            if (!this.isEverscaleBasedToken) {
+                try {
+                    await Promise.all([
+                        // sync token vault limit for non-everscale-based tokens
+                        this.tokensAssets.syncEvmTokenVaultLimit(
+                            this.pipeline.vault,
+                            this.pipeline,
+                        ),
+                        // sync token vault balance for non-everscale-based tokens
+                        this.tokensAssets.syncEvmTokenVaultBalance(
+                            this.pipeline.evmTokenAddress,
+                            this.pipeline,
+                        ),
+                    ])
+                }
+                catch (e) {
+                    error('Sync vault balance or limit error', e)
+                }
             }
         }
 
@@ -2388,9 +2410,21 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     public get isInsufficientVaultBalance(): boolean {
+        if (this.isFromEverscale && this.pipeline?.isMultiVault && !this.pipeline.isNative) {
+            return new BigNumber(this.pipeline?.vaultBalance ?? 0)
+                .shiftedBy(-(this.token?.decimals ?? 0))
+                .lt(this.amountNumber)
+        }
         return new BigNumber(this.pipeline?.vaultBalance ?? 0)
             .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
             .lt(this.amountNumber)
+    }
+
+    public get evmTokenDecimals(): number | undefined {
+        if (this.isFromEverscale && this.pipeline?.isMultiVault && !this.pipeline.isNative) {
+            return this.token?.decimals
+        }
+        return this.pipeline?.evmTokenDecimals
     }
 
     public get isEverscaleBasedToken(): boolean {

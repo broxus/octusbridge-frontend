@@ -213,9 +213,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                     this.tokensAssets.add(token)
                 }
-                catch (e) {
-
-                }
+                catch (e) {}
             }
 
             if (token === undefined) {
@@ -261,7 +259,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                             `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
                             this.depositType,
                         )
-
                         this.setData('pipeline', pipeline)
                     }
 
@@ -271,6 +268,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 catch (e) {
                     error(e)
                 }
+
                 this.runEventUpdater()
             }
         }

@@ -36,7 +36,7 @@ export function Tokens(): JSX.Element {
             await evmWallet.addAsset({
                 address,
                 decimals: summary.token.decimals,
-                image: asset?.icon || '',
+                image: asset?.icon,
                 symbol,
             })
 

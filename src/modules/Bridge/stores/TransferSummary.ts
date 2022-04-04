@@ -122,6 +122,9 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get evmTokenDecimals(): number | undefined {
+        if (this.isFromEverscale && this.pipeline?.isMultiVault && !this.pipeline.isNative) {
+            return this.token?.decimals
+        }
         return this.pipeline?.evmTokenDecimals
     }
 
