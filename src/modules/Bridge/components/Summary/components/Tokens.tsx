@@ -10,7 +10,39 @@ import { sliceAddress } from '@/utils'
 
 export function Tokens(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const { bridge, summary } = useBridge()
+    const everWallet = bridge.useEverWallet
+    const evmWallet = bridge.useEvmWallet
+    const tokensAssets = bridge.useTokensAssets
+
+    const addToEverAsset = (root: string) => async () => {
+        try {
+            await everWallet.addAsset(root)
+        }
+        catch (e) {
+
+        }
+    }
+
+    const addToEvmAsset = (address: string) => async () => {
+        if (summary.token?.icon === undefined || summary.rightNetwork?.chainId === undefined) {
+            debugger
+            return
+        }
+        try {
+            const contract = tokensAssets.getEvmTokenContract(address, summary.rightNetwork?.chainId)
+            const symbol = await contract?.methods.symbol().call()
+            await evmWallet.addAsset({
+                address: address.toLowerCase(),
+                decimals: summary.token.decimals,
+                image: summary.token.icon,
+                symbol,
+            })
+
+        }
+        catch (e) {
+        }
+    }
 
     return (
         <Observer>
@@ -83,11 +115,13 @@ export function Tokens(): JSX.Element {
                                     <BlockScanAddressLink
                                         key="token-link"
                                         className="text-regular"
-                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                        addAsset={summary.pipeline.isMultiVault}
                                         address={summary.isEvmToEvm
                                             ? summary.hiddenBridgePipeline?.evmTokenAddress as string
                                             : evmTokenAddress}
-                                        copy
+                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                        copy={!summary.pipeline.isMultiVault}
+                                        onAddAsset={addToEvmAsset(evmTokenAddress)}
                                     >
                                         {sliceAddress(summary.isEvmToEvm
                                             ? summary.hiddenBridgePipeline?.evmTokenAddress as string
@@ -99,8 +133,10 @@ export function Tokens(): JSX.Element {
                                     <EverscanAccountLink
                                         key="token-link"
                                         className="text-regular"
+                                        addAsset={summary.pipeline.isMultiVault}
                                         address={everscaleTokenAddress}
-                                        copy
+                                        copy={!summary.pipeline.isMultiVault}
+                                        onAddAsset={addToEverAsset(everscaleTokenAddress)}
                                     >
                                         {sliceAddress(everscaleTokenAddress)}
                                     </EverscanAccountLink>

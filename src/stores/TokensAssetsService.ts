@@ -931,12 +931,8 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
         // Force update
         runInAction(() => {
-            token.pipelines = token.pipelines.map(
-                p => ((p.chainId === pipeline.chainId && p.vault === pipeline.vault) ? { ...p, evmTokenAddress } : p),
-            )
-
             // eslint-disable-next-line no-param-reassign
-            pipeline.evmTokenAddress = evmTokenAddress
+            pipeline.evmTokenAddress = evmTokenAddress?.toLowerCase()
         })
     }
 
@@ -1124,7 +1120,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         // Force update
         runInAction(() => {
             // eslint-disable-next-line no-param-reassign
-            pipeline.everscaleTokenAddress = everscaleTokenAddress
+            pipeline.everscaleTokenAddress = everscaleTokenAddress?.toLowerCase()
         })
     }
 

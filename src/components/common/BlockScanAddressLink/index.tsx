@@ -7,22 +7,30 @@ import { sliceAddress, uniqueId } from '@/utils'
 import { Icon } from '@/components/common/Icon'
 
 type Props = {
+    addAsset?: boolean;
     address: string;
     baseUrl: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
+    onAddAsset?: (root: string) => void;
 }
 
 
 export function BlockScanAddressLink({
+    addAsset,
     address,
     baseUrl,
     children,
     className,
     copy,
+    onAddAsset,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const addToAsset = () => {
+        onAddAsset?.(address)
+    }
 
     return (
         <span className={classNames('explorer-link', className)}>
@@ -38,6 +46,14 @@ export function BlockScanAddressLink({
                 <Copy text={address} id={`copy-${address}-${uniqueId()}`}>
                     <Icon icon="copy" />
                 </Copy>
+            )}
+            {addAsset && (
+                <Icon
+                    icon="add"
+                    ratio={0.95}
+                    style={{ cursor: 'pointer' }}
+                    onClick={addToAsset}
+                />
             )}
         </span>
     )

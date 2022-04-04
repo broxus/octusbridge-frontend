@@ -12,7 +12,7 @@ import { Address, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 
 import rpc from '@/hooks/useRpcClient'
-import { MultiVault, TokenAbi } from '@/misc'
+import { MultiVault, TokenAbi, TokenWallet } from '@/misc'
 import {
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA,
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE,
@@ -189,11 +189,34 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 token_: tokenAddress,
             } = eventData
 
-            const token = this.tokensAssets.get(
+            let token = this.tokensAssets.get(
                 this.leftNetwork.type,
                 this.leftNetwork.chainId,
                 tokenAddress.toString(),
             )
+
+            if (token === undefined) {
+                try {
+                    const { decimals, name, symbol } = await TokenWallet.getTokenFullDetails(
+                        tokenAddress.toString(),
+                    ) as TokenAsset
+
+                    token = {
+                        chainId: this.leftNetwork.chainId,
+                        decimals,
+                        key: `${this.leftNetwork.type}-${this.leftNetwork.chainId}-${tokenAddress.toString()}`,
+                        name,
+                        pipelines: [],
+                        root: tokenAddress.toString(),
+                        symbol,
+                    } as TokenAsset
+
+                    this.tokensAssets.add(token)
+                }
+                catch (e) {
+
+                }
+            }
 
             if (token === undefined) {
                 return

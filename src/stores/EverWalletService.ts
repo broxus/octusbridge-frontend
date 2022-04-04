@@ -5,6 +5,8 @@ import {
     runInAction,
 } from 'mobx'
 import {
+    Address,
+    AssetType,
     ContractState,
     FullContractState,
     hasEverscaleProvider,
@@ -169,6 +171,19 @@ export class EverWalletService {
                 this.state.isConnecting = false
             })
         }
+    }
+
+    public async addAsset(root: string, type: AssetType = 'tip3_token'): Promise<void> {
+        if (this.account?.address === undefined) {
+            return
+        }
+        await rpc.addAsset({
+            account: this.account.address,
+            params: {
+                rootContract: new Address(root),
+            },
+            type,
+        })
     }
 
     /**

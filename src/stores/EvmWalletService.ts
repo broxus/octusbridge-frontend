@@ -4,8 +4,18 @@ import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 
 import {
-    error, findNetwork, log, throwException,
+    error,
+    findNetwork,
+    log,
+    throwException,
 } from '@/utils'
+
+type Asset = {
+    address: string; // The address of the token contract
+    decimals: number; // The number of token decimals
+    image: string; // A string url of the token logo
+    symbol: string; // A ticker symbol or shorthand, up to 5 characters
+}
 
 
 export type EvmWalletData = {
@@ -241,6 +251,26 @@ export class EvmWalletService {
         }
         catch (e) {
             error('Add network error', e)
+        }
+    }
+
+    public async addAsset(asset: Asset): Promise<void> {
+        try {
+            await this.#provider.request({
+                method: 'wallet_watchAsset',
+                params: {
+                    type: 'ERC20',
+                    options: {
+                        address: asset.address,
+                        decimals: asset.decimals,
+                        image: asset.image,
+                        symbol: asset.symbol,
+                    },
+                },
+            })
+        }
+        catch (e) {
+            error('Add asset error', e)
         }
     }
 

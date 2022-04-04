@@ -2,25 +2,34 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { useIntl } from 'react-intl'
 
-import { sliceAddress, uniqueId } from '@/utils'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
+import { sliceAddress, uniqueId } from '@/utils'
+
 
 type Props = {
+    addAsset?: boolean;
     address: string;
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
+    onAddAsset?: (root: string) => void;
 }
 
 
 export function EverscanAccountLink({
+    addAsset,
     address,
     children,
     className,
     copy,
+    onAddAsset,
 }: Props): JSX.Element {
     const intl = useIntl()
+
+    const addToAsset = () => {
+        onAddAsset?.(address)
+    }
 
     return (
         <span className={classNames('explorer-link', className)}>
@@ -36,6 +45,14 @@ export function EverscanAccountLink({
                 <Copy text={address} id={`copy-${address}-${uniqueId()}`}>
                     <Icon icon="copy" />
                 </Copy>
+            )}
+            {addAsset && (
+                <Icon
+                    icon="add"
+                    ratio={0.95}
+                    style={{ cursor: 'pointer' }}
+                    onClick={addToAsset}
+                />
             )}
         </span>
     )
