@@ -680,14 +680,17 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 && !this.tokensAssets.has(key)
             ) {
                 try {
-                    let asset = await TokenWallet.getTokenFullDetails(root) as TokenAsset
+                    const { decimals, name, symbol } = await TokenWallet.getTokenFullDetails(root) as TokenAsset
 
-                    asset = {
-                        ...asset,
-                        key,
+                    const asset = {
                         chainId,
+                        decimals,
+                        key,
+                        name,
                         pipelines: [],
-                    }
+                        root,
+                        symbol,
+                    } as TokenAsset
 
                     try {
                         const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
