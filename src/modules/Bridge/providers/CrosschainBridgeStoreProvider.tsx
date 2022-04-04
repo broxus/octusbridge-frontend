@@ -71,6 +71,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                         ? (bridge.token?.decimals || 0)
                         : (bridge.pipeline?.evmTokenDecimals || 0))
                     .toFixed(),
+                depositFee: bridge.depositFee,
                 depositType: bridge.depositType,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,

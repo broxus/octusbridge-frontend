@@ -863,7 +863,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         this.pipeline.isMultiVault
                         && root !== undefined
                         && isEvmAddressValid(root)
-                        && !this.tokensAssets.has(key)
                     ) {
                         try {
                             // fixme: chainId ?
@@ -962,6 +961,25 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
     public get depositType(): EverscaleTransferQueryParams['depositType'] {
         return this.params?.depositType
+    }
+
+    /**
+     * Returns non-shifted amount field BigNumber instance
+     */
+    public get amountNumber(): BigNumber {
+        return new BigNumber(this.amount || 0)
+    }
+
+    public get withdrawFee(): string {
+        if (this.pipeline?.isMultiVault) {
+            return this.amountNumber
+                .times(this.pipeline?.withdrawFee ?? 0)
+                .div(10000)
+                .dp(0, BigNumber.ROUND_UP)
+                .shiftedBy(-(this.token?.decimals || 0))
+                .toFixed()
+        }
+        return '0'
     }
 
     public get leftNetwork(): NetworkShape | undefined {

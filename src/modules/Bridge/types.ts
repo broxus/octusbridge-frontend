@@ -18,7 +18,6 @@ export type CrosschainBridgeStoreData = {
     amount: string;
     bridgeFee?: string;
     creditFactoryFee?: string;
-    depositFee?: string;
     depositType: 'default' | 'credit';
     eversAmount?: string;
     isTokenChainSameToTargetChain: boolean;
@@ -40,7 +39,6 @@ export type CrosschainBridgeStoreData = {
     swapType: '0' | '1';
     tokenAmount?: string;
     txHash?: string;
-    withdrawFee?: string;
 }
 
 export type CrosschainBridgeStoreState = {
@@ -82,7 +80,6 @@ export type EvmTransferQueryParams = {
 export type EvmTransferStoreData = {
     amount: string;
     deriveEventAddress?: Address;
-    // ethConfigAddress?: Address;
     eventVoteData?: EventVoteData;
     leftAddress?: string;
     pipeline?: Pipeline;
@@ -211,6 +208,7 @@ export type TransferSummaryData = {
     amount?: string;
     bridgeFee?: string;
     depositType?: string;
+    depositFee?: string;
     everscaleAddress?: string;
     hiddenBridgePipeline?: Pipeline;
     leftAddress?: string;

@@ -860,6 +860,22 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         return this.params?.depositType
     }
 
+    public get amountNumber(): BigNumber {
+        return new BigNumber(this.amount || 0)
+    }
+
+    public get depositFee(): string {
+        if (this.pipeline?.isMultiVault) {
+            return this.amountNumber
+                .times(this.pipeline?.depositFee ?? 0)
+                .div(10000)
+                .dp(0, BigNumber.ROUND_UP)
+                .shiftedBy(-(this.pipeline.evmTokenDecimals || 0))
+                .toFixed()
+        }
+        return '0'
+    }
+
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined

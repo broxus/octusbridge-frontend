@@ -1353,7 +1353,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             pairAddress: undefined,
             pairState: undefined,
             pipeline: undefined,
-            withdrawFee: undefined,
         })
         this.setState({
             isCalculating: false,
@@ -1946,6 +1945,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             }
             else if (this.isFromEverscale && isEverscaleAddressValid(this.token.root)) {
                 try {
+                    await this.tokensAssets.syncEvmTokenMultiVaultMeta(this.pipeline.evmTokenAddress, this.pipeline)
                     const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(this.token.root))
                     const meta = await rootContract.methods.meta({ answerId: 0 }).call()
 
@@ -1969,13 +1969,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                 if (this.pipeline.isNative) {
                     try {
-                        await runInAction(async () => {
-                            this.pipeline!.evmTokenAddress = await this.multiVaultContract?.methods
-                                .getNativeToken(
-                                    this.token!.root.split(':')[0],
-                                    `0x${this.token!.root.split(':')[1]}`,
-                                )
-                                .call()
+                        const evmTokenAddress = await this.multiVaultContract?.methods
+                            .getNativeToken(
+                                this.token!.root.split(':')[0],
+                                `0x${this.token!.root.split(':')[1]}`,
+                            )
+                            .call()
+
+                        runInAction(() => {
+                            this.pipeline!.evmTokenAddress = evmTokenAddress
                         })
                     }
                     catch (e) {
@@ -2033,7 +2035,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             }
         }
 
-        debug('Synced token', toJS(this.token))
+        debug('Synced token', toJS(this.token), toJS(this.pipeline))
     }
 
     /**
@@ -2085,10 +2087,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get minTransferFee(): CrosschainBridgeStoreData['minTransferFee'] {
         return this.data.minTransferFee
-    }
-
-    public get withdrawFee(): CrosschainBridgeStoreData['withdrawFee'] {
-        return this.data.withdrawFee
     }
 
     /**
@@ -2239,6 +2237,30 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      */
     public get minReceiveTokensNumber(): BigNumber {
         return new BigNumber(this.minReceiveTokens || 0)
+    }
+
+    public get depositFee(): string {
+        if (this.pipeline?.isMultiVault && this.isFromEvm) {
+            return this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals || 0)
+                .times(this.pipeline?.depositFee ?? 0)
+                .div(10000)
+                .dp(0, BigNumber.ROUND_UP)
+                .shiftedBy(-(this.pipeline.evmTokenDecimals || 0))
+                .toFixed()
+        }
+        return '0'
+    }
+
+    public get withdrawFee(): string {
+        if (this.pipeline?.isMultiVault && this.isFromEverscale) {
+            return this.amountNumber.shiftedBy(this.token?.decimals || 0)
+                .times(this.pipeline?.withdrawFee ?? 0)
+                .div(10000)
+                .dp(0, BigNumber.ROUND_UP)
+                .shiftedBy(-(this.token?.decimals || 0))
+                .toFixed()
+        }
+        return '0'
     }
 
     public get isAmountVaultLimitExceed(): boolean {

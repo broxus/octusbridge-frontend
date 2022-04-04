@@ -97,7 +97,12 @@ export const StakingAccountAddress = new AddressLiteral('0:ec6a2fd6c3732e494684d
 
 export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa24edde79728142d2bfb74bc9edf66ad86ae7cd8e56a86')
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/everscale-based-1/main.json'
+export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/common.json'
+
+export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/octus.json'
+
+// eslint-disable-next-line import/export
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 

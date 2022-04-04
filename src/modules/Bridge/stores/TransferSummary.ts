@@ -69,6 +69,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.data.minTransferFee
     }
 
+    public get depositFee(): TransferSummaryData['depositFee'] {
+        return this.data.depositFee
+    }
+
     public get withdrawFee(): TransferSummaryData['withdrawFee'] {
         return this.data.withdrawFee
     }
@@ -139,6 +143,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get isFromEverscale(): boolean {
         return this.leftNetwork?.type === 'everscale'
+    }
+
+    public get isFromEvm(): boolean {
+        return this.leftNetwork?.type === 'evm'
     }
 
     public get isEverscaleToEvm(): boolean {

@@ -70,6 +70,10 @@ export function TokensAssetsFieldset(): JSX.Element {
         setImporting(false)
     }
 
+    const onInputKeyDown = () => {
+        setToken(undefined)
+    }
+
     const onSearch = async (value: string) => {
         if (bridge.leftNetwork?.type === undefined || bridge.leftNetwork.chainId === undefined) {
             return
@@ -97,6 +101,7 @@ export function TokensAssetsFieldset(): JSX.Element {
 
                 setToken({
                     ...asset,
+                    root,
                     key,
                     chainId,
                     pipelines: [],
@@ -140,14 +145,12 @@ export function TokensAssetsFieldset(): JSX.Element {
                     }
                 }
                 catch (e) {
-                    console.log(e)
                     //
                 }
 
-                console.log(asset)
-
                 setToken({
                     ...asset,
+                    root,
                     key,
                     chainId,
                     pipelines: [],
@@ -185,7 +188,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                                 uri={token.icon}
                                             />
                                             <div className="token-select-label__symbol text-truncate">
-                                                {`${token.symbol} (${sliceAddress(token.root)})`}
+                                                {`${token.symbol ?? 'Non-exist'} (${sliceAddress(token.root)})`}
                                             </div>
                                             {bridge.leftNetwork?.tokenType !== undefined && (
                                                 <div className="token-select-label__badge">
@@ -235,6 +238,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                 onChange={token === undefined ? onChangeToken : undefined}
                                 onClear={onClear}
                                 onSearch={onSearch}
+                                onInputKeyDown={onInputKeyDown}
                             />
                         )}
                     </Observer>
@@ -261,7 +265,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                         )}
                     </Observer>
                 </div>
-                {token !== undefined && (
+                {(token?.symbol !== undefined && token.root !== undefined) && (
                     <>
                         <div className="crosschain-transfer__wallet">
                             <Button
