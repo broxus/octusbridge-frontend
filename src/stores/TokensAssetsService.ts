@@ -1109,12 +1109,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             return
         }
 
-        const token = this.get('evm', pipeline.chainId, root)
-
-        if (token?.chainId === undefined || token.name === undefined) {
-            return
-        }
-
         let everscaleTokenAddress: string | undefined
 
         if (pipeline.isNative) {
@@ -1126,6 +1120,12 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 : undefined
         }
         else {
+            const token = this.get('evm', pipeline.chainId, root)
+
+            if (token?.chainId === undefined || token.name === undefined) {
+                return
+            }
+
             everscaleTokenAddress = (await alienTokenProxyContract(rpc, pipeline.proxy).methods
                 .deriveAlienTokenRoot({
                     answerId: 0,

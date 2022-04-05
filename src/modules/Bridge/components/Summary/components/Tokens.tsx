@@ -32,11 +32,24 @@ export function Tokens(): JSX.Element {
         const asset = tokensAssets.get('evm', summary.pipeline.chainId, address.toLowerCase())
         try {
             const contract = tokensAssets.getEvmTokenContract(address, summary.pipeline.chainId)
-            const symbol = await contract?.methods.symbol().call()
+            let symbol
+            try {
+                symbol = await contract?.methods.symbol().call()
+            }
+            catch (e) {
+                const vaultContract = tokensAssets.getEvmTokenMultiVaultContract(
+                    summary.pipeline.vault,
+                    summary.pipeline.chainId,
+                )
+                const [activation, , symbolPrefix] = await vaultContract!.methods
+                    .prefixes(address.toLowerCase()).call()
+                symbol = `${activation === '0' ? 'oct' : symbolPrefix}${summary.token.symbol}`
+            }
+
             await evmWallet.addAsset({
                 address,
                 decimals: summary.token.decimals,
-                image: asset?.icon,
+                image: asset?.icon || summary.token.icon,
                 symbol,
             })
 

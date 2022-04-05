@@ -51,7 +51,7 @@ import {
     getLabeledNetworks,
     isEverscaleAddressValid,
     isEvmAddressValid,
-    isGoodBignumber,
+    isGoodBignumber, storage,
     throwException,
     validateMaxValue,
     validateMinValue,
@@ -908,6 +908,62 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 bounce: true,
                 from: new Address(this.leftAddress),
             })
+
+            if (
+                this.pipeline.isMultiVault
+                && this.token !== undefined
+            ) {
+                try {
+                    const { chainId, type } = this.rightNetwork
+
+                    const vaultContract = this.tokensAssets.getEvmTokenMultiVaultContract(
+                        this.pipeline.vault,
+                        this.pipeline.chainId,
+                    )
+
+                    const [wid, addr] = this.token.root.split(':')
+                    const root = (await vaultContract!.methods.getNativeToken(wid, `0x${addr}`).call()).toLowerCase()
+                    const key = `${type}-${chainId}-${root}`
+
+                    const contract = this.tokensAssets.getEvmTokenContract(root, chainId)
+                    const { decimals } = this.token
+
+                    let name,
+                        symbol
+
+                    try {
+                        name = await contract?.methods.name().call()
+                        symbol = await contract?.methods.symbol().call()
+                    }
+                    catch (e) {
+                        const [activation, namePrefix, symbolPrefix] = await vaultContract!.methods
+                            .prefixes(root.toLowerCase()).call()
+                        name = `${activation === '0' ? 'Octus ' : namePrefix}${this.token.name}`
+                        symbol = `${activation === '0' ? 'oct' : symbolPrefix}${this.token.symbol}`
+                    }
+
+                    const asset = {
+                        root,
+                        decimals,
+                        name,
+                        symbol,
+                        key,
+                        chainId,
+                        icon: this.token.icon,
+                    } as TokenAsset
+
+                    this.tokensAssets.add({ ...asset, pipelines: [] })
+
+                    const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                    importedAssets[key] = asset
+
+                    storage.set('imported_assets', JSON.stringify(importedAssets))
+                }
+                catch (e) {
+                    //
+                }
+            }
 
             const eventAddress = await eventStream.first()
 

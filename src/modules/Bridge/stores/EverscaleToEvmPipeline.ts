@@ -32,8 +32,6 @@ import {
     debug,
     error,
     findNetwork,
-    isEvmAddressValid,
-    storage,
 } from '@/utils'
 
 
@@ -854,56 +852,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         isReleased,
                         status: isReleased ? 'confirmed' : 'disabled',
                     })
-
-                    const { chainId, type } = this.rightNetwork
-                    const root = this.pipeline.evmTokenAddress?.toLowerCase()
-                    const key = `${type}-${chainId}-${root}`
-
-                    if (
-                        this.pipeline.isMultiVault
-                        && root !== undefined
-                        && isEvmAddressValid(root)
-                    ) {
-                        try {
-                            // fixme: chainId ?
-                            const contract = this.tokensAssets.getEvmTokenContract(root, chainId)
-                            const [name, symbol, decimals] = await Promise.all([
-                                contract?.methods.name().call(),
-                                contract?.methods.symbol().call(),
-                                contract?.methods.decimals().call(),
-                            ])
-
-                            const asset = {
-                                root,
-                                decimals: parseInt(decimals, 10),
-                                name,
-                                symbol,
-                                key,
-                                chainId,
-                            } as TokenAsset
-
-                            try {
-                                const result = await vaultContract?.methods.natives(root).call()
-                                const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
-                                const everscaleToken = this.tokensAssets.get('everscale', '1', everscaleAddress)
-                                asset.icon = everscaleToken?.icon
-                            }
-                            catch (e) {
-                                //
-                            }
-
-                            this.tokensAssets.add({ ...asset, pipelines: [] })
-
-                            const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
-
-                            importedAssets[key] = asset
-
-                            storage.set('imported_assets', JSON.stringify(importedAssets))
-                        }
-                        catch (e) {
-                            //
-                        }
-                    }
                 }
 
                 if (isReleased) {
