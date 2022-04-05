@@ -20,6 +20,7 @@ export type CrosschainBridgeStoreData = {
     creditFactoryFee?: string;
     depositType: 'default' | 'credit';
     eversAmount?: string;
+    hiddenBridgePipeline?: Pipeline;
     isTokenChainSameToTargetChain: boolean;
     leftAddress: string;
     leftNetwork?: NetworkShape;

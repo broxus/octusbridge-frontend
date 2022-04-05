@@ -48,8 +48,8 @@ export function EverscanAccountLink({
             )}
             {addAsset && (
                 <Icon
-                    icon="add"
-                    ratio={0.95}
+                    icon="addAssetToWallet"
+                    ratio={0.85}
                     style={{ cursor: 'pointer' }}
                     onClick={addToAsset}
                 />

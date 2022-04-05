@@ -10,11 +10,17 @@ import { Contract as EthContract } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
 
 import {
-    AlienTokenListURI, BridgeAssetsURI, TokenAssetsURI, TokenListURI,
+    AlienTokenListURI,
+    BridgeAssetsURI,
+    TokenAssetsURI,
+    TokenListURI,
 } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import {
-    EthAbi, MultiVault, TokenAbi, TokenWallet,
+    EthAbi,
+    MultiVault,
+    TokenAbi,
+    TokenWallet,
 } from '@/misc'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
@@ -26,7 +32,9 @@ import {
     findNetwork,
     getEverscaleMainNetwork,
     isEverscaleAddressValid,
-    isEvmAddressValid, storage, warn,
+    isEvmAddressValid,
+    storage,
+    warn,
 } from '@/utils'
 import { BaseStore } from '@/stores/BaseStore'
 
@@ -274,19 +282,24 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             })
         })
 
-        try {
-            const importedTokens = JSON.parse(storage.get('imported_assets') || '{}')
-            Object.values<TokenAsset>({ ...importedTokens }).forEach(token => {
-                if (!this.has(token.key)) {
-                    alienTokens.push({ ...token, pipelines: [] })
-                }
-            })
-        }
-        catch (e) {
-
-        }
-
         this.setData('tokens', alienTokens)
+
+        if (this.tokens.length > 0) {
+            setTimeout(() => {
+                try {
+                    const importedTokens = JSON.parse(storage.get('imported_assets') || '{}')
+                    Object.values<TokenAsset>({ ...importedTokens }).forEach(token => {
+                        if (!this.has(token.key)) {
+                            this.add({ ...token, pipelines: [] })
+                        }
+                    })
+                }
+                catch (e) {
+
+                }
+            }, 10)
+        }
+
         this.setState('isReady', true)
     }
 
@@ -294,10 +307,10 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * Returns tokens map where key is a token root address.
      * @protected
      */
-    protected get _byKey(): Map<string, TokensAssetsStoreData['tokens'][number]> {
-        const map = new Map<string, TokensAssetsStoreData['tokens'][number]>()
+    protected get _byKey(): Record<string, TokensAssetsStoreData['tokens'][number]> {
+        const map: Record<string, TokensAssetsStoreData['tokens'][number]> = {}
         this.tokens.forEach(token => {
-            map.set(token.key, token)
+            map[token.key] = token
         })
         return map
     }
@@ -310,7 +323,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @returns {TokenAsset}
      */
     public get(networkType: string, chainId: string, root: string): TokenAsset | undefined {
-        return this._byKey.get(`${networkType}-${chainId}-${root.toLowerCase()}`)
+        return this._byKey[`${networkType}-${chainId}-${root.toLowerCase()}`]
     }
 
     /**
@@ -319,7 +332,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @returns {boolean}
      */
     public has(key: string): boolean {
-        return this._byKey.has(key)
+        return this._byKey[key] !== undefined
     }
 
     /**
@@ -902,12 +915,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             return
         }
 
-        const token = this.get('everscale', '1', root)
-
-        if (token === undefined) {
-            return
-        }
-
         let evmTokenAddress: string | undefined
         if (pipeline.isMultiVault) {
             if (pipeline.isNative) {
@@ -919,7 +926,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                     .call()
             }
             else {
-                const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(token.root))
+                const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
                 const meta = await rootContract.methods.meta({ answerId: 0 }).call()
                 evmTokenAddress = `0x${new BigNumber(meta.base_token)
                     .toString(16)
@@ -996,12 +1003,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      */
     public async syncEvmTokenMultiVaultMeta(root?: string, pipeline?: Pipeline): Promise<void> {
         if (root === undefined || pipeline?.chainId === undefined) {
-            return
-        }
-
-        const token = this.get('evm', pipeline.chainId, root)
-
-        if (token === undefined) {
             return
         }
 

@@ -73,6 +73,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                     .toFixed(),
                 depositFee: bridge.depositFee,
                 depositType: bridge.depositType,
+                hiddenBridgePipeline: bridge.hiddenBridgePipeline,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
                 maxTransferFee: bridge.maxTransferFee,

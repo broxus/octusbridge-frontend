@@ -1993,7 +1993,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         )
                     }
                     catch (e) {
-
+                        error(e)
                     }
                 }
             }
@@ -2031,6 +2031,30 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 catch (e) {
                     error('Sync vault balance or limit error', e)
+                }
+            }
+        }
+
+        if (this.isEvmToEvm && this.rightNetwork !== undefined) {
+            const everscaleMainNetwork = getEverscaleMainNetwork()
+            const hiddenBridgePipeline = await this.tokensAssets.pipeline(
+                this.token.root,
+                `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
+                `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                'default',
+            )
+            if (hiddenBridgePipeline !== undefined) {
+                hiddenBridgePipeline.evmTokenAddress = undefined
+                this.setData('hiddenBridgePipeline', hiddenBridgePipeline)
+                try {
+                    await this.tokensAssets.syncEvmTokenAddress(this.token.root, this.hiddenBridgePipeline)
+                    await this.tokensAssets.syncEvmTokenDecimals(
+                        this.hiddenBridgePipeline?.evmTokenAddress,
+                        this.hiddenBridgePipeline,
+                    )
+                }
+                catch (e) {
+                    error(e)
                 }
             }
         }
@@ -2125,6 +2149,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get pipeline(): CrosschainBridgeStoreData['pipeline'] {
         return this.data.pipeline
+    }
+
+    public get hiddenBridgePipeline(): CrosschainBridgeStoreData['hiddenBridgePipeline'] {
+        return this.data.hiddenBridgePipeline
     }
 
     public get rightAddress(): CrosschainBridgeStoreData['rightAddress'] {
