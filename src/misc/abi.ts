@@ -7836,6 +7836,31 @@ export class EthAbi {
                 },
                 {
                     indexed: false,
+                    internalType: 'bool',
+                    name: 'skim_to_everscale',
+                    type: 'bool',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'SkimFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
                     internalType: 'uint256',
                     name: 'activation',
                     type: 'uint256',
@@ -7882,6 +7907,18 @@ export class EthAbi {
                     internalType: 'uint256',
                     name: 'native_addr',
                     type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'name_prefix',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'symbol_prefix',
+                    type: 'string',
                 },
                 {
                     indexed: false,
@@ -7972,7 +8009,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            name: 'UpdateDefaultDepositFee',
+            name: 'UpdateDefaultAlienDepositFee',
             type: 'event',
         },
         {
@@ -7985,7 +8022,33 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            name: 'UpdateDefaultWithdrawFee',
+            name: 'UpdateDefaultAlienWithdrawFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultNativeDepositFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultNativeWithdrawFee',
             type: 'event',
         },
         {
@@ -8076,6 +8139,31 @@ export class EthAbi {
                 },
                 {
                     indexed: false,
+                    internalType: 'string',
+                    name: 'name_prefix',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'symbol_prefix',
+                    type: 'string',
+                },
+            ],
+            name: 'UpdateTokenPrefix',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
                     internalType: 'uint256',
                     name: 'fee',
                     type: 'uint256',
@@ -8114,7 +8202,7 @@ export class EthAbi {
                 {
                     indexed: false,
                     internalType: 'uint256',
-                    name: 'amunt',
+                    name: 'amount',
                     type: 'uint256',
                 },
                 {
@@ -8267,7 +8355,7 @@ export class EthAbi {
         },
         {
             inputs: [],
-            name: 'defaultDepositFee',
+            name: 'defaultAlienDepositFee',
             outputs: [
                 {
                     internalType: 'uint256',
@@ -8280,7 +8368,33 @@ export class EthAbi {
         },
         {
             inputs: [],
-            name: 'defaultWithdrawFee',
+            name: 'defaultAlienWithdrawFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'defaultNativeDepositFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'defaultNativeWithdrawFee',
             outputs: [
                 {
                     internalType: 'uint256',
@@ -8340,6 +8454,25 @@ export class EthAbi {
             type: 'function',
         },
         {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            name: 'fees',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
             inputs: [],
             name: 'getChainID',
             outputs: [
@@ -8350,6 +8483,19 @@ export class EthAbi {
                 },
             ],
             stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'getInitHash',
+            outputs: [
+                {
+                    internalType: 'bytes32',
+                    name: '',
+                    type: 'bytes32',
+                },
+            ],
+            stateMutability: 'pure',
             type: 'function',
         },
         {
@@ -8414,23 +8560,6 @@ export class EthAbi {
                     name: '_governance',
                     type: 'address',
                 },
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: '_rewards',
-                    type: 'tuple',
-                },
             ],
             name: 'initialize',
             outputs: [],
@@ -8492,6 +8621,42 @@ export class EthAbi {
                         },
                     ],
                     internalType: 'struct IEverscale.EverscaleAddress',
+                    name: '',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '_token',
+                    type: 'address',
+                },
+            ],
+            name: 'prefixes',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'uint256',
+                            name: 'activation',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'string',
+                            name: 'name',
+                            type: 'string',
+                        },
+                        {
+                            internalType: 'string',
+                            name: 'symbol',
+                            type: 'string',
+                        },
+                    ],
+                    internalType: 'struct IMultiVault.TokenPrefix',
                     name: '',
                     type: 'tuple',
                 },
@@ -8614,11 +8779,11 @@ export class EthAbi {
             inputs: [
                 {
                     internalType: 'uint256',
-                    name: '_defaultDepositFee',
+                    name: 'fee',
                     type: 'uint256',
                 },
             ],
-            name: 'setDefaultDepositFee',
+            name: 'setDefaultAlienDepositFee',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -8627,11 +8792,37 @@ export class EthAbi {
             inputs: [
                 {
                     internalType: 'uint256',
-                    name: '_defaultWithdrawFee',
+                    name: 'fee',
                     type: 'uint256',
                 },
             ],
-            name: 'setDefaultWithdrawFee',
+            name: 'setDefaultAlienWithdrawFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultNativeDepositFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultNativeWithdrawFee',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -8684,6 +8875,29 @@ export class EthAbi {
                 },
             ],
             name: 'setManagement',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'string',
+                    name: 'name_prefix',
+                    type: 'string',
+                },
+                {
+                    internalType: 'string',
+                    name: 'symbol_prefix',
+                    type: 'string',
+                },
+            ],
+            name: 'setPrefix',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -8745,6 +8959,24 @@ export class EthAbi {
                 },
             ],
             name: 'setTokenWithdrawFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'bool',
+                    name: 'skim_to_everscale',
+                    type: 'bool',
+                },
+            ],
+            name: 'skim',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',

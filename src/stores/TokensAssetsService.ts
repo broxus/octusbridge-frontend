@@ -1014,14 +1014,26 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
         // eslint-disable-next-line eqeqeq
         if (meta.activation == '0') {
-            [depositFee, withdrawFee] = await Promise.all([
-                this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
-                    .defaultDepositFee()
-                    .call(),
-                this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
-                    .defaultWithdrawFee()
-                    .call(),
-            ])
+            if (pipeline.tokenBase === 'evm') {
+                [depositFee, withdrawFee] = await Promise.all([
+                    this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                        .defaultAlienDepositFee()
+                        .call(),
+                    this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                        .defaultAlienWithdrawFee()
+                        .call(),
+                ])
+            }
+            else {
+                [depositFee, withdrawFee] = await Promise.all([
+                    this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                        .defaultNativeDepositFee()
+                        .call(),
+                    this.getEvmTokenMultiVaultContract(pipeline.vault, pipeline.chainId)?.methods
+                        .defaultNativeWithdrawFee()
+                        .call(),
+                ])
+            }
         }
 
         // Force update
