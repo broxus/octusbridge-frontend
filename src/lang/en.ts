@@ -102,8 +102,8 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT: 'If you require a more significant withdrawal amount, you will be able to request additional liquidity or run the margin call at the next step.',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE: 'Transfer not available',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT: 'The <b>{symbol}</b> token is blacklisted and its further transfer to the <b>{blockchain}</b> blockchain is unavailable.',
-    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TITLE: 'Token is not deployed',
-    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TEXT: 'The <b>{symbol}</b> token is not yet deployed into the <b>{blockchain}</b> blockchain. To continue you should deploy token root.',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TITLE: 'Token has not been deployed',
+    CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TEXT: 'The <b>{symbol}</b> token has not yet been deployed on the <b>{blockchain}</b> blockchain. To continue, you should deploy the token root contract.',
 
     CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing EVERs to pay gas fees?',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',
