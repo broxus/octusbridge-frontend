@@ -7,13 +7,14 @@ import { Button } from '@/components/common/Button'
 import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
+import { useBridge, useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
 import { isEverscaleAddressValid } from '@/utils'
 
 
 function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
+    const { bridge } = useBridge()
     const transfer = useEvmHiddenSwapTransfer()
 
     const isTransferPage = (
@@ -27,6 +28,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
+    const rightNetwork = isTransferPage ? transfer.rightNetwork : bridge.rightNetwork
     const waitingWallet = (
         (!evmWallet.isReady || !everWallet.isReady)
         && isEventConfirmed
@@ -60,7 +62,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
             }, {
-                network: transfer.rightNetwork?.label || '',
+                network: rightNetwork?.label || '',
             })}
             waitingWallet={waitingWallet}
             wrongNetwork={wrongNetwork}
