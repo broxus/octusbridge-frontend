@@ -109,7 +109,6 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
         })
 
         try {
-
             const network = findNetwork(this.leftNetwork.chainId, 'evm')
 
             let txReceipt
@@ -126,6 +125,16 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             }
             else {
                 this.setState('isCheckingTransaction', false)
+            }
+        }
+        catch (e) {
+            error('Check transaction error', e)
+            this.setState('isCheckingTransaction', false)
+            return
+        }
+
+        if (!this.state.isCheckingTransaction) {
+            try {
                 switch (true) {
                     case this.secondEventState?.status === 'confirmed' && this.releaseState?.status !== 'confirmed':
                         await this.runEventUpdater()
@@ -135,10 +144,9 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
                         await this.resolve()
                 }
             }
-        }
-        catch (e) {
-            error('Check transaction error', e)
-            this.setState('isCheckingTransaction', false)
+            catch (e) {
+                error('Resolve error', e)
+            }
         }
     }
 

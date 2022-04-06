@@ -120,16 +120,6 @@ export class EvmToEverscaleSwapPipeline<
             }
         }, { delay: 30 })
 
-        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
-            if (
-                isConnected
-                && this.everWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
-                await this.checkTransaction()
-            }
-        }, { delay: 30 })
-
         this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, async isConnected => {
             if (
                 isConnected
@@ -150,13 +140,11 @@ export class EvmToEverscaleSwapPipeline<
             }
         }, { delay: 30 })
 
-        if (
-            this.evmWallet.isConnected
-            && this.everWallet.isConnected
-            && this.evmWallet.chainId === this.leftNetwork?.chainId
-        ) {
-            await this.checkTransaction()
-        }
+        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
+            if (isConnected) {
+                await this.checkTransaction(true)
+            }
+        }, { delay: 30, fireImmediately: true })
     }
 
     public dispose(): void {
@@ -197,12 +185,21 @@ export class EvmToEverscaleSwapPipeline<
             }
             else {
                 this.setState('isCheckingTransaction', false)
-                await this.resolve()
             }
         }
         catch (e) {
             error('Check transaction error', e)
             this.setState('isCheckingTransaction', false)
+            return
+        }
+
+        if (!this.state.isCheckingTransaction) {
+            try {
+                await this.resolve()
+            }
+            catch (e) {
+                error('Resolve error', e)
+            }
         }
     }
 

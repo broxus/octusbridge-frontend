@@ -89,13 +89,9 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
         this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, async isConnected => {
             if (isConnected) {
-                await this.checkContract()
+                await this.checkContract(true)
             }
-        }, { delay: 30 })
-
-        if (this.everWallet.isConnected) {
-            await this.checkContract()
-        }
+        }, { delay: 30, fireImmediately: true })
     }
 
     public dispose(): void {

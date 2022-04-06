@@ -85,21 +85,17 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             return
         }
 
-        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
-            if (isConnected) {
-                await this.checkTransaction()
-            }
-        }, { delay: 30 })
-
         this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
             if (this.evmWallet.isConnected) {
                 await this.checkTransaction()
             }
         }, { delay: 30 })
 
-        if (this.evmWallet.isConnected) {
-            await this.checkTransaction()
-        }
+        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
+            if (isConnected) {
+                await this.checkTransaction(true)
+            }
+        }, { delay: 30, fireImmediately: true })
     }
 
     public dispose(): void {
@@ -137,12 +133,28 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             }
             else {
                 this.setState('isCheckingTransaction', false)
-                await this.resolve()
             }
         }
         catch (e) {
             error('Check transaction error', e)
             this.setState('isCheckingTransaction', false)
+            return
+        }
+
+        if (!this.state.isCheckingTransaction) {
+            try {
+                switch (true) {
+                    case this.transferState?.status === 'confirmed' && this.prepareState?.status !== 'confirmed':
+                        await this.runPrepareUpdater()
+                        break
+
+                    default:
+                        await this.resolve()
+                }
+            }
+            catch (e) {
+                error('Resolve error', e)
+            }
         }
     }
 
