@@ -218,8 +218,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 return
             }
 
-            this.tokensAssets.buildPipelines(this.leftNetwork.type, chainId, token.root)
-
             const leftAddress = owner_address.toString()
             const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
 
