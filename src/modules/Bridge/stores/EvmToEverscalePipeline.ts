@@ -9,7 +9,7 @@ import {
     computed,
     IReactionDisposer,
     makeObservable,
-    reaction,
+    reaction, runInAction,
     toJS,
 } from 'mobx'
 import { Address, Subscription } from 'everscale-inpage-provider'
@@ -242,9 +242,19 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
                 await this.tokensAssets.syncEverscaleTokenAddress(token.root, this.pipeline)
 
-                const amount = new BigNumber(alienTransfer.events[5].value || 0)
+                const amount = new BigNumber(depositLog.events[5].value || 0)
                     .shiftedBy(-token.decimals)
                     .shiftedBy(this.pipeline?.evmTokenDecimals ?? 0)
+
+                runInAction(() => {
+                    if (depositLog.events[5].value !== '0') {
+                        this.pipeline!.depositFee = new BigNumber(depositLog.events[6].value || 0)
+                            .div(depositLog.events[5].value || 0)
+                            .multipliedBy(10000)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed()
+                    }
+                })
 
                 const targetWid = alienTransfer.events[6].value
                 const targetAddress = alienTransfer.events[7].value
@@ -312,9 +322,19 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
                 await this.tokensAssets.syncEverscaleTokenAddress(token.root, this.pipeline)
 
-                const amount = new BigNumber(nativeTransfer.events[2].value || 0)
+                const amount = new BigNumber(depositLog.events[5].value || 0)
                     .shiftedBy(-token.decimals)
                     .shiftedBy(this.pipeline?.evmTokenDecimals ?? 0)
+
+                runInAction(() => {
+                    if (depositLog.events[5].value !== '0') {
+                        this.pipeline!.depositFee = new BigNumber(depositLog.events[6].value || 0)
+                            .div(depositLog.events[5].value || 0)
+                            .multipliedBy(10000)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed()
+                    }
+                })
 
                 const targetWid = nativeTransfer.events[3].value
                 const targetAddress = nativeTransfer.events[4].value
