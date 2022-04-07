@@ -120,7 +120,11 @@ export function CreateRelayerSummary({
                     </span>
                     {
                         contractFee !== undefined && tonTokenDecimals !== undefined
-                            ? formattedAmount(contractFee, tonTokenDecimals, { target: 'token' })
+                            ? formattedAmount(
+                                contractFee,
+                                tonTokenDecimals,
+                                { preserve: true, roundIfThousand: false },
+                            )
                             : noValue
                     }
                 </li>

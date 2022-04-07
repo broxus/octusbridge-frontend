@@ -131,10 +131,10 @@ function RelayerStatusInner(): JSX.Element {
                                                 amount: formattedAmount(
                                                     stakingData.eventInitialBalance,
                                                     DexConstants.CoinDecimals,
-                                                    { preserve: true },
+                                                    { preserve: true, roundIfThousand: false },
                                                 ),
                                                 symbol: DexConstants.CoinSymbol,
-                                            })}
+                                            }, { ignoreTag: true })}
                                         />
                                     </p>
                                 )

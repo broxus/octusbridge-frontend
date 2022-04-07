@@ -283,7 +283,7 @@ export default {
     RELAYERS_CREATE_CONFIRMATION_FEE: 'Contract fee',
     RELAYERS_CREATE_CONFIRMATION_CANCEL: 'Cancel',
     RELAYERS_CREATE_CONFIRMATION_SUBMIT: 'Confirm',
-    RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING: 'Your current wallet balance is insufficient. Please increase your wallet balance to at least {amount} {symbol} tokens.',
+    RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING: 'Your current wallet balance is insufficient. Please increase your wallet balance to at least <span class="text-nowrap">{amount} {symbol}</span> tokens.',
     RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING_TITLE: 'Insufficient balance',
 
     RELAYERS_CREATE_SUCCESS_TITLE: 'Relayer has been created',

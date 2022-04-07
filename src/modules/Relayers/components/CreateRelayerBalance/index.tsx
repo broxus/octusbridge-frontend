@@ -153,10 +153,10 @@ export function CreateRelayerBalance({
                             amount: formattedAmount(
                                 contractFee,
                                 tonTokenDecimals,
-                                { target: 'token' },
+                                { preserve: true, roundIfThousand: false },
                             ),
                             symbol: tonTokenSymbol,
-                        })}
+                        }, { ignoreTag: true })}
                         type="danger"
                     />
                 )

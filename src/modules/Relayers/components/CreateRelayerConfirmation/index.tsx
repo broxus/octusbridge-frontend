@@ -149,9 +149,13 @@ export function CreateRelayerConfirmation({
                             text={intl.formatMessage({
                                 id: 'RELAYERS_CREATE_CONFIRMATION_BALANCE_WARNING',
                             }, {
-                                amount: formattedAmount(contractFee, tonTokenDecimals, { target: 'token' }),
+                                amount: formattedAmount(
+                                    contractFee,
+                                    tonTokenDecimals,
+                                    { preserve: true, roundIfThousand: false },
+                                ),
                                 symbol: tonTokenSymbol,
-                            })}
+                            }, { ignoreTag: true })}
                             type="danger"
                         />
                     </div>
