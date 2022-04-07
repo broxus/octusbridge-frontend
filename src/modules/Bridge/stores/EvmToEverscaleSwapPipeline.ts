@@ -1,7 +1,6 @@
 import {
     addABI,
     decodeLogs,
-    decodeMethod,
     keepNonDecodedLogs,
 } from 'abi-decoder'
 import BigNumber from 'bignumber.js'
@@ -227,8 +226,16 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
+            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+
+            addABI(EthAbi.Vault)
+            addABI(EthAbi.MultiVault)
+
+            const decodedLogs = decodeLogs(txReceipt.logs)
+            const factoryDepositLog = decodedLogs.find(log => log?.name === 'FactoryDeposit')
+
             const token = this.tokensAssets.findTokenByVaultAddress(
-                tx.to,
+                factoryDepositLog!.address,
                 this.leftNetwork.chainId,
             )
 
@@ -258,13 +265,6 @@ export class EvmToEverscaleSwapPipeline<
             await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
             await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
 
-            addABI(EthAbi.Vault)
-            const methodCall = decodeMethod(tx.input)
-
-            if (methodCall?.name !== 'depositToFactory') {
-                return
-            }
-
             if (this.pipeline?.ethereumConfiguration === undefined) {
                 return
             }
@@ -272,11 +272,11 @@ export class EvmToEverscaleSwapPipeline<
             const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, this.pipeline?.ethereumConfiguration)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
-            const targetWid = methodCall?.params[1].value
-            const targetAddress = methodCall?.params[4].value
+            const targetWid = factoryDepositLog!.events[1].value
+            const targetAddress = factoryDepositLog!.events[4].value
 
             this.setData({
-                amount: methodCall?.params[0].value,
+                amount: factoryDepositLog!.events[0].value,
                 leftAddress: tx.from.toLowerCase(),
                 rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
             })
