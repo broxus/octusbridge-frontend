@@ -40,9 +40,9 @@ export function Footer(): JSX.Element {
             <div className="container container--large">
                 <div className="footer__wrapper">
                     <div className="footer__left">
-                        <Link to="/" className="footer-logo">
+                        <a href="https://octusbridge.io" className="footer-logo">
                             <Logo />
-                        </Link>
+                        </a>
                         {toolbar}
                     </div>
                     <nav className="footer-nav">
