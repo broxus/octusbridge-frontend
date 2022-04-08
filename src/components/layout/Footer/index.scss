@@ -132,7 +132,7 @@
     &__col {
         flex: none;
         padding-left: 32px;
-        width: 100%;
+        width: 50%;
         &-title {
             display: inline-block;
             font-size: 14px;
@@ -179,7 +179,7 @@
         row-gap: 40px;
         &__col {
             padding-left: 40px;
-            width: calc(100% * 1 / 3.001);
+            width: 25%;
         }
     }
 }
