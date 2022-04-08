@@ -10,6 +10,8 @@ import {
 
 import { NativeScrollArea } from '@/components/common/NativeScrollArea'
 import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
+import { WalletConnectingModal } from '@/components/common/WalletConnectingModal'
+import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import messages from '@/lang/en'
@@ -37,7 +39,7 @@ import './App.scss'
 
 export function App(): JSX.Element {
     const evmWallet = useEvmWallet()
-    const tonWallet = useEverWallet()
+    const everWallet = useEverWallet()
     const upgradeTokens = useUpgradeTokens()
 
     return (
@@ -109,10 +111,15 @@ export function App(): JSX.Element {
                     </div>
                     <Footer key="footer" />
                 </div>
+                <WalletConnectingModal />
                 <Observer>
                     {() => (
                         <>
-                            {(evmWallet.hasProvider || tonWallet.hasProvider) && (
+                            {(everWallet.isInitialized && everWallet.isOutdated) ? (
+                                <WalletUpdateModal />
+                            ) : null}
+
+                            {(evmWallet.hasProvider || everWallet.hasProvider) && (
                                 <NativeScrollArea className="wallets-scroll-area">
                                     <div className="wallets">
                                         <EvmWallet />

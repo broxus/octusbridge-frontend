@@ -8,4 +8,6 @@ export class DexConstants {
 
     static CoinSymbol = 'EVER'
 
+    static MinWalletVersion = '0.2.26'
+
 }

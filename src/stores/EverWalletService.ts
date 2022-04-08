@@ -1,6 +1,6 @@
 import {
-    action,
-    makeAutoObservable,
+    action, computed,
+    makeObservable,
     reaction,
     runInAction,
 } from 'mobx'
@@ -16,6 +16,8 @@ import {
 } from 'everscale-inpage-provider'
 
 import rpc from '@/hooks/useRpcClient'
+import { DexConstants } from '@/misc'
+import { BaseStore } from '@/stores/BaseStore'
 import { debug, error } from '@/utils'
 
 
@@ -26,6 +28,7 @@ export type EverWalletData = {
     balance: string;
     contract?: ContractState | FullContractState;
     transaction?: Transaction;
+    version?: string;
 }
 
 export type EverWalletState = {
@@ -65,58 +68,58 @@ export async function connectToWallet(): Promise<void> {
 }
 
 
-export class EverWalletService {
-
-    /**
-     * Current data of the wallet
-     * @type {EverWalletData}
-     * @protected
-     */
-    protected data: EverWalletData = DEFAULT_WALLET_DATA
-
-    /**
-     * Current state of the wallet connection
-     * @type {EverWalletState}
-     * @protected
-     */
-    protected state: EverWalletState = DEFAULT_WALLET_STATE
+export class EverWalletService extends BaseStore<EverWalletData, EverWalletState> {
 
     constructor() {
+        super()
+
+        this.data = DEFAULT_WALLET_DATA
+        this.state = DEFAULT_WALLET_STATE
+
         this.#contractSubscriber = undefined
 
-        makeAutoObservable(this, {
+        makeObservable(this, {
             connect: action.bound,
             disconnect: action.bound,
+            address: computed,
+            balance: computed,
+            hasProvider: computed,
+            isConnected: computed,
+            isConnecting: computed,
+            isInitialized: computed,
+            isInitializing: computed,
+            isReady: computed,
+            isOutdated: computed,
+            isUpdatingContract: computed,
+            account: computed,
+            contract: computed,
+            transaction: computed,
         })
 
         reaction(
-            () => this.data.contract?.balance,
+            () => this.contract?.balance,
             balance => {
-                this.data.balance = balance || '0'
+                this.setData('balance', balance || '0')
             },
         )
 
         reaction(
-            () => this.data.account,
+            () => this.account,
             (account, prevAccount) => {
                 if (prevAccount?.address?.toString() === account?.address?.toString()) {
-                    this.state.isConnecting = false
+                    this.setState('isConnecting', false)
                     return
                 }
 
                 this.handleAccountChange(account).then(() => {
-                    runInAction(() => {
-                        this.state.isConnecting = false
-                    })
+                    this.setState('isConnecting', false)
                 })
             },
         )
 
         this.init().catch(reason => {
             error('Wallet init error', reason)
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
+            this.setState('isConnecting', false)
         })
     }
 
@@ -129,24 +132,28 @@ export class EverWalletService {
             return
         }
 
-        const hasProvider = await hasEverscaleProvider()
+        this.setState('isConnecting', true)
 
-        runInAction(() => {
-            this.state.hasProvider = hasProvider
-            this.state.isConnecting = true
-        })
+        try {
+            const hasProvider = await hasEverscaleProvider()
+            this.setState('hasProvider', hasProvider)
+        }
+        catch (e) {
+            this.setState('hasProvider', false)
+            return
+        }
+
+        if (!this.hasProvider) {
+            return
+        }
 
         try {
             await connectToWallet()
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
+            this.setState('isConnecting', false)
         }
         catch (e) {
             error('Wallet connect error', e)
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
+            this.setState('isConnecting', false)
         }
     }
 
@@ -159,7 +166,7 @@ export class EverWalletService {
             return
         }
 
-        this.state.isConnecting = true
+        this.setState('isConnecting', true)
 
         try {
             await rpc.disconnect()
@@ -167,12 +174,15 @@ export class EverWalletService {
         }
         catch (e) {
             error('Wallet disconnect error', e)
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
+            this.setState('isConnecting', false)
         }
     }
 
+    /**
+     * Add custom token asset to the EVER Wallet
+     * @param {string} root
+     * @param {AssetType} type
+     */
     public async addAsset(root: string, type: AssetType = 'tip3_token'): Promise<void> {
         if (this.account?.address === undefined) {
             return
@@ -243,12 +253,40 @@ export class EverWalletService {
         return this.state.isInitializing
     }
 
+    /**
+     * Check if connection to EVER Wallet is complete and ready to use it
+     */
     public get isReady(): boolean {
         return (
             !this.isInitializing
             && !this.isConnecting
             && this.isInitialized
             && this.isConnected
+        )
+    }
+
+    /**
+     * Returns `true` if installed wallet has outdated version
+     */
+    public get isOutdated(): boolean {
+        if (this.data.version === undefined) {
+            return false
+        }
+
+        const [
+            currentMajorVersion = '0',
+            currentMinorVersion = '0',
+            currentPatchVersion = '0',
+        ] = this.data.version.split('.')
+        const [minMajorVersion, minMinorVersion, minPatchVersion] = DexConstants.MinWalletVersion.split('.')
+        return (
+            currentMajorVersion < minMajorVersion
+            || (currentMajorVersion <= minMajorVersion && currentMinorVersion < minMinorVersion)
+            || (
+                currentMajorVersion <= minMajorVersion
+                && currentMinorVersion <= minMinorVersion
+                && currentPatchVersion < minPatchVersion
+            )
         )
     }
 
@@ -290,55 +328,56 @@ export class EverWalletService {
      * @protected
      */
     protected async init(): Promise<void> {
-        this.state.isInitializing = true
+        this.setState('isInitializing', true)
 
-        const hasProvider = await hasEverscaleProvider()
+        let hasProvider = false
+
+        try {
+            hasProvider = await hasEverscaleProvider()
+        }
+        catch (e) {}
 
         if (!hasProvider) {
-            runInAction(() => {
-                this.state.isInitializing = false
-                this.state.hasProvider = false
+            this.setState({
+                hasProvider: false,
+                isInitializing: false,
             })
             return
         }
 
-        runInAction(() => {
-            this.state.hasProvider = hasProvider
-        })
+        this.setState('hasProvider', hasProvider)
 
-        await rpc.ensureInitialized()
+        try {
+            await rpc.ensureInitialized()
+        }
+        catch (e) {
+            return
+        }
 
-        runInAction(() => {
-            this.state.isInitializing = false
-            this.state.isInitialized = true
-            this.state.isConnecting = true
+        this.setState({
+            isInitializing: false,
+            isInitialized: true,
+            isConnecting: true,
         })
 
         const permissionsSubscriber = await rpc.subscribe('permissionsChanged')
         permissionsSubscriber.on('data', event => {
-            runInAction(() => {
-                this.data.account = event.permissions.accountInteraction
-            })
+            this.setData('account', event.permissions.accountInteraction)
         })
 
         const currentProviderState = await rpc.getProviderState()
 
         if (currentProviderState.permissions.accountInteraction === undefined) {
-            runInAction(() => {
-                this.state.isConnecting = false
-            })
+            this.setState('isConnecting', false)
             return
         }
 
-        runInAction(() => {
-            this.state.isConnecting = true
-        })
+        this.setData('version', currentProviderState.version)
+        this.setState('isConnecting', true)
 
         await connectToWallet()
 
-        runInAction(() => {
-            this.state.isConnecting = false
-        })
+        this.setState('isConnecting', false)
     }
 
     /**
@@ -347,7 +386,7 @@ export class EverWalletService {
      */
     protected reset(): void {
         this.data = DEFAULT_WALLET_DATA
-        this.state.isConnecting = false
+        this.setState('isConnecting', false)
     }
 
     /**
@@ -375,9 +414,7 @@ export class EverWalletService {
             return
         }
 
-        runInAction(() => {
-            this.state.isUpdatingContract = true
-        })
+        this.setState('isUpdatingContract', true)
 
         try {
             const { state } = await rpc.getFullContractState({
@@ -385,17 +422,15 @@ export class EverWalletService {
             })
 
             runInAction(() => {
-                this.data.contract = state
-                this.state.isUpdatingContract = false
+                this.setData('contract', state)
+                this.setState('isUpdatingContract', false)
             })
         }
         catch (e) {
             error('Get account full contract state error', e)
         }
         finally {
-            runInAction(() => {
-                this.state.isUpdatingContract = false
-            })
+            this.setState('isUpdatingContract', false)
         }
 
         try {
@@ -412,9 +447,7 @@ export class EverWalletService {
                     event,
                 )
 
-                runInAction(() => {
-                    this.data.contract = event.state
-                })
+                this.setData('contract', event.state)
             })
         }
         catch (e) {

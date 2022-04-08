@@ -18,7 +18,7 @@ export function EverWallet(): JSX.Element | null {
 
     return (
         <Observer>
-            {() => (wallet.isInitialized ? (
+            {() => (
                 <div key="ton-wallet" className="wallet">
                     {!wallet.isConnected ? (
                         <Button
@@ -75,7 +75,7 @@ export function EverWallet(): JSX.Element | null {
                         </div>
                     )}
                 </div>
-            ) : null)}
+            )}
         </Observer>
     )
 }

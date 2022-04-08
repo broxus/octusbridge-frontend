@@ -17,12 +17,19 @@ export default {
     NAV_LINK_TEXT_PROPOSALS_CREATE: 'Create proposal',
     NAV_LINK_TEXT_AIRDROP: 'Airdrop',
 
+    WALLET_CONNECTING_POPUP_TITLE: 'Connect to a wallet',
+    WALLET_CONNECTING_POPUP_LEAD_WALLET_NAME: 'EVER Wallet',
+    WALLET_CONNECTING_POPUP_LEAD_IN_PROCESS: 'Initializing...',
+    WALLET_UPDATING_POPUP_LEAD_IS_OUTDATED: 'Extension version is outdated',
+    WALLET_UPDATING_POPUP_NOTE: '<p>Your wallet version is too old. Please update extension at <a href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a> or local, through chrome://extensions/.</p><p>Reload this page after installing the update.</p>',
+    WALLET_UPDATING_LINK_TEXT: 'Update EVER Wallet',
+    WALLET_INSTALLATION_LINK_TEXT: 'Install EVER Wallet',
+    WALLET_INSTALLATION_NOTE: '<p>At the moment, only EVER Wallet supports Octus Bridge.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
+
     WALLET_BALANCE_HINT: '{value} {currency}',
     WALLET_CONNECTING: 'Connecting...',
-    WALLET_INSTALLATION_LINK_TEXT: 'Install EVER Wallet',
     WALLET_CONNECT_MSG: 'To continue, you need to connect the wallet',
 
-    TON_WALLET_INSTALLATION_NOTE: '<p>At the moment, only EVER Wallet supports Octus Bridge.</p><p>If you haven’t installed the extension yet, you can do it at <a href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="nofollow noopener noreferrer">chrome.google.com</a></p>',
     CONNECTION_TROUBLE_TITLE: 'Connection troubles',
     CONNECTION_TROUBLE_NOTE: 'At the moment we have found some problems with the network connection. Try again later or change your RPC settings',
 

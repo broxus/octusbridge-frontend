@@ -9,7 +9,7 @@ export function InstallWallet(): JSX.Element {
             <div
                 className="connect-panel-text"
                 dangerouslySetInnerHTML={{
-                    __html: intl.formatMessage({ id: 'TON_WALLET_INSTALLATION_NOTE' }),
+                    __html: intl.formatMessage({ id: 'WALLET_INSTALLATION_NOTE' }),
                 }}
             />
             <a

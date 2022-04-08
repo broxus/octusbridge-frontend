@@ -89,20 +89,31 @@ export function RouteForm({
                         <Observer>
                             {() => (
                                 <>
-                                    {(wallet !== undefined && !wallet.isConnected) && (
-                                        <div className="crosschain-transfer__wallet">
-                                            <Button
-                                                disabled={wallet.isConnecting}
-                                                size="md"
-                                                type="primary"
-                                                onClick={wallet.connect}
-                                            >
-                                                {intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT',
-                                                })}
-                                            </Button>
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        switch (true) {
+                                            case !wallet?.hasProvider && network?.type === 'evm':
+                                                return null
+
+                                            default:
+                                                if (wallet === undefined || wallet.isConnected) {
+                                                    return null
+                                                }
+                                                return (
+                                                    <div className="crosschain-transfer__wallet">
+                                                        <Button
+                                                            disabled={wallet.isConnecting}
+                                                            size="md"
+                                                            type="primary"
+                                                            onClick={wallet.connect}
+                                                        >
+                                                            {intl.formatMessage({
+                                                                id: 'CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT',
+                                                            })}
+                                                        </Button>
+                                                    </div>
+                                                )
+                                        }
+                                    })()}
                                 </>
                             )}
                         </Observer>

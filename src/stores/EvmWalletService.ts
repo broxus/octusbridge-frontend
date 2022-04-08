@@ -149,7 +149,7 @@ export class EvmWalletService {
      * @returns {boolean}
      */
     public get hasProvider(): boolean {
-        return this.cachedProvider !== undefined
+        return this.#provider != null
     }
 
     /**
