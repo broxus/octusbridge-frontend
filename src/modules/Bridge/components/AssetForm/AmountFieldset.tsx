@@ -254,6 +254,34 @@ export function AmountFieldset(): JSX.Element {
                                     </>
                                 )}
                             </Observer>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {'> Pending withdrawals amount: '}
+                                            {bridge.pendingWithdrawalsAmount && formattedAmount(
+                                                bridge.pendingWithdrawalsAmount,
+                                                bridge.decimals,
+                                                { preserve: true },
+                                            )}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
+                            <div className="crosschain-transfer__control-hint">
+                                <Observer>
+                                    {() => (
+                                        <>
+                                            {'> Pending withdrawals bounty: '}
+                                            {bridge.pendingWithdrawalsBounty && formattedAmount(
+                                                bridge.pendingWithdrawalsBounty,
+                                                bridge.decimals,
+                                                { preserve: true },
+                                            )}
+                                        </>
+                                    )}
+                                </Observer>
+                            </div>
                         </>
                     )}
                 </div>

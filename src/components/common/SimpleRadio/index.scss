@@ -37,25 +37,28 @@
             top: 22px;
             width: 8px;
         }
-
-        span {
-            color: #ffffff;
-            display: block;
-            margin-top: 4px;
-            &:first-child { margin-top: 0; }
-        }
     }
 
     &__title {
         @include txt-lg;
 
         display: block;
+        margin: 0 0 12px;
+        color: #ffffff;
     }
 
-    input {
+    &__content {
+        margin: 12px 0 0;
+    }
+
+    p + p {
+        margin-top: 0.4em;
+    }
+
+    input[type="radio"] {
         display: none;
         &:checked + .simple-radio__main {
-            background-color: rgba(197, 228, 243, 0.24);
+            background-color: rgba(197, 228, 243, 0.16);
             &::before { border-color: #c5e4f3; }
             &::after { display: block; }
         }

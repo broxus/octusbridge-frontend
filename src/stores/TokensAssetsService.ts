@@ -956,18 +956,22 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             return
         }
 
-        const evmTokenDecimals = parseInt(
-            await this.getEvmTokenContract(root, pipeline.chainId)?.methods
-                .decimals()
-                .call(),
-            10,
-        )
+        const evmTokenDecimals = await this.getEvmTokenDecimals(root, pipeline.chainId)
 
         // Force update
         runInAction(() => {
             // eslint-disable-next-line no-param-reassign
             pipeline.evmTokenDecimals = evmTokenDecimals
         })
+    }
+
+    public async getEvmTokenDecimals(root: string, chainId: string): Promise<number> {
+        return parseInt(
+            await this.getEvmTokenContract(root, chainId)?.methods
+                .decimals()
+                .call(),
+            10,
+        )
     }
 
     /**

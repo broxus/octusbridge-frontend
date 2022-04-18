@@ -51,6 +51,7 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
                 token: pipeline.token,
                 tokenAmount: (pipeline as EvmToEvmHiddenSwapPipeline).tokenAmount,
                 withdrawFee: (pipeline as EverscaleToEvmPipeline).withdrawFee,
+                pendingWithdrawals: (pipeline as EvmToEverscalePipeline).pendingWithdrawals,
             }),
             data => {
                 summary.setData(data)

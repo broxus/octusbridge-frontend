@@ -37,9 +37,7 @@ export function StakeholdersInner(): JSX.Element | null {
     const [totalRewardLe] = useBNParam('total-reward-le')
     const [userBalanceGe] = useBNParam('user-balance-ge')
     const [userBalanceLe] = useBNParam('user-balance-le')
-    const [stakeholderKind] = useDictParam<StakeholderKindApiRequest>(
-        'stakeholder', ['ordinary', 'relay'],
-    )
+    const [stakeholderKind] = useDictParam<StakeholderKindApiRequest>('stakeholder', ['ordinary', 'relay'])
 
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
@@ -134,7 +132,9 @@ export function StakeholdersInner(): JSX.Element | null {
                     {(localFilters, changeFilter) => (
                         <>
                             <FilterField
-                                title="Staking since"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_DATE',
+                                })}
                             >
                                 <DateFilter
                                     value={localFilters.createdAtGe}
@@ -146,79 +146,109 @@ export function StakeholdersInner(): JSX.Element | null {
                                 />
                             </FilterField>
                             <FilterField
-                                title="Balance"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_BALANCE',
+                                })}
                             >
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="From"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_FROM',
+                                    })}
                                     value={localFilters.userBalanceGe}
                                     onChange={changeFilter('userBalanceGe')}
                                 />
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="To"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_TO',
+                                    })}
                                     value={localFilters.userBalanceLe}
                                     onChange={changeFilter('userBalanceLe')}
                                 />
                             </FilterField>
                             <FilterField
-                                title="Frozen stake"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_FROZEN',
+                                })}
                             >
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="From"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_FROM',
+                                    })}
                                     value={localFilters.frozenStakeGe}
                                     onChange={changeFilter('frozenStakeGe')}
                                 />
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="To"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_TO',
+                                    })}
                                     value={localFilters.frozenStakeLe}
                                     onChange={changeFilter('frozenStakeLe')}
                                 />
                             </FilterField>
                             <FilterField
-                                title="Last reward"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_LAST_REWARD',
+                                })}
                             >
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="From"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_FROM',
+                                    })}
                                     value={localFilters.lastRewardGe}
                                     onChange={changeFilter('lastRewardGe')}
                                 />
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="To"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_TO',
+                                    })}
                                     value={localFilters.lastRewardLe}
                                     onChange={changeFilter('lastRewardLe')}
                                 />
                             </FilterField>
                             <FilterField
-                                title="Total reward"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_REWARD',
+                                })}
                             >
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="From"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_FROM',
+                                    })}
                                     value={localFilters.totalRewardGe}
                                     onChange={changeFilter('totalRewardGe')}
                                 />
                                 <TextFilter
                                     regexp={NUM_REGEXP}
-                                    placeholder="To"
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_TO',
+                                    })}
                                     value={localFilters.totalRewardLe}
                                     onChange={changeFilter('totalRewardLe')}
                                 />
                             </FilterField>
                             <FilterField
-                                title="Type"
+                                title={intl.formatMessage({
+                                    id: 'STAKEHOLDERS_TYPE',
+                                })}
                             >
                                 <RadioFilter<StakeholderKindApiRequest>
                                     labels={[{
                                         id: 'ordinary',
-                                        name: 'Ordinary',
+                                        name: intl.formatMessage({
+                                            id: 'STAKEHOLDERS_TYPE_ORDINARY',
+                                        }),
                                     }, {
                                         id: 'relay',
-                                        name: 'Relay',
+                                        name: intl.formatMessage({
+                                            id: 'STAKEHOLDERS_TYPE_RELAY',
+                                        }),
                                     }]}
                                     onChange={changeFilter('stakeholderKind')}
                                     value={localFilters.stakeholderKind}

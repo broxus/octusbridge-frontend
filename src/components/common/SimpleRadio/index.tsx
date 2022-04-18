@@ -10,6 +10,7 @@ type Props<T> = {
     disabled?: boolean;
     label?: React.ReactNode;
     name?: string;
+    children?: React.ReactNode;
     onChange?: (value: T) => void;
 }
 
@@ -20,6 +21,7 @@ export function SimpleRadio<T extends string>({
     label,
     name,
     onChange: onChangeCallback,
+    children,
 }: Props<T>): JSX.Element {
     const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
         if (disabled) {
@@ -49,6 +51,11 @@ export function SimpleRadio<T extends string>({
                         __html: annotation as string,
                     }}
                 />
+                {children && (
+                    <div className="simple-radio__content">
+                        {children}
+                    </div>
+                )}
             </div>
         </label>
     )

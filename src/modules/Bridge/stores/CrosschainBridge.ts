@@ -30,7 +30,9 @@ import {
     CrosschainBridgeStep,
     CrosschainBridgeStoreData,
     CrosschainBridgeStoreState,
+    EvmPendingWithdrawal,
     NetworkFields,
+    PendingWithdrawal,
 } from '@/modules/Bridge/types'
 import { getCreditFactoryContract, unshiftedAmountWithSlippage } from '@/modules/Bridge/utils'
 import { BaseStore } from '@/stores/BaseStore'
@@ -56,7 +58,6 @@ import {
     validateMinValue,
 } from '@/utils'
 
-
 export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, CrosschainBridgeStoreState> {
 
     constructor(
@@ -78,11 +79,13 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             | 'handleEvmWalletConnection'
             | 'handleEverWalletConnection'
             | 'handleEverWalletBalance'
+            | 'handleEvmPendingWithdrawal'
         >(this, {
             handleChangeToken: action.bound,
             handleEvmWalletConnection: action.bound,
             handleEverWalletConnection: action.bound,
             handleEverWalletBalance: action.bound,
+            handleEvmPendingWithdrawal: action.bound,
             amount: computed,
             maxTokenAmount: computed,
             maxEversAmount: computed,
@@ -146,6 +149,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             useEverWallet: computed,
             useEvmWallet: computed,
             useTokensAssets: computed,
+            evmPendingWithdrawal: computed,
         })
     }
 
@@ -198,6 +202,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         })
     }
 
+    public changeEvmPendingWithdrawal(evmPendingWithdrawal?: EvmPendingWithdrawal): void {
+        this.setState('evmPendingWithdrawal', evmPendingWithdrawal)
+    }
+
     /**
      * Manually initiate store.
      * Run all necessary reaction subscribers.
@@ -219,6 +227,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             () => [this.everWallet.balance, this.everWallet.isContractUpdating],
             this.handleEverWalletBalance,
         )
+        this.#evmPendingWithdrawalDisposer = reaction(
+            () => [this.evmPendingWithdrawal, this.vaultContract],
+            this.handleEvmPendingWithdrawal,
+        )
     }
 
     /**
@@ -226,6 +238,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Reset all data to their defaults.
      */
     public dispose(): void {
+        this.#evmPendingWithdrawalDisposer?.()
         this.#evmWalletDisposer?.()
         this.#swapDisposer?.()
         this.#everWalletDisposer?.()
@@ -391,6 +404,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
                         .dp(0, BigNumber.ROUND_DOWN)
                         .toFixed(),
+                    this.pendingWithdrawalsBounty,
+                    this.pendingWithdrawals?.map(item => ({
+                        recipient: item.recipient,
+                        id: item.id,
+                    })),
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
@@ -1423,6 +1441,39 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * ----------------------------------------------------------------------------------
      */
 
+    protected async handleEvmPendingWithdrawal(): Promise<void> {
+        if (!this.vaultContract || !this.evmPendingWithdrawal) {
+            return
+        }
+
+        const { withdrawalIds } = this.evmPendingWithdrawal
+
+        try {
+            const pendingWithdrawals = (
+                await Promise.all(
+                    withdrawalIds.map(item => (
+                        this.vaultContract?.methods
+                            .pendingWithdrawals(item.recipient, item.id)
+                            .call()
+                    )),
+                )
+            )
+                .map((item, idx) => ({
+                    amount: item.amount,
+                    bounty: item.bounty,
+                    timestamp: item.timestamp,
+                    approveStatus: item.approveStatus,
+                    recipient: withdrawalIds[idx].recipient,
+                    id: withdrawalIds[idx].id,
+                }))
+
+            this.setData('pendingWithdrawals', pendingWithdrawals)
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
     /**
      *
      * @param selectedToken
@@ -2177,7 +2228,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Returns non-shifted minimum amount to spend
      */
     public get minAmount(): CrosschainBridgeStoreData['minAmount'] {
-        return this.data.minAmount
+        return this.pendingWithdrawalsMinAmount ?? this.data.minAmount
     }
 
     /**
@@ -2279,6 +2330,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.state.step
     }
 
+    public get evmPendingWithdrawal(): CrosschainBridgeStoreState['evmPendingWithdrawal'] {
+        return this.state.evmPendingWithdrawal
+    }
 
     /*
      * Computed states and values
@@ -2684,6 +2738,43 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     public get useTokensAssets(): TokensAssetsService {
         return this.tokensAssets
     }
+
+    public get pendingWithdrawals(): PendingWithdrawal[] | undefined {
+        if (!this.data.pendingWithdrawals) {
+            return undefined
+        }
+
+        return this.data.pendingWithdrawals.filter(item => {
+            const isApproved = item.approveStatus === '0' || item.approveStatus === '2'
+            const hasAmount = item.amount !== '0'
+            return isApproved && hasAmount
+        })
+    }
+
+    public get pendingWithdrawalsAmount(): string | undefined {
+        return this.pendingWithdrawals
+            ?.reduce((acc, item) => acc.plus(item.amount), new BigNumber(0))
+            .toFixed()
+    }
+
+    public get pendingWithdrawalsBounty(): string | undefined {
+        return this.pendingWithdrawals
+            ?.reduce((acc, item) => acc.plus(item.bounty), new BigNumber(0))
+            .toFixed()
+    }
+
+    public get pendingWithdrawalsMinAmount(): string | undefined {
+        if (!this.pendingWithdrawalsAmount || !this.evmTokenDecimals) {
+            return undefined
+        }
+        return new BigNumber(this.pendingWithdrawalsAmount)
+            .shiftedBy(-this.evmTokenDecimals)
+            .shiftedBy(this.amountMinDecimals)
+            .dp(0, BigNumber.ROUND_DOWN)
+            .toFixed()
+    }
+
+    #evmPendingWithdrawalDisposer: IReactionDisposer | undefined
 
     #everWalletBalanceDisposer: IReactionDisposer | undefined
 

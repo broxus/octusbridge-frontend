@@ -12,13 +12,23 @@ import {
     Summary,
 } from '@/modules/Bridge/components'
 import { useBridge } from '@/modules/Bridge/providers'
-import { CrosschainBridgeStep } from '@/modules/Bridge/types'
+import { CrosschainBridgeStep, EvmPendingWithdrawal } from '@/modules/Bridge/types'
 
 import './index.scss'
 
 
-export function Bridge(): JSX.Element {
+type Props = {
+    evmPendingWithdrawal?: EvmPendingWithdrawal;
+}
+
+export function Bridge({
+    evmPendingWithdrawal,
+}: Props): JSX.Element {
     const { bridge } = useBridge()
+
+    React.useEffect(() => {
+        bridge.changeEvmPendingWithdrawal(evmPendingWithdrawal)
+    }, [evmPendingWithdrawal])
 
     return (
         <section className="section">

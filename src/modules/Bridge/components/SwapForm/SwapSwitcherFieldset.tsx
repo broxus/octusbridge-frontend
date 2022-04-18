@@ -32,7 +32,8 @@ export function SwapSwitcherFieldset(): JSX.Element {
                             <OptionSwitcher
                                 checked={bridge.isSwapEnabled}
                                 id="gas-fees"
-                                disabled={bridge.isInsufficientEverBalance}
+                                disabled={bridge.isInsufficientEverBalance
+                                    || bridge.evmPendingWithdrawal !== undefined}
                                 label={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL',
                                 }, {

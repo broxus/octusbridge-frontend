@@ -1,4 +1,5 @@
 import * as React from 'react'
+import classNames from 'classnames'
 
 import { Icon } from '@/components/common/Icon'
 
@@ -20,7 +21,11 @@ export function Checkbox({
     onChange,
 }: Props): JSX.Element {
     return (
-        <label className="checkbox">
+        <label
+            className={classNames('checkbox', {
+                checkbox_disabled: disabled,
+            })}
+        >
             <input
                 type="checkbox"
                 checked={Boolean(checked)}

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import classNames from 'classnames'
 
 import { Button } from '@/components/common/Button'
 import { Popup } from '@/components/common/Filters/popup'
@@ -12,18 +13,19 @@ export * from '@/components/common/Filters/date'
 export * from '@/components/common/Filters/radio'
 export * from '@/components/common/Filters/text'
 export * from '@/components/common/Filters/field'
-export * from '@/components/common/Filters/network'
 export * from '@/components/common/Filters/token'
 export * from '@/components/common/Filters/check'
 
 type Props<T> = {
     filters: T;
+    block?: boolean;
     onChange: (filters: T) => void;
     children: (filters: T, change: (key: keyof T) => (value: T[keyof T]) => void) => React.ReactNode;
 }
 
 export function Filters<T>({
     filters,
+    block,
     onChange,
     children,
 }: Props<T>): JSX.Element {
@@ -58,9 +60,14 @@ export function Filters<T>({
     }, [filters])
 
     return (
-        <div className="filters">
+        <div
+            className={classNames('filters', {
+                filters_block: block,
+            })}
+        >
             <div className="filters__filter">
                 <Button
+                    block={block}
                     type="secondary"
                     onClick={filterDropdown.open}
                 >
