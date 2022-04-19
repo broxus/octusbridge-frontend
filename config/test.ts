@@ -6,6 +6,16 @@ import { NetworkShape } from '@/types'
 export const networks: NetworkShape[] = [
     {
         chainId: '1',
+        currencySymbol: 'EVER',
+        explorerBaseUrl: 'https://everscan.io/',
+        id: 'everscan-1',
+        label: 'Everscale',
+        name: 'Everscale',
+        rpcUrl: '',
+        type: 'everscale',
+    },
+    {
+        chainId: '1',
         currencySymbol: 'ETH',
         explorerBaseUrl: 'https://etherscan.io/',
         id: 'evm-1',
@@ -71,16 +81,6 @@ export const networks: NetworkShape[] = [
         name: 'Milkomeda C1 Mainnet',
         rpcUrl: 'https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
         type: 'evm',
-    },
-    {
-        chainId: '1',
-        currencySymbol: 'EVER',
-        explorerBaseUrl: 'https://everscan.io/',
-        id: 'everscan-1',
-        label: 'Everscale',
-        name: 'Everscale',
-        rpcUrl: '',
-        type: 'everscale',
     },
     {
         badge: 'Soon',
