@@ -16,11 +16,13 @@ export type Token = {
     wallet?: string;
 }
 
-export type NetworkType = 'evm' | 'everscale' & string
+export type NetworkType = 'evm' | 'everscale' | 'solana' & string
 
 export type NetworkShape = {
+    badge?: string;
     chainId: string;
     currencySymbol: string;
+    disabled?: boolean;
     explorerBaseUrl: string;
     id: string;
     label: string;

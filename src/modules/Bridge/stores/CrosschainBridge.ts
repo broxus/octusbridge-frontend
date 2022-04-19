@@ -12,7 +12,7 @@ import {
 } from 'mobx'
 import { Contract as EthContract } from 'web3-eth-contract'
 
-import { WEVERRootAddress } from '@/config'
+import { networks, WEVERRootAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import {
     BridgeConstants,
@@ -43,12 +43,11 @@ import {
     TokenAsset,
     TokensAssetsService,
 } from '@/stores/TokensAssetsService'
-import { LabeledNetwork } from '@/types'
+import { NetworkShape } from '@/types'
 import {
     debug,
     error,
     getEverscaleMainNetwork,
-    getLabeledNetworks,
     isEverscaleAddressValid,
     isEvmAddressValid,
     isGoodBignumber, storage,
@@ -2532,12 +2531,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
     }
 
-    public get rightNetworks(): LabeledNetwork[] {
+    public get rightNetworks(): NetworkShape[] {
         if (process.env.NODE_ENV !== 'production') {
-            return getLabeledNetworks()
+            return networks
         }
-        return getLabeledNetworks().filter(
-            ({ value }) => value !== this.leftNetwork?.id,
+        return networks.filter(
+            network => network.id !== this.leftNetwork?.id,
         )
     }
 

@@ -4,12 +4,15 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
+import { Icon } from '@/components/common/Icon'
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { LabeledNetwork, NetworkShape } from '@/types'
+import { NetworkShape } from '@/types'
 import { isEverscaleAddressValid, isEvmAddressValid } from '@/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
+
+import './index.scss'
 
 
 type Props = {
@@ -21,7 +24,7 @@ type Props = {
     label: React.ReactNode;
     network?: NetworkShape;
     networkFieldDisabled?: boolean;
-    networks: LabeledNetwork[];
+    networks: NetworkShape[];
     shouldDisplayNetworkAlert?: boolean;
     wallet?: EverWalletService | EvmWalletService;
 }
@@ -75,9 +78,32 @@ export function RouteForm({
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
                             <Select
-                                className="rc-select--md"
+                                className="network-select rc-select--md"
                                 disabled={networkFieldDisabled}
-                                options={networks}
+                                options={networks.map(n => ({
+                                    disabled: n.disabled,
+                                    label: (
+                                        <div className="network-select-label">
+                                            <div className="network-select-label-inner">
+                                                <div>
+                                                    <Icon
+                                                        icon={`${n.type.toLowerCase()}${n.chainId}NetworkIcon`}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    {n.label}
+                                                </div>
+                                            </div>
+                                            {n.badge !== undefined && (
+                                                <div className="network-select-label-badge">
+                                                    {n.badge}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ),
+                                    value: n.id,
+                                }))}
+                                listHeight={460}
                                 placeholder={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_ROUTE_SELECT_NETWORK_PLACEHOLDER',
                                 })}

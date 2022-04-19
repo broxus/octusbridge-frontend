@@ -12,9 +12,8 @@ import {
     CrosschainBridgeStep,
     NetworkFields,
 } from '@/modules/Bridge/types'
-import { EvmWalletService } from '@/stores/EvmWalletService'
-import { getLabeledNetworks } from '@/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { EvmWalletService } from '@/stores/EvmWalletService'
 
 
 export function RouteStep(): JSX.Element {
@@ -77,7 +76,7 @@ export function RouteStep(): JSX.Element {
                                 id: 'CROSSCHAIN_TRANSFER_ROUTE_FROM_LABEL',
                             })}
                             network={bridge.leftNetwork}
-                            networks={getLabeledNetworks()}
+                            networks={networks}
                             shouldDisplayNetworkAlert={bridge.isFromEvm
                                 ? !isEqual(bridge.leftNetwork?.chainId, evmWallet.chainId)
                                 : false}

@@ -1,5 +1,5 @@
 import { networks } from '@/config'
-import { LabeledNetwork, NetworkShape, NetworkType } from '@/types'
+import { NetworkShape, NetworkType } from '@/types'
 
 
 export function findNetwork(chainId: string, type: NetworkType): NetworkShape | undefined {
@@ -12,8 +12,4 @@ export function getEverscaleMainNetwork(): NetworkShape | undefined {
 
 export function isEverscaleMainNetwork(network?: NetworkShape): boolean {
     return network !== undefined && (network.chainId === '1' && network.type === 'everscale')
-}
-
-export function getLabeledNetworks(): LabeledNetwork[] {
-    return networks.map((network: NetworkShape) => ({ label: network.label, value: network.id }))
 }

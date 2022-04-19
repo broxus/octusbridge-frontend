@@ -1,0 +1,31 @@
+.network-select {
+    .rc-select-item-option-disabled {
+        opacity: 1;
+
+        .network-select-label-inner {
+            opacity: 0.32;
+        }
+    }
+}
+
+.network-select-label {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.network-select-label-inner {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+}
+
+.network-select-label-badge {
+    background: linear-gradient(0deg, rgba(5, 11, 46, 0.12), rgba(5, 11, 46, 0.12)), rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    color: #c5e4f3;
+    font-weight: 500;
+    line-height: normal;
+    padding: 1px 12px 2px;
+}
