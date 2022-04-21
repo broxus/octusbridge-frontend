@@ -122,10 +122,16 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get vaultBalance(): string | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.vaultBalance
+        }
         return this.pipeline?.vaultBalance
     }
 
     public get evmTokenDecimals(): number | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.evmTokenDecimals
+        }
         return this.pipeline?.evmTokenDecimals
     }
 

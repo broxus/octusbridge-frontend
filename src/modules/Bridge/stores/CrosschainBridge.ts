@@ -2102,9 +2102,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
                 'default',
             )
-            if (hiddenBridgePipeline !== undefined) {
-                hiddenBridgePipeline.evmTokenAddress = undefined
-                this.setData('hiddenBridgePipeline', hiddenBridgePipeline)
+            this.setData('hiddenBridgePipeline', hiddenBridgePipeline)
+            if (this.hiddenBridgePipeline !== undefined) {
+                this.hiddenBridgePipeline.evmTokenAddress = undefined
                 try {
                     await this.tokensAssets.syncEvmTokenAddress(this.token.root, this.hiddenBridgePipeline)
                     await this.tokensAssets.syncEvmTokenDecimals(
@@ -2114,6 +2114,25 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 catch (e) {
                     error(e)
+                }
+                if (!this.isEverscaleBasedToken) {
+                    try {
+                        await Promise.all([
+                            // sync token vault limit for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultLimit(
+                                this.hiddenBridgePipeline.vault,
+                                this.hiddenBridgePipeline,
+                            ),
+                            // sync token vault balance for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultBalance(
+                                this.hiddenBridgePipeline.evmTokenAddress,
+                                this.hiddenBridgePipeline,
+                            ),
+                        ])
+                    }
+                    catch (e) {
+                        error('Sync vault balance or limit error', e)
+                    }
                 }
             }
         }

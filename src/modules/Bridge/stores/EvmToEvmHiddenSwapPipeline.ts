@@ -220,6 +220,25 @@ export class EvmToEvmHiddenSwapPipeline extends EvmToEverscaleSwapPipeline<
             await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipelineCredit)
             await this.tokensAssets.syncEvmTokenDecimals(this.pipelineCredit?.evmTokenAddress, this.pipelineCredit)
 
+            if (this.pipelineDefault !== undefined) {
+                try {
+                    await Promise.all([
+                        // sync token vault limit for non-everscale-based tokens
+                        this.tokensAssets.syncEvmTokenVaultLimit(
+                            this.pipelineDefault.vault,
+                            this.pipelineDefault,
+                        ),
+                        // sync token vault balance for non-everscale-based tokens
+                        this.tokensAssets.syncEvmTokenVaultBalance(
+                            this.pipelineDefault.evmTokenAddress,
+                            this.pipelineDefault,
+                        ),
+                    ])
+                }
+                catch (e) {
+                    error('Sync vault balance or limit error', e)
+                }
+            }
             addABI(EthAbi.Vault)
             const methodCall = decodeMethod(tx.input)
 
