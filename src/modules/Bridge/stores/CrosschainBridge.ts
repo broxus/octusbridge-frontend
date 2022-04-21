@@ -1774,7 +1774,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected async syncMaxEversAmount(): Promise<void> {
-        if (this.pairContract === undefined || this.token === undefined) {
+        if (
+            this.pairContract === undefined
+            || this.token === undefined
+            || this.pipeline?.everscaleTokenAddress === undefined
+        ) {
             return
         }
 
@@ -1785,7 +1789,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .shiftedBy(this.token.decimals)
                     .dp(0, BigNumber.ROUND_DOWN)
                     .toFixed(),
-                spent_token_root: new Address(this.token.root),
+                spent_token_root: new Address(this.pipeline?.everscaleTokenAddress),
             }).call({
                 cachedState: toJS(this.data.pairState),
             })).expected_amount
@@ -1805,7 +1809,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             }
         }
         catch (e) {
-            error('Sync TONs max amount error', e)
+            error('Sync EVERs max amount error', e)
         }
     }
 
