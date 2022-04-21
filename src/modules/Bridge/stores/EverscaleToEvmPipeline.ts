@@ -77,7 +77,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
         this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async value => {
             if (this.evmWallet.isConnected && value === this.rightNetwork?.chainId) {
-                await this.checkContract()
+                await this.resolve()
             }
         }, { delay: 30 })
 
@@ -152,7 +152,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             || this.contractAddress === undefined
             || this.leftNetwork === undefined
             || this.tokensAssets.tokens.length === 0
-            || this.prepareState?.status === 'confirmed'
+            // || this.prepareState?.status === 'confirmed'
         ) {
             return
         }
@@ -442,6 +442,27 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                 await this.tokensAssets.syncEvmTokenAddress(this.token?.root, this.pipeline)
                 await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
+
+                if (!this.isEverscaleBasedToken && this.pipeline !== undefined) {
+                    try {
+                        await Promise.all([
+                            // sync token vault limit for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultLimit(
+                                this.pipeline.vault,
+                                this.pipeline,
+                            ),
+                            // sync token vault balance for non-everscale-based tokens
+                            this.tokensAssets.syncEvmTokenVaultBalance(
+                                this.pipeline.evmTokenAddress,
+                                this.pipeline,
+                            ),
+                        ])
+                    }
+                    catch (e) {
+                        error('Sync vault balance or limit error', e)
+                    }
+                }
+
                 this.runEventUpdater()
             }
         }
