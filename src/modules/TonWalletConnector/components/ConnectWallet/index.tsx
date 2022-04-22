@@ -30,7 +30,7 @@ export function ConnectWallet({
                 disabled={disabled}
                 onClick={onClickConnect}
             >
-                {intl.formatMessage({ id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT' })}
+                {intl.formatMessage({ id: 'EVER_WALLET_CONNECT_BTN_TEXT' })}
             </Button>
         </>
     )

@@ -48,7 +48,7 @@ function EventStatusIndicatorInner(): JSX.Element {
                             onClick={everWallet.connect}
                         >
                             {intl.formatMessage({
-                                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
+                                id: 'EVER_WALLET_CONNECT_BTN_TEXT',
                             })}
                         </Button>
                     )

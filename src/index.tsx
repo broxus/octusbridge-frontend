@@ -4,6 +4,7 @@ import init from 'eth-ton-abi-converter'
 import 'polyfills'
 
 import { App } from '@/components/App'
+import { LocalizationProvider } from '@/context/Localization';
 
 
 (async () => {
@@ -13,7 +14,9 @@ import { App } from '@/components/App'
 
 ReactDOM.render(
     <React.StrictMode>
-        <App />
+        <LocalizationProvider>
+            <App />
+        </LocalizationProvider>
     </React.StrictMode>,
     document.getElementById('root'),
 )

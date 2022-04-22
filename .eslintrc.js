@@ -237,6 +237,7 @@ const typescriptConfig = {
     extends: [
         ...baseConfig.extends,
         'plugin:import/typescript',
+        'plugin:@typescript-eslint/recommended'
     ],
     overrides: [
         {
@@ -303,6 +304,7 @@ const typescriptConfig = {
                 'no-unused-vars': 'off',
                 'no-use-before-define': 'off',
                 'no-useless-constructor': 'off',
+                'react/prop-types': 'off',
                 'unused-imports/no-unused-vars': 'off',
                 'unused-imports/no-unused-imports': 'off',
                 'unused-imports/no-unused-vars-ts': ['warn', {

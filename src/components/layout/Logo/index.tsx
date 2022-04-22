@@ -2,13 +2,17 @@ import * as React from 'react'
 
 import './index.scss'
 
+type Props = {
+    ratio?: number;
+}
 
-export function Logo(): JSX.Element {
+
+export function Logo({ ratio = 1 }: Props): JSX.Element {
     return (
         <svg
             fill="none"
-            height={28}
-            width={153}
+            height={28 * ratio}
+            width={153 * ratio}
             viewBox="0 0 153 28"
             xmlns="http://www.w3.org/2000/svg"
         >

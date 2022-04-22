@@ -60,7 +60,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                             onClick={everWallet.connect}
                                         >
                                             {intl.formatMessage({
-                                                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
+                                                id: 'EVER_WALLET_CONNECT_BTN_TEXT',
                                             })}
                                         </Button>
                                     )
@@ -68,7 +68,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
 
                                 case (
                                     everWallet.isConnected
-                                    && !everWallet.isUpdatingContract
+                                    && !everWallet.isContractUpdating
                                     && (
                                         everWallet.contract === undefined
                                         || !everWallet.contract?.isDeployed
@@ -90,7 +90,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
 
                                 case (
                                     everWallet.isConnected
-                                    && !everWallet.isUpdatingContract
+                                    && !everWallet.isContractUpdating
                                     && bridge.isInsufficientEverBalance
                                 ): {
                                     return (

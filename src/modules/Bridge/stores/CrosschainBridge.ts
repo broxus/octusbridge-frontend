@@ -216,7 +216,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         this.#tokenDisposer = reaction(() => this.data.selectedToken, this.handleChangeToken)
         this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, this.handleEverWalletConnection)
         this.#everWalletBalanceDisposer = reaction(
-            () => [this.everWallet.balance, this.everWallet.isUpdatingContract],
+            () => [this.everWallet.balance, this.everWallet.isContractUpdating],
             this.handleEverWalletBalance,
         )
     }
@@ -1608,7 +1608,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected checkMinEvers(): void {
-        if (this.isInsufficientEverBalance && this.isSwapEnabled && !this.everWallet.isUpdatingContract) {
+        if (this.isInsufficientEverBalance && this.isSwapEnabled && !this.everWallet.isContractUpdating) {
             const isEnoughEversAmount = this.eversAmountNumber
                 .shiftedBy(DexConstants.CoinDecimals)
                 .gte(this.minEversAmount || 0)
@@ -1629,7 +1629,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected checkSwapCredit(): void {
-        if (this.everWallet.isConnected && !this.everWallet.isUpdatingContract && this.isInsufficientEverBalance) {
+        if (this.everWallet.isConnected && !this.everWallet.isContractUpdating && this.isInsufficientEverBalance) {
             if (this.step === CrosschainBridgeStep.SELECT_ASSET) {
                 this.setData({
                     depositType: this.isCreditAvailable ? 'credit' : this.depositType,

@@ -72,10 +72,15 @@ export default {
     FOOTER_COOKIES_TERMS_LINK_TEXT: 'Cookies',
     FOOTER_COPYRIGHTS: '&copy; <a href="https://broxus.com" target="_blank" rel="noopener noreferrer">Broxus</a>, {year}',
 
-    CRYSTAL_WALLET_CONNECT_BTN_TEXT: 'Connect EVER Wallet',
+    WALLETS_CONNECT_BTN_TEXT: 'Connect Wallets',
+    WALLET_CONNECT_BTN_TEXT: 'Connect',
+    WALLET_NOT_CONNECTED_HINT: 'Not connected',
+    EVER_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'Everscale',
+    EVER_WALLET_CONNECT_BTN_TEXT: 'Connect EVER Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',
     EVM_WALLET_WRONG_NETWORK_NOTE: 'Wrong blockchain selected in MetaMask. Open the wallet to select {network}.',
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
+    EVM_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'EVM network',
 
     CROSSCHAIN_TRANSFER_HEADER_TITLE: 'Cross-chain transfer',
     CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT: 'Connect wallet',

@@ -55,7 +55,7 @@ export const TonButtonConnector = observer(({
                 onClick={connect}
                 disabled={wallet.isConnecting}
             >
-                {intl.formatMessage({ id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT' })}
+                {intl.formatMessage({ id: 'EVER_WALLET_CONNECT_BTN_TEXT' })}
             </Button>
         )
     }

@@ -8,14 +8,12 @@ import {
     Switch,
 } from 'react-router-dom'
 
-import { NativeScrollArea } from '@/components/common/NativeScrollArea'
 import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
 import { WalletConnectingModal } from '@/components/common/WalletConnectingModal'
 import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
-import messages from '@/lang/en'
-import { EverWallet, EvmWallet } from '@/modules/Accounts'
+import { LocalizationContext } from '@/context/Localization'
 // import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
@@ -41,13 +39,14 @@ export function App(): JSX.Element {
     const evmWallet = useEvmWallet()
     const everWallet = useEverWallet()
     const upgradeTokens = useUpgradeTokens()
+    const localization = React.useContext(LocalizationContext)
 
     return (
         <IntlProvider
             key="intl"
             defaultLocale="en"
-            locale="en"
-            messages={messages}
+            locale={localization.locale}
+            messages={localization.messages}
             onError={noop}
         >
             <Router>
@@ -58,11 +57,6 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            {/*
-                            <Route exact path="/transfers">
-                                <TransferList />
-                            </Route>
-                            */}
                             <Route path="/transfers">
                                 <TransferList />
                             </Route>
@@ -119,6 +113,7 @@ export function App(): JSX.Element {
                                 <WalletUpdateModal />
                             ) : null}
 
+                            {/*
                             {(evmWallet.hasProvider || everWallet.hasProvider) && (
                                 <NativeScrollArea className="wallets-scroll-area">
                                     <div className="wallets">
@@ -127,6 +122,7 @@ export function App(): JSX.Element {
                                     </div>
                                 </NativeScrollArea>
                             )}
+                            */}
 
                             {upgradeTokens.hasTokensToUpgrade ? (
                                 <TokensUpgradeModal />

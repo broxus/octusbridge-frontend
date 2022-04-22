@@ -1,9 +1,4 @@
-import {
-    action, computed,
-    makeObservable,
-    reaction,
-    runInAction,
-} from 'mobx'
+import BigNumber from 'bignumber.js'
 import {
     Address,
     AssetType,
@@ -12,13 +7,19 @@ import {
     hasEverscaleProvider,
     Permissions,
     Subscription,
-    Transaction,
 } from 'everscale-inpage-provider'
+import {
+    action,
+    computed,
+    makeObservable,
+    reaction,
+} from 'mobx'
 
 import rpc from '@/hooks/useRpcClient'
 import { DexConstants } from '@/misc'
 import { BaseStore } from '@/stores/BaseStore'
 import { debug, error } from '@/utils'
+import type { WalletNativeCoin } from '@/types'
 
 
 export type Account = Permissions['accountInteraction']
@@ -27,16 +28,21 @@ export type EverWalletData = {
     account?: Account;
     balance: string;
     contract?: ContractState | FullContractState;
-    transaction?: Transaction;
     version?: string;
 }
 
 export type EverWalletState = {
     hasProvider: boolean;
     isConnecting: boolean;
+    isContractUpdating: boolean;
+    isDisconnecting: boolean;
     isInitialized: boolean;
     isInitializing: boolean;
-    isUpdatingContract: boolean;
+}
+
+export type EverWalletServiceCtorOptions = {
+    /** Semver dot-notation string */
+    minWalletVersion?: string;
 }
 
 
@@ -44,17 +50,16 @@ const DEFAULT_WALLET_DATA: EverWalletData = {
     account: undefined,
     balance: '0',
     contract: undefined,
-    transaction: undefined,
 }
 
 const DEFAULT_WALLET_STATE: EverWalletState = {
     hasProvider: false,
     isConnecting: false,
+    isContractUpdating: false,
+    isDisconnecting: false,
     isInitialized: false,
     isInitializing: false,
-    isUpdatingContract: false,
 }
-
 
 export async function connectToWallet(): Promise<void> {
     const hasProvider = await hasEverscaleProvider()
@@ -70,30 +75,36 @@ export async function connectToWallet(): Promise<void> {
 
 export class EverWalletService extends BaseStore<EverWalletData, EverWalletState> {
 
-    constructor() {
+    constructor(
+        protected readonly nativeCoin?: WalletNativeCoin,
+        protected readonly options?: EverWalletServiceCtorOptions,
+    ) {
         super()
-
-        this.data = DEFAULT_WALLET_DATA
-        this.state = DEFAULT_WALLET_STATE
 
         this.#contractSubscriber = undefined
 
+        this.setData(() => DEFAULT_WALLET_DATA)
+
+        this.setState(() => DEFAULT_WALLET_STATE)
+
         makeObservable(this, {
-            connect: action.bound,
-            disconnect: action.bound,
+            account: computed,
             address: computed,
             balance: computed,
+            balanceNumber: computed,
+            coin: computed,
+            connect: action.bound,
+            contract: computed,
+            disconnect: action.bound,
             hasProvider: computed,
             isConnected: computed,
             isConnecting: computed,
+            isContractUpdating: computed,
+            isDisconnecting: computed,
             isInitialized: computed,
             isInitializing: computed,
-            isReady: computed,
             isOutdated: computed,
-            isUpdatingContract: computed,
-            account: computed,
-            contract: computed,
-            transaction: computed,
+            isReady: computed,
         })
 
         reaction(
@@ -101,22 +112,29 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             balance => {
                 this.setData('balance', balance || '0')
             },
+            { fireImmediately: true },
         )
 
         reaction(
             () => this.account,
-            (account, prevAccount) => {
+            async (account, prevAccount) => {
                 if (prevAccount?.address?.toString() === account?.address?.toString()) {
                     this.setState('isConnecting', false)
                     return
                 }
 
-                this.handleAccountChange(account).then(() => {
+                try {
+                    await this.onAccountChange(account)
+                }
+                catch (e) {}
+                finally {
                     this.setState('isConnecting', false)
-                })
+                }
             },
+            { fireImmediately: true },
         )
 
+        // TODO Make interval for check wallet installation
         this.init().catch(reason => {
             error('Wallet init error', reason)
             this.setState('isConnecting', false)
@@ -128,7 +146,7 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
      * @returns {Promise<void>}
      */
     public async connect(): Promise<void> {
-        if (this.isConnecting) {
+        if (this.isConnecting || this.isDisconnecting) {
             return
         }
 
@@ -149,10 +167,11 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
 
         try {
             await connectToWallet()
-            this.setState('isConnecting', false)
         }
         catch (e) {
             error('Wallet connect error', e)
+        }
+        finally {
             this.setState('isConnecting', false)
         }
     }
@@ -162,11 +181,11 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
      * @returns {Promise<void>}
      */
     public async disconnect(): Promise<void> {
-        if (this.isConnecting) {
+        if (this.isConnecting || this.isDisconnecting) {
             return
         }
 
-        this.setState('isConnecting', true)
+        this.setState('isDisconnecting', true)
 
         try {
             await rpc.disconnect()
@@ -174,26 +193,37 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
         }
         catch (e) {
             error('Wallet disconnect error', e)
-            this.setState('isConnecting', false)
+        }
+        finally {
+            this.setState('isDisconnecting', false)
         }
     }
 
     /**
      * Add custom token asset to the EVER Wallet
      * @param {string} root
-     * @param {AssetType} type
+     * @param {AssetType} [type]
      */
-    public async addAsset(root: string, type: AssetType = 'tip3_token'): Promise<void> {
+    public async addAsset(root: string, type: AssetType = 'tip3_token'): Promise<{ newAsset: boolean } | undefined> {
         if (this.account?.address === undefined) {
-            return
+            return undefined
         }
-        await rpc.addAsset({
+
+        return rpc.addAsset({
             account: this.account.address,
             params: {
                 rootContract: new Address(root),
             },
             type,
         })
+    }
+
+    /**
+     * Returns computed account
+     * @returns {EverWalletData['account']}
+     */
+    public get account(): EverWalletData['account'] {
+        return this.data.account
     }
 
     /**
@@ -210,6 +240,36 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
      */
     public get balance(): EverWalletData['balance'] {
         return this.data.balance
+    }
+
+    /**
+     * Returns computed BigNumber instance of the wallet balance value
+     * @returns {BigNumber}
+     */
+    public get balanceNumber(): BigNumber {
+        return new BigNumber(this.balance || 0).shiftedBy(-this.coin.decimals)
+    }
+
+    /**
+     * Returns base native wallet coin
+     * @returns {WalletNativeCoin}
+     */
+    public get coin(): WalletNativeCoin {
+        return {
+            balance: this.balance,
+            decimals: this.nativeCoin?.decimals ?? 9,
+            icon: this.nativeCoin?.icon,
+            name: this.nativeCoin?.name,
+            symbol: this.nativeCoin?.symbol || 'ever',
+        }
+    }
+
+    /**
+     * Returns computed wallet contract state
+     * @returns {EverWalletData['contract']}
+     */
+    public get contract(): EverWalletData['contract'] {
+        return this.data.contract
     }
 
     /**
@@ -238,6 +298,22 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
     }
 
     /**
+     * Returns `true` if wallet contract is updating
+     * @returns {boolean}
+     */
+    public get isContractUpdating(): EverWalletState['isContractUpdating'] {
+        return this.state.isContractUpdating
+    }
+
+    /**
+     * Returns `true` if wallet is disconnecting
+     * @returns {boolean}
+     */
+    public get isDisconnecting(): EverWalletState['isDisconnecting'] {
+        return this.state.isDisconnecting
+    }
+
+    /**
      * Returns `true` if wallet is initialized
      * @returns {boolean}
      */
@@ -254,22 +330,10 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
     }
 
     /**
-     * Check if connection to EVER Wallet is complete and ready to use it
-     */
-    public get isReady(): boolean {
-        return (
-            !this.isInitializing
-            && !this.isConnecting
-            && this.isInitialized
-            && this.isConnected
-        )
-    }
-
-    /**
      * Returns `true` if installed wallet has outdated version
      */
     public get isOutdated(): boolean {
-        if (this.data.version === undefined) {
+        if (this.data.version === undefined || this.options?.minWalletVersion === undefined) {
             return false
         }
 
@@ -278,7 +342,11 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             currentMinorVersion = '0',
             currentPatchVersion = '0',
         ] = this.data.version.split('.')
-        const [minMajorVersion, minMinorVersion, minPatchVersion] = DexConstants.MinWalletVersion.split('.')
+        const [
+            minMajorVersion,
+            minMinorVersion,
+            minPatchVersion,
+        ] = this.options.minWalletVersion.split('.')
         return (
             currentMajorVersion < minMajorVersion
             || (currentMajorVersion <= minMajorVersion && currentMinorVersion < minMinorVersion)
@@ -291,39 +359,21 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
     }
 
     /**
-     * Returns `true` if wallet contract is updating
+     * Returns `true` if connection to RPC is initialized and connected
      * @returns {boolean}
      */
-    public get isUpdatingContract(): EverWalletState['isUpdatingContract'] {
-        return this.state.isUpdatingContract
+    public get isReady(): boolean {
+        return (
+            !this.isInitializing
+            && !this.isConnecting
+            && !this.isDisconnecting
+            && this.isInitialized
+            && this.isConnected
+        )
     }
 
     /**
-     * Returns computed account
-     * @returns {EverWalletData['account']}
-     */
-    public get account(): EverWalletData['account'] {
-        return this.data.account
-    }
-
-    /**
-     * Returns computed wallet contract state
-     * @returns {EverWalletData['contract']}
-     */
-    public get contract(): EverWalletData['contract'] {
-        return this.data.contract
-    }
-
-    /**
-     * Returns computed last successful transaction data
-     * @returns {EverWalletData['transaction']}
-     */
-    public get transaction(): EverWalletData['transaction'] {
-        return this.data.transaction
-    }
-
-    /**
-     * Wallet initializing. It runs
+     * Trying to resolve EVER Wallet connection
      * @returns {Promise<void>}
      * @protected
      */
@@ -354,11 +404,7 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             return
         }
 
-        this.setState({
-            isInitializing: false,
-            isInitialized: true,
-            isConnecting: true,
-        })
+        this.setState('isConnecting', true)
 
         const permissionsSubscriber = await rpc.subscribe('permissionsChanged')
         permissionsSubscriber.on('data', event => {
@@ -368,16 +414,23 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
         const currentProviderState = await rpc.getProviderState()
 
         if (currentProviderState.permissions.accountInteraction === undefined) {
-            this.setState('isConnecting', false)
+            this.setState({
+                isConnecting: false,
+                isInitialized: true,
+                isInitializing: false,
+            })
             return
         }
 
         this.setData('version', currentProviderState.version)
-        this.setState('isConnecting', true)
 
         await connectToWallet()
 
-        this.setState('isConnecting', false)
+        this.setState({
+            isConnecting: false,
+            isInitialized: true,
+            isInitializing: false,
+        })
     }
 
     /**
@@ -385,8 +438,7 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
      * @protected
      */
     protected reset(): void {
-        this.data = DEFAULT_WALLET_DATA
-        this.setState('isConnecting', false)
+        this.setData(() => DEFAULT_WALLET_DATA)
     }
 
     /**
@@ -397,14 +449,14 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
      * @returns {Promise<void>}
      * @protected
      */
-    protected async handleAccountChange(account?: Account): Promise<void> {
+    protected async onAccountChange(account?: Account): Promise<void> {
         if (this.#contractSubscriber !== undefined) {
             if (account !== undefined) {
                 try {
                     await this.#contractSubscriber.unsubscribe()
                 }
                 catch (e) {
-                    error(e)
+                    error('Wallet contract unsubscribe error', e)
                 }
             }
             this.#contractSubscriber = undefined
@@ -414,23 +466,21 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             return
         }
 
-        this.setState('isUpdatingContract', true)
+        this.setState('isContractUpdating', true)
 
         try {
             const { state } = await rpc.getFullContractState({
                 address: account.address,
             })
 
-            runInAction(() => {
-                this.setData('contract', state)
-                this.setState('isUpdatingContract', false)
-            })
+            this.setData('contract', state)
+            this.setState('isContractUpdating', false)
         }
         catch (e) {
             error('Get account full contract state error', e)
         }
         finally {
-            this.setState('isUpdatingContract', false)
+            this.setState('isContractUpdating', false)
         }
 
         try {
@@ -441,7 +491,7 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
 
             this.#contractSubscriber.on('data', event => {
                 debug(
-                    '%cTON Provider%c The wallet\'s `contractStateChanged` event was captured',
+                    '%cRPC%c The wallet\'s `contractStateChanged` event was captured',
                     'font-weight: bold; background: #4a5772; color: #fff; border-radius: 2px; padding: 3px 6.5px',
                     'color: #c5e4f3',
                     event,
@@ -451,7 +501,7 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             })
         }
         catch (e) {
-            error(e)
+            error('Contract subscribe error', e)
             this.#contractSubscriber = undefined
         }
     }
@@ -466,8 +516,21 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
 }
 
 
-const Wallet = new EverWalletService()
+let wallet: EverWalletService
 
 export function useEverWallet(): EverWalletService {
-    return Wallet
+    if (wallet === undefined) {
+        debug(
+            '%cCreated a new one Web3WalletService instance as global service to interact with the Web3 Wallet browser extension',
+            'color: #bae701',
+        )
+        wallet = new EverWalletService({
+            decimals: DexConstants.CoinDecimals,
+            name: DexConstants.CoinSymbol,
+            symbol: DexConstants.CoinSymbol,
+        }, {
+            minWalletVersion: DexConstants.MinWalletVersion,
+        })
+    }
+    return wallet
 }
