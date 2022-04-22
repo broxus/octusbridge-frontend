@@ -1,0 +1,24 @@
+.device-drawer-content-inner {
+    width: 100%;
+}
+
+.device-drawer-header {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: -7px;
+}
+
+.device-drawer-header-inner {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    height: 44px;
+    justify-content: space-between;
+    width: 100%;
+
+    .btn-close-drawer {
+        padding: 0;
+    }
+}

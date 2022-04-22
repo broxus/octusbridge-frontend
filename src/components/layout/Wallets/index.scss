@@ -1,0 +1,32 @@
+.wallets-drop-trigger {
+    align-items: center;
+    display: flex;
+    gap: 11px;
+    padding: 0 13px;
+}
+
+.wallets-drop {
+    backdrop-filter: blur(64px);
+    background: linear-gradient(0deg, rgb(5 11 46 / 12%), rgb(5 11 46 / 12%)), rgb(255 255 255 / 12%);
+    max-width: 320px;
+    padding: 12px;
+    width: 310px;
+
+    .wallets-list {
+        > li + li {
+            border-top: 1px solid rgb(255 255 255 / 16%);
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+    }
+}
+
+.wallets-icons {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+
+    .disconnected {
+        mix-blend-mode: luminosity;
+    }
+}

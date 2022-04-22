@@ -86,9 +86,7 @@ export function RouteForm({
                                         <div className="network-select-label">
                                             <div className="network-select-label-inner">
                                                 <div>
-                                                    <Icon
-                                                        icon={`${n.type.toLowerCase()}${n.chainId}NetworkIcon`}
-                                                    />
+                                                    <Icon icon={`${n.type.toLowerCase()}${n.chainId}BlockchainIcon`} />
                                                 </div>
                                                 <div>
                                                     {n.label}

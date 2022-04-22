@@ -1,5 +1,13 @@
 import { Address } from 'everscale-inpage-provider'
 
+export type WalletNativeCoin = {
+    balance?: string;
+    decimals: number;
+    icon?: string;
+    name?: string;
+    symbol: string;
+}
+
 export type Token = {
     balance?: string;
     chainId?: string;

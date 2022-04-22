@@ -1,19 +1,35 @@
 .header {
     align-items: center;
     display: flex;
-    justify-content: flex-start;
-    padding: 18px 20px;
+    gap: 40px;
+    justify-content: space-between;
 
-    @media only screen and (max-width: 767px) {
-        justify-content: space-between;
-        padding: 18px 16px;
-    }
+    .navbar {
+        flex-wrap: wrap;
+        justify-content: center;
 
-    @media (max-width: 1023px) {
-        align-items: flex-start;
-        flex-direction: column;
-        .main-nav {
-            margin-top: 24px;
+        .navbar-item,
+        .navbar-toggle {
+            min-height: 44px;
+            @media (min-width: 768px) {
+                min-height: 64px;
+            }
         }
     }
+
+    .header-inner {
+        align-items: center;
+        display: flex;
+        gap: 40px;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header-switchers {
+        align-items: center;
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+    }
 }
+

@@ -4,7 +4,6 @@ import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
-import { UserAvatar } from '@/components/common/UserAvatar'
 import { DexConstants } from '@/misc'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { formattedAmount, sliceAddress } from '@/utils'
@@ -21,49 +20,67 @@ export function EverWallet(): JSX.Element | null {
             {() => (
                 <div key="ton-wallet" className="wallet">
                     {!wallet.isConnected ? (
-                        <Button
-                            size="md"
-                            type="secondary"
-                            disabled={wallet.isConnecting}
-                            aria-disabled={wallet.isConnecting}
-                            onClick={wallet.connect}
-                        >
-                            {intl.formatMessage({
-                                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
-                            })}
-                        </Button>
-                    ) : (
                         <div key="wrapper" className="wallet__wrapper">
-                            <div className="wallet__user-avatar">
-                                <UserAvatar
-                                    address={wallet.address!}
-                                    size="small"
-                                />
-                                <div className="wallet-icon">
-                                    <Icon icon="everCoinIcon" ratio={0.8} />
+                            <div className="wallet__inner">
+                                <div className="wallet__user-avatar">
+                                    <Icon icon="everscale1BlockchainIcon" ratio={1.6} />
                                 </div>
-                            </div>
-                            <div className="wallet__info">
-                                <div className="wallet__address">
-                                    {sliceAddress(wallet.address)}
-                                </div>
-                                {wallet.balance !== undefined && (
-                                    <div key="balance" className="wallet__balance">
+                                <div className="wallet__info">
+                                    <div className="wallet__address">
                                         {intl.formatMessage({
-                                            id: 'WALLET_BALANCE_HINT',
-                                        }, {
-                                            value: formattedAmount(
-                                                wallet.balance,
-                                                DexConstants.CoinDecimals,
-                                                {
-                                                    preserve: true,
-                                                    roundIfThousand: false,
-                                                },
-                                            ),
-                                            currency: DexConstants.CoinSymbol,
+                                            id: 'EVER_WALLET_CONNECTOR_BLOCKCHAIN_NAME',
                                         })}
                                     </div>
-                                )}
+                                    <div className="wallet__balance">
+                                        {intl.formatMessage({
+                                            id: 'WALLET_NOT_CONNECTED_HINT',
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="secondary"
+                                disabled={wallet.isConnecting}
+                                aria-disabled={wallet.isConnecting}
+                                onClick={wallet.connect}
+                            >
+                                {intl.formatMessage({
+                                    id: 'WALLET_CONNECT_BTN_TEXT',
+                                })}
+                            </Button>
+                        </div>
+                    ) : (
+                        <div key="wrapper" className="wallet__wrapper">
+                            <div className="wallet__inner">
+                                <div className="wallet__user-avatar">
+                                    <Icon icon="everscale1BlockchainIcon" ratio={1.6} />
+                                    <div className="wallet-icon">
+                                        <Icon icon="everWalletIcon" ratio={0.8} />
+                                    </div>
+                                </div>
+                                <div className="wallet__info">
+                                    <div className="wallet__address">
+                                        {sliceAddress(wallet.address)}
+                                    </div>
+                                    {wallet.balance !== undefined && (
+                                        <div key="balance" className="wallet__balance">
+                                            {intl.formatMessage({
+                                                id: 'WALLET_BALANCE_HINT',
+                                            }, {
+                                                value: formattedAmount(
+                                                    wallet.balance,
+                                                    DexConstants.CoinDecimals,
+                                                    {
+                                                        preserve: true,
+                                                        roundIfThousand: false,
+                                                    },
+                                                ),
+                                                currency: DexConstants.CoinSymbol,
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <Button

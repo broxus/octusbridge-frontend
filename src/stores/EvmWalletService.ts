@@ -1,14 +1,19 @@
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import { action, makeAutoObservable, runInAction } from 'mobx'
+import { action, computed, makeObservable } from 'mobx'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
+import type { ICoreOptions } from 'web3modal'
+import BigNumber from 'bignumber.js'
 
+import { BaseStore } from '@/stores/BaseStore'
 import {
     error,
     findNetwork,
     log,
     throwException,
 } from '@/utils'
+import type { NetworkShape, WalletNativeCoin } from '@/types'
+
 
 type Asset = {
     address: string; // The address of the token contract
@@ -17,54 +22,78 @@ type Asset = {
     symbol: string; // A ticker symbol or shorthand, up to 5 characters
 }
 
-
 export type EvmWalletData = {
     address?: string;
     balance?: string;
     chainId: string;
+    networks: NetworkShape[];
 }
 
 export type EvmWalletState = {
     isConnected: boolean;
-    isConnecting: boolean | undefined;
+    isConnecting: boolean;
+    isDisconnecting: boolean;
     isInitialized: boolean;
     isInitializing: boolean;
 }
+
+export type EvmWalletServiceCtorOptions = {
+    modalOptions?: Partial<ICoreOptions>;
+    networks?: NetworkShape[];
+}
+
 
 const DEFAULT_WALLET_DATA: EvmWalletData = {
     address: undefined,
     balance: '0',
     chainId: '1',
+    networks: [],
 }
 
 const DEFAULT_WALLET_STATE: EvmWalletState = {
     isConnected: false,
-    isConnecting: undefined,
+    isConnecting: false,
+    isDisconnecting: false,
     isInitialized: false,
     isInitializing: false,
 }
 
 
-export class EvmWalletService {
+export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
 
-    /**
-     * Current data of the wallet
-     * @type {EvmWalletData}
-     * @protected
-     */
-    protected data: EvmWalletData = DEFAULT_WALLET_DATA
+    constructor(
+        protected readonly nativeCoin?: WalletNativeCoin,
+        protected readonly options?: EvmWalletServiceCtorOptions,
+    ) {
+        super()
 
-    /**
-     * Current state of the wallet connection
-     * @type {EvmWalletState}
-     * @protected
-     */
-    protected state: EvmWalletState = DEFAULT_WALLET_STATE
+        this.setData(() => ({
+            ...DEFAULT_WALLET_DATA,
+            networks: options?.networks || [],
+        }))
 
-    constructor() {
-        makeAutoObservable(this, {
+        this.setState(() => ({
+            ...DEFAULT_WALLET_STATE,
+            isInitializing: true,
+        }))
+
+        makeObservable<EvmWalletService>(this, {
+            address: computed,
+            balance: computed,
+            chainId: computed,
+            coin: computed,
             connect: action.bound,
             disconnect: action.bound,
+            hasProvider: computed,
+            isConnected: computed,
+            isConnecting: computed,
+            isDisconnecting: computed,
+            isInitialized: computed,
+            isInitializing: computed,
+            isMetaMask: computed,
+            isReady: computed,
+            network: computed,
+            web3: computed,
         })
 
         this.init().catch(reason => {
@@ -77,31 +106,43 @@ export class EvmWalletService {
      * @returns {Promise<void>}
      */
     public async connect(): Promise<void> {
-        try {
-            this.state.isConnecting = true
-            this.#provider = await this.#web3modal?.connect?.()
-            this.#web3 = new Web3(this.#provider)
+        if (this.isConnecting || this.isDisconnecting) {
+            return
+        }
 
-            runInAction(() => {
-                this.data.address = this.#provider.selectedAddress
-                this.state.isConnected = this.#provider.selectedAddress != null
-                this.state.isInitialized = this.cachedProvider === 'injected'
-                this.state.isInitializing = false
+        this.setState('isConnecting', true)
+
+        try {
+            this.#connection = await this.modal.connect?.()
+
+            this.setData('address', this.#connection.selectedAddress)
+            // noinspection PointlessBooleanExpressionJS
+            this.setState({
+                isConnected: this.#connection.selectedAddress != null,
+                isInitialized: this.#connection !== undefined,
+                isInitializing: false,
             })
         }
         catch (e) {
-            error(e)
-            runInAction(() => {
-                this.state.isConnected = false
-                this.state.isConnecting = false
-                this.state.isInitialized = false
-                this.state.isInitializing = false
+            error('EVM Wallet connect error', e)
+            this.setState({
+                isConnected: false,
+                isConnecting: false,
+                isInitialized: false,
+                isInitializing: false,
             })
         }
 
-        await this.syncChainId()
-
-        await this.syncAccountData()
+        try {
+            await Promise.all([
+                this.syncAccountData(),
+                this.syncChainId(),
+            ])
+            await this.syncBalance()
+        }
+        catch (e) {
+            //
+        }
     }
 
     /**
@@ -109,21 +150,184 @@ export class EvmWalletService {
      * @returns {Promise<void>}
      */
     public async disconnect(): Promise<void> {
+        if (this.isConnecting || this.isDisconnecting) {
+            return
+        }
+
+        this.setState('isDisconnecting', true)
+
         try {
-            await this.clearCachedProvider()
-            await this.#provider?.close?.()
-            await this.#provider?.disconnect?.()
+            await this.#connection?.close?.()
+            await this.#connection?.disconnect?.()
+            await this.#connection?.killSession?.()
+            await this.#connection?.eth?.currentProvider?.disconnect?.()
+            await this.#connection?.eth?.currentProvider?.killSession?.()
+            await this.modal.clearCachedProvider()
 
-            runInAction(() => {
-                this.state.isConnected = false
-                this.data.address = undefined
-            })
+            this.setState('isConnected', false)
+            this.setData('address', undefined)
 
-            this.#web3 = undefined
-            this.#provider = undefined
+            this.#connection = undefined
         }
         catch (e) {
-            error(e)
+            error('EVM Wallet disconnect error', e)
+        }
+        finally {
+            this.setState('isDisconnecting', false)
+        }
+    }
+
+    /**
+     * Request to add the given asset to the Wallet assets list
+     * @param {Asset} asset
+     */
+    public async addAsset(asset: Asset): Promise<void> {
+        try {
+            await this.#connection.request({
+                method: 'wallet_watchAsset',
+                params: {
+                    options: {
+                        address: asset.address,
+                        decimals: asset.decimals,
+                        image: asset.image,
+                        symbol: asset.symbol,
+                    },
+                    type: 'ERC20',
+                },
+            })
+        }
+        catch (e) {
+            error('Add asset error', e)
+        }
+    }
+
+    /**
+     * Request to add current network to the Wallet
+     * @param {string} chainId
+     */
+    public async addNetwork(chainId: string): Promise<void> {
+        try {
+            if (this.network === undefined) {
+                throwException(`Cannot find EVM network with chainId ${chainId}.`)
+            }
+
+            await this.#connection.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                    blockExplorerUrls: [this.network.explorerBaseUrl],
+                    chainId: `0x${parseInt(chainId, 10).toString(16)}`,
+                    chainName: this.network.name,
+                    nativeCurrency: {
+                        decimals: 18,
+                        name: this.network.currencySymbol,
+                        symbol: this.network.currencySymbol,
+                    },
+                    rpcUrls: [this.network.rpcUrl],
+                }],
+            })
+        }
+        catch (e) {
+            error('Add network error', e)
+        }
+    }
+
+    /**
+     * Request to change network by the given chain id.
+     * @param {string} chainId
+     */
+    public async changeNetwork(chainId: string): Promise<void> {
+        if (this.#connection === undefined) {
+            return
+        }
+
+        try {
+            await this.#connection.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
+            })
+
+            await this.syncChainId()
+            await this.syncBalance()
+        }
+        catch (e: any) {
+            // This error code indicates that the chain has not been added to MetaMask.
+            if (e.code === 4902) {
+                await this.addNetwork(chainId)
+            }
+            error('Switch network error', e)
+        }
+    }
+
+    /**
+     * Sync account data
+     */
+    public async syncAccountData(): Promise<void> {
+        if (this.web3 === undefined) {
+            return
+        }
+
+        this.setState('isConnecting', this.isConnecting === undefined)
+
+        try {
+            const [address] = await this.web3.eth.getAccounts()
+            this.setData('address', address)
+            this.setState({
+                isConnected: address != null,
+                isConnecting: false,
+                isInitialized: true,
+                isInitializing: false,
+            })
+            log(`Sync EVM address: ${address}`)
+        }
+        catch (e) {
+            error('Sync EVM account data error', e)
+            this.setData('address', undefined)
+            this.setState({
+                isConnected: false,
+                isConnecting: false,
+            })
+        }
+    }
+
+    /**
+     * Sync account balance
+     */
+    public async syncBalance(): Promise<void> {
+        if (this.web3 === undefined) {
+            return
+        }
+
+        try {
+            if (this.address !== undefined) {
+                const balance = await this.web3.eth.getBalance(this.address)
+                this.setData('balance', balance)
+                log(`Sync EVM balance: ${balance}`)
+            }
+        }
+        catch (e) {
+            error('Sync EVM balance error', e)
+            this.setData('balance', '0')
+        }
+    }
+
+    /**
+     * Sync chain id
+     */
+    public async syncChainId(): Promise<void> {
+        if (this.web3 === undefined) {
+            return
+        }
+
+        try {
+            const chainId = (await this.web3.eth.getChainId()).toString()
+
+            if (chainId !== this.chainId) {
+                this.setData('chainId', chainId)
+                log(`Sync EVM Chain ID: ${chainId}`)
+            }
+        }
+        catch (e) {
+            error('Sync Chain id error', e)
         }
     }
 
@@ -144,12 +348,63 @@ export class EvmWalletService {
     }
 
     /**
+     * Returns computed BigNumber instance of the wallet balance value
+     * @returns {BigNumber}
+     */
+    public get balanceNumber(): BigNumber {
+        return new BigNumber(this.balance || 0).shiftedBy(-this.coin.decimals)
+    }
+
+
+    /**
+     * Returns current network chain id
+     * @returns {string}
+     */
+    public get chainId(): EvmWalletData['chainId'] {
+        return this.data.chainId
+    }
+
+    /**
+     * Returns base native wallet coin
+     * @returns {WalletNativeCoin}
+     */
+    public get coin(): WalletNativeCoin {
+        return {
+            balance: this.balance,
+            decimals: this.nativeCoin?.decimals ?? 18,
+            name: this.network?.currencySymbol ?? this.nativeCoin?.symbol,
+            symbol: this.network?.currencySymbol ?? this.nativeCoin?.symbol ?? 'eth',
+        }
+    }
+
+    /**
+     * Returns current network shape
+     */
+    public get network(): EvmWalletData['networks'][number] | undefined {
+        return findNetwork(this.chainId, 'evm')
+    }
+
+    /**
+     * Returns list of networks
+     */
+    public get networks(): EvmWalletData['networks'] {
+        return this.data.networks
+    }
+
+    /**
+     * Returns current Web3 Instance
+     */
+    public get web3(): Web3 | undefined {
+        return this.#connection !== undefined ? new Web3(this.#connection) : undefined
+    }
+
+    /**
      * Returns `true` if provider is available.
      * That means extension is installed and activated, else `false`
      * @returns {boolean}
      */
     public get hasProvider(): boolean {
-        return this.#provider != null
+        return this.#connection != null
     }
 
     /**
@@ -169,6 +424,14 @@ export class EvmWalletService {
     }
 
     /**
+     * Returns `true` if wallet is disconnecting
+     * @returns {boolean}
+     */
+    public get isDisconnecting(): EvmWalletState['isDisconnecting'] {
+        return this.state.isDisconnecting
+    }
+
+    /**
      * Returns `true` if wallet is initialized
      * @returns {boolean}
      */
@@ -184,246 +447,135 @@ export class EvmWalletService {
         return this.state.isInitializing
     }
 
+    /**
+     * Returns `true` if wallet is Metamask
+     */
+    public get isMetaMask(): boolean {
+        return this.#connection.isMetaMask
+    }
+
+    /**
+     * Returns `true` if wallet is initialized and connected
+     * @returns {boolean}
+     */
     public get isReady(): boolean {
         return (
             !this.isInitializing
             && !this.isConnecting
+            && !this.isDisconnecting
             && this.isInitialized
             && this.isConnected
         )
     }
 
-    public get chainId(): string {
-        return this.data.chainId
-    }
-
-    public get isMetaMask(): boolean {
-        return this.#provider.isMetaMask
-    }
-
-    public get web3(): Web3 | undefined {
-        return this.#web3
-    }
-
-    public async changeNetwork(chainId: string): Promise<void> {
-        if (this.#provider === undefined) {
-            return
-        }
-
-        try {
-            await this.#provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
-            })
-            await this.syncBalance()
-            await this.syncChainId()
-        }
-        catch (e: any) {
-            // This error code indicates that the chain has not been added to MetaMask.
-            if (e.code === 4902) {
-                await this.addNetwork(chainId)
-            }
-            error('Switch network error', e)
-        }
-    }
-
-    public async addNetwork(chainId: string): Promise<void> {
-        try {
-            const network = findNetwork(chainId, 'evm')
-            if (network === undefined) {
-                throwException(`Cannot find EVM network with chainId ${chainId}.`)
-            }
-
-            await this.#provider.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                    blockExplorerUrls: [network.explorerBaseUrl],
-                    chainId: `0x${parseInt(chainId, 10).toString(16)}`,
-                    chainName: network.name,
-                    nativeCurrency: {
-                        decimals: 18,
-                        name: network.currencySymbol,
-                        symbol: network.currencySymbol,
-                    },
-                    rpcUrls: [network.rpcUrl],
-                }],
-            })
-        }
-        catch (e) {
-            error('Add network error', e)
-        }
-    }
-
-    public async addAsset(asset: Asset): Promise<void> {
-        try {
-            await this.#provider.request({
-                method: 'wallet_watchAsset',
-                params: {
-                    type: 'ERC20',
-                    options: {
-                        address: asset.address,
-                        decimals: asset.decimals,
-                        image: asset.image,
-                        symbol: asset.symbol,
-                    },
-                },
-            })
-        }
-        catch (e) {
-            error('Add asset error', e)
-        }
-    }
-
-    public async syncAccountData(): Promise<void> {
-        if (this.#web3 === undefined) {
-            return
-        }
-
-        this.state.isConnecting = this.state.isConnecting === undefined
-
-        try {
-            const [address] = await this.#web3.eth.getAccounts()
-            runInAction(() => {
-                this.data.address = address
-                this.state.isConnecting = false
-                this.state.isConnected = address !== undefined
-                this.state.isInitialized = true
-                this.state.isInitializing = false
-            })
-            log(`Sync EVM address: ${address}`)
-        }
-        catch (e) {
-            error('Sync EVM account data error', e)
-            runInAction(() => {
-                this.data.address = undefined
-                this.state.isConnecting = false
-                this.state.isConnected = false
-            })
-        }
-    }
-
-    public async syncBalance(): Promise<void> {
-        if (this.#web3 === undefined) {
-            return
-        }
-
-        try {
-            if (this.address !== undefined) {
-                const balance = await this.#web3.eth.getBalance(this.address)
-                runInAction(() => {
-                    this.data.balance = balance
-                })
-                log(`Sync EVM balance: ${balance}`)
-            }
-        }
-        catch (e) {
-            error('Sync EVM balance error', e)
-            runInAction(() => {
-                this.data.balance = '0'
-            })
-        }
-    }
-
-    public async syncChainId(): Promise<void> {
-        if (this.#web3 === undefined) {
-            return
-        }
-
-        try {
-            const chainId = await this.#web3.eth.getChainId()
-
-            if (chainId.toString() !== this.chainId) {
-                runInAction(() => {
-                    this.data.chainId = chainId.toString()
-                })
-                log(`Sync EVM Chain ID: ${chainId.toString()}`)
-            }
-        }
-        catch (e) {
-            error('Sync Chain ID error', e)
-        }
-    }
-
+    /**
+     * Trying to resolve EVM Wallet connection
+     * @protected
+     */
     protected async init(): Promise<void> {
-        this.state.isConnecting = true
-        this.state.isInitializing = true
-
-        this.#provider = Web3.givenProvider
-        this.#web3 = new Web3(this.#provider)
-
-        const providerOptions = {
-            walletconnect: {
-                package: WalletConnectProvider, // required
-                options: {
-                    infuraId: 'a3213a051cf14524857e0794e6da9064', // required
-                },
-            },
-        }
-
-        this.#web3modal = new Web3Modal({
-            network: 'mainnet', // optional
-            cacheProvider: true, // optional
-            disableInjectedProvider: false,
-            providerOptions, // required
+        this.setState({
+            isConnecting: true,
+            isInitializing: true,
         })
 
-        try {
-            await this.syncChainId()
+        this.#connection = Web3.givenProvider
 
-            runInAction(() => {
-                this.state.isInitialized = this.cachedProvider === 'injected'
-                this.state.isInitializing = false
+        try {
+            this.setState({
+                isInitialized: this.#connection !== undefined,
+                isInitializing: false,
             })
 
-            await this.syncAccountData()
-            await this.syncBalance()
+            if (this.modal.cachedProvider === 'injected') {
+                await Promise.all([
+                    this.syncAccountData(),
+                    this.syncChainId(),
+                ])
+                await this.syncBalance()
+            }
+            else {
+                this.setState('isConnecting', false)
+            }
         }
         catch (e) {
             error('Fetch account data error', e)
-            runInAction(() => {
-                this.state.isConnected = false
-                this.state.isConnecting = false
-                this.state.isInitialized = false
-                this.state.isInitializing = false
+            this.setState({
+                isConnected: false,
+                isConnecting: false,
+                isInitialized: false,
+                isInitializing: false,
             })
         }
 
-        this.#provider.on('accountsChanged', async () => {
-            await this.syncAccountData()
+        this.#connection.on('accountsChanged', async ([address]: string[]) => {
+            if (address !== undefined) {
+                await this.syncAccountData()
+            }
+            else {
+                await this.disconnect()
+            }
         })
 
-        this.#provider.on('chainChanged', async (chainId: string) => {
-            runInAction(() => {
-                this.data.chainId = parseInt(chainId, 16).toString()
+        this.#connection.on('chainChanged', async (chainId: string) => {
+            this.setData({
+                balance: '0',
+                chainId: parseInt(chainId, 16).toString(),
             })
-            await this.syncAccountData()
+            await Promise.all([
+                this.syncAccountData(),
+                this.syncBalance(),
+            ])
         })
 
-        setInterval(async () => {
-            await this.syncChainId()
-            await this.syncBalance()
-        }, 20000)
+        if (this.modal.cachedProvider === 'injected') {
+            setInterval(async () => {
+                await this.syncChainId()
+                await this.syncBalance()
+            }, 15000)
+        }
     }
 
-    protected get cachedProvider(): string | undefined {
-        return this.#web3modal?.cachedProvider
+    /**
+     *
+     * @protected
+     */
+    protected get modal(): Web3Modal {
+        return new Web3Modal({
+            cacheProvider: true, // optional
+            disableInjectedProvider: false,
+            network: 'mainnet', // optional
+            ...this.options?.modalOptions,
+        })
     }
 
-    protected clearCachedProvider(): void {
-        this.#web3modal?.clearCachedProvider()
-    }
-
-    #provider: any
-
-    #web3: Web3 | undefined
-
-    #web3modal: Web3Modal | undefined
+    #connection: any
 
 }
 
 
-const Service = new EvmWalletService()
+let wallet: EvmWalletService
 
 export function useEvmWallet(): EvmWalletService {
-    return Service
+    if (wallet === undefined) {
+        log(
+            '%cCreated a new one EvmWalletService instance as global service to interact with the EVM Wallet browser extension',
+            'color: #bae701',
+        )
+        wallet = new EvmWalletService({
+            decimals: 18,
+            symbol: 'ETH',
+        }, {
+            modalOptions: {
+                providerOptions: {
+                    walletconnect: {
+                        options: {
+                            infuraId: 'a3213a051cf14524857e0794e6da9064', // required
+                        },
+                        package: WalletConnectProvider, // required
+                    },
+                },
+            },
+        })
+    }
+    return wallet
 }

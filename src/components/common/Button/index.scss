@@ -73,6 +73,7 @@
 .btn-group {
     align-items: center;
     display: flex;
+
     > *:not(:last-child) {
         margin-right: 10px;
     }
@@ -95,53 +96,53 @@
 
     &[disabled],
     &:disabled {
-        background-color: rgba(197, 228, 243, 0.32);
+        background-color: rgb(197 228 243 / 32%);
         color: #050a2e;
     }
 }
 
 .btn--secondary {
-    background-color: rgba(197, 228, 243, 0.16);
+    background-color: rgb(197 228 243 / 16%);
     color: #c5e4f3;
 
     &:hover,
     &:focus {
-        background-color: rgba(197, 228, 243, 0.32);
+        background-color: rgb(197 228 243 / 32%);
         color: #c5e4f3;
     }
 
     &:active {
-        background-color: rgba(197, 228, 243, 0.08);
+        background-color: rgb(197 228 243 / 8%);
         color: #c5e4f3;
     }
 
     &[disabled],
     &:disabled {
-        background-color: rgba(197, 228, 243, 0.12);
-        color: rgba(197, 228, 243, 0.56);
+        background-color: rgb(197 228 243 / 12%);
+        color: rgb(197 228 243 / 56%);
     }
 }
 
 .btn--tertiary {
     background-color: transparent;
-    border: 1px solid rgba(197, 228, 243, 0.32);
+    border: 1px solid rgb(197 228 243 / 32%);
     color: #c5e4f3;
 
     &:hover,
     &:focus {
-        border-color: rgba(197, 228, 243, 0.56);
+        border-color: rgb(197 228 243 / 56%);
         color: #c5e4f3;
     }
 
     &:active {
-        border-color: rgba(197, 228, 243, 0.16);
+        border-color: rgb(197 228 243 / 16%);
         color: #c5e4f3;
     }
 
     &[disabled],
     &:disabled {
-        border-color: rgba(197, 228, 243, 0.24);
-        color: rgba(197, 228, 243, 0.56);
+        border-color: rgb(197 228 243 / 24%);
+        color: rgb(197 228 243 / 56%);
     }
 }
 
@@ -151,19 +152,19 @@
 
     &:hover,
     &:focus {
-        background-color: rgba(197, 228, 243, 0.16);
+        background-color: rgb(197 228 243 / 16%);
         color: #c5e4f3;
     }
 
     &:active {
-        background-color: rgba(197, 228, 243, 0.08);
+        background-color: rgb(197 228 243 / 8%);
         color: #c5e4f3;
     }
 
     &[disabled],
     &:disabled {
         background-color: transparent;
-        color: rgba(197, 228, 243, 0.56);
+        color: rgb(197 228 243 / 56%);
     }
 }
 
@@ -173,19 +174,19 @@
 
     &:hover,
     &:focus {
-        background-color: rgba(235, 67, 97, 0.8);
+        background-color: rgb(235 67 97 / 80%);
         color: #ffffff;
     }
 
     &:active {
-        background-color: rgba(235, 67, 97, 0.64);
+        background-color: rgb(235 67 97 / 64%);
         color: #ffffff;
     }
 
     &[disabled],
     &:disabled {
-        background-color: rgba(235, 67, 97, 0.48);
-        color: rgba(255, 255, 255, 0.48);
+        background-color: rgb(235 67 97 / 48%);
+        color: rgb(255 255 255 / 48%);
     }
 }
 
@@ -195,19 +196,19 @@
 
     &:hover,
     &:focus {
-        background-color: rgba(74, 180, 74, 0.8);
+        background-color: rgb(74 180 74 / 80%);
         color: #ffffff;
     }
 
     &:active {
-        background-color: rgba(74, 180, 74, 0.64);
+        background-color: rgb(74 180 74 / 64%);
         color: #ffffff;
     }
 
     &[disabled],
     &:disabled {
-        background-color: rgba(74, 180, 74, 0.48);
-        color: rgba(255, 255, 255, 0.48);
+        background-color: rgb(74 180 74 / 48%);
+        color: rgb(255 255 255 / 48%);
     }
 }
 
@@ -217,19 +218,19 @@
 
     &:hover,
     &:focus {
-        background-color: rgba(5, 10, 46, 0.8);
+        background-color: rgb(5 10 46 / 80%);
         color: #ffffff;
     }
 
     &:active {
-        background-color: rgba(5, 10, 46, 0.64);
+        background-color: rgb(5 10 46 / 64%);
         color: #ffffff;
     }
 
     &[disabled],
     &:disabled {
-        background-color: rgba(5, 10, 46, 0.48);
-        color: rgba(255, 255, 255, 0.48);
+        background-color: rgb(5 10 46 / 48%);
+        color: rgb(255 255 255 / 48%);
     }
 }
 

@@ -1,0 +1,64 @@
+.desktop-nav {
+    height: 64px;
+    overflow: hidden;
+
+    &.navbar-nav > li > a,
+    .navbar-item,
+    .navbar-toggle {
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.25px;
+        padding: 0 20px;
+    }
+
+    &.navbar-nav > li > a {
+        color: rgb(255 255 255 / 56%);
+    }
+
+    &.navbar-nav > li:hover > a,
+    &.navbar-nav > li.hover > a {
+        color: rgb(255 255 255 / 78%);
+
+        // noinspection ALL
+        .nav__arrow svg path {
+            fill-opacity: 78%;
+        }
+    }
+
+    &.navbar-nav > li.parent > a {
+        cursor: pointer;
+    }
+
+    &.navbar-nav > li.active > a {
+        color: #ffffff;
+
+        // noinspection ALL
+        .nav__arrow svg path {
+            fill-opacity: 100%;
+        }
+    }
+
+    // noinspection ALL
+    .nav__arrow svg path {
+        fill-opacity: 56%;
+        transition: fill-opacity 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+}
+
+.navbar-dropdown {
+    backdrop-filter: blur(64px);
+    background: linear-gradient(0deg, rgb(5 11 46 / 12%), rgb(5 11 46 / 12%)), rgb(255 255 255 / 12%);
+    padding: 10px 20px;
+    width: 160px;
+}
+
+.navbar-dropdown-nav {
+    li > a {
+        font-weight: 500;
+        letter-spacing: 0.25px;
+    }
+
+    li > a.active {
+        color: #ffffff;
+    }
+}

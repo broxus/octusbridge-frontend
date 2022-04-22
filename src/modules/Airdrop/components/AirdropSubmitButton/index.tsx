@@ -37,7 +37,7 @@ function SubmitButton(): JSX.Element {
                 await wallet.connect()
             }
             buttonText = intl.formatMessage({
-                id: 'CRYSTAL_WALLET_CONNECT_BTN_TEXT',
+                id: 'EVER_WALLET_CONNECT_BTN_TEXT',
             })
             break
 
