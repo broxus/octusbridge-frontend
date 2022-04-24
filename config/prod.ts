@@ -59,10 +59,8 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Soon',
         chainId: '43114',
         currencySymbol: 'AVAX',
-        disabled: true,
         explorerBaseUrl: 'https://explorer.avax.network/',
         id: 'evm-43114',
         label: 'Avalanche',
@@ -71,10 +69,8 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Soon',
         chainId: '2001',
         currencySymbol: 'mADA',
-        disabled: true,
         explorerBaseUrl: 'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/',
         id: 'evm-2001',
         label: 'Milkomeda',
