@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js'
 
 import { BaseStore } from '@/stores/BaseStore'
 import {
+    debug,
     error,
     findNetwork,
     log,
@@ -207,27 +208,28 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      */
     public async addNetwork(chainId: string): Promise<void> {
         try {
-            if (this.network === undefined) {
+            const network = findNetwork(chainId, 'evm')
+            if (network === undefined) {
                 throwException(`Cannot find EVM network with chainId ${chainId}.`)
             }
 
             await this.#connection.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
-                    blockExplorerUrls: [this.network.explorerBaseUrl],
+                    blockExplorerUrls: [network.explorerBaseUrl],
                     chainId: `0x${parseInt(chainId, 10).toString(16)}`,
-                    chainName: this.network.name,
+                    chainName: network.name,
                     nativeCurrency: {
                         decimals: 18,
-                        name: this.network.currencySymbol,
-                        symbol: this.network.currencySymbol,
+                        name: network.currencySymbol,
+                        symbol: network.currencySymbol,
                     },
-                    rpcUrls: [this.network.rpcUrl],
+                    rpcUrls: [network.rpcUrl],
                 }],
             })
         }
         catch (e) {
-            error('Add network error', e)
+            debug('Add network error', e)
         }
     }
 
@@ -254,7 +256,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             if (e.code === 4902) {
                 await this.addNetwork(chainId)
             }
-            error('Switch network error', e)
+            debug('Switch network error', e)
         }
     }
 
@@ -354,7 +356,6 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
     public get balanceNumber(): BigNumber {
         return new BigNumber(this.balance || 0).shiftedBy(-this.coin.decimals)
     }
-
 
     /**
      * Returns current network chain id
