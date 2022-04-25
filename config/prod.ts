@@ -63,7 +63,7 @@ export const networks: NetworkShape[] = [
         chainId: '43114',
         currencySymbol: 'AVAX',
         disabled: true,
-        explorerBaseUrl: 'https://explorer.avax.network/',
+        explorerBaseUrl: 'https://snowtrace.io/',
         id: 'evm-43114',
         label: 'Avalanche',
         name: 'Avalanche Network',

@@ -39,7 +39,7 @@ export const TonButtonConnector = observer(({
                 block={block}
                 size={size}
                 type="secondary"
-                href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
+                href="https://chrome.google.com/webstore/detail/ever-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
             >
                 {intl.formatMessage({ id: 'WALLET_INSTALLATION_LINK_TEXT' })}
             </Button>

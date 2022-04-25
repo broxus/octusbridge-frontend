@@ -59,11 +59,9 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Soon',
         chainId: '43114',
         currencySymbol: 'AVAX',
-        disabled: true,
-        explorerBaseUrl: 'https://explorer.avax.network/',
+        explorerBaseUrl: 'https://snowtrace.io/',
         id: 'evm-43114',
         label: 'Avalanche',
         name: 'Avalanche Network',
@@ -71,10 +69,8 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Soon',
         chainId: '2001',
         currencySymbol: 'mADA',
-        disabled: true,
         explorerBaseUrl: 'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/',
         id: 'evm-2001',
         label: 'Milkomeda',
@@ -137,7 +133,6 @@ export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridg
 
 export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/octus.json'
 
-// eslint-disable-next-line import/export
 export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'

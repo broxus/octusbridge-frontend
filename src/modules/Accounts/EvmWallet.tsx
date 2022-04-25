@@ -89,10 +89,13 @@ export function EvmWallet(): JSX.Element | null {
                                 </div>
 
                                 <Button
+                                    type="link"
                                     className="btn-logout"
                                     onClick={wallet.disconnect}
                                 >
-                                    <Icon icon="logout" />
+                                    {intl.formatMessage({
+                                        id: 'WALLET_DISCONNECT_BTN_TEXT',
+                                    })}
                                 </Button>
                             </div>
                         )}
