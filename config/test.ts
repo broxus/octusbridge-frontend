@@ -8,7 +8,7 @@ export const networks: NetworkShape[] = [
         chainId: '1',
         currencySymbol: 'EVER',
         explorerBaseUrl: 'https://everscan.io/',
-        id: 'everscan-1',
+        id: 'everscale-1',
         label: 'Everscale',
         name: 'Everscale',
         rpcUrl: '',
@@ -65,7 +65,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-43114',
         label: 'Avalanche',
         name: 'Avalanche Network',
-        rpcUrl: 'https://rpc.ankr.com/avalanche',
+        rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
         type: 'evm',
     },
     {
