@@ -77,7 +77,7 @@ function ConnectingModal(): JSX.Element | null {
                 {!wallet.hasProvider && (
                     <a
                         className="btn btn--tertiary btn--lg btn--block popup-btn"
-                        href="https://chrome.google.com/webstore/detail/ton-crystal-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
+                        href="https://chrome.google.com/webstore/detail/ever-wallet/cgeeodpfagjceefieflmdfphplkenlfk"
                         target="_blank"
                         rel="nofollow noopener noreferrer"
                     >

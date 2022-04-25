@@ -31,7 +31,7 @@
 
     &-popup {
         background: #313551;
-        box-shadow: 0 8px 16px rgba(43, 51, 56, 0.08);
+        box-shadow: 0 8px 16px rgb(43 51 56 / 8%);
         margin-top: 8px;
         padding: 20px;
         position: absolute;
@@ -43,12 +43,12 @@
         @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
             -webkit-backdrop-filter: blur(80px);
             backdrop-filter: blur(80px);
-            background: rgba(255, 255, 255, 0.08);
+            background: rgb(255 255 255 / 8%);
         }
 
         &__actions {
             align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgb(255 255 255 / 8%);
             column-gap: 10px;
             display: flex;
             justify-content: flex-end;

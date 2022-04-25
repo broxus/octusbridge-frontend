@@ -9,7 +9,7 @@ import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useBridge, useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
-import { isEverscaleAddressValid } from '@/utils'
+import { isEvmTxHashValid } from '@/utils'
 
 
 function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
@@ -17,10 +17,7 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
     const { bridge } = useBridge()
     const transfer = useEvmHiddenSwapTransfer()
 
-    const isTransferPage = (
-        transfer.contractAddress !== undefined
-        && isEverscaleAddressValid(transfer.contractAddress.toString())
-    )
+    const isTransferPage = transfer.txHash !== undefined && isEvmTxHashValid(transfer.txHash)
     const evmWallet = transfer.useEvmWallet
     const everWallet = transfer.useEverWallet
     const isEventConfirmed = transfer.secondEventState?.status === 'confirmed'
@@ -53,6 +50,8 @@ function ReleaseInEvmStatusIndicatorInner(): JSX.Element {
 
         await transfer.release()
     }
+
+    console.log('KNPDJSHF:DSN:LKKFNDHSJK', transfer)
 
     return (
         <ReleaseStatus
