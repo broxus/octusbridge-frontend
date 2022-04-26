@@ -7,7 +7,6 @@ import {
     DateFilter,
     FilterField,
     Filters,
-    NetworkFilter,
     RadioFilter,
     TextFilter,
     TokenFilter,
@@ -34,6 +33,7 @@ import {
 import { useEverWallet } from '@/stores/EverWalletService'
 import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
 import { error } from '@/utils'
+import { Select } from '@/components/common/Select'
 
 
 function TransfersListInner(): JSX.Element {
@@ -293,10 +293,17 @@ function TransfersListInner(): JSX.Element {
                                     id: 'TRANSFERS_BC_FROM',
                                 })}
                             >
-                                <NetworkFilter
-                                    id={filters.fromId}
-                                    networks={networks}
+                                <Select
+                                    allowClear
+                                    value={filters.fromId}
                                     onChange={changeFilter('fromId')}
+                                    options={networks.map(item => ({
+                                        value: item.id,
+                                        label: item.label,
+                                    }))}
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_BC',
+                                    })}
                                 />
                             </FilterField>
 
@@ -305,10 +312,17 @@ function TransfersListInner(): JSX.Element {
                                     id: 'TRANSFERS_BC_TO',
                                 })}
                             >
-                                <NetworkFilter
-                                    id={filters.toId}
-                                    networks={networks}
+                                <Select
+                                    allowClear
+                                    value={filters.toId}
                                     onChange={changeFilter('toId')}
+                                    options={networks.map(item => ({
+                                        value: item.id,
+                                        label: item.label,
+                                    }))}
+                                    placeholder={intl.formatMessage({
+                                        id: 'FILTERS_BC',
+                                    })}
                                 />
                             </FilterField>
 

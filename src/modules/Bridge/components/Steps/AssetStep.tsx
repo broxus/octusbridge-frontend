@@ -1,3 +1,4 @@
+import { reaction } from 'mobx'
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
@@ -38,6 +39,22 @@ export function AssetStep(): JSX.Element {
         bridge.setData('selectedToken', undefined)
         bridge.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
     }
+
+    React.useEffect(() => {
+        const dispose = reaction(
+            () => bridge.evmPendingWithdrawal,
+            () => {
+                if (bridge.evmPendingWithdrawal) {
+                    bridge.setData('selectedToken', bridge.evmPendingWithdrawal.ethTokenAddress)
+                }
+            },
+            {
+                fireImmediately: true,
+            },
+        )
+
+        return dispose
+    }, [])
 
     return (
         <>

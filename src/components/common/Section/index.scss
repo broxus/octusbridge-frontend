@@ -92,4 +92,14 @@
     letter-spacing: 0.5px;
     line-height: 20px;
     margin: 0 0 8px;
+
+    &_indent {
+        &_lg {
+            margin-bottom: 32px;
+        }
+    }
+}
+
+.content-section-description ~ .content-section-title {
+    margin-bottom: 0;
 }

@@ -9276,7 +9276,7 @@ export class EthAbi {
                     type: 'uint256',
                 },
             ],
-            name: 'PendingWithdrawalFill',
+            name: 'PendingWithdrawalForce',
             type: 'event',
         },
         {
@@ -9844,6 +9844,55 @@ export class EthAbi {
             type: 'event',
         },
         {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'sender',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'int128',
+                    name: 'recipientWid',
+                    type: 'int128',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'recipientAddr',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'withdrawalRecipient',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'withdrawalId',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UserDeposit',
+            type: 'event',
+        },
+        {
             inputs: [],
             name: 'acceptGovernance',
             outputs: [],
@@ -10179,23 +10228,6 @@ export class EthAbi {
                     name: 'amount',
                     type: 'uint256',
                 },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IVault.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
             ],
             name: 'deposit',
             outputs: [],
@@ -10226,35 +10258,10 @@ export class EthAbi {
                     name: 'amount',
                     type: 'uint256',
                 },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
                 {
-                    components: [
-                        {
-                            internalType: 'int128',
-                            name: 'wid',
-                            type: 'int128',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256[]',
-                    name: 'amount',
-                    type: 'uint256[]',
+                    internalType: 'uint256',
+                    name: 'expectedMinBounty',
+                    type: 'uint256',
                 },
                 {
                     components: [
@@ -10270,7 +10277,7 @@ export class EthAbi {
                         },
                     ],
                     internalType: 'struct IVault.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
+                    name: 'pendingWithdrawalIds',
                     type: 'tuple[]',
                 },
             ],
@@ -10390,6 +10397,19 @@ export class EthAbi {
                 },
             ],
             name: 'expectedReturn',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'fees',
             outputs: [
                 {
                     internalType: 'uint256',
@@ -11182,6 +11202,19 @@ export class EthAbi {
                 },
             ],
             name: 'skim',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bool',
+                    name: 'skim_to_everscale',
+                    type: 'bool',
+                },
+            ],
+            name: 'skimFees',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',

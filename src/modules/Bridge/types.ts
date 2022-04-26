@@ -4,7 +4,6 @@ import { TokenAbi } from '@/misc'
 import { Pipeline, TokenAsset } from '@/stores/TokensAssetsService'
 import { NetworkShape, NetworkType } from '@/types'
 
-
 export type ApprovalStrategies = 'infinity' | 'fixed'
 
 export enum CrosschainBridgeStep {
@@ -40,6 +39,7 @@ export type CrosschainBridgeStoreData = {
     swapType: '0' | '1';
     tokenAmount?: string;
     txHash?: string;
+    pendingWithdrawals?: PendingWithdrawal[];
 }
 
 export type CrosschainBridgeStoreState = {
@@ -51,6 +51,7 @@ export type CrosschainBridgeStoreState = {
     isPendingApproval: boolean;
     isProcessing: boolean;
     step: CrosschainBridgeStep;
+    evmPendingWithdrawal?: EvmPendingWithdrawal;
 }
 
 export type AddressesFields = Pick<CrosschainBridgeStoreData, 'leftAddress' | 'rightAddress'>
@@ -86,6 +87,7 @@ export type EvmTransferStoreData = {
     pipeline?: Pipeline;
     rightAddress?: string;
     token?: TokenAsset;
+    pendingWithdrawals?: PendingWithdrawal[];
 }
 
 export type EvmTransferStoreState = {
@@ -184,6 +186,10 @@ export type EverscaleTransferStoreData = {
     rightAddress?: string;
     token?: TokenAsset;
     withdrawalId?: string;
+    pendingWithdrawalId?: string;
+    pendingWithdrawalStatus?: PendingWithdrawalStatus;
+    pendingWithdrawalBounty?: string;
+    pendingWithdrawalOwner?: string;
 }
 
 export type EverscaleTransferStoreState = {
@@ -203,6 +209,7 @@ export type EverscaleTransferStoreState = {
         isReleased?: boolean;
         status: ReleaseStateStatus;
     };
+    isSubmitBountyLoading?: boolean;
 }
 
 export type TransferSummaryData = {
@@ -223,6 +230,7 @@ export type TransferSummaryData = {
     token?: TokenAsset;
     tokenAmount?: string;
     withdrawFee?: string;
+    pendingWithdrawals?: PendingWithdrawal[];
 }
 
 export type TransferSummaryState = {
@@ -288,4 +296,26 @@ export type BurnCallbackInfoResponse = {
 export type BurnCallbackTableResponse = {
     totalCount: number;
     transfers: BurnCallbackInfoResponse[];
+}
+
+export type PendingWithdrawalStatus = 'Close' | 'Open'
+
+export type PendingWithdrawal = {
+    id: string;
+    amount: string;
+    bounty: string;
+    recipient: string;
+    timestamp?: string;
+    approveStatus?: string;
+}
+
+export type PendingWithdrawalId = {
+    recipient: string;
+    id: string;
+}
+
+export type EvmPendingWithdrawal = {
+    chainId: string;
+    ethTokenAddress: string;
+    withdrawalIds: PendingWithdrawalId[];
 }

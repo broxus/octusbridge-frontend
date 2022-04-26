@@ -25,6 +25,7 @@ import {
     EvmTransferQueryParams,
     EvmTransferStoreData,
     EvmTransferStoreState,
+    PendingWithdrawal,
 } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
@@ -190,9 +191,27 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             const depositLog = decodedLogs.find(log => log?.name === 'Deposit')
             const alienTransfer = decodedLogs.find(log => log?.name === 'AlienTransfer')
             const nativeTransfer = decodedLogs.find(log => log?.name === 'NativeTransfer')
+            const userDepositLogs = decodedLogs.filter(log => log?.name === 'UserDeposit')
 
             if (depositLog == null) {
                 return
+            }
+
+            if (userDepositLogs.length > 0) {
+                const pendingWithdrawals: PendingWithdrawal[] = []
+                userDepositLogs.forEach(item => {
+                    if (item.events[4].value !== '0x0000000000000000000000000000000000000000') {
+                        pendingWithdrawals.push({
+                            id: item.events[5].value,
+                            bounty: item.events[6].value,
+                            amount: item.events[3].value,
+                            recipient: item.events[4].value,
+                        })
+                    }
+                })
+                if (pendingWithdrawals.length > 0) {
+                    this.setData('pendingWithdrawals', pendingWithdrawals)
+                }
             }
 
             let token: TokenAsset | undefined
@@ -936,6 +955,10 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
     public get useTokensAssets(): TokensAssetsService {
         return this.tokensAssets
+    }
+
+    public get pendingWithdrawals(): PendingWithdrawal[] | undefined {
+        return this.data.pendingWithdrawals
     }
 
     #alienTokenRootDeploySubscriber: Subscription<'contractStateChanged'> | undefined

@@ -56,6 +56,7 @@ export function TextFilter({
                     className="clear-input"
                     type="button"
                     onClick={clear}
+                    tabIndex={-1}
                 >
                     <Icon icon="remove" ratio={0.6} />
                 </button>

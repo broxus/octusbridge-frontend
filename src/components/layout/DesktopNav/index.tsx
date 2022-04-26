@@ -44,6 +44,13 @@ export function DesktopNav(): JSX.Element {
                         })}
                     </NavLink>
                 </Nav.Item>
+                <Nav.Item key="liquidity-requests">
+                    <NavLink exact to="/bridge/liquidity-requests">
+                        {intl.formatMessage({
+                            id: 'NAV_LINK_TEXT_LIQUIDITY_REQUESTS',
+                        })}
+                    </NavLink>
+                </Nav.Item>
                 <Nav.Item key="bridge-history">
                     <NavLink exact to="/transfers">
                         {intl.formatMessage({

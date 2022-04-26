@@ -12,7 +12,7 @@ export * from '@/components/common/Table/cell'
 export * from '@/components/common/Table/row'
 
 type Col<O> = {
-    name?: string;
+    name?: string | React.ReactNode;
     align?: Align;
     ascending?: O;
     descending?: O;
@@ -23,6 +23,7 @@ type Cell = string | React.ReactNode
 type Row = {
     link?: string;
     cells: Cell[];
+    disabled?: boolean;
 };
 
 type Props<O> = {
@@ -91,7 +92,11 @@ export function Table<O>({
                             rows && rows.length > 0 && (
                                 rows.map((row, i) => (
                                     /* eslint-disable react/no-array-index-key */
-                                    <Row key={i} link={row.link}>
+                                    <Row
+                                        key={i}
+                                        link={row.link}
+                                        disabled={row.disabled}
+                                    >
                                         {row.cells.map((cell, j) => (
                                             <Cell align={cols[j].align} key={j}>
                                                 {cell}

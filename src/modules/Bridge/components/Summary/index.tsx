@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Amount } from '@/modules/Bridge/components/Summary/components/Amount'
+import { PendingWithdrawals } from '@/modules/Bridge/components/Summary/components/PendingWithdrawals'
 import { FeesDetails } from '@/modules/Bridge/components/Summary/components/FeesDetails'
 import { Networks } from '@/modules/Bridge/components/Summary/components/Networks'
 import { SwapDetails } from '@/modules/Bridge/components/Summary/components/SwapDetails'
@@ -27,6 +28,7 @@ export function Summary(): JSX.Element {
                 <VaultDetails />
                 <Tokens />
                 <FeesDetails />
+                <PendingWithdrawals />
                 <Amount />
                 <SwapDetails />
                 <TokenAmountDetails />

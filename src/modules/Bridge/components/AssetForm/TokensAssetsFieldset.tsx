@@ -239,6 +239,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                 onClear={onClear}
                                 onSearch={onSearch}
                                 onInputKeyDown={onInputKeyDown}
+                                disabled={bridge.evmPendingWithdrawal !== undefined}
                             />
                         )}
                     </Observer>

@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button'
 import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
 import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
+import { BountyForm } from '@/modules/Bridge/components/BountyForm'
 import { useBridge, useEverscaleTransfer } from '@/modules/Bridge/providers'
 import { isEverscaleAddressValid } from '@/utils'
 
@@ -40,7 +41,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         && !isConfirmed
     )
 
-    const onRelease = async () => {
+    const onRelease = async (bounty?: string) => {
         if (
             !isTransferPage
             || (
@@ -51,7 +52,15 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
             return
         }
 
-        await transfer.release()
+        await transfer.release(bounty)
+    }
+
+    const onSubmitBounty = async (amount: string) => {
+        await transfer.submitBounty(amount)
+    }
+
+    const onClickRelease = () => {
+        onRelease()
     }
 
     return (
@@ -89,6 +98,16 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                     )
                 }
 
+                if (transfer.pendingWithdrawalId || transfer.isVaultBalanceNotEnough) {
+                    return (
+                        <BountyForm
+                            onSubmit={transfer.pendingWithdrawalId
+                                ? onSubmitBounty
+                                : onRelease}
+                        />
+                    )
+                }
+
                 return (
                     <Button
                         disabled={(!isTransferPage || (
@@ -98,7 +117,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                             || isPending
                         ))}
                         type="primary"
-                        onClick={isTransferPage ? onRelease : undefined}
+                        onClick={isTransferPage ? onClickRelease : undefined}
                     >
                         {intl.formatMessage({
                             id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',

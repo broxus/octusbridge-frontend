@@ -4,7 +4,6 @@ import { Contract } from 'everscale-inpage-provider'
 import rpc from '@/hooks/useRpcClient'
 import { BridgeConstants, DexConstants, TokenAbi } from '@/misc'
 
-
 export function unshiftedAmountWithSlippage(amount: BigNumber, slippage: number | string): BigNumber {
     return amount.times(100)
         .div(new BigNumber(100).minus(slippage))

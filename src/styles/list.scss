@@ -26,6 +26,12 @@
         &--pointer {
             cursor: pointer;
         }
+
+        &--disabled {
+            .list__cell {
+                opacity: 0.2;
+            }
+        }
     }
 
     &__header {

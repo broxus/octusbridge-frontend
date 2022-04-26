@@ -7,7 +7,6 @@ import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 
-
 export type CrosschainBridgeContextConsumerProps = {
     bridge: CrosschainBridge;
     summary: TransferSummary;
@@ -86,6 +85,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                     .shiftedBy(bridge.token?.decimals || 0)
                     .toFixed(),
                 withdrawFee: bridge.withdrawFee,
+                pendingWithdrawals: bridge.pendingWithdrawals,
             }),
             data => {
                 summary.setData(data)

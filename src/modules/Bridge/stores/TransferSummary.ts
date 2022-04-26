@@ -4,7 +4,7 @@ import {
     DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
     DEFAULT_TRANSFER_SUMMARY_STORE_STATE,
 } from '@/modules/Bridge/constants'
-import { TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
+import { PendingWithdrawal, TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
 import { TokensAssetsService } from '@/stores/TokensAssetsService'
 
@@ -157,6 +157,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get isEverscaleToEvm(): boolean {
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
+    }
+
+    public get pendingWithdrawals(): PendingWithdrawal[] | undefined {
+        return this.data.pendingWithdrawals
     }
 
 }

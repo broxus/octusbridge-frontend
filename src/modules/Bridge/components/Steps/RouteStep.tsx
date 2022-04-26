@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { reaction } from 'mobx'
 import isEqual from 'lodash.isequal'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
@@ -34,6 +35,26 @@ export function RouteStep(): JSX.Element {
     const nextStep = () => {
         bridge.setState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
+
+    React.useEffect(() => {
+        const dispose = reaction(
+            () => bridge.evmPendingWithdrawal,
+            () => {
+                if (bridge.evmPendingWithdrawal) {
+                    const { chainId } = bridge.evmPendingWithdrawal
+                    const evmNetwork = networks.find(({ id }) => id === `evm-${chainId}`)
+                    const everNetwork = networks.find(({ id }) => id === 'everscale-1')
+                    bridge.changeNetwork('leftNetwork', evmNetwork)
+                    bridge.changeNetwork('rightNetwork', everNetwork)
+                }
+            },
+            {
+                fireImmediately: true,
+            },
+        )
+
+        return dispose
+    }, [])
 
     return (
         <>
@@ -81,6 +102,7 @@ export function RouteStep(): JSX.Element {
                                 ? !isEqual(bridge.leftNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}
+                            networkFieldDisabled={bridge.evmPendingWithdrawal !== undefined}
                         />
                     )
                 }}
@@ -117,6 +139,7 @@ export function RouteStep(): JSX.Element {
                                 ? !isEqual(bridge.rightNetwork?.chainId, evmWallet.chainId)
                                 : false}
                             wallet={wallet}
+                            networkFieldDisabled={bridge.evmPendingWithdrawal !== undefined}
                         />
                     )
                 }}

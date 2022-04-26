@@ -17,7 +17,9 @@ import { LocalizationContext } from '@/context/Localization'
 // import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
-import TransferList from '@/pages/transfer/list'
+import TransferList from '@/pages/transfers'
+import LiquidityRequests from '@/pages/bridge/liquidity-requests'
+import LiquidityDeposit from '@/pages/bridge/liquidity-requests/item'
 import StakingSelf from '@/pages/staking/my'
 import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
@@ -57,7 +59,7 @@ export function App(): JSX.Element {
                             <Route exact path="/">
                                 <Redirect exact to="/bridge" />
                             </Route>
-                            <Route path="/transfers">
+                            <Route exact path="/transfers">
                                 <TransferList />
                             </Route>
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
@@ -66,8 +68,14 @@ export function App(): JSX.Element {
                             <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
                                 <TransferStatus />
                             </Route>
-                            <Route path="/bridge">
+                            <Route exact path="/bridge">
                                 <Bridge />
+                            </Route>
+                            <Route exact path="/bridge/liquidity-requests">
+                                <LiquidityRequests />
+                            </Route>
+                            <Route path="/bridge/liquidity-requests/:chainId/:ethTokenAddress">
+                                <LiquidityDeposit />
                             </Route>
                             {/*
                             <Route exact path="/airdrop">

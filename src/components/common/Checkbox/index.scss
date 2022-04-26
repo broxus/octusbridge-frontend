@@ -8,6 +8,10 @@
     line-height: 20px;
     vertical-align: top;
 
+    &_disabled {
+        cursor: not-allowed;
+    }
+
     input {
         display: none;
 

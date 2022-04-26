@@ -2,11 +2,10 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { Nav } from '@/components/common/Nav'
-
 import './index.scss'
 import { Icon } from '@/components/common/Icon'
 import { NavClickEventHandler } from '@/components/common/Nav/types'
+import { Nav } from '@/components/common/Nav'
 
 type Props = {
     onNavigate?: () => void;
@@ -45,6 +44,13 @@ export function DeviceNav({ onNavigate }: Props): JSX.Element {
                     <NavLink exact to="/bridge" onClick={onNavigate}>
                         {intl.formatMessage({
                             id: 'NAV_LINK_TEXT_NEW_TRANSFER',
+                        })}
+                    </NavLink>
+                </Nav.Item>
+                <Nav.Item key="liquidity-requests">
+                    <NavLink exact to="/bridge/liquidity-requests" onClick={onNavigate}>
+                        {intl.formatMessage({
+                            id: 'NAV_LINK_TEXT_LIQUIDITY_REQUESTS',
                         })}
                     </NavLink>
                 </Nav.Item>
