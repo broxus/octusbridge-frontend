@@ -189,7 +189,6 @@ export type EverscaleTransferStoreData = {
     pendingWithdrawalId?: string;
     pendingWithdrawalStatus?: PendingWithdrawalStatus;
     pendingWithdrawalBounty?: string;
-    pendingWithdrawalOwner?: string;
 }
 
 export type EverscaleTransferStoreState = {
@@ -210,6 +209,7 @@ export type EverscaleTransferStoreState = {
         status: ReleaseStateStatus;
     };
     isSubmitBountyLoading?: boolean;
+    isPendingWithdrawalSynced?: boolean;
 }
 
 export type TransferSummaryData = {

@@ -976,12 +976,14 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     pendingWithdrawalBounty: transfers[0].bounty,
                     pendingWithdrawalStatus: transfers[0].status,
                     pendingWithdrawalId: transfers[0].userId,
-                    pendingWithdrawalOwner: transfers[0].tonUserAddress,
                 })
             }
         }
         catch (e) {
             error(e)
+        }
+        finally {
+            this.setState('isPendingWithdrawalSynced', true)
         }
     }
 
@@ -1062,8 +1064,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.data.pendingWithdrawalStatus
     }
 
-    public get pendingWithdrawalOwner(): string | undefined {
-        return this.data.pendingWithdrawalOwner
+    public get isPendingWithdrawalSynced(): boolean {
+        return this.state.isPendingWithdrawalSynced === true
     }
 
     public get isSubmitBountyLoading(): boolean {

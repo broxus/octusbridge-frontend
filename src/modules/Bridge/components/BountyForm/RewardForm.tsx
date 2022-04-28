@@ -19,8 +19,8 @@ export function RewardFormInner({
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
     const disabled = isClosed || transfer.isSubmitBountyLoading
-    const hideForm = transfer.pendingWithdrawalOwner
-        ? transfer.pendingWithdrawalOwner !== transfer.useEverWallet.address
+    const isOwner = transfer.leftAddress
+        ? transfer.leftAddress === transfer.useEverWallet.address
         : false
 
     const [localBounty, setLocalBounty] = React.useState<string>('')
@@ -67,7 +67,7 @@ export function RewardFormInner({
                     token={transfer.token}
                     value={localBounty}
                     onChange={setLocalBounty}
-                    disabled={disabled || hideForm}
+                    disabled={disabled || !isOwner}
                     placeholder={intl.formatMessage({
                         id: 'CROSSCHAIN_TRANSFER_BOUNTY_REQUEST_PLACEHOLDER',
                     })}
@@ -89,7 +89,7 @@ export function RewardFormInner({
                 )}
             </fieldset>
 
-            {!hideForm && (
+            {isOwner && (
                 <fieldset className="form-fieldset">
                     <Button
                         submit

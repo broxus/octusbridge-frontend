@@ -804,7 +804,7 @@ export default {
     CHART_LAYOUT_NO_DATA: 'No data',
 
     LIQUIDITY_REQUESTS_TITLE: 'Liquidity requests',
-    LIQUIDITY_REQUESTS_DESC: 'Transfer assets from your blockchain to FreeTON to help others to finish their transfers and earn rewards.',
+    LIQUIDITY_REQUESTS_DESC: 'Transfer assets from your blockchain to Everscale to help others to finish their transfers and earn rewards.',
     LIQUIDITY_REQUESTS_TABLE_TOKEN: 'Token',
     LIQUIDITY_REQUESTS_TABLE_YOU_SPEND: 'You spend',
     LIQUIDITY_REQUESTS_TABLE_YOU_GET: 'You get',

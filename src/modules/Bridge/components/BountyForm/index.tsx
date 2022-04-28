@@ -25,8 +25,8 @@ export function BountyFormInner({
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
     const disabled = isClosed || transfer.isSubmitBountyLoading
-    const hideForm = transfer.pendingWithdrawalOwner
-        ? transfer.pendingWithdrawalOwner !== transfer.useEverWallet.address
+    const isOwner = transfer.leftAddress
+        ? transfer.leftAddress === transfer.useEverWallet.address
         : false
 
     const [bountyKind, setBountyKind] = React.useState<BountyKind>(BountyKind.Default)
@@ -48,7 +48,7 @@ export function BountyFormInner({
     return (
         <div className="form crosschain-transfer__form">
             <fieldset className="form-fieldset">
-                {(!hideForm || bountyKind === BountyKind.Default) && (
+                {(isOwner || bountyKind === BountyKind.Default) && (
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
                             <SimpleRadio
@@ -63,7 +63,7 @@ export function BountyFormInner({
                                     id: 'CROSSCHAIN_TRANSFER_BOUNTY_DEFAULT_TEXT',
                                 })}
                             >
-                                {!hideForm && bountyKind === BountyKind.Default && (
+                                {isOwner && bountyKind === BountyKind.Default && (
                                     <Button
                                         type="primary"
                                         className="crosschain-transfer__btn-field"
@@ -82,7 +82,7 @@ export function BountyFormInner({
                     </div>
                 )}
 
-                {(!hideForm || bountyKind === BountyKind.Bounty) && (
+                {(isOwner || bountyKind === BountyKind.Bounty) && (
                     <div className="crosschain-transfer__controls">
                         <div className="crosschain-transfer__control">
                             <SimpleRadio
