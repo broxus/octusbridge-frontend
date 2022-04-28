@@ -43,4 +43,15 @@
             visibility: visible;
         }
     }
+
+    &-value {
+        font-size: 14px;
+
+        &__label {
+            color: rgba(255,255,255,0.48);
+            font-size: 12px;
+            line-height: 16px;
+            letter-spacing: 0.6px;
+        }
+    }
 }

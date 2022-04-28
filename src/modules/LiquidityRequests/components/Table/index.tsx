@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 
 import { Checkbox } from '@/components/common/Checkbox'
 import { TokenBadge } from '@/components/common/TokenBadge'
-import { Table } from '@/components/common/Table'
+import { Table, Value } from '@/components/common/Table'
 import { useTokensAssets } from '@/stores/TokensAssetsService'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
 import { SearchNotInstant, SearchNotInstantOrdering } from '@/modules/LiquidityRequests/types'
@@ -80,16 +80,6 @@ function LiquidityRequestsTableInner({
                         id: 'LIQUIDITY_REQUESTS_TABLE_YOU_REWARD',
                     }),
                 }, {
-                    align: 'left',
-                    name: intl.formatMessage({
-                        id: 'LIQUIDITY_REQUESTS_TABLE_FROM',
-                    }),
-                }, {
-                    align: 'left',
-                    name: intl.formatMessage({
-                        id: 'LIQUIDITY_REQUESTS_TABLE_TO',
-                    }),
-                }, {
                     align: 'right',
                     ascending: 'createdatascending',
                     descending: 'createdatdescending',
@@ -113,27 +103,41 @@ function LiquidityRequestsTableInner({
                             uri={tokensAssets.get('everscale', '1', item.tonTokenAddress)?.icon}
                             symbol={tokensAssets.get('everscale', '1', item.tonTokenAddress)?.symbol ?? sliceAddress(item.tonTokenAddress)}
                         />,
-                        item.decimals
-                            ? formattedAmount(item.currentAmount, item.decimals)
-                            : intl.formatMessage({
-                                id: 'NO_VALUE',
-                            }),
-                        item.decimals
-                            ? formattedAmount(
-                                new BigNumber(item.currentAmount).plus(item.bounty).toFixed(),
-                                item.decimals,
-                            )
-                            : intl.formatMessage({
-                                id: 'NO_VALUE',
-                            }),
-                        item.decimals
-                            ? formattedAmount(item.bounty, item.decimals)
-                            : intl.formatMessage({
-                                id: 'NO_VALUE',
-                            }),
-                        findNetwork('1', 'everscale')?.name,
-                        findNetwork(item.chainId.toString(), 'evm')?.name,
-                        dateFormat(item.timestamp),
+                        <Value
+                            label={findNetwork(item.chainId.toString(), 'evm')?.name}
+                        >
+                            {item.decimals
+                                ? formattedAmount(item.currentAmount, item.decimals)
+                                : intl.formatMessage({
+                                    id: 'NO_VALUE',
+                                })}
+                        </Value>,
+                        <Value
+                            label={findNetwork('1', 'everscale')?.name}
+                        >
+                            {item.decimals
+                                ? formattedAmount(
+                                    new BigNumber(item.currentAmount).plus(item.bounty).toFixed(),
+                                    item.decimals,
+                                )
+                                : intl.formatMessage({
+                                    id: 'NO_VALUE',
+                                })}
+                        </Value>,
+                        <Value
+                            label={findNetwork('1', 'everscale')?.name}
+                        >
+                            {item.decimals
+                                ? formattedAmount(item.bounty, item.decimals)
+                                : intl.formatMessage({
+                                    id: 'NO_VALUE',
+                                })}
+                        </Value>,
+                        <Value
+                            label={dateFormat(item.timestamp, 'DD')}
+                        >
+                            {dateFormat(item.timestamp, 'TT')}
+                        </Value>,
                     ],
                 }))}
             />

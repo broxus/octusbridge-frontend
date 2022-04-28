@@ -10,6 +10,7 @@ import './index.scss'
 
 export * from '@/components/common/Table/cell'
 export * from '@/components/common/Table/row'
+export * from '@/components/common/Table/value'
 
 type Col<O> = {
     name?: string | React.ReactNode;
