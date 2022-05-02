@@ -34,7 +34,7 @@ export function LocalizationProvider({ children }: Props): JSX.Element {
     })
 
     const messages = React.useMemo<LocalizationKeys>(
-        () => messagesList[locale] as LocalizationKeys,
+        () => messagesList[locale],
         [locale],
     )
 
