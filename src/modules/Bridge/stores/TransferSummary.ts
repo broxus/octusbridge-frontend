@@ -33,6 +33,7 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             isTransferPage: computed,
             isTransferReleased: computed,
             vaultBalance: computed,
+            vaultBalanceDecimals: computed,
             evmTokenDecimals: computed,
             isEverscaleBasedToken: computed,
             isEvmToEvm: computed,
@@ -128,10 +129,14 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.pipeline?.vaultBalance
     }
 
-    public get evmTokenDecimals(): number | undefined {
+    public get vaultBalanceDecimals(): number | undefined {
         if (this.isEvmToEvm) {
             return this.hiddenBridgePipeline?.evmTokenDecimals
         }
+        return this.pipeline?.evmTokenDecimals
+    }
+
+    public get evmTokenDecimals(): number | undefined {
         return this.pipeline?.evmTokenDecimals
     }
 
