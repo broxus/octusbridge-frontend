@@ -30,7 +30,6 @@ import {
     CrosschainBridgeStep,
     CrosschainBridgeStoreData,
     CrosschainBridgeStoreState,
-    EvmPendingWithdrawal,
     NetworkFields,
     PendingWithdrawal,
 } from '@/modules/Bridge/types'
@@ -200,10 +199,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             [key]: value,
             depositType: this.isEvmToEvm ? 'credit' : 'default',
         })
-    }
-
-    public changeEvmPendingWithdrawal(evmPendingWithdrawal?: EvmPendingWithdrawal): void {
-        this.setState('evmPendingWithdrawal', evmPendingWithdrawal)
     }
 
     /**

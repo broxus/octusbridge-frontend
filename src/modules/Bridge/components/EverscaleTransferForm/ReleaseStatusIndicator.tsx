@@ -101,7 +101,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                 if (
                     transfer.releaseState !== undefined
                     && transfer.isPendingWithdrawalSynced
-                    && (transfer.pendingWithdrawalId || transfer.isVaultBalanceNotEnough)
+                    && (transfer.pendingWithdrawalId || bridge.isInsufficientVaultBalance)
                 ) {
                     return (
                         <BountyForm

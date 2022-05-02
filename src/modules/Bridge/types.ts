@@ -316,6 +316,6 @@ export type PendingWithdrawalId = {
 
 export type EvmPendingWithdrawal = {
     chainId: string;
-    ethTokenAddress: string;
+    evmTokenAddress: string;
     withdrawalIds: PendingWithdrawalId[];
 }

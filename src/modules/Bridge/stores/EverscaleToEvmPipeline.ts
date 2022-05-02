@@ -22,7 +22,6 @@ import {
     EverscaleTransferQueryParams,
     EverscaleTransferStoreData,
     EverscaleTransferStoreState,
-    PendingWithdrawalStatus,
 } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
@@ -1019,6 +1018,18 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.params?.depositType
     }
 
+    public get pendingWithdrawalId(): EverscaleTransferStoreData['pendingWithdrawalId'] {
+        return this.data.pendingWithdrawalId
+    }
+
+    public get pendingWithdrawalStatus(): EverscaleTransferStoreData['pendingWithdrawalStatus'] {
+        return this.data.pendingWithdrawalStatus
+    }
+
+    public get bounty(): EverscaleTransferStoreData['pendingWithdrawalBounty'] {
+        return this.data.pendingWithdrawalBounty
+    }
+
     /**
      * Returns non-shifted amount field BigNumber instance
      */
@@ -1056,36 +1067,12 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return this.pipeline?.tokenBase === 'everscale'
     }
 
-    public get pendingWithdrawalId(): string | undefined {
-        return this.data.pendingWithdrawalId
-    }
-
-    public get pendingWithdrawalStatus(): PendingWithdrawalStatus | undefined {
-        return this.data.pendingWithdrawalStatus
-    }
-
     public get isPendingWithdrawalSynced(): boolean {
         return this.state.isPendingWithdrawalSynced === true
     }
 
     public get isSubmitBountyLoading(): boolean {
         return this.state.isSubmitBountyLoading === true
-    }
-
-    public get bounty(): string | undefined {
-        return this.data.pendingWithdrawalBounty
-    }
-
-    public get isVaultBalanceNotEnough(): boolean {
-        if (!this.pipeline?.vaultBalance || !this.evmTokenDecimals || !this.token) {
-            return false
-        }
-
-        return new BigNumber(this.amount)
-            .shiftedBy(-this.token.decimals)
-            .shiftedBy(this.evmTokenDecimals)
-            .dp(0, BigNumber.ROUND_DOWN)
-            .gt(this.pipeline.vaultBalance)
     }
 
     public get evmTokenDecimals(): number | undefined {

@@ -45,7 +45,7 @@ export function AssetStep(): JSX.Element {
             () => bridge.evmPendingWithdrawal,
             () => {
                 if (bridge.evmPendingWithdrawal) {
-                    bridge.setData('selectedToken', bridge.evmPendingWithdrawal.ethTokenAddress)
+                    bridge.setData('selectedToken', bridge.evmPendingWithdrawal.evmTokenAddress)
                 }
             },
             {

@@ -27,7 +27,7 @@ export function Bridge({
     const { bridge } = useBridge()
 
     React.useEffect(() => {
-        bridge.changeEvmPendingWithdrawal(evmPendingWithdrawal)
+        bridge.setState('evmPendingWithdrawal', evmPendingWithdrawal)
     }, [evmPendingWithdrawal])
 
     return (

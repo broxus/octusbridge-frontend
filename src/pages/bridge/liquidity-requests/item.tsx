@@ -14,7 +14,7 @@ export default function Page(): JSX.Element {
 
     const evmPendingWithdrawal = {
         chainId: params.chainId,
-        ethTokenAddress: params.ethTokenAddress,
+        evmTokenAddress: params.evmTokenAddress,
         withdrawalIds: new URLSearchParams(location.search)
             .getAll('id')
             .map(item => ({

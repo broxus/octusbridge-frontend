@@ -74,7 +74,7 @@ export function App(): JSX.Element {
                             <Route exact path="/bridge/liquidity-requests">
                                 <LiquidityRequests />
                             </Route>
-                            <Route path="/bridge/liquidity-requests/:chainId/:ethTokenAddress">
+                            <Route path="/bridge/liquidity-requests/:chainId/:evmTokenAddress">
                                 <LiquidityDeposit />
                             </Route>
                             {/*
