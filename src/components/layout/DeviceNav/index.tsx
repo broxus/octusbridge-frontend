@@ -2,10 +2,11 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { NavLink, useLocation } from 'react-router-dom'
 
+import { Nav } from '@/components/common/Nav'
+
 import './index.scss'
 import { Icon } from '@/components/common/Icon'
 import { NavClickEventHandler } from '@/components/common/Nav/types'
-import { Nav } from '@/components/common/Nav'
 
 type Props = {
     onNavigate?: () => void;

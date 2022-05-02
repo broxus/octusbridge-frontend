@@ -26,7 +26,7 @@ export function VaultDetails(): JSX.Element {
                             <div className="text-truncate">
                                 {formattedAmount(
                                     summary.vaultBalance,
-                                    summary.evmTokenDecimals,
+                                    summary.vaultBalanceDecimals,
                                     { target: 'token' },
                                 )}
                             </div>

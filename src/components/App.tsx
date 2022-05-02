@@ -38,7 +38,6 @@ import './App.scss'
 
 
 export function App(): JSX.Element {
-    const evmWallet = useEvmWallet()
     const everWallet = useEverWallet()
     const upgradeTokens = useUpgradeTokens()
     const localization = React.useContext(LocalizationContext)

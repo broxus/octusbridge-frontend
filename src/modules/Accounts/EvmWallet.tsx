@@ -77,7 +77,7 @@ export function EvmWallet(): JSX.Element | null {
                                                         wallet.balance,
                                                         18,
                                                         {
-                                                            preserve: true,
+                                                            truncate: 9,
                                                             roundIfThousand: false,
                                                         },
                                                     ),
