@@ -1,149 +1,93 @@
 include:
-  - project: "common/gitlab-ci"
-    ref: master
+  - project: "infrastructure/gitlab-ci"
+    ref: main
     file: "/templates/cloudbuild-common.gitlab-ci.yaml"
-  - project: "common/gitlab-ci"
-    ref: master
+  - project: "infrastructure/gitlab-ci"
+    ref: main
     file: "templates/deploy.gitlab-ci.yaml"
-
-variables:
-  IMAGE_BASE: gcr.io/broxus/ton/tonbridge/tonbridge
-  CLUSTER_SETUP_DEV: gcloud container clusters get-credentials broxus-1 --zone europe-west1-c --project dexpa-175115
-  CLUSTER_SETUP_MASTER: gcloud container clusters get-credentials broxus-1 --zone europe-west1-c --project broxus
 
 stages:
   - cloudbuild
-  - deploy-config
-  - deploy-rollout
+  - deploy
 
-# dev pipeline
-cloudbuild:image-dev:
+cloudbuild:image:dev:
+  only:
+    - dev
+  except:
+    - tags
   extends: .cloudbuild:common
-  variables:
-    IMAGE_NAME: $IMAGE_BASE
-  only:
-    - develop
-  except:
-    - tags
-  script:
-    - rm -rf src/config.ts && cp config/test.ts src/config.ts
-    - gcloud builds submit --machine-type=n1-highcpu-8 --config=cloudbuild.yaml .
+  before_script:
+    - rm -rf src/config.ts && cp config/dev.ts src/config.ts
 
-deploy:config-dev:
-  extends: .deploy:configuration
-  variables:
-    CONFIG_APPLICATION_PORT: "80"
-    CONFIG_HEALTHZ_PORT: "80"
-    CONFIG_HEALTHZ_URL: "/"
-    CONFIG_EXPOSE_PORT: "30180"
-    CONFIG_IMAGE: $IMAGE_BASE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+deploy:dev:
   only:
-    - develop
+    - dev
   except:
     - tags
-  script:
-    - |
-      deploy/common/build.sh kustomize \
-      -t statefulset \
-      -r deploy/common/base/service-statefulset.yaml \
-      -r deploy/common/base/service-expose.yaml \
-      -p kustomize/overrides.dev.yaml \
-      > kustomization.yaml
-  artifacts:
-    name: $CI_COMMIT_REF_NAME-deploy-config
-    paths:
-      - deploy/deployment.yaml
-
-deploy:rollout-dev:
-  extends: .deploy:rollout
-  variables:
-    CLUSTER_SETUP: $CLUSTER_SETUP_DEV
-    CONFIG_APPLICATION: $CI_PROJECT_NAME
-  only:
-    - develop
-  except:
-    - tags
-  dependencies:
-    - deploy:config-dev
+  extends: .deploy
+  when: on_success
   environment:
-    name: $CI_PROJECT_NAME-dev
-    on_stop: deploy:stop-dev
+    name: dev
 
-deploy:stop-dev:
-  extends: .deploy:stop
-  variables:
-    CLUSTER_SETUP: $CLUSTER_SETUP_DEV
-    CONFIG_APPLICATION: $CI_PROJECT_NAME
+stop:dev:
   only:
-    - develop
+    - dev
   except:
     - tags
+  extends: .stop
   environment:
-    name: $CI_PROJECT_NAME-dev
-    action: stop
+    name: dev
 
-# master pipeline
-cloudbuild:image-master:
-  extends: .cloudbuild:common
-  variables:
-    IMAGE_NAME: $IMAGE_BASE
+cloudbuild:image:master:
   only:
     - master
   except:
     - tags
-  script:
+  extends: .cloudbuild:common
+  before_script:
+    - rm -rf src/config.ts && cp config/stage.ts src/config.ts
+
+deploy:master:
+  only:
+    - master
+  except:
+    - tags
+  extends: .deploy
+  environment:
+    name: stage
+
+stop:master:
+  only:
+    - master
+  except:
+    - tags
+  extends: .stop
+  environment:
+    name: stage
+
+cloudbuild:image:prod:
+  only:
+    - prod
+  except:
+    - tags
+  extends: .cloudbuild:common
+  before_script:
     - rm -rf src/config.ts && cp config/prod.ts src/config.ts
-    - gcloud builds submit --machine-type=n1-highcpu-8 --config=cloudbuild.yaml .
 
-deploy:config-master:
-  extends: .deploy:configuration
-  variables:
-    CONFIG_APPLICATION_PORT: "80"
-    CONFIG_HEALTHZ_PORT: "80"
-    CONFIG_HEALTHZ_URL: "/"
-    CONFIG_EXPOSE_PORT: "30180"
-    CONFIG_IMAGE: $IMAGE_BASE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+deploy:prod:
   only:
-    - master
+    - prod
   except:
     - tags
-  script:
-    - |
-      deploy/common/build.sh kustomize \
-      -t statefulset \
-      -r deploy/common/base/service-statefulset.yaml \
-      -r deploy/common/base/service-expose.yaml \
-      -p kustomize/overrides.master.yaml \
-      > kustomization.yaml
-  artifacts:
-    name: $CI_COMMIT_REF_NAME-deploy-config-master
-    paths:
-      - deploy/deployment.yaml
-
-deploy:rollout-master:
-  extends: .deploy:rollout
-  variables:
-    CLUSTER_SETUP: $CLUSTER_SETUP_MASTER
-    CONFIG_APPLICATION: $CI_PROJECT_NAME
-  only:
-    - master
-  except:
-    - tags
-  dependencies:
-    - deploy:config-master
+  extends: .deploy
   environment:
-    name: $CI_PROJECT_NAME-master
-    on_stop: deploy:stop-master
+    name: prod
 
-deploy:stop-master:
-  extends: .deploy:stop
-  variables:
-    CLUSTER_SETUP: $CLUSTER_SETUP_MASTER
-    CONFIG_APPLICATION: $CI_PROJECT_NAME
+stop:prod:
   only:
-    - master
+    - prod
   except:
     - tags
+  extends: .stop
   environment:
-    name: $CI_PROJECT_NAME-master
-    action: stop
+    name: prod

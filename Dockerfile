@@ -1,4 +1,13 @@
-FROM gcr.io/broxus/ton/tonbridge/builder:1.0 as builder
+FROM ubuntu:20.04 as builder
+
+WORKDIR /app
+
+RUN \
+    set -eux; \
+    apt-get update && \
+    apt-get install -y curl build-essential python git && \
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
 
 COPY . .
 
