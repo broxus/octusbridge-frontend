@@ -394,16 +394,24 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             try {
                 tries += 1
 
-                await this.vaultContract.methods.deposit(
-                    [target[0], `0x${target[1]}`],
-                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                        .dp(0, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                    this.pendingWithdrawalsBounty,
-                    this.pendingWithdrawals?.map(item => ({
-                        recipient: item.recipient,
-                        id: item.id,
-                    })),
+                await (this.pendingWithdrawalsBounty && this.pendingWithdrawals
+                    ? (this.vaultContract.methods.deposit(
+                        [target[0], `0x${target[1]}`],
+                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed(),
+                        this.pendingWithdrawalsBounty,
+                        this.pendingWithdrawals.map(item => ({
+                            recipient: item.recipient,
+                            id: item.id,
+                        })),
+                    ))
+                    : (this.vaultContract.methods.deposit(
+                        [target[0], `0x${target[1]}`],
+                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed(),
+                    ))
                 ).send({
                     from: this.evmWallet.address,
                     type: transactionType,
