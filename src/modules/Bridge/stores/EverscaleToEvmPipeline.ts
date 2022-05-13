@@ -559,16 +559,21 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     }
                 }
                 else {
-                    await vaultContract.methods.saveWithdraw(
-                        this.data.encodedEvent,
-                        signatures.map(({ signature }) => signature),
-                        bounty,
+                    await (bounty
+                        ? vaultContract.methods.saveWithdraw(
+                            this.data.encodedEvent,
+                            signatures.map(({ signature }) => signature),
+                            bounty,
+                        )
+                        : vaultContract.methods.saveWithdraw(
+                            this.data.encodedEvent,
+                            signatures.map(({ signature }) => signature),
+                        )
                     ).send({
                         from: this.evmWallet.address,
                         type: transactionType,
                     })
                 }
-
             }
             catch (e: any) {
                 if (/EIP-1559/g.test(e.message) && transactionType !== undefined && transactionType !== '0x0') {
