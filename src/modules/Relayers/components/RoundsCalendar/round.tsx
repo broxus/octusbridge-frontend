@@ -8,25 +8,14 @@ import './index.scss'
 type Props = {
     title?: string;
     link?: string;
-    length: number;
-    maxLength: number;
 }
 
 export function Round({
     title,
     link,
-    length,
-    maxLength,
 }: Props): JSX.Element {
-    const width = (100 / maxLength) * length
-
     return (
-        <div
-            className="rounds-calendar-round"
-            style={{
-                width: `${width}%`,
-            }}
-        >
+        <div className="rounds-calendar-round">
             <div className="rounds-calendar-round__title">
                 {link ? (
                     <Link to={link} className="rounds-calendar-round__link">

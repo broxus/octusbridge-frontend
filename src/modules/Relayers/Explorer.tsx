@@ -1,30 +1,51 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { Container, Header, Title } from '@/components/common/Section'
 import { RoundsCalendar } from '@/modules/Relayers/components/RoundsCalendar'
 import { ValidationRounds } from '@/modules/Relayers/components/ValidationRounds'
 import { Events } from '@/modules/Relayers/components/Events'
 import { Relayers } from '@/modules/Relayers/components/Relayers'
 import { RelayersOverview } from '@/modules/Relayers/components/RelayersOverview'
+import {
+    RelayersEventsProvider, RelayersProvider, RelayRoundsInfoProvider,
+    RoundInfoListProvider, RoundInfoProvider, RoundsCalendarProvider,
+} from '@/modules/Relayers/providers'
 
 export function RelayersExplorer(): JSX.Element {
     const intl = useIntl()
 
     return (
-        <div className="container container--large">
-            <header className="page-header">
-                <h1 className="page-title">
+        <Container size="lg">
+            <Header size="lg">
+                <Title size="lg">
                     {intl.formatMessage({
                         id: 'RELAYERS_EXPLORER_TITLE',
                     })}
-                </h1>
-            </header>
+                </Title>
+            </Header>
 
-            <RelayersOverview />
-            <Relayers />
-            <ValidationRounds />
-            <RoundsCalendar />
-            <Events />
-        </div>
+            <RoundInfoProvider>
+                <RelayersOverview />
+            </RoundInfoProvider>
+
+            <RelayersProvider>
+                <Relayers />
+            </RelayersProvider>
+
+            <RoundInfoListProvider>
+                <RelayRoundsInfoProvider>
+                    <ValidationRounds />
+                </RelayRoundsInfoProvider>
+            </RoundInfoListProvider>
+
+            <RoundsCalendarProvider>
+                <RoundsCalendar roundNum="current" />
+            </RoundsCalendarProvider>
+
+            <RelayersEventsProvider>
+                <Events />
+            </RelayersEventsProvider>
+        </Container>
     )
 }

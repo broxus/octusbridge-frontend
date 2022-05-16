@@ -2,7 +2,6 @@ import * as React from 'react'
 import { observer } from 'mobx-react-lite'
 
 import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
-import { ExplorerChartType } from '@/modules/Staking/types'
 import { Timeframe } from '@/modules/Chart/types'
 import { useExplorerContext } from '@/modules/Staking/providers/ExplorerProvider'
 import { Chart } from '@/modules/Chart'
@@ -10,7 +9,6 @@ import { error } from '@/utils'
 
 export function CommonChartsInner(): JSX.Element | null {
     const { chart } = useExplorerContext()
-    const [chartType, setChartType] = React.useState<ExplorerChartType>('TVL')
     const [timeframe, setTimeframe] = React.useState<Timeframe>('H1')
 
     const load = async (from?: number, to?: number) => {
@@ -19,7 +17,7 @@ export function CommonChartsInner(): JSX.Element | null {
         }
 
         try {
-            await chart.fetch(chartType, timeframe, from, to)
+            await chart.fetch('TVL', timeframe, from, to)
         }
         catch (e) {
             error(e)
@@ -29,17 +27,18 @@ export function CommonChartsInner(): JSX.Element | null {
     React.useEffect(() => {
         chart.reset()
     }, [
-        chartType,
         timeframe,
     ])
 
     return (
-        <ChartLayout<ExplorerChartType>
-            types={['TVL']}
-            activeType={chartType}
+        <ChartLayout
+            chartTypes={[{
+                id: 'TVL',
+                label: 'TVL',
+            }]}
+            chartTypeId="TVL"
             timeframe={timeframe}
             onChangeTimeframe={setTimeframe}
-            onChangeType={setChartType}
             loading={chart.isLoading}
         >
             <Chart

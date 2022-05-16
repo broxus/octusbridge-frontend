@@ -68,6 +68,7 @@ function PendingTransfersInner(): JSX.Element {
 
                         {pagination.totalPages > 1 && (
                             <Pagination
+                                count={pagination.limit}
                                 page={pagination.page}
                                 totalPages={pagination.totalPages}
                                 totalCount={pagination.totalCount}

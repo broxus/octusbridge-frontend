@@ -1,16 +1,52 @@
 import * as React from 'react'
+import { useParams } from 'react-router-dom'
+import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
 import { Relayers } from '@/modules/Relayers/components/Relayers'
+import { ContentLoader } from '@/components/common/ContentLoader'
+import { Container } from '@/components/common/Section'
 import { EventInformation } from '@/modules/Relayers/components/EventInformation'
 import { ExplorerBreadcrumb } from '@/modules/Relayers/components/ExplorerBreadcrumb'
 import { EventHeader } from '@/modules/Relayers/components/EventHeader'
+import { RelayersProvider, useTransferEventContext } from '@/modules/Relayers/providers'
+import { sliceAddress } from '@/utils'
 
-export function Event(): JSX.Element {
+type Params = {
+    contractAddress: string;
+}
+
+export function EventInner(): JSX.Element {
+    const intl = useIntl()
+    const params = useParams<Params>()
+    const transferEvent = useTransferEventContext()
+    const [loading, setLoading] = React.useState(true)
+
+    React.useEffect(() => {
+        transferEvent.fetch(params.contractAddress)
+    }, [params.contractAddress])
+
+    React.useEffect(() => {
+        if (transferEvent.isLoading !== undefined) {
+            setLoading(transferEvent.isLoading)
+        }
+    }, [transferEvent.isLoading])
+
+    if (loading) {
+        return (
+            <ContentLoader transparent />
+        )
+    }
+
     return (
-        <div className="container container--large">
+        <Container size="lg">
             <ExplorerBreadcrumb
                 items={[{
-                    title: 'Transfer e65e64e6r4...r4e3646',
+                    title: intl.formatMessage({
+                        id: 'EVENT_PAGE_TITLE',
+                    }, {
+                        contract: sliceAddress(params.contractAddress),
+                    }),
                 }]}
             />
 
@@ -18,7 +54,13 @@ export function Event(): JSX.Element {
 
             <EventInformation />
 
-            <Relayers />
-        </div>
+            <RelayersProvider>
+                <Relayers
+                    transferContractAddress={params.contractAddress}
+                />
+            </RelayersProvider>
+        </Container>
     )
 }
+
+export const Event = observer(EventInner)

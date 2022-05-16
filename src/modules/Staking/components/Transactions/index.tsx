@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Tab, Tabs } from '@/components/common/Tabs'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { mapTransactionKindToIntlId } from '@/modules/Staking/utils'
 import { useTransactionsContext } from '@/modules/Staking/providers/TransactionsProvider'
@@ -131,19 +131,19 @@ export function TransactionsInner({
                         name: intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_COL_TRS',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_COL_AMOUNT',
                         }),
-                        align: 'right',
+                        align: Align.right,
                         ascending: 'amountascending',
                         descending: 'amountdescending',
                     }, {
                         name: intl.formatMessage({
                             id: 'STAKING_TRANSACTIONS_COL_DATE',
                         }),
-                        align: 'right',
+                        align: Align.right,
                         ascending: 'timestampblockascending',
                         descending: 'timestampblockatdescending',
                     }]}
@@ -166,6 +166,7 @@ export function TransactionsInner({
                 />
 
                 <Pagination
+                    count={pagination.limit}
                     page={pagination.page}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}

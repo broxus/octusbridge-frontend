@@ -1,25 +1,20 @@
 import * as React from 'react'
 
+import { Scale } from '@/modules/Relayers/components/RoundsCalendar/scale'
+
 import './index.scss'
 
-type Props = {
-    length: number;
-    maxLength: number;
-}
-
-export function Cursor({
-    length,
-    maxLength,
-}: Props): JSX.Element {
-    const width = 100 / maxLength
-
+export function Cursor(): JSX.Element {
     return (
-        <div
-            className="rounds-calendar-cursor"
-            style={{
-                width: `${width}%`,
-                left: `${(length - 1) * width}%`,
-            }}
+        <Scale
+            className="rounds-calendar-scale_cursor-wrapper"
+            items={[{
+                startTime: Date.now(),
+                endTime: Date.now() + 1,
+                content: (
+                    <div className="rounds-calendar-cursor" />
+                ),
+            }]}
         />
     )
 }

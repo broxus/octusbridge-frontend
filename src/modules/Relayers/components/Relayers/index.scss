@@ -19,6 +19,12 @@
 
 .relayers-table {
     &.list {
-        --list-grid-template: 30px minmax(150px, 10%) minmax(150px, 50%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%);
+        --list-grid-template: 30px minmax(150px, 10%) minmax(150px, 50%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%) minmax(160px, 10%);
+    }
+}
+
+.round-relayers-table {
+    &.list {
+        --list-grid-template: 30px minmax(150px, 1fr) minmax(150px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr);
     }
 }

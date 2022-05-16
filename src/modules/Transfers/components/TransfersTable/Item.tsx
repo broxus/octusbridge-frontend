@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 
-import { Cell, Row } from '@/components/common/Table'
+import { Align, Cell, Row } from '@/components/common/Table'
 import { Amount } from '@/modules/Transfers/components/Amount'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { From } from '@/modules/Transfers/components/TransfersTable/From'
@@ -58,7 +58,7 @@ export function ItemInner({
             <Cell>
                 <To transfer={transfer} />
             </Cell>
-            <Cell align="right">
+            <Cell align={Align.right}>
                 {transfer.createdAt ? dateFormat(transfer.createdAt) : noValue}
             </Cell>
         </Row>

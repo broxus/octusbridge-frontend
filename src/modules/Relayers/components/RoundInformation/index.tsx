@@ -1,50 +1,94 @@
 import * as React from 'react'
+import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
-import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
+import { RelayRoundInfoResponse, RoundInfoResponse } from '@/modules/Relayers/types'
+import { formattedAmount } from '@/utils'
+import { RelayConfig } from '@/misc'
 
-export function RoundInformation(): JSX.Element {
+type Props = {
+    relayConfig?: RelayConfig;
+    roundInfo?: RoundInfoResponse;
+    relayRoundInfo?: RelayRoundInfoResponse;
+}
+
+export function RoundInformation({
+    relayConfig,
+    roundInfo,
+    relayRoundInfo,
+}: Props): JSX.Element {
+    const intl = useIntl()
+
+    const noValue = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
+
     return (
         <Section>
-            <Title>Information</Title>
+            <Title>
+                {intl.formatMessage({
+                    id: 'RELAYERS_ROUND_INFO_TITLE',
+                })}
+            </Title>
 
             <div className="tiles">
-                <DataCard
-                    title="Your rank"
-                    value="72/100"
-                >
-                    <TvlChange
-                        size="small"
-                        changesDirection={-1}
-                        priceChange="0.5"
-                    />
-                </DataCard>
+                {relayRoundInfo && (
+                    <>
+                        <DataCard
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_ROUND_RANK',
+                            })}
+                        >
+                            {relayRoundInfo.relayPlace}
+                        </DataCard>
+
+                        <DataCard
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_ROUND_STAKE',
+                            })}
+                            value={formattedAmount(relayRoundInfo.stake, undefined, {
+                                target: 'token',
+                            })}
+                        />
+
+                        <DataCard
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_ROUND_UNFROZEN',
+                            })}
+                        >
+                            {intl.formatMessage({
+                                id: 'SOON',
+                            })}
+                        </DataCard>
+                    </>
+                )}
 
                 <DataCard
-                    title="Your stake, BRIDGE"
-                    value="240 000.00"
+                    value={roundInfo?.relaysCount || noValue}
+                    title={intl.formatMessage({
+                        id: 'RELAYERS_ROUND_TOTAL',
+                    })}
                 />
 
                 <DataCard
-                    title="Your unfrozen stake, BRIDGE"
-                    value="80 000.00"
-                    hint="Will be available in next round"
+                    value={relayConfig?.minRelayDeposit
+                        ? formattedAmount(relayConfig.minRelayDeposit, 9, {
+                            target: 'token',
+                        }) : noValue}
+                    title={intl.formatMessage({
+                        id: 'RELAYERS_ROUND_MINIMUM_STAKE',
+                    })}
                 />
 
                 <DataCard
-                    title="Total relayers"
-                    value="147"
-                />
-
-                <DataCard
-                    title="Minimum stake in round, Bridge"
-                    value="80 000.00"
-                />
-
-                <DataCard
-                    title="Average stake in round, Bridge"
-                    value="160 000.00"
+                    value={roundInfo?.averageRelayStake
+                        ? formattedAmount(roundInfo.averageRelayStake, undefined, {
+                            target: 'token',
+                        }) : noValue}
+                    title={intl.formatMessage({
+                        id: 'RELAYERS_ROUND_AVERAGE_STAKE',
+                    })}
                 />
             </div>
         </Section>

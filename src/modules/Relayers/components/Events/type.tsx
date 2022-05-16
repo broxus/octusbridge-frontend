@@ -3,70 +3,93 @@ import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
-import { TokenIcon } from '@/components/common/TokenIcon'
+import { RelayersEventsTransferKind } from '@/modules/Relayers/types'
+import { getEventFromName, getEventToName } from '@/modules/Relayers/utils'
 
 import './index.scss'
 
 type Props = {
-    leftAddress: string;
-    leftSymbol: string;
-    leftUri?: string;
-    rightAddress: string;
-    rightSymbol: string;
-    rightUri?: string;
-    type: string;
-    link?: string;
+    chainId: number;
+    transferKind: RelayersEventsTransferKind;
+    contractAddress: string;
+}
+
+function getWalletIcon(chainId: number): string | undefined {
+    return `evm${chainId}BlockchainIcon`
+}
+
+function getIconFrom(transferKind: RelayersEventsTransferKind, chainId: number): string | undefined {
+    if (transferKind === 'tontoeth') {
+        return 'everCoinIcon'
+    }
+    if (transferKind === 'ethtoton' || transferKind === 'creditethtoton') {
+        return getWalletIcon(chainId)
+    }
+    return undefined
+}
+
+function getIconTo(transferKind: RelayersEventsTransferKind, chainId: number): string | undefined {
+    if (transferKind === 'ethtoton' || transferKind === 'creditethtoton') {
+        return 'everCoinIcon'
+    }
+    if (transferKind === 'tontoeth') {
+        return getWalletIcon(chainId)
+    }
+    return undefined
 }
 
 export function EventType({
-    leftAddress,
-    leftSymbol,
-    leftUri,
-    rightAddress,
-    rightSymbol,
-    rightUri,
-    type,
-    link,
+    chainId,
+    transferKind,
+    contractAddress,
 }: Props): JSX.Element {
     const intl = useIntl()
+    const iconFrom = getIconFrom(transferKind, chainId)
+    const iconTo = getIconTo(transferKind, chainId)
+    const fromName = getEventFromName(transferKind, chainId)
+    const toName = getEventToName(transferKind, chainId)
 
     return (
         <div className="events-type">
             <div className="events-type-icons">
                 <div className="events-type-icons__item">
-                    <TokenIcon
-                        address={leftAddress}
-                        uri={leftUri}
-                        size="small"
-                    />
+                    {iconFrom && (
+                        <Icon icon={iconFrom} ratio={1.25} />
+                    )}
                 </div>
                 <div className="events-type-icons__item">
-                    <TokenIcon
-                        address={rightAddress}
-                        uri={rightUri}
-                        size="small"
-                    />
+                    {iconTo && (
+                        <Icon icon={iconTo} ratio={1.25} />
+                    )}
                 </div>
             </div>
 
             <div className="events-type__main">
                 <div className="events-type__type">
-                    <Link to="/relayers/events/1">
-                        {type}
+                    <Link to={`/relayers/event/${contractAddress}`}>
+                        {intl.formatMessage({
+                            id: 'EVENTS_TYPE_TRANSFER',
+                        })}
                     </Link>
                 </div>
 
                 <div className="events-type__info">
-                    {intl.formatMessage({
-                        id: 'EVENTS_TYPE_INFO',
-                    }, {
-                        left: leftSymbol,
-                        right: rightSymbol,
-                    })}
+                    <Link to={`/relayers/event/${contractAddress}`}>
+                        {intl.formatMessage({
+                            id: 'EVENTS_TYPE_INFO',
+                        }, {
+                            left: fromName || intl.formatMessage({
+                                id: 'NA',
+                            }),
+                            right: toName || intl.formatMessage({
+                                id: 'NA',
+                            }),
+                        })}
+                    </Link>
                 </div>
             </div>
 
-            {link && (
+            {/* {link && (
                 <a
                     href={link}
                     target="_blank"
@@ -75,7 +98,7 @@ export function EventType({
                 >
                     <Icon icon="externalLink" ratio={0.7} />
                 </a>
-            )}
+            )} */}
         </div>
     )
 }

@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js'
 
 import { DexConstants } from '@/misc'
 import { ContentLoader } from '@/components/common/ContentLoader'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { UserCard } from '@/components/common/UserCard'
 import { ProgressBar } from '@/components/common/ProgressBar'
 import { VoteCard } from '@/modules/Governance/components/VoteCard'
@@ -102,7 +102,7 @@ export function VotingPanel({
                                     name: intl.formatMessage({
                                         id: 'VOTING_PANEL_VOTE',
                                     }),
-                                    align: 'right',
+                                    align: Align.right,
                                 }]}
                                 rows={votes.map(vote => ({
                                     cells: [

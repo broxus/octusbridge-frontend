@@ -3,8 +3,6 @@ import {
     StakingFormStoreState,
 } from '@/modules/Staking/types'
 
-export const STAKING_LOCATION = '/staking'
-export const STAKING_REDEEM_LOCATION = '/staking/redeem'
 export const STAKING_PAYLOAD = 'te6ccgEBAQEAAwAAAgA='
 
 export const REDEEM_FORM_STORE_DEFAULT_STATE: RedeemFormStoreState = {

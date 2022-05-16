@@ -408,6 +408,7 @@ function TransfersListInner(): JSX.Element {
                 />
 
                 <Pagination
+                    count={pagination.limit}
                     page={pagination.page}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}

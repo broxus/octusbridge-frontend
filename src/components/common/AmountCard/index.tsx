@@ -10,6 +10,7 @@ type Props = {
     decimals?: number;
     changesDirection?: number;
     priceChange?: string;
+    showPriceChange?: boolean;
 }
 
 export function AmountCard({
@@ -17,6 +18,7 @@ export function AmountCard({
     decimals,
     changesDirection = 0,
     priceChange = '0',
+    showPriceChange = true,
 }: Props): JSX.Element {
     const intl = useIntl()
 
@@ -31,11 +33,13 @@ export function AmountCard({
                         id: 'NO_VALUE',
                     })}
             </div>
-            <TvlChange
-                changesDirection={changesDirection}
-                priceChange={priceChange}
-                size="small"
-            />
+            {showPriceChange && (
+                <TvlChange
+                    changesDirection={changesDirection}
+                    priceChange={priceChange}
+                    size="small"
+                />
+            )}
         </div>
     )
 }

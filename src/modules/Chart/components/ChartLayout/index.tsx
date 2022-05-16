@@ -8,31 +8,38 @@ import { Timeframe } from '@/modules/Chart/types'
 
 import './index.scss'
 
-type Props<T> = {
-    types?: T[];
-    activeType?: T;
+type ChartType = {
+    id: string;
+    label: string;
+}
+
+type Props = {
+    chartTypes?: ChartType[];
+    chartTypeId?: string;
     timeframe?: Timeframe;
     loading?: boolean;
     showNoData?: boolean;
+    showSoon?: boolean;
     children?: React.ReactNode;
-    onChangeType?: (type: T) => void;
+    onChangeType?: (chartTypeId: string) => void;
     onChangeTimeframe?: (timeframe: Timeframe) => void;
 }
 
-export function ChartLayout<T extends string>({
-    types = [],
+export function ChartLayout({
+    chartTypes = [],
+    chartTypeId,
     timeframe = 'H1',
-    activeType,
     loading,
     showNoData,
+    showSoon,
     children,
     onChangeType,
     onChangeTimeframe,
-}: Props<T>): JSX.Element {
+}: Props): JSX.Element {
     const intl = useIntl()
 
-    const clickTabFn = (value: T) => () => {
-        onChangeType?.(value)
+    const clickTabFn = (value: ChartType) => () => {
+        onChangeType?.(value.id)
     }
 
     const clickScaleFn = (value: Timeframe) => () => {
@@ -43,13 +50,13 @@ export function ChartLayout<T extends string>({
         <div className="card card--flat card--small chart-layout">
             <div className="chart-layout__head">
                 <Tabs>
-                    {types.map(chartType => (
+                    {chartTypes.map(chartType => (
                         <Tab
-                            key={chartType}
-                            active={activeType === chartType}
+                            key={chartType.id}
+                            active={chartTypeId === chartType.id}
                             onClick={clickTabFn(chartType)}
                         >
-                            {chartType}
+                            {chartType.label}
                         </Tab>
                     ))}
                 </Tabs>
@@ -75,9 +82,17 @@ export function ChartLayout<T extends string>({
             </div>
 
             {showNoData && (
-                <div className="chart-layout__no-data">
+                <div className="chart-layout__message">
                     {intl.formatMessage({
                         id: 'CHART_LAYOUT_NO_DATA',
+                    })}
+                </div>
+            )}
+
+            {showSoon && (
+                <div className="chart-layout__message">
+                    {intl.formatMessage({
+                        id: 'SOON',
                     })}
                 </div>
             )}

@@ -27,6 +27,15 @@
         position: relative;
     }
 
+    &__soon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        opacity: 0.45;
+        height: 100px;
+    }
+
     &__loader {
         align-items: center;
         display: flex;

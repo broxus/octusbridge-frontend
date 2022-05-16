@@ -3,17 +3,36 @@ import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { Badge } from '@/components/common/Badge'
+import { Badge, BadgeStatus } from '@/components/common/Badge'
 import { dateFormat, dateRelative } from '@/utils'
+import { getRoundStatus } from '@/modules/Relayers/utils'
+import { RoundStatus } from '@/modules/Relayers/types'
 
 import './index.scss'
 
 type Props = {
-    address: string;
+    address?: string;
     title: string;
-    startTime: number;
+    startTime?: number;
     endTime?: number;
     size?: 'lg';
+}
+
+function mapStatus(status: RoundStatus): BadgeStatus | undefined {
+    if (status === 'active') {
+        return 'warning'
+    }
+    return 'disabled'
+}
+
+function mapStatusName(status: RoundStatus): string {
+    if (status === 'active') {
+        return 'ROUND_INFO_ACTIVE'
+    }
+    if (status === 'waiting') {
+        return 'ROUND_INFO_ENDED'
+    }
+    return 'ROUND_INFO_FINISHED'
 }
 
 export function RoundCard({
@@ -24,6 +43,9 @@ export function RoundCard({
     size,
 }: Props): JSX.Element {
     const intl = useIntl()
+    const roundStatus = startTime !== undefined && endTime !== undefined
+        ? getRoundStatus(startTime, endTime)
+        : undefined
 
     return (
         <div
@@ -31,13 +53,21 @@ export function RoundCard({
                 [`round-card_size_${size}`]: size !== undefined,
             })}
         >
-            <UserAvatar address={address} />
+            {address && (
+                <UserAvatar address={address} />
+            )}
 
             <div>
                 <h3 className="round-card__title">{title}</h3>
 
                 <div className="round-card__meta">
-                    <Badge status="success">Active</Badge>
+                    {roundStatus !== undefined && (
+                        <Badge status={mapStatus(roundStatus)}>
+                            {intl.formatMessage({
+                                id: mapStatusName(roundStatus),
+                            })}
+                        </Badge>
+                    )}
 
                     {startTime && endTime ? (
                         intl.formatMessage({
@@ -47,7 +77,7 @@ export function RoundCard({
                             end: dateFormat(endTime),
                         })
                     ) : (
-                        dateFormat(startTime)
+                        startTime && dateFormat(startTime)
                     )}
 
                     {endTime && (

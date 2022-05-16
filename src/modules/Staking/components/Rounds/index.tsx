@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
 // import { Pagination } from '@/components/common/Pagination'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 
 import './index.scss'
 
@@ -29,22 +29,22 @@ export function StakingRounds(): JSX.Element {
                         name: intl.formatMessage({
                             id: 'STAKING_REWARD_ROUNDS_START',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'STAKING_REWARD_ROUNDS_END',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'STAKING_REWARD_ROUNDS_SHARE',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'STAKING_REWARD_ROUNDS_REWARD',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }]}
                     rows={[{
                         cells: [

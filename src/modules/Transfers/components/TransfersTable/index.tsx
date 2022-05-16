@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Transfer, TransfersOrdering } from '@/modules/Transfers/types'
 import { Item } from '@/modules/Transfers/components/TransfersTable/Item'
 
@@ -50,7 +50,7 @@ export function TransfersTableInner({
                 name: intl.formatMessage({
                     id: 'TRANSFERS_DATE',
                 }),
-                align: 'right',
+                align: Align.right,
                 ascending: 'createdatascending',
                 descending: 'createdatdescending',
             }]}

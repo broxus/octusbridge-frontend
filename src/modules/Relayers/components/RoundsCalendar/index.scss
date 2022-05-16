@@ -1,14 +1,73 @@
 .rounds-calendar {
     position: relative;
+    min-height: 300px;
+
+    &__msg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 1;
+        font-size: 14px;
+        opacity: 0.48;
+        letter-spacing: 0.5px;
+    }
 
     &__line {
         align-items: center;
-        column-gap: 8px;
+        column-gap: 3px;
         display: flex;
     }
 
     &__inner {
         position: relative;
+    }
+
+    &__validations {
+        margin: 0 0 24px;
+    }
+
+    &__names {
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+
+    &__names-short {
+        @media (min-width: 768px) {
+            display: none;
+        }
+    }
+}
+
+.rounds-calendar-scale {
+    position: relative;
+    height: 30px;
+    overflow: hidden;
+
+    &__section {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 2px;
+        box-sizing: border-box;
+    }
+
+    &_cursor-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
     }
 }
 
@@ -36,44 +95,61 @@
         margin: 6px 0 0;
     }
 
-    &__cursor {
+    &__month {
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+
+    &__week-full {
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+
+    &__week-short {
+        @media (min-width: 768px) {
+            display: none;
+        }
+    }
+}
+.rounds-calendar-cursor {
+    bottom: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 56px;
+    width: 1px;
+
+    &::before {
+        background: #ffffff;
         bottom: 0;
-        pointer-events: none;
+        content: '';
+        left: 50%;
         position: absolute;
-        top: 56px;
+        top: 0;
+        width: 1px;
+    }
 
-        &::before {
-            background: #ffffff;
-            bottom: 0;
-            content: '';
-            left: 50%;
-            position: absolute;
-            top: 0;
-            width: 1px;
-        }
-
-        &::after {
-            background: #ffffff;
-            border-radius: 50%;
-            bottom: 100%;
-            content: '';
-            height: 7px;
-            left: 50%;
-            margin-left: -3px;
-            position: absolute;
-            width: 7px;
-        }
+    &::after {
+        background: #ffffff;
+        border-radius: 50%;
+        bottom: 100%;
+        content: '';
+        height: 7px;
+        left: 50%;
+        margin-left: -3px;
+        position: absolute;
+        width: 7px;
     }
 }
 
 .rounds-calendar-round {
-    margin: 24px 0 0;
-
     &__title {
         color: rgba(255, 255, 255, 0.56);
         font-size: 14px;
         letter-spacing: 0.6px;
         line-height: 20px;
+        white-space: nowrap;
 
         a {
             color: inherit;
@@ -92,18 +168,20 @@
 }
 
 .rounds-calendar-block {
+    height: 30px;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
     border-top: 2px solid rgba(255, 255, 255, 0.56);
     color: rgba(255, 255, 255, 0.56);
     font-size: 12px;
     font-weight: bold;
     letter-spacing: 0.75px;
-    line-height: 16px;
-    margin: 8px 0 0;
     overflow: hidden;
-    padding: 6px 8px;
+    padding: 0 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    width: 100%;
 
     &_active {
         background: linear-gradient(180deg, rgba(230, 172, 0, 0.16) 0%, rgba(230, 172, 0, 0) 100%);

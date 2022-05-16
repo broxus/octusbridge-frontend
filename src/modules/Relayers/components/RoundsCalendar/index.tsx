@@ -1,15 +1,46 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
-import { Line, Section, Title } from '@/components/common/Section'
-import { Day } from '@/modules/Relayers/components/RoundsCalendar/day'
-import { Round } from '@/modules/Relayers/components/RoundsCalendar/round'
-import { Block } from '@/modules/Relayers/components/RoundsCalendar/block'
+import { ContentLoader } from '@/components/common/ContentLoader'
+import { Section, Title } from '@/components/common/Section'
+import { Calendar } from '@/modules/Relayers/components/RoundsCalendar/calendar'
+import { useRoundsCalendarContext } from '@/modules/Relayers/providers'
 
 import './index.scss'
 
-export function RoundsCalendar(): JSX.Element {
+type Props = {
+    roundNum?: number | 'current';
+}
+
+export function RoundsCalendarInner({
+    roundNum,
+}: Props): JSX.Element {
     const intl = useIntl()
+    const roundsCalendar = useRoundsCalendarContext()
+    const [isLoading, setIsLoading] = React.useState(true)
+
+    const fetch = async () => {
+        setIsLoading(true)
+
+        try {
+            if (roundNum === 'current') {
+                await roundsCalendar.fetchCurrent()
+            }
+            else if (roundNum !== undefined) {
+                await roundsCalendar.fetchRound(roundNum)
+            }
+        }
+        catch (e) {
+            console.error(e)
+        }
+
+        setIsLoading(false)
+    }
+
+    React.useEffect(() => {
+        fetch()
+    }, [roundNum])
 
     return (
         <Section>
@@ -20,92 +51,26 @@ export function RoundsCalendar(): JSX.Element {
             </Title>
 
             <div className="card card--flat card--small rounds-calendar">
-                <div className="rounds-calendar__inner">
-                    <div className="rounds-calendar__line">
-                        <Day maxLength={11} disabled />
-                        <Day maxLength={11} disabled />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} active />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
-                        <Day maxLength={11} />
+                {isLoading && (
+                    <div className="rounds-calendar__msg">
+                        <ContentLoader slim transparent />
                     </div>
+                )}
 
-                    <Line />
-
-                    <div className="rounds-calendar__line">
-                        <Round
-                            title="Validation round 123"
-                            link="/relayers/validation-round/123"
-                            length={2}
-                            maxLength={11}
-                        />
-                        <Round
-                            title="Validation round 124"
-                            length={6}
-                            maxLength={11}
-                        />
-                        <Round
-                            title="Validation round 125"
-                            length={3}
-                            maxLength={11}
-                        />
+                {!isLoading && !roundsCalendar.rounds?.length && (
+                    <div className="rounds-calendar__msg">
+                        {intl.formatMessage({
+                            id: 'CHART_LAYOUT_NO_DATA',
+                        })}
                     </div>
+                )}
 
-                    <div className="rounds-calendar__line">
-                        <Block length={2} maxLength={11}>
-                            Finished
-                        </Block>
-                        <Block length={6} maxLength={11} status="active">
-                            Active
-                        </Block>
-                        <Block length={3} maxLength={11}>
-                            Not started
-                        </Block>
-                    </div>
-
-                    <div className="rounds-calendar__line">
-                        <Round
-                            title="Bidding round 124"
-                            link="/relayers/bidding-round/123"
-                            length={2}
-                            maxLength={11}
-                        />
-                        <Round
-                            title="Bidding round 125"
-                            length={7}
-                            maxLength={11}
-                        />
-                        <Round
-                            title="Bidding round 126"
-                            length={2}
-                            maxLength={11}
-                        />
-                    </div>
-
-                    <div className="rounds-calendar__line">
-                        <Block length={2} maxLength={11}>
-                            Finished
-                        </Block>
-                        <Block length={3} maxLength={11} status="success">
-                            Waiting for bidding
-                        </Block>
-                        <Block length={3} maxLength={11} status="active">
-                            Bidding
-                        </Block>
-                        <Block length={1} maxLength={11} status="waiting">
-                            Waiting for confirming
-                        </Block>
-                        <Block length={2} maxLength={11}>
-                            Not started
-                        </Block>
-                    </div>
-                </div>
+                {!!roundsCalendar.rounds?.length && (
+                    <Calendar />
+                )}
             </div>
         </Section>
     )
 }
+
+export const RoundsCalendar = observer(RoundsCalendarInner)

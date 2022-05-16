@@ -110,13 +110,36 @@ export function DesktopNav(): JSX.Element {
                     </NavLink>
                 </Nav.Item>
             </Nav.Sub>
-            <Nav.Item key="relayers-create">
-                <NavLink exact to="/relayers/create">
-                    {intl.formatMessage({
-                        id: 'NAV_LINK_TEXT_RELAYERS',
-                    })}
-                </NavLink>
-            </Nav.Item>
+            <Nav.Sub
+                expandIcon={expandIcon}
+                title={intl.formatMessage({
+                    id: 'NAV_LINK_TEXT_RELAYERS',
+                })}
+                key="relayers"
+            >
+                <Nav.Item key="relayers-create">
+                    <NavLink
+                        to="/relayers/create"
+                    >
+                        {intl.formatMessage({
+                            id: 'NAV_LINK_TEXT_RELAYERS_CREATE',
+                        })}
+                    </NavLink>
+                </Nav.Item>
+                <Nav.Item key="relayers-explorer">
+                    <NavLink
+                        to="/relayers"
+                        isActive={(_, location) => (
+                            !location.pathname.startsWith('/relayers/create')
+                            && location.pathname.startsWith('/relayers')
+                        )}
+                    >
+                        {intl.formatMessage({
+                            id: 'NAV_LINK_TEXT_RELAYERS_EXPLORER',
+                        })}
+                    </NavLink>
+                </Nav.Item>
+            </Nav.Sub>
             {/*
             <Nav.Item key="airdrop">
                 <NavLink exact to="/airdrop">

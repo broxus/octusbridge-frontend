@@ -18,10 +18,18 @@
     }
 
     &__info {
-        color: rgba(255, 255, 255, 0.48);
         font-size: 12px;
         letter-spacing: 0.6px;
         line-height: 16px;
+        text-decoration: none;
+
+        a {
+            color: rgba(255, 255, 255, 0.48);
+
+            &:hover {
+                color: rgba(255, 255, 255, 0.48);
+            }
+        }
     }
 
     &__link {
@@ -34,7 +42,7 @@
     display: flex;
 
     &__item {
-        margin-left: -12px;
+        margin-left: -10px;
 
         &:first-child {
             margin-left: 0;

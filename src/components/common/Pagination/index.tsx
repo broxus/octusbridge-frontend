@@ -13,8 +13,9 @@ type Props = {
     totalPages?: number;
     totalCount?: number;
     page: number;
+    count?: number;
     label?: string;
-    size?: 'lg';
+    size?: 'lg' | 'md';
     className?: string;
     onSubmit: (page: number, count?: number) => void;
 }
@@ -26,6 +27,7 @@ export function Pagination({
     totalPages = 1,
     totalCount,
     page,
+    count = DEFAULT_COUNT,
     label,
     size,
     className,
@@ -33,7 +35,6 @@ export function Pagination({
 }: Props): JSX.Element {
     const intl = useIntl()
     const [localPage, setLocalPage] = React.useState(page.toString())
-    const [count, setCount] = React.useState(DEFAULT_COUNT)
 
     const next = () => {
         onSubmit(page + 1, count)
@@ -65,7 +66,6 @@ export function Pagination({
     }
 
     const onChangeCount = (value: number) => {
-        setCount(value)
         onSubmit(page, value)
     }
 
@@ -127,7 +127,7 @@ export function Pagination({
                         className="pagination-nav__btn"
                         disabled={page <= 1}
                         onClick={prev}
-                        size={size === 'lg' ? 'md' : undefined}
+                        size={size}
                     >
                         <Icon icon="arrowLeft" className="pagination-nav__icon" />
                     </Button>
@@ -137,7 +137,7 @@ export function Pagination({
                         className="pagination-nav__btn"
                         disabled={page >= totalPages}
                         onClick={next}
-                        size={size === 'lg' ? 'md' : undefined}
+                        size={size}
                     >
                         <Icon icon="arrowRight" className="pagination-nav__icon" />
                     </Button>

@@ -7,7 +7,7 @@ import './index.scss'
 export const NUM_REGEXP = /^\d*\.?\d*$/
 
 type Props = {
-    value: string | undefined;
+    value?: string;
     regexp?: RegExp;
     placeholder?: string;
     onChange: (value: string | undefined) => void;

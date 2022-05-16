@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite'
 import {
     Actions, Header, Section, Title,
 } from '@/components/common/Section'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { VoteType } from '@/modules/Governance/components/VoteType'
 import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary'
@@ -131,12 +131,12 @@ export function UserProposalsInner(): JSX.Element | null {
                             name: intl.formatMessage({
                                 id: 'PROPOSALS_TABLE_DATE',
                             }),
-                            align: 'right',
+                            align: Align.right,
                         }, {
                             name: intl.formatMessage({
                                 id: 'PROPOSALS_TABLE_UNLOCK',
                             }),
-                            align: 'right',
+                            align: Align.right,
                         }]}
                         rows={userProposals.items.map(({ proposal, vote }) => ({
                             cells: [
@@ -183,6 +183,7 @@ export function UserProposalsInner(): JSX.Element | null {
 
                     <Pagination
                         page={pagination.page}
+                        count={pagination.limit}
                         totalPages={pagination.totalPages}
                         totalCount={pagination.totalCount}
                         onSubmit={pagination.submit}
