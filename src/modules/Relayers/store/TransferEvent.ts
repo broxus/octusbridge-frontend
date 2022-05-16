@@ -23,7 +23,7 @@ export class TransferEventStore {
             const result = await handleRelayersEvents({
                 limit: 1,
                 offset: 0,
-                contractAddress,
+                transferContractAddress: contractAddress,
                 ordering: 'timestampdescending',
             })
 

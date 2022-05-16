@@ -173,7 +173,7 @@ export type RelayersEventsFilters = {
     timestampLe?: number;
     tokenAddress?: string;
     transferKind?: RelayersEventsTransferKind;
-    contractAddress?: string;
+    transferContractAddress?: string;
 }
 
 export type RelayersEventsParams = RelayersEventsFilters & {

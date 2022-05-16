@@ -29,10 +29,12 @@ export function ValidationRounds(): JSX.Element | null {
                     })}
                 </Title>
 
-                <ViewSwitcher
-                    view={view}
-                    onChange={setView}
-                />
+                {!roundInfoList.relayAddress && (
+                    <ViewSwitcher
+                        view={view}
+                        onChange={setView}
+                    />
+                )}
             </Header>
 
             <Line />

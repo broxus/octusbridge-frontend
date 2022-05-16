@@ -25,7 +25,7 @@ export function RelayerPerformance(): JSX.Element | null {
                 })}
             </Title>
 
-            <div className="tiles tiles_fourth">
+            <div className="tiles tiles_twice">
                 <DataCard
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_STAKE',
@@ -43,23 +43,23 @@ export function RelayerPerformance(): JSX.Element | null {
                     )}
                 </DataCard>
 
-                <DataCard
+                {/* <DataCard
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_LATEST_REWARD',
                     })}
                     value={relayInfo?.latestReward
                         ? formattedAmount(relayInfo.latestReward, undefined, { target: 'token' })
                         : noValue}
-                />
+                /> */}
 
-                <DataCard
+                {/* <DataCard
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_TOTAL_REWARD',
                     })}
                     value={relayInfo?.totalReward
                         ? formattedAmount(relayInfo.totalReward, undefined, { target: 'token' })
                         : noValue}
-                />
+                /> */}
 
                 <DataCard
                     title={intl.formatMessage({

@@ -407,7 +407,7 @@ export default {
 
     RELAYER_PERFORMANCE_TITLE: 'Relayer Performance',
     RELAYER_PERFORMANCE_STAKE: 'Frozen stakes, BRIDGE',
-    RELAYER_PERFORMANCE_DEFROST: 'Defrost {value}',
+    RELAYER_PERFORMANCE_DEFROST: 'Unfreeze {value}',
     RELAYER_PERFORMANCE_LATEST_REWARD: 'Latest reward, BRIDGE',
     RELAYER_PERFORMANCE_TOTAL_REWARD: 'Total reward, BRIDGE',
     RELAYER_PERFORMANCE_SUCCESS_ROUNDS: 'Successful rounds',
@@ -442,8 +442,8 @@ export default {
     ROUND_STATISTIC_TOTAL_STAKE: 'Total stake, BRIDGE',
     ROUND_STATISTIC_FILTER_CURRENT: 'Current',
 
-    RELAY_ROUND_DATA_STAKE: 'Your stake, BRIDGE',
-    RELAY_ROUND_DATA_EVENTS: 'Events confirmed, BRIDGE',
+    RELAY_ROUND_DATA_STAKE: 'Relay stake, BRIDGE',
+    RELAY_ROUND_DATA_EVENTS: 'Events confirmed',
     RELAY_ROUND_DATA_REWARD: 'Round reward, BRIDGE',
     RELAY_ROUND_DATA_BIDDING: 'Bidding results',
 

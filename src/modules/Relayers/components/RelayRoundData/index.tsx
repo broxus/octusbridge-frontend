@@ -31,14 +31,14 @@ export function RelayRoundData(): JSX.Element | null {
                     )}
                 </Observer>
 
-                <DataCard
+                {/* <DataCard
                     hint={intl.formatMessage({
                         id: 'SOON',
                     })}
                     title={intl.formatMessage({
                         id: 'RELAY_ROUND_DATA_REWARD',
                     })}
-                />
+                /> */}
 
                 <Observer>
                     {() => (

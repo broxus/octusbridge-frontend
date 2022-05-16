@@ -31,6 +31,7 @@ export function RoundData(): JSX.Element | null {
                         >
                             {roundInfo.info?.totalStakeChange && (
                                 <TvlChange
+                                    hideZero
                                     size="small"
                                     changesDirection={parseFloat(roundInfo.info?.totalStakeChange)}
                                     priceChange={Math.abs(parseFloat(roundInfo.info?.totalStakeChange))}
@@ -52,6 +53,7 @@ export function RoundData(): JSX.Element | null {
                         >
                             {roundInfo.info?.averageRelayStakeChange && (
                                 <TvlChange
+                                    hideZero
                                     size="small"
                                     changesDirection={parseFloat(roundInfo.info?.averageRelayStakeChange)}
                                     priceChange={Math.abs(parseFloat(roundInfo.info?.averageRelayStakeChange))}
@@ -86,6 +88,7 @@ export function RoundData(): JSX.Element | null {
                         >
                             {roundInfo.info?.relaysCountChange && (
                                 <TvlChange
+                                    hideZero
                                     size="small"
                                     changesDirection={parseFloat(roundInfo.info?.relaysCountChange)}
                                     priceChange={Math.abs(parseFloat(roundInfo.info?.relaysCountChange))}

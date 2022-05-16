@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
 
 import { Section, Title } from '@/components/common/Section'
-import { TvlChange } from '@/components/common/TvlChange'
+// import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
 // import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { useRoundInfoContext } from '@/modules/Relayers/providers'
@@ -30,7 +30,7 @@ export function RelayersOverview(): JSX.Element {
                 })}
             </Title>
 
-            <div className="tiles tiles_fourth">
+            <div className="tiles tiles_third">
                 <Observer>
                     {() => (
                         <DataCard
@@ -42,15 +42,7 @@ export function RelayersOverview(): JSX.Element {
                             title={intl.formatMessage({
                                 id: 'RELAYERS_OVERVIEW_FROZEN',
                             })}
-                        >
-                            {roundInfo.info?.totalStakeChange && (
-                                <TvlChange
-                                    size="small"
-                                    changesDirection={parseFloat(roundInfo.info?.totalStakeChange)}
-                                    priceChange={Math.abs(parseFloat(roundInfo.info?.totalStakeChange))}
-                                />
-                            )}
-                        </DataCard>
+                        />
                     )}
                 </Observer>
 
@@ -67,14 +59,14 @@ export function RelayersOverview(): JSX.Element {
                     )}
                 </Observer>
 
-                <DataCard
+                {/* <DataCard
                     hint={intl.formatMessage({
                         id: 'SOON',
                     })}
                     title={intl.formatMessage({
                         id: 'RELAYERS_OVERVIEW_EVENTS',
                     })}
-                />
+                /> */}
 
                 <Observer>
                     {() => (
@@ -88,13 +80,13 @@ export function RelayersOverview(): JSX.Element {
                                 id: 'RELAYERS_OVERVIEW_AVERAGE',
                             })}
                         >
-                            {roundInfo.info?.averageRelayStakeChange && (
+                            {/* {roundInfo.info?.averageRelayStakeChange && (
                                 <TvlChange
                                     size="small"
                                     changesDirection={parseFloat(roundInfo.info?.averageRelayStakeChange)}
                                     priceChange={Math.abs(parseFloat(roundInfo.info?.averageRelayStakeChange))}
                                 />
-                            )}
+                            )} */}
                         </DataCard>
                     )}
                 </Observer>
