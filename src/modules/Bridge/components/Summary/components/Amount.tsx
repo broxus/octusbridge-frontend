@@ -81,7 +81,10 @@ export function Amount(): JSX.Element {
                                         {(summary.amount && summary.amount !== '0')
                                             ? formattedAmount(
                                                 summary.amount,
-                                                summary.isFromEverscale
+                                                (
+                                                    summary.isFromEverscale
+                                                    || (summary.isFromEvm && summary.pipeline?.depositType === 'credit')
+                                                )
                                                     ? summary.token?.decimals
                                                     : summary.evmTokenDecimals,
                                                 { preserve: true },

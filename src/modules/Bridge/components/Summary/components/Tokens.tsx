@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { useBridge } from '@/modules/Bridge/providers'
+import { Pipeline } from '@/stores/TokensAssetsService'
 import { sliceAddress } from '@/utils'
 
 
@@ -24,22 +25,22 @@ export function Tokens(): JSX.Element {
         }
     }
 
-    const addToEvmAsset = (address: string) => async () => {
-        if (summary.token === undefined || summary.pipeline?.chainId === undefined) {
+    const addToEvmAsset = (address: string, pipeline?: Pipeline) => async () => {
+        if (summary.token === undefined || pipeline?.chainId === undefined) {
             return
         }
 
-        const asset = tokensAssets.get('evm', summary.pipeline.chainId, address.toLowerCase())
+        const asset = tokensAssets.get('evm', pipeline.chainId, address.toLowerCase())
         try {
-            const contract = tokensAssets.getEvmTokenContract(address, summary.pipeline.chainId)
+            const contract = tokensAssets.getEvmTokenContract(address, pipeline.chainId)
             let symbol
             try {
                 symbol = await contract?.methods.symbol().call()
             }
             catch (e) {
                 const vaultContract = tokensAssets.getEvmTokenMultiVaultContract(
-                    summary.pipeline.vault,
-                    summary.pipeline.chainId,
+                    pipeline.vault,
+                    pipeline.chainId,
                 )
                 const [activation, , symbolPrefix] = await vaultContract!.methods
                     .prefixes(address.toLowerCase()).call()
@@ -48,11 +49,10 @@ export function Tokens(): JSX.Element {
 
             await evmWallet.addAsset({
                 address,
-                decimals: summary.token.decimals,
+                decimals: pipeline.evmTokenDecimals ?? summary.token.decimals,
                 image: asset?.icon || summary.token.icon,
                 symbol,
             })
-
         }
         catch (e) {}
     }
@@ -99,7 +99,7 @@ export function Tokens(): JSX.Element {
                                         address={evmTokenAddress}
                                         className="text-regular"
                                         baseUrl={summary.leftNetwork.explorerBaseUrl}
-                                        onAddAsset={addToEvmAsset(evmTokenAddress)}
+                                        onAddAsset={addToEvmAsset(evmTokenAddress, summary.pipeline)}
                                     >
                                         {sliceAddress(evmTokenAddress)}
                                     </BlockScanAddressLink>
@@ -135,7 +135,12 @@ export function Tokens(): JSX.Element {
                                             ? summary.hiddenBridgePipeline?.evmTokenAddress as string
                                             : evmTokenAddress}
                                         baseUrl={summary.rightNetwork.explorerBaseUrl}
-                                        onAddAsset={addToEvmAsset(evmTokenAddress)}
+                                        onAddAsset={addToEvmAsset(
+                                            evmTokenAddress,
+                                            summary.isEvmToEvm
+                                                ? summary.hiddenBridgePipeline
+                                                : summary.pipeline,
+                                        )}
                                     >
                                         {sliceAddress(summary.isEvmToEvm
                                             ? summary.hiddenBridgePipeline?.evmTokenAddress as string
