@@ -20,5 +20,10 @@
         height: 44px;
         justify-content: center;
         width: 44px;
+        transition: color 0.25s ease;
+
+        &:hover {
+            color: #fff;
+        }
     }
 }

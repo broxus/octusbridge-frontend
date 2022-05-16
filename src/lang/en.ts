@@ -17,6 +17,8 @@ export default {
     NAV_LINK_TEXT_GOVERNANCE_OVERVIEW: 'Overview',
     NAV_LINK_TEXT_PROPOSALS_CREATE: 'Create proposal',
     NAV_LINK_TEXT_AIRDROP: 'Airdrop',
+    NAV_LINK_TEXT_RELAYERS_EXPLORER: 'Explorer',
+    NAV_LINK_TEXT_RELAYERS_CREATE: 'Create',
 
     WALLETS_CONNECT_BTN_TEXT: 'Connect Wallets',
     WALLET_CONNECT_BTN_TEXT: 'Connect',
@@ -273,6 +275,18 @@ export default {
     STAKING_ACCOUNT_FORM_SUBMIT: 'Submit',
     STAKING_ACCOUNT_FORM_CONNECT: 'Connect wallet',
 
+    RELAYERS_CALENDAR_VALIDATION_ROUND: 'Validation round {roundNum}',
+    RELAYERS_CALENDAR_BIDDING_ROUND: 'Bidding round {roundNum}',
+    RELAYERS_CALENDAR_WAIT_BIDDING: 'Waiting for bidding',
+    RELAYERS_CALENDAR_BIDDING: 'Bidding',
+    RELAYERS_CALENDAR_WAIT_STARTING: 'Waiting for starting',
+    RELAYERS_CALENDAR_ROUND_ACTIVE: 'Active',
+    RELAYERS_CALENDAR_ROUND_FINISHED: 'Finished',
+    RELAYERS_CALENDAR_ROUND_NOT_STARTED: 'Not started',
+    RELAYERS_CALENDAR_ROUND_UNKNOWN: 'Unknown',
+    RELAYERS_CALENDAR_VALIDATION_ROUNDS: 'Validation rounds',
+    RELAYERS_CALENDAR_BIDDING_ROUNDS: 'Bidding rounds',
+
     RELAYERS_CREATE_PAGE_TITLE: 'Create a new relayer',
     RELAYERS_CREATE_STEP: 'Step {value}',
     RELAYERS_CREATE_TITLE: 'Deploy smart contracts',
@@ -332,6 +346,16 @@ export default {
     RELAYERS_CONNECT_TEXT: 'To add a new relayer to the Bridge, you need to connect the wallet.',
 
     RELAYERS_TITLE: 'Relayers',
+    RELAYERS_RELAYER: 'Relayers',
+    RELAYERS_STAKE: 'Stake, BRIDGE',
+    RELAYERS_SLASHED: 'Slashed',
+    RELAYERS_CURRENT_ROUND: 'Current round',
+    RELAYERS_SUCCESSFUL_ROUNDS: 'Successful rounds',
+    RELAYERS_EVENTS_CONFIRMED: 'Events confirmed',
+    RELAYERS_RELAYER_SINCE: 'Relayer since',
+    RELAYERS_EVM_TO_EVER: 'EVM to EVER',
+    RELAYERS_EVER_TO_EVM: 'EVER to EVM',
+
     RELAYERS_STATUS_YES: 'Yes',
     RELAYERS_STATUS_NO: 'No',
     RELAYERS_STATUS_ACTIVE: 'Active',
@@ -340,6 +364,13 @@ export default {
     RELAYERS_ROUNDS_VALUE: '{amount}/{total}',
 
     RELAYERS_OVERVIEW_TITLE: 'Overview',
+    RELAYERS_OVERVIEW_FROZEN: 'Total frozen stakes, BRIDGE',
+    RELAYERS_OVERVIEW_RELAYERS: 'Active relayers',
+    RELAYERS_OVERVIEW_EVENTS: 'Total events, 24h',
+    RELAYERS_OVERVIEW_AVERAGE: 'Average relayer stake, BRIDGE',
+    RELAYERS_OVERVIEW_CHART_STAKE: 'Stake',
+    RELAYERS_OVERVIEW_CHART_REWARD: 'Reward',
+    RELAYERS_OVERVIEW_CHART_EVENTS: 'Events',
 
     RELAYERS_EXPLORER_TITLE: 'Explorer',
 
@@ -347,6 +378,15 @@ export default {
     RELAYERS_BREADCRUMB_RELAYERS: 'Relayer {address}',
     RELAYERS_BREADCRUMB_BIDDING: 'Bidding round {name}',
     RELAYERS_BREADCRUMB_VALIDATION: 'Validation round {name}',
+
+    RELAYERS_ROUND_INFO_TITLE: 'Information',
+    RELAYERS_ROUND_RANK: 'Your rank',
+    RELAYERS_ROUND_STAKE: 'Your stake, BRIDGE',
+    RELAYERS_ROUND_UNFROZEN: 'Your unfrozen stake, BRIDGE',
+    RELAYERS_ROUND_AVAILABLE: 'Will be available in next round',
+    RELAYERS_ROUND_TOTAL: 'Total relayers',
+    RELAYERS_ROUND_MINIMUM_STAKE: 'Minimum stake in round, BRIDGE',
+    RELAYERS_ROUND_AVERAGE_STAKE: 'Average stake in round, BRIDGE',
 
     RELAYER_HEADER_NAME: 'Relayer {address}',
     RELAYER_HEADER_SETTINGS: 'Settings',
@@ -376,45 +416,79 @@ export default {
 
     ROUND_INFO_DATE_PERIOD: '{start} – {end}',
     ROUND_INFO_DAY_LEFT: 'Ends {value}',
+    ROUND_INFO_ACTIVE: 'Active',
+    ROUND_INFO_ENDED: 'Pending',
+    ROUND_INFO_FINISHED: 'Finished',
 
     EVENTS_DISTRIBUTION_TITLE: 'Events distribution',
     EVENTS_DISTRIBUTION_TABLE_TYPE: 'Event type',
-    EVENTS_DISTRIBUTION_TABLE_AMOUNT: 'Amount, BRIDGE',
+    EVENTS_DISTRIBUTION_TABLE_AMOUNT: 'Amount',
     EVENTS_DISTRIBUTION_TABLE_SHARE: 'Share',
+    EVENTS_DISTRIBUTION_TABLE_PERCENT: 'Percent',
 
+    EVENT_PAGE_TITLE: 'Transfer {contract}',
+    EVENT_HEADER_TITLE: 'Token transfer {from}-{to}',
+    EVENT_INFO_TITLE: 'Event information',
+
+    ROUND_STATISTIC_TITLE: 'Round {roundNum}',
     ROUND_STATISTIC_BIDDING_PANEL_TITLE: 'Bidding results',
     ROUND_STATISTIC_BIDDING_PANEL_VALUE: '{current}/{total}',
     ROUND_STATISTIC_BIDDING_PANEL_LINK: 'Bidding round',
     ROUND_STATISTIC_REWARD_PANEL_TITLE: 'Round reward, BRIDGE',
     ROUND_STATISTIC_STAKE_PANEL_TITLE: 'Your stake, BRIDGE',
     ROUND_STATISTIC_EVENTS_PANEL_TITLE: 'Events confirmed',
+    ROUND_STATISTIC_RELAYERS: 'Relayers',
+    ROUND_STATISTIC_AVERAGE_RELAYER_STAKE: 'Average relayer stake, BRIDGE',
+    ROUND_STATISTIC_TOTAL_STAKE: 'Total stake, BRIDGE',
     ROUND_STATISTIC_FILTER_CURRENT: 'Current',
+
+    RELAY_ROUND_DATA_STAKE: 'Your stake, BRIDGE',
+    RELAY_ROUND_DATA_EVENTS: 'Events confirmed, BRIDGE',
+    RELAY_ROUND_DATA_REWARD: 'Round reward, BRIDGE',
+    RELAY_ROUND_DATA_BIDDING: 'Bidding results',
+
+    EVENTS_DISTRIBUTION_EVER: 'EVER to ETH',
+    EVENTS_DISTRIBUTION_ETH: 'EVM to EVER',
 
     ROUNDS_TABLE_ROUND: 'Round',
     ROUNDS_TABLE_STAKE: 'Your stake, BRIDGE',
     ROUNDS_TABLE_EVENTS: 'Events confirmed',
     ROUNDS_TABLE_TON_TO_ETH: 'EVER to ETH',
-    ROUNDS_TABLE_ETH_TO_TON: 'ETH to EVER',
+    ROUNDS_TABLE_ETH_TO_TON: 'EVM to EVER',
     ROUNDS_TABLE_START: 'Start, UTC',
     ROUNDS_TABLE_END: 'End, UTC',
+    ROUNDS_TABLE_TOTAL_STAKE: 'Stake, BRIDGE',
 
     VALIDATION_ROUNDS_TITLE: 'Validation rounds',
 
     VALIDATION_ROUND_TITLE: 'Round information',
 
     EVENTS_TABLE_COL_TYPE: 'Type',
-    EVENTS_TABLE_COL_ORIGINAL_ADDRESS: 'Original network address',
-    EVENTS_TABLE_COL_TARGET_ADDRESS: 'Target network address',
+    EVENTS_TABLE_COL_FROM: 'From',
+    EVENTS_TABLE_COL_TO: 'To',
     EVENTS_TABLE_COL_TOKEN: 'Token',
     EVENTS_TABLE_COL_AMOUNT: 'Amount',
     EVENTS_TABLE_COL_DATE: 'Event time, UTC',
+    EVENTS_TABLE_FILTER_DATE: 'Date',
+    EVENTS_TABLE_FILTER_AMOUNT: 'Amount',
+    EVENTS_TABLE_FILTER_RELAY: 'Relay address',
+    EVENTS_TABLE_FILTER_CHAIN_ID: 'Blockchain',
+    EVENTS_TABLE_FILTER_TOKEN: 'Token',
+    EVENTS_TABLE_FILTER_TYPE: 'Type',
+    EVENTS_TABLE_FILTER_TON_TO_ETH: 'EVER to EVM',
+    EVENTS_TABLE_FILTER_ETH_TO_TON: 'EVM to EVER',
+    EVENTS_TABLE_FILTER_CREDIT: 'Credit',
 
     EVENTS_TYPE_INFO: '{left} to {right}',
+    EVENTS_TYPE_TRANSFER: 'Transfer',
 
     ROUNDS_CALENDAR_TITLE: 'Rounds calendar',
 
     BIDDING_ROUND_HEADER_PAGINATION: 'Bidding round',
     VALIDATION_ROUND_HEADER_PAGINATION: 'Validation round',
+
+    VALIDATION_ROUND_PAGE_TITLE: 'Validation round {num}',
+    BIDDING_ROUND_PAGE_TITLE: 'Bidding round {num}',
 
     RELAYER_RANK: 'Rank #{rank}',
 
@@ -441,6 +515,9 @@ export default {
     EVENT_INFORMATION_TIME: 'Event time, UTC',
     EVENT_INFORMATION_ROUND: 'Validation round',
     EVENT_INFORMATION_CONFIRMATION: 'Confirmation',
+    EVENT_INFORMATION_FROM: 'From address',
+    EVENT_INFORMATION_TO: 'To address',
+    EVENT_INFORMATION_CONTRACT_ADDRESS: 'Contract address',
     EVENT_INFORMATION_ORIGINAL_ADDRESS: 'Original contract address',
     EVENT_INFORMATION_TARGET_ADDRESS: 'Target contract address',
     EVENT_INFORMATION_TARGET_TON_TRANSACTION: 'EVER transfer transaction',

@@ -12,6 +12,8 @@ export type UserDetails = DecodedAbiFunctionOutputs<typeof UserDataAbi.Root, 'ge
 
 export type RelayConfig = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getRelayConfig'>['value0']
 
+export type RelayRoundsDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getRelayRoundsDetails'>['value0']
+
 export type EventVoteData = DecodedAbiFunctionInputs<typeof TokenAbi.EthEventConfig, 'deployEvent'>['eventVoteData']
 
 export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof TokenAbi.EthEventConfig, 'getDetails'>

@@ -4,3 +4,34 @@
     justify-content: space-between;
     margin: 0 0 24px;
 }
+
+.event-header-card {
+    align-items: center;
+    column-gap: 12px;
+    display: flex;
+
+    &__title {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 0.25px;
+        line-height: 32px;
+        margin: 0 0 4px;
+    }
+
+    &__meta {
+        align-items: center;
+        color: rgba(255, 255, 255, 0.48);
+        column-gap: 8px;
+        display: flex;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+    }
+
+    &__account-link {
+        a {
+            color: rgba(255, 255, 255, 0.48);
+        }
+    }
+
+}

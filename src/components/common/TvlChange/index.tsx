@@ -5,7 +5,7 @@ import './style.scss'
 
 export type TvlChangeProps = {
     changesDirection?: number | string;
-    priceChange: string;
+    priceChange: number | string;
     size?: 'small';
     showPercent?: boolean;
 }

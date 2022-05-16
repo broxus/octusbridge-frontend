@@ -6,7 +6,12 @@ import { OrderingSwitcher } from '@/components/common/OrderingSwitcher'
 import './index.scss'
 
 export type Order = 'asc' | 'desc'
-export type Align = 'center' | 'left' | 'right';
+
+export enum Align {
+    center = 'center',
+    left = 'left',
+    right = 'right',
+}
 
 type Props<O> = {
     align?: Align;
@@ -18,7 +23,7 @@ type Props<O> = {
 }
 
 export function Cell<O>({
-    align = 'left',
+    align = Align.left,
     ascending,
     descending,
     order,

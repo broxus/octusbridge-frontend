@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary'
 import { ProposalStatus } from '@/modules/Governance/components/ProposalStatus'
 import { ProposalProgress } from '@/modules/Governance/components/ProposalProgress'
@@ -49,7 +49,7 @@ export function ProposalsTable({
                 name: intl.formatMessage({
                     id: 'PROPOSALS_TABLE_DATE',
                 }),
-                align: 'right',
+                align: Align.right,
             }]}
             rows={items.map(item => ({
                 cells: [

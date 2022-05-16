@@ -23,6 +23,11 @@ import LiquidityDeposit from '@/pages/bridge/liquidity-requests/item'
 import StakingSelf from '@/pages/staking/my'
 import StakingUser from '@/pages/staking/explorer/user'
 import StakingExplorer from '@/pages/staking/explorer'
+import Relayers from '@/pages/relayers/index'
+import RelayersValidationRound from '@/pages/relayers/validation-round'
+import RelayersBiddingRound from '@/pages/relayers/bidding-round'
+import RelayersEvent from '@/pages/relayers/events/item'
+import Relayer from '@/pages/relayers/item'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
 import Overview from '@/pages/governance'
@@ -30,7 +35,6 @@ import Proposals from '@/pages/governance/proposals'
 import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
 import { useEverWallet } from '@/stores/EverWalletService'
-import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { noop } from '@/utils'
 
@@ -90,12 +94,29 @@ export function App(): JSX.Element {
                             <Route exact path="/staking/my">
                                 <StakingSelf />
                             </Route>
+
                             <Route exact path="/relayers/create">
                                 <RelayersStatus />
                             </Route>
                             <Route exact path="/relayers/create/keys">
                                 <RelayersKeys />
                             </Route>
+                            <Route exact path="/relayers">
+                                <Relayers />
+                            </Route>
+                            <Route exact path="/relayers/round/:num">
+                                <RelayersValidationRound />
+                            </Route>
+                            <Route exact path="/relayers/bidding/:num">
+                                <RelayersBiddingRound />
+                            </Route>
+                            <Route exact path="/relayers/:address">
+                                <Relayer />
+                            </Route>
+                            <Route exact path="/relayers/event/:contractAddress">
+                                <RelayersEvent />
+                            </Route>
+
                             <Route exact path="/governance">
                                 <Overview />
                             </Route>

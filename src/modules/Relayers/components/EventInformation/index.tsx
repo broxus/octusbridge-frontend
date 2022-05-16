@@ -1,18 +1,35 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
 import { TokenBadge } from '@/components/common/TokenBadge'
-import { TransactionExplorerLink } from '@/components/common/TransactionExplorerLink'
+import { FromAddress } from '@/modules/Relayers/components/Events/FromAddress'
+import { ToAddress } from '@/modules/Relayers/components/Events/ToAddress'
+import { useTransferEventContext } from '@/modules/Relayers/providers'
+import { useTokensCache } from '@/stores/TokensCacheService'
+import { dateFormat, formattedAmount } from '@/utils'
+import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 
 import './index.scss'
 
-export function EventInformation(): JSX.Element {
+function EventInformationInner(): JSX.Element {
     const intl = useIntl()
+    const tokensCache = useTokensCache()
+    const { event } = useTransferEventContext()
+    const token = event ? tokensCache.get(event?.tokenAddress) : undefined
+
+    const noValue = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
 
     return (
         <Section>
-            <Title>Event information</Title>
+            <Title>
+                {intl.formatMessage({
+                    id: 'EVENT_INFO_TITLE',
+                })}
+            </Title>
 
             <div className="event-information">
                 <div className="card card--flat card--small">
@@ -30,11 +47,14 @@ export function EventInformation(): JSX.Element {
                                 })}
                             </span>
                             <span>
-                                <TokenBadge
-                                    address="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37"
-                                    symbol="USDT"
-                                    size="xsmall"
-                                />
+                                {token ? (
+                                    <TokenBadge
+                                        size="xsmall"
+                                        address={token.root}
+                                        symbol={token?.symbol}
+                                        uri={token.icon}
+                                    />
+                                ) : noValue}
                             </span>
                         </li>
                         <li>
@@ -43,7 +63,10 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_VALUE',
                                 })}
                             </span>
-                            200 000.00
+
+                            {event ? formattedAmount(event.amount, undefined, {
+                                target: 'token',
+                            }) : noValue}
                         </li>
                         <li>
                             <span className="text-muted">
@@ -51,15 +74,18 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_TIME',
                                 })}
                             </span>
-                            Jun 07, 2021, 17:22
+
+                            {event ? dateFormat(event.timestamp) : noValue}
                         </li>
-                        <li>
+                        {/* <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
                                     id: 'EVENT_INFORMATION_ROUND',
                                 })}
                             </span>
-                            123
+                            <span className="event-information__soon">
+                                {soon}
+                            </span>
                         </li>
                         <li>
                             <span className="text-muted">
@@ -67,8 +93,10 @@ export function EventInformation(): JSX.Element {
                                     id: 'EVENT_INFORMATION_CONFIRMATION',
                                 })}
                             </span>
-                            0/70
-                        </li>
+                            <span className="event-information__soon">
+                                {soon}
+                            </span>
+                        </li> */}
                     </ul>
                 </div>
 
@@ -83,38 +111,71 @@ export function EventInformation(): JSX.Element {
                         <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
-                                    id: 'EVENT_INFORMATION_ORIGINAL_ADDRESS',
+                                    id: 'EVENT_INFORMATION_CONTRACT_ADDRESS',
                                 })}
                             </span>
-                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
+                            {event?.contractAddress ? (
+                                <EverscanAccountLink
+                                    copy
+                                    address={event.contractAddress}
+                                />
+                            ) : (
+                                noValue
+                            )}
                         </li>
                         <li>
+                            <span className="text-muted">
+                                {intl.formatMessage({
+                                    id: 'EVENT_INFORMATION_FROM',
+                                })}
+                            </span>
+                            {event ? (
+                                <FromAddress item={event} />
+                            ) : (
+                                noValue
+                            )}
+                        </li>
+                        <li>
+                            <span className="text-muted">
+                                {intl.formatMessage({
+                                    id: 'EVENT_INFORMATION_TO',
+                                })}
+                            </span>
+                            {event ? (
+                                <ToAddress item={event} />
+                            ) : (
+                                noValue
+                            )}
+                        </li>
+                        {/* <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
                                     id: 'EVENT_INFORMATION_TARGET_ADDRESS',
                                 })}
                             </span>
-                            <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
-                        </li>
-                        <li>
+                            <span className="event-information__soon">{soon}</span>
+                        </li> */}
+                        {/* <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
                                     id: 'EVENT_INFORMATION_TARGET_TON_TRANSACTION',
                                 })}
                             </span>
                             <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
-                        </li>
-                        <li>
+                        </li> */}
+                        {/* <li>
                             <span className="text-muted">
                                 {intl.formatMessage({
                                     id: 'EVENT_INFORMATION_TARGET_ETH_TRANSACTION',
                                 })}
                             </span>
                             <TransactionExplorerLink id="0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37" />
-                        </li>
+                        </li> */}
                     </ul>
                 </div>
             </div>
         </Section>
     )
 }
+
+export const EventInformation = observer(EventInformationInner)

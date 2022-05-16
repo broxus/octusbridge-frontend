@@ -1,23 +1,19 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { observer } from 'mobx-react-lite'
 
 import { Button } from '@/components/common/Button'
-import { RelayerStoreContext } from '@/modules/Relayers/providers/RelayerStoreProvider'
-import { STAKING_LOCATION } from '@/modules/Staking/constants'
+import { useUserDataContext } from '@/modules/Relayers/providers'
 
 import './index.scss'
 
-export function RelayerMessage(): JSX.Element | null {
+export function RelayerMessageInner(): JSX.Element | null {
     const intl = useIntl()
-    const relayer = React.useContext(RelayerStoreContext)
-
-    if (!relayer) {
-        return null
-    }
+    const userData = useUserDataContext()
 
     return (
         <>
-            {relayer.isAdmin && relayer.isStakeBalanceLow && (
+            {userData.isRelay && userData.relayIsLowBalance && (
                 <div className="relayer-message">
                     <div>
                         <h2>
@@ -32,7 +28,7 @@ export function RelayerMessage(): JSX.Element | null {
                         </p>
                     </div>
                     <Button
-                        link={STAKING_LOCATION}
+                        link="/staking/my"
                         type="dark"
                         size="md"
                     >
@@ -43,7 +39,7 @@ export function RelayerMessage(): JSX.Element | null {
                 </div>
             )}
 
-            {relayer.status === 'slashed' && relayer.slashedProposalId && (
+            {/* {relayer.status === 'slashed' && relayer.slashedProposalId && (
                 <div className="relayer-message relayer-message_danger">
                     <h2>
                         {intl.formatMessage({
@@ -62,7 +58,9 @@ export function RelayerMessage(): JSX.Element | null {
                         })}
                     </Button>
                 </div>
-            )}
+            )} */}
         </>
     )
 }
+
+export const RelayerMessage = observer(RelayerMessageInner)

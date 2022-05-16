@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import { Header, Section, Title } from '@/components/common/Section'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { UserCard } from '@/components/common/UserCard'
 import { VoteType } from '@/modules/Governance/components/VoteType'
@@ -80,12 +80,12 @@ export function VotesTableInner(): JSX.Element {
                         name: intl.formatMessage({
                             id: 'VOTES_TABLE_VOTING',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'VOTES_TABLE_DATE',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }]}
                     rows={proposal.allVotes.items.map(item => ({
                         cells: [
@@ -109,6 +109,7 @@ export function VotesTableInner(): JSX.Element {
 
                 <Pagination
                     page={pagination.page}
+                    count={pagination.limit}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}

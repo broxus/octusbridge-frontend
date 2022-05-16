@@ -35,6 +35,7 @@ type Props<O> = {
     className?: string;
     loading?: boolean;
     body?: React.ReactNode;
+    soon?: boolean;
     onSort?: (order: O) => void;
 }
 
@@ -46,6 +47,7 @@ export function Table<O>({
     className,
     loading,
     body,
+    soon,
     onSort,
 }: Props<O>): JSX.Element {
     const intl = useIntl()
@@ -76,49 +78,56 @@ export function Table<O>({
                 ))}
             </div>
 
-            <div className="table__body">
-                {body || (
-                    <>
-                        {!loading && (
-                            <>
-                                {!rows && !rawRows && emptyMsg}
-                                {rows && rows.length === 0 && emptyMsg}
-                                {rawRows && rawRows.length === 0 && emptyMsg}
-                            </>
-                        )}
-
-                        {rawRows ? (
-                            rawRows.map(item => item)
-                        ) : (
-                            rows && rows.length > 0 && (
-                                rows.map((row, i) => (
-                                    /* eslint-disable react/no-array-index-key */
-                                    <Row
-                                        key={i}
-                                        link={row.link}
-                                        disabled={row.disabled}
-                                    >
-                                        {row.cells.map((cell, j) => (
-                                            <Cell align={cols[j].align} key={j}>
-                                                {cell}
-                                            </Cell>
-                                        ))}
-                                    </Row>
-                                ))
-                            )
-                        )}
-                    </>
-                )}
-
-
-                <div
-                    className={classNames('table__loader', {
-                        table__loader_active: loading,
+            {soon ? (
+                <div className="table__soon">
+                    {intl.formatMessage({
+                        id: 'SOON',
                     })}
-                >
-                    <ContentLoader transparent slim />
                 </div>
-            </div>
+            ) : (
+                <div className="table__body">
+                    {body || (
+                        <>
+                            {!loading && (
+                                <>
+                                    {!rows && !rawRows && emptyMsg}
+                                    {rows && rows.length === 0 && emptyMsg}
+                                    {rawRows && rawRows.length === 0 && emptyMsg}
+                                </>
+                            )}
+
+                            {rawRows ? (
+                                rawRows.map(item => item)
+                            ) : (
+                                rows && rows.length > 0 && (
+                                    rows.map((row, i) => (
+                                        /* eslint-disable react/no-array-index-key */
+                                        <Row
+                                            key={i}
+                                            link={row.link}
+                                            disabled={row.disabled}
+                                        >
+                                            {row.cells.map((cell, j) => (
+                                                <Cell align={cols[j].align} key={j}>
+                                                    {cell}
+                                                </Cell>
+                                            ))}
+                                        </Row>
+                                    ))
+                                )
+                            )}
+                        </>
+                    )}
+
+                    <div
+                        className={classNames('table__loader', {
+                            table__loader_active: loading,
+                        })}
+                    >
+                        <ContentLoader transparent slim />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

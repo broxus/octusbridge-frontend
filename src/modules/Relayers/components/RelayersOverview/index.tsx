@@ -1,13 +1,26 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { Observer } from 'mobx-react-lite'
 
 import { Section, Title } from '@/components/common/Section'
 import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
-import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
+// import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
+import { useRoundInfoContext } from '@/modules/Relayers/providers'
+import { formattedAmount } from '@/utils'
 
 export function RelayersOverview(): JSX.Element {
     const intl = useIntl()
+    // const [chartTypeId, setChartTypeId] = React.useState('stake')
+    const roundInfo = useRoundInfoContext()
+
+    const noValue = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
+
+    React.useEffect(() => {
+        roundInfo.fetch({})
+    }, [])
 
     return (
         <Section>
@@ -17,39 +30,105 @@ export function RelayersOverview(): JSX.Element {
                 })}
             </Title>
 
-            <div className="board">
-                <div className="board__side">
-                    <DataCard
-                        title="Total frozen stakes, BRIDGE"
-                        value="1 705 000.00"
-                    >
-                        <TvlChange
-                            size="small"
-                            changesDirection={-1}
-                            priceChange="0.5"
+            <div className="tiles tiles_fourth">
+                <Observer>
+                    {() => (
+                        <DataCard
+                            value={roundInfo.info?.totalStake !== undefined
+                                ? formattedAmount(roundInfo.info.totalStake, undefined, {
+                                    target: 'token',
+                                })
+                                : noValue}
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_FROZEN',
+                            })}
+                        >
+                            {roundInfo.info?.totalStakeChange && (
+                                <TvlChange
+                                    size="small"
+                                    changesDirection={parseFloat(roundInfo.info?.totalStakeChange)}
+                                    priceChange={Math.abs(parseFloat(roundInfo.info?.totalStakeChange))}
+                                />
+                            )}
+                        </DataCard>
+                    )}
+                </Observer>
+
+                <Observer>
+                    {() => (
+                        <DataCard
+                            value={roundInfo.info?.relaysCount !== undefined
+                                ? roundInfo.info?.relaysCount
+                                : noValue}
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_RELAYERS',
+                            })}
                         />
-                    </DataCard>
+                    )}
+                </Observer>
 
-                    <DataCard
-                        title="Active relayers"
-                        value="100"
-                    />
+                <DataCard
+                    hint={intl.formatMessage({
+                        id: 'SOON',
+                    })}
+                    title={intl.formatMessage({
+                        id: 'RELAYERS_OVERVIEW_EVENTS',
+                    })}
+                />
 
-                    <DataCard
-                        title="Total events, 24h"
-                        value="113 025"
-                    />
+                <Observer>
+                    {() => (
+                        <DataCard
+                            value={roundInfo.info?.averageRelayStake !== undefined
+                                ? formattedAmount(roundInfo.info.averageRelayStake, undefined, {
+                                    target: 'token',
+                                })
+                                : noValue}
+                            title={intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_AVERAGE',
+                            })}
+                        >
+                            {roundInfo.info?.averageRelayStakeChange && (
+                                <TvlChange
+                                    size="small"
+                                    changesDirection={parseFloat(roundInfo.info?.averageRelayStakeChange)}
+                                    priceChange={Math.abs(parseFloat(roundInfo.info?.averageRelayStakeChange))}
+                                />
+                            )}
+                        </DataCard>
+                    )}
+                </Observer>
+            </div>
 
-                    <DataCard
-                        title="Average relayer stake, BRIDGE"
-                        value="150 728.17"
-                    />
+            {/* <div className="board">
+                <div className="board__side">
+
                 </div>
 
                 <div className="board__main">
-                    <ChartLayout />
+                    <ChartLayout
+                        showSoon
+                        chartTypeId={chartTypeId}
+                        onChangeType={setChartTypeId}
+                        chartTypes={[{
+                            id: 'stake',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_STAKE',
+                            }),
+                        }, {
+                            id: 'reward',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_REWARD',
+                            }),
+                        }, {
+                            id: 'events',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_EVENTS',
+                            }),
+                        }]}
+                    />
                 </div>
-            </div>
+            </div> */}
         </Section>
     )
 }

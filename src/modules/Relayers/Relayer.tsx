@@ -1,42 +1,100 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { useParams } from 'react-router-dom'
+import { observer } from 'mobx-react-lite'
 
+import { ContentLoader } from '@/components/common/ContentLoader'
+import { Container } from '@/components/common/Section'
 import { ExplorerBreadcrumb } from '@/modules/Relayers/components/ExplorerBreadcrumb'
 import { RelayerHeader } from '@/modules/Relayers/components/RelayerHeader'
 import { RelayerMessage } from '@/modules/Relayers/components/RelayerMessage'
 import { RelayerPerformance } from '@/modules/Relayers/components/RelayerPerformance'
 import { ValidationRounds } from '@/modules/Relayers/components/ValidationRounds'
 import { RoundsCalendar } from '@/modules/Relayers/components/RoundsCalendar'
+import {
+    RelayersEventsProvider, RoundInfoListProvider, RoundsCalendarProvider, useRelayInfoContext,
+    useUserDataContext,
+} from '@/modules/Relayers/providers'
 import { Events } from '@/modules/Relayers/components/Events'
-import { RelayerStoreContext } from '@/modules/Relayers/providers/RelayerStoreProvider'
 import { sliceAddress } from '@/utils'
 
-export function Relayer(): JSX.Element | null {
-    const intl = useIntl()
-    const relayer = React.useContext(RelayerStoreContext)
+type Params = {
+    address: string;
+}
 
-    if (!relayer || !relayer.address) {
-        return null
+export function RelayerInner(): JSX.Element | null {
+    const intl = useIntl()
+    const params = useParams<Params>()
+    const relayInfo = useRelayInfoContext()
+    const userData = useUserDataContext()
+    const [loading, setLoading] = React.useState(true)
+
+    React.useEffect(() => {
+        if (params.address) {
+            relayInfo.fetch({
+                relayAddress: params.address,
+            })
+        }
+    }, [params.address])
+
+    React.useEffect(() => {
+        if (relayInfo.isLoading !== undefined) {
+            setLoading(relayInfo.isLoading)
+        }
+    }, [relayInfo.isLoading])
+
+    React.useEffect(() => {
+        if (userData.isConnected) {
+            userData.fetch()
+        }
+        else {
+            userData.dispose()
+        }
+    }, [userData.isConnected])
+
+    if (loading) {
+        return (
+            <ContentLoader />
+        )
     }
 
     return (
-        <div className="container container--large">
+        <Container size="lg">
             <ExplorerBreadcrumb
                 items={[{
                     title: intl.formatMessage({
                         id: 'RELAYERS_BREADCRUMB_RELAYERS',
                     }, {
-                        address: sliceAddress(relayer.address),
+                        address: sliceAddress(params.address),
                     }),
                 }]}
             />
 
-            <RelayerHeader />
             <RelayerMessage />
+
+            <RelayerHeader />
+
             <RelayerPerformance />
-            <ValidationRounds />
-            <RoundsCalendar />
-            <Events />
-        </div>
+
+            <RoundInfoListProvider
+                relayAddress={params.address}
+            >
+                <ValidationRounds />
+            </RoundInfoListProvider>
+
+            <RoundsCalendarProvider>
+                <RoundsCalendar
+                    roundNum="current"
+                />
+            </RoundsCalendarProvider>
+
+            <RelayersEventsProvider>
+                <Events
+                    relay={params.address}
+                />
+            </RelayersEventsProvider>
+        </Container>
     )
 }
+
+export const Relayer = observer(RelayerInner)

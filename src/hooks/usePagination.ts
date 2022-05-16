@@ -6,7 +6,7 @@ type UrlPagination = {
     page: number;
     totalPages: number;
     totalCount?: number;
-    submit: (page: number) => void;
+    submit: (page: number, limit?: number) => void;
 }
 
 const LIMIT = 10
@@ -20,7 +20,7 @@ export function usePagination(totalCount?: number): UrlPagination {
     const submit = (page: number, limit?: number) => {
         setParams({
             page,
-            limit: limit || LIMIT,
+            limit: limit || params.limit,
         })
     }
 

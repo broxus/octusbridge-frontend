@@ -1,32 +1,70 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
+import { useParams } from 'react-router-dom'
+import { observer } from 'mobx-react-lite'
 
-import { Section, Title } from '@/components/common/Section'
+import { ContentLoader } from '@/components/common/ContentLoader'
+import { Container, Section, Title } from '@/components/common/Section'
 import { Events } from '@/modules/Relayers/components/Events'
-import { Relayers } from '@/modules/Relayers/components/Relayers'
 import { RoundData } from '@/modules/Relayers/components/RoundData'
-import { RoundHeader } from '@/modules/Relayers/components/RoundHeader'
+import { ValidationRoundHeader } from '@/modules/Relayers/components/RoundHeader'
 import { ExplorerBreadcrumb } from '@/modules/Relayers/components/ExplorerBreadcrumb'
+import { RoundRelayers } from '@/modules/Relayers/components/Relayers'
+import {
+    RelayersEventsProvider,
+    RelaysRoundInfoProvider,
+    RoundsCalendarProvider,
+    useRoundInfoContext,
+    useValidationRoundContext,
+} from '@/modules/Relayers/providers'
 
-export function ValidationRound(): JSX.Element {
+type Params = {
+    num: string;
+}
+
+export function ValidationRoundInner(): JSX.Element {
     const intl = useIntl()
+    const params = useParams<Params>()
+    const validationRound = useValidationRoundContext()
+    const roundInfo = useRoundInfoContext()
+    const [loading, setLoading] = React.useState(true)
+
+    React.useEffect(() => {
+        const roundNum = parseInt(params.num, 10)
+
+        if (roundNum) {
+            validationRound.fetch(roundNum)
+            roundInfo.fetch({ roundNum })
+        }
+    }, [params.num])
+
+    React.useEffect(() => {
+        if (validationRound.isLoading !== undefined) {
+            setLoading(validationRound.isLoading)
+        }
+    }, [validationRound.isLoading])
+
+    if (loading) {
+        return (
+            <ContentLoader transparent />
+        )
+    }
 
     return (
-        <div className="container container--large">
+        <Container size="lg">
             <ExplorerBreadcrumb
                 items={[{
                     title: intl.formatMessage({
                         id: 'RELAYERS_BREADCRUMB_VALIDATION',
                     }, {
-                        name: '123',
+                        name: params.num,
                     }),
                 }]}
             />
 
-            <RoundHeader
-                title="Validation round 123"
-                type="validation"
-            />
+            <RoundsCalendarProvider>
+                <ValidationRoundHeader />
+            </RoundsCalendarProvider>
 
             <Section>
                 <Title>
@@ -38,8 +76,19 @@ export function ValidationRound(): JSX.Element {
                 <RoundData />
             </Section>
 
-            <Relayers />
-            <Events />
-        </div>
+            <RelaysRoundInfoProvider>
+                <RoundRelayers
+                    roundNum={parseInt(params.num, 10)}
+                />
+            </RelaysRoundInfoProvider>
+
+            <RelayersEventsProvider>
+                <Events
+                    roundNum={parseInt(params.num, 10)}
+                />
+            </RelayersEventsProvider>
+        </Container>
     )
 }
+
+export const ValidationRound = observer(ValidationRoundInner)

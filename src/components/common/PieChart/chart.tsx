@@ -44,11 +44,13 @@ export function Chart({
 
     for (let i = 0; i < data.length; i++) {
         const item = data[i]
-        const percent = new BigNumber(item.value)
-            .times(100)
-            .dividedBy(total)
-            .decimalPlaces(2)
-            .toNumber()
+        const percent = new BigNumber(item.value).gt(0)
+            ? new BigNumber(item.value)
+                .times(100)
+                .dividedBy(total)
+                .decimalPlaces(2)
+                .toNumber()
+            : 0
         const pie = (percent * (data.length > 1 ? 360 : 359.99)) / 100
         const d = calcChartArc(offset, offset + pie, radius, innerRadius)
         const d2 = calcChartArc(offset, offset + pie, radius - 25, innerRadius)

@@ -8,7 +8,7 @@ import { Pagination } from '@/components/common/Pagination'
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { Summary } from '@/components/common/Summary'
 import { Button } from '@/components/common/Button'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { ProposalSummary } from '@/modules/Governance/components/ProposalSummary'
 import { useUserProposals } from '@/modules/Governance/hooks'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
@@ -138,7 +138,7 @@ export function UnlockFormInner({
                                     name: intl.formatMessage({
                                         id: 'UNLOCK_FORM_TOKENS',
                                     }),
-                                    align: 'right',
+                                    align: Align.right,
                                 }]}
                                 rows={userProposals.items.map(({ proposal, vote }) => ({
                                     cells: [

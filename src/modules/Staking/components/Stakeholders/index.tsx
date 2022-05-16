@@ -5,7 +5,7 @@ import { Observer, observer } from 'mobx-react-lite'
 import {
     DateFilter, FilterField, Filters, NUM_REGEXP, RadioFilter, TextFilter,
 } from '@/components/common/Filters'
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Header, Section, Title } from '@/components/common/Section'
 import { UserCard } from '@/components/common/UserCard'
 import { Pagination } from '@/components/common/Pagination'
@@ -279,7 +279,7 @@ export function StakeholdersInner(): JSX.Element | null {
                                 name: intl.formatMessage({
                                     id: 'STAKEHOLDERS_STAKE',
                                 }),
-                                align: 'right',
+                                align: Align.right,
                                 ascending: 'stakeascending',
                                 descending: 'stakedescending',
 
@@ -287,28 +287,28 @@ export function StakeholdersInner(): JSX.Element | null {
                                 name: intl.formatMessage({
                                     id: 'STAKEHOLDERS_FROZEN',
                                 }),
-                                align: 'right',
+                                align: Align.right,
                                 ascending: 'frozenstakeascending',
                                 descending: 'frozenstakedescending',
                             }, {
                                 name: intl.formatMessage({
                                     id: 'STAKEHOLDERS_30D',
                                 }),
-                                align: 'right',
+                                align: Align.right,
                                 ascending: 'lastrewardascending',
                                 descending: 'lastrewarddescending',
                             }, {
                                 name: intl.formatMessage({
                                     id: 'STAKEHOLDERS_REWARD',
                                 }),
-                                align: 'right',
+                                align: Align.right,
                                 ascending: 'totalrewardascending',
                                 descending: 'totalrewarddescending',
                             }, {
                                 name: intl.formatMessage({
                                     id: 'STAKEHOLDERS_DATE',
                                 }),
-                                align: 'right',
+                                align: Align.right,
                                 ascending: 'createdatascending',
                                 descending: 'createdatdescending',
                             }]}
@@ -347,6 +347,7 @@ export function StakeholdersInner(): JSX.Element | null {
                 </Observer>
 
                 <Pagination
+                    count={pagination.limit}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}
                     page={pagination.page}

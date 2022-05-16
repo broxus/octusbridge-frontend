@@ -78,6 +78,7 @@ export function ProposalsListInner(): JSX.Element {
 
                 <Pagination
                     page={pagination.page}
+                    count={pagination.limit}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}

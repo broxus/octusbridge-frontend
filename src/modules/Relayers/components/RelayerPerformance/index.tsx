@@ -3,19 +3,19 @@ import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
-import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
-import { RelayerStoreContext } from '@/modules/Relayers/providers/RelayerStoreProvider'
+// import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { dateRelative, formattedAmount } from '@/utils'
+import { useRelayInfoContext } from '@/modules/Relayers/providers'
 
 import './index.scss'
 
 export function RelayerPerformance(): JSX.Element | null {
     const intl = useIntl()
-    const relayer = React.useContext(RelayerStoreContext)
-
-    if (!relayer) {
-        return null
-    }
+    const { relayInfo } = useRelayInfoContext()
+    // const [chartTypeId, setChartTypeId] = React.useState('stake')
+    const noValue = intl.formatMessage({
+        id: 'NO_VALUE',
+    })
 
     return (
         <Section>
@@ -25,73 +25,86 @@ export function RelayerPerformance(): JSX.Element | null {
                 })}
             </Title>
 
-            <div className="board">
+            <div className="tiles tiles_fourth">
+                <DataCard
+                    title={intl.formatMessage({
+                        id: 'RELAYER_PERFORMANCE_STAKE',
+                    })}
+                    value={relayInfo?.frozenStake
+                        ? formattedAmount(relayInfo?.frozenStake, undefined, { target: 'token' })
+                        : noValue}
+                >
+                    {relayInfo?.untilFrozen && (
+                        intl.formatMessage({
+                            id: 'RELAYER_PERFORMANCE_DEFROST',
+                        }, {
+                            value: dateRelative(relayInfo.untilFrozen),
+                        })
+                    )}
+                </DataCard>
+
+                <DataCard
+                    title={intl.formatMessage({
+                        id: 'RELAYER_PERFORMANCE_LATEST_REWARD',
+                    })}
+                    value={relayInfo?.latestReward
+                        ? formattedAmount(relayInfo.latestReward, undefined, { target: 'token' })
+                        : noValue}
+                />
+
+                <DataCard
+                    title={intl.formatMessage({
+                        id: 'RELAYER_PERFORMANCE_TOTAL_REWARD',
+                    })}
+                    value={relayInfo?.totalReward
+                        ? formattedAmount(relayInfo.totalReward, undefined, { target: 'token' })
+                        : noValue}
+                />
+
+                <DataCard
+                    title={intl.formatMessage({
+                        id: 'RELAYER_PERFORMANCE_SUCCESS_ROUNDS',
+                    })}
+                    value={relayInfo?.successfulRounds && relayInfo?.totalCountRounds
+                        ? intl.formatMessage({
+                            id: 'RELAYER_PERFORMANCE_ROUNDS',
+                        }, {
+                            success: relayInfo.successfulRounds,
+                            total: relayInfo.totalCountRounds,
+                        })
+                        : noValue}
+                />
+            </div>
+
+            {/* <div className="board">
                 <div className="board__side">
-                    <DataCard
-                        title={intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_STAKE',
-                        })}
-                        value={relayer.frozenStake && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.frozenStake, relayer.stakeTokenDecimals, { target: 'token' })
-                            : null}
-                    >
-                        {relayer.defrostTime !== undefined && (
-                            intl.formatMessage({
-                                id: 'RELAYER_PERFORMANCE_DEFROST',
-                            }, {
-                                value: dateRelative(relayer.defrostTime),
-                            })
-                        )}
-                    </DataCard>
 
-                    <DataCard
-                        title={intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_LATEST_REWARD',
-                        })}
-                        value={relayer.latestReward && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.latestReward, relayer.stakeTokenDecimals, { target: 'token' })
-                            : null}
-                    />
-
-                    <DataCard
-                        title={intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_TOTAL_REWARD',
-                        })}
-                        value={relayer.totalReward && relayer.stakeTokenDecimals !== undefined
-                            ? formattedAmount(relayer.totalReward, relayer.stakeTokenDecimals, { target: 'token' })
-                            : null}
-                    />
-
-                    <DataCard
-                        title={intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_SUCCESS_ROUNDS',
-                        })}
-                        value={relayer.successRounds && relayer.totalRounds
-                            ? intl.formatMessage({
-                                id: 'RELAYER_PERFORMANCE_ROUNDS',
-                            }, {
-                                success: relayer.successRounds,
-                                total: relayer.totalRounds,
-                            })
-                            : null}
-                    >
-                        {relayer.successRoundsRate && `${relayer.successRoundsRate}%`}
-                    </DataCard>
-
-                    <DataCard
-                        title={intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_EVENTS',
-                        })}
-                        value={relayer.dayEvents !== undefined
-                            ? formattedAmount(relayer.dayEvents)
-                            : null}
-                    />
                 </div>
 
                 <div className="board__main">
-                    <ChartLayout />
+                    <ChartLayout
+                        showSoon
+                        chartTypeId={chartTypeId}
+                        onChangeType={setChartTypeId}
+                        chartTypes={[{
+                            id: 'stake',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_STAKE',
+                            }),
+                        }, {
+                            id: 'reward',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_REWARD',
+                            }),
+                        }, {
+                            id: 'events',
+                            label: intl.formatMessage({
+                                id: 'RELAYERS_OVERVIEW_CHART_EVENTS',
+                            }),
+                        }]}
+                    />
                 </div>
-            </div>
+            </div> */}
         </Section>
     )
 }

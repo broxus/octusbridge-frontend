@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
-import { Table } from '@/components/common/Table'
+import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { Header, Section, Title } from '@/components/common/Section'
 import { UserCard } from '@/components/common/UserCard'
@@ -74,19 +74,19 @@ export function TopVotersInner(): JSX.Element {
                         name: intl.formatMessage({
                             id: 'TOP_VOTERS_VOTES',
                         }),
-                        align: 'right',
+                        align: Align.right,
                     }, {
                         name: intl.formatMessage({
                             id: 'TOP_VOTERS_VOTE_WEIGHT',
                         }),
-                        align: 'right',
+                        align: Align.right,
                         ascending: 'voteweightascending',
                         descending: 'voteweightdescending',
                     }, {
                         name: intl.formatMessage({
                             id: 'TOP_VOTERS_PROPOSALS_VOTED',
                         }),
-                        align: 'right',
+                        align: Align.right,
                         ascending: 'votesascending',
                         descending: 'votesdescending',
                     }]}
@@ -106,6 +106,7 @@ export function TopVotersInner(): JSX.Element {
 
                 <Pagination
                     page={pagination.page}
+                    count={pagination.limit}
                     totalPages={pagination.totalPages}
                     totalCount={pagination.totalCount}
                     onSubmit={pagination.submit}

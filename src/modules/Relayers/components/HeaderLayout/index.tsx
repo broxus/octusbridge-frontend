@@ -3,7 +3,7 @@ import * as React from 'react'
 import './index.scss'
 
 export * from '@/modules/Relayers/components/HeaderLayout/Actions'
-export * from '@/modules/Relayers/components/HeaderLayout/ExternalLink'
+export * from '@/modules/Relayers/components/HeaderLayout/ExternalLinkIcon'
 
 type Props = {
     children: React.ReactNode | React.ReactNodeArray;

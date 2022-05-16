@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 
 import { Checkbox } from '@/components/common/Checkbox'
 import { TokenBadge } from '@/components/common/TokenBadge'
-import { Table, Value } from '@/components/common/Table'
+import { Align, Table, Value } from '@/components/common/Table'
 import { useTokensAssets } from '@/stores/TokensAssetsService'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
 import { SearchNotInstant, SearchNotInstantOrdering } from '@/modules/LiquidityRequests/types'
@@ -56,31 +56,27 @@ function LiquidityRequestsTableInner({
                 loading={!liquidityRequests.isLoaded || liquidityRequests.isLoading}
                 className="liquidity-requests-table"
                 cols={[{
-                    align: 'center',
+                    align: Align.center,
                 }, {
-                    align: 'left',
                     name: intl.formatMessage({
                         id: 'LIQUIDITY_REQUESTS_TABLE_TOKEN',
                     }),
                 }, {
-                    align: 'left',
                     name: intl.formatMessage({
                         id: 'LIQUIDITY_REQUESTS_TABLE_YOU_SPEND',
                     }),
                 }, {
-                    align: 'left',
                     name: intl.formatMessage({
                         id: 'LIQUIDITY_REQUESTS_TABLE_YOU_GET',
                     }),
                 }, {
-                    align: 'left',
                     ascending: 'bountyascending',
                     descending: 'bountydescending',
                     name: intl.formatMessage({
                         id: 'LIQUIDITY_REQUESTS_TABLE_YOU_REWARD',
                     }),
                 }, {
-                    align: 'right',
+                    align: Align.right,
                     ascending: 'createdatascending',
                     descending: 'createdatdescending',
                     name: intl.formatMessage({

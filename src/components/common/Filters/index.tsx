@@ -5,7 +5,6 @@ import classNames from 'classnames'
 import { Button } from '@/components/common/Button'
 import { Popup } from '@/components/common/Filters/popup'
 import { useDropdown } from '@/hooks/useDropdown'
-import { zip } from '@/utils'
 
 import './index.scss'
 
@@ -20,10 +19,13 @@ type Props<T> = {
     filters: T;
     block?: boolean;
     onChange: (filters: T) => void;
-    children: (filters: T, change: (key: keyof T) => (value: T[keyof T]) => void) => React.ReactNode;
+    children: (
+        filters: T,
+        change: (key: keyof T) => (value: T[keyof T]) => void,
+    ) => React.ReactNode;
 }
 
-export function Filters<T>({
+export function Filters<T extends {[k: string]: unknown}>({
     filters,
     block,
     onChange,
@@ -34,12 +36,12 @@ export function Filters<T>({
 
     const [localFilters, setLocalFilters] = React.useState<T>(filters)
 
-    const count = Object.values(filters).filter(item => item !== undefined).length
+    const filtersCount = Object.values(filters).filter(item => item !== undefined).length
 
-    const clearEnabled = count > 0
+    const clearEnabled = filtersCount > 0
 
-    const applyEnabled = zip(Object.values(filters), Object.values(localFilters))
-        .some(([a, b]) => a !== b)
+    const applyEnabled = Object.entries(localFilters)
+        .some(([key, value]) => filters[key] !== value)
 
     const changeLocalFilter = (key: keyof T) => (
         (value: T[keyof T]) => {
@@ -75,8 +77,8 @@ export function Filters<T>({
                         id: 'FILTERS_FILTER',
                     })}
 
-                    {count > 0 && (
-                        <span className="filters__counter">{count}</span>
+                    {filtersCount > 0 && (
+                        <span className="filters__counter">{filtersCount}</span>
                     )}
                 </Button>
 

@@ -1,22 +1,25 @@
 import * as React from 'react'
 import classNames from 'classnames'
+import { DateTime } from 'luxon'
 
 import './index.scss'
 
 type Props = {
-    active?: boolean;
+    date: number;
     disabled?: boolean;
-    maxLength: number;
+    totalDays: number;
     length?: number;
 }
 
 export function Day({
-    active,
+    date,
     disabled,
-    maxLength,
+    totalDays,
     length = 1,
 }: Props): JSX.Element {
-    const width = (100 / maxLength) * length
+    const width = (100 / totalDays) * length
+    const now = Date.now()
+    const active = now > date && now < new Date(date).setHours(24, 0, 0, 0)
 
     return (
         <div
@@ -29,15 +32,22 @@ export function Day({
             }}
         >
             <span>
-                Wed
+                <span className="rounds-calendar-day__week-full">
+                    {DateTime.fromMillis(date).toFormat('ccc')}
+                </span>
+                <span className="rounds-calendar-day__week-short">
+                    {DateTime.fromMillis(date).toFormat('ccc')[0]}
+                </span>
             </span>
             <span className="rounds-calendar-day__date">
-                1.12
+                <span className="rounds-calendar-day__day">
+                    {DateTime.fromMillis(date).toFormat('dd')}
+                </span>
+                <span className="rounds-calendar-day__month">
+                    .
+                    {DateTime.fromMillis(date).toFormat('LL')}
+                </span>
             </span>
-
-            {active && (
-                <div className="rounds-calendar-day__cursor" />
-            )}
         </div>
     )
 }

@@ -1,12 +1,14 @@
 import * as React from 'react'
 
 import { Relayer } from '@/modules/Relayers/Relayer'
-import { RelayerStoreProvider } from '@/modules/Relayers/providers/RelayerStoreProvider'
+import { RelayInfoProvider, UserDataProvider } from '@/modules/Relayers/providers'
 
 export default function Page(): JSX.Element {
     return (
-        <RelayerStoreProvider>
-            <Relayer />
-        </RelayerStoreProvider>
+        <UserDataProvider>
+            <RelayInfoProvider>
+                <Relayer />
+            </RelayInfoProvider>
+        </UserDataProvider>
     )
 }

@@ -3,6 +3,8 @@ import {
     RelayerLinkStoreState, StakingDataStoreData, StakingDataStoreState,
 } from '@/modules/Relayers/types'
 
+export const DAY_MS = 1000 * 60 * 60 * 24
+
 export const INDICATOR_LABEL_INTL_ID_BY_STATUS = {
     disabled: 'RELAYERS_CREATE_INDICATOR_DISABLED',
     pending: 'RELAYERS_CREATE_INDICATOR_PENDING',

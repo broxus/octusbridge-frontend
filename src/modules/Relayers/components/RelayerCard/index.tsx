@@ -9,7 +9,7 @@ import { sliceAddress } from '@/utils'
 import './index.scss'
 
 type Props = {
-    address: string;
+    address?: string;
     status?: Status;
     rank?: number;
 }
@@ -20,16 +20,18 @@ export function RelayerCard({
     rank,
 }: Props): JSX.Element | null {
     const intl = useIntl()
-    const shortAddress = sliceAddress(address)
+    const shortAddress = address ? sliceAddress(address) : undefined
 
     return (
         <div className="relayer-card">
-            <div className="relayer-card__main">
-                <UserAvatar
-                    size="large"
-                    address={address}
-                />
-            </div>
+            {address && (
+                <div className="relayer-card__main">
+                    <UserAvatar
+                        size="large"
+                        address={address}
+                    />
+                </div>
+            )}
 
             <div className="relayer-card__side">
                 {shortAddress && (
