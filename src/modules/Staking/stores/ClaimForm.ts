@@ -83,7 +83,9 @@ export class ClaimFormStore {
 
             while (this.accountData.tokenWalletBalance === tokenWalletBalance) {
                 await this.accountData.sync()
-                await new Promise(r => setTimeout(r, 1000))
+                await new Promise(r => {
+                    setTimeout(r, 1000)
+                })
             }
         }
         catch (e) {
@@ -97,6 +99,14 @@ export class ClaimFormStore {
 
     public get isLoading(): boolean {
         return !!this.state.isLoading
+    }
+
+    public get isEnabled(): boolean {
+        if (this.amountValid && this.gasValid) {
+            return this.accountData.claimEnabled
+        }
+
+        return false
     }
 
     public get balance(): string | undefined {

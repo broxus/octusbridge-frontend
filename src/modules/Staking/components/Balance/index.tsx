@@ -186,7 +186,7 @@ export function StakingBalance(): JSX.Element {
                             {() => (
                                 <FormLayout
                                     loading={claimForm.isLoading}
-                                    disabled={!claimForm.amountValid || !claimForm.gasValid || claimForm.isLoading}
+                                    disabled={claimForm.isLoading || !claimForm.isEnabled}
                                     onSubmit={claimForm.submit}
                                     hint={intl.formatMessage({
                                         id: 'STAKING_BALANCE_CLAIM_DISABLED',
