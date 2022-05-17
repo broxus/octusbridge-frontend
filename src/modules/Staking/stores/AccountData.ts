@@ -353,4 +353,24 @@ export class AccountDataStore {
         return this.data.castedVotes
     }
 
+    public get claimEnabled(): boolean {
+        const userRewardRounds = this.data.userDetails?.rewardRounds
+        const stakingRewardRounds = this.data.stakingDetails?.rewardRounds
+
+        if (userRewardRounds && stakingRewardRounds) {
+            if (userRewardRounds.length === stakingRewardRounds.length) {
+                return userRewardRounds.slice(0, -1).some(item => (
+                    new BigNumber(item.reward_balance).gt(0)
+                ))
+            }
+            if (userRewardRounds.length < stakingRewardRounds.length) {
+                return stakingRewardRounds.slice(0, -1).some(item => (
+                    new BigNumber(item.totalReward).gt(0)
+                ))
+            }
+        }
+
+        return false
+    }
+
 }
