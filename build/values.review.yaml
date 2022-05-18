@@ -1,0 +1,17 @@
+service:
+  port: 80
+
+ingress:
+  enabled: true
+
+livenessProbe:
+  tcpSocket:
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  tcpSocket:
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 10

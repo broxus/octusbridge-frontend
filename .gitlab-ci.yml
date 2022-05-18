@@ -94,3 +94,16 @@ stop:prod:
   extends: .stop
   environment:
     name: prod
+
+cloudbuild:image:review:
+  extends: .cloudbuild:common
+  only:
+    - merge_requests
+  before_script:
+    - rm -rf src/config.ts && cp config/review.ts src/config.ts
+
+deploy:review:
+  extends: .deploy_review
+
+stop:review:
+  extends: .stop_review

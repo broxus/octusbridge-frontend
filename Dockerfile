@@ -9,11 +9,17 @@ RUN \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get install -y nodejs
 
-COPY . .
+# .editorconfig .stylelintrc .eslintignore .eslintrc.js
+COPY package.json package-lock.json tsconfig.json webpack.config.ts .babelrc ./
+RUN \
+    set -eux; \
+    npm ci
+
+COPY src src
+COPY public public
 
 RUN \
     set -eux; \
-    npm ci && \
     npm run build
 
 FROM nginx:1.21
