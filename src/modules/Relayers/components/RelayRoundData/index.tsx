@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Observer } from 'mobx-react-lite'
+import BigNumber from 'bignumber.js'
 
 import { DataCard } from '@/components/common/DataCard'
 import { EventsDistribution } from '@/modules/Relayers/components/EventsDistribution'
@@ -24,8 +25,8 @@ export function RelayRoundData(): JSX.Element | null {
                             title={intl.formatMessage({
                                 id: 'RELAY_ROUND_DATA_BIDDING',
                             })}
-                            value={relayRoundInfo.info
-                                ? formatDigits(relayRoundInfo.info.relayPlace)
+                            value={relayRoundInfo.info?.relayPlace !== undefined
+                                ? formatDigits(relayRoundInfo.info.relayPlace.toString())
                                 : noValue}
                         />
                     )}
@@ -59,8 +60,24 @@ export function RelayRoundData(): JSX.Element | null {
                             title={intl.formatMessage({
                                 id: 'RELAY_ROUND_DATA_EVENTS',
                             })}
-                            value={relayRoundInfo.info?.eventsConfirmed
-                                ? formatDigits(relayRoundInfo.info.eventsConfirmed)
+                            value={relayRoundInfo.info?.eventsConfirmed !== undefined
+                                ? formatDigits(relayRoundInfo.info.eventsConfirmed.toString())
+                                : noValue}
+                        />
+                    )}
+                </Observer>
+
+                <Observer>
+                    {() => (
+                        <DataCard
+                            title={intl.formatMessage({
+                                id: 'RELAY_ROUND_DATA_EVENTS_SHARE',
+                            })}
+                            value={relayRoundInfo.info?.eventsConfirmedShare
+                                ? `${formatDigits(
+                                    new BigNumber(relayRoundInfo.info.eventsConfirmedShare).times(100)
+                                        .dp(2).toFixed(),
+                                )}%`
                                 : noValue}
                         />
                     )}

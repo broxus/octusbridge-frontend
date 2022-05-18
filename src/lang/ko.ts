@@ -762,6 +762,7 @@ export default {
 
     EVENT_PAGE_TITLE: 'Transfer {contract}',
     EVENT_HEADER_TITLE: 'Token transfer {from}-{to}',
+    EVENT_HEADER_TITLE_EMPTY: 'Token transfer',
     EVENT_INFO_TITLE: 'Event information',
 
     ROUND_STATISTIC_TITLE: 'Round {roundNum}',
@@ -771,6 +772,7 @@ export default {
 
     RELAY_ROUND_DATA_STAKE: 'Your stake, BRIDGE',
     RELAY_ROUND_DATA_EVENTS: 'Events confirmed, BRIDGE',
+    RELAY_ROUND_DATA_EVENTS_SHARE: 'Events share',
     RELAY_ROUND_DATA_REWARD: 'Round reward, BRIDGE',
     RELAY_ROUND_DATA_BIDDING: 'Bidding results',
 

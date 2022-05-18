@@ -24,12 +24,14 @@ type Props = {
     soon?: boolean;
     roundNum?: number;
     transferContractAddress?: string;
+    showFilter?: boolean;
 }
 
 export function RelayersInner({
     soon,
     roundNum,
     transferContractAddress,
+    showFilter = true,
 }: Props): JSX.Element {
     const intl = useIntl()
     const relayers = useRelayersContext()
@@ -86,56 +88,58 @@ export function RelayersInner({
                     })}
                 </Title>
 
-                <Filters
-                    filters={{
-                        stakeGe,
-                        stakeLe,
-                        createdAtGe,
-                        createdAtLe,
-                    }}
-                    onChange={changeFilters}
-                >
-                    {(localFilters, changeLocalFilter) => (
-                        <>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'RELAYERS_RELAYER_SINCE',
-                                })}
-                            >
-                                <DateFilter
-                                    onChange={changeLocalFilter('createdAtGe')}
-                                    value={localFilters.createdAtGe}
-                                />
-                                <DateFilter
-                                    onChange={changeLocalFilter('createdAtLe')}
-                                    value={localFilters.createdAtLe}
-                                />
-                            </FilterField>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'RELAYERS_STAKE',
-                                })}
-                            >
-                                <TextFilter
-                                    value={localFilters.stakeGe}
-                                    onChange={changeLocalFilter('stakeGe')}
-                                    regexp={NUM_REGEXP}
-                                    placeholder={intl.formatMessage({
-                                        id: 'FILTERS_FROM',
+                {showFilter && (
+                    <Filters
+                        filters={{
+                            stakeGe,
+                            stakeLe,
+                            createdAtGe,
+                            createdAtLe,
+                        }}
+                        onChange={changeFilters}
+                    >
+                        {(localFilters, changeLocalFilter) => (
+                            <>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'RELAYERS_RELAYER_SINCE',
                                     })}
-                                />
-                                <TextFilter
-                                    value={localFilters.stakeLe}
-                                    onChange={changeLocalFilter('stakeLe')}
-                                    regexp={NUM_REGEXP}
-                                    placeholder={intl.formatMessage({
-                                        id: 'FILTERS_TO',
+                                >
+                                    <DateFilter
+                                        onChange={changeLocalFilter('createdAtGe')}
+                                        value={localFilters.createdAtGe}
+                                    />
+                                    <DateFilter
+                                        onChange={changeLocalFilter('createdAtLe')}
+                                        value={localFilters.createdAtLe}
+                                    />
+                                </FilterField>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'RELAYERS_STAKE',
                                     })}
-                                />
-                            </FilterField>
-                        </>
-                    )}
-                </Filters>
+                                >
+                                    <TextFilter
+                                        value={localFilters.stakeGe}
+                                        onChange={changeLocalFilter('stakeGe')}
+                                        regexp={NUM_REGEXP}
+                                        placeholder={intl.formatMessage({
+                                            id: 'FILTERS_FROM',
+                                        })}
+                                    />
+                                    <TextFilter
+                                        value={localFilters.stakeLe}
+                                        onChange={changeLocalFilter('stakeLe')}
+                                        regexp={NUM_REGEXP}
+                                        placeholder={intl.formatMessage({
+                                            id: 'FILTERS_TO',
+                                        })}
+                                    />
+                                </FilterField>
+                            </>
+                        )}
+                    </Filters>
+                )}
             </Header>
 
             <div className="card card--flat card--small">

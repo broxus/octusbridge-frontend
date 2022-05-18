@@ -20,6 +20,9 @@ export function RoundHeader(): JSX.Element | null {
                         address={roundInfo.info?.address}
                         startTime={roundInfo.info?.startTime}
                         endTime={roundInfo.info?.endTime}
+                        titleLink={roundInfo.info?.roundNum
+                            ? `/relayers/round/${roundInfo.info.roundNum}`
+                            : undefined}
                         title={intl.formatMessage({
                             id: 'ROUND_STATISTIC_TITLE',
                         }, {

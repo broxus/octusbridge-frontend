@@ -27,6 +27,8 @@ import { networks } from '@/config'
 
 import './index.scss'
 
+const evmNetworks = networks.filter(item => item.type === 'evm')
+
 type Props = {
     relay?: string;
     soon?: boolean;
@@ -56,7 +58,7 @@ export function EventsInner({
     const [transferKind] = useDictParam('type', ['creditethtoton', 'ethtoton', 'tontoeth'])
 
     const tokens = React.useMemo(() => (
-        networks
+        evmNetworks
             .filter(item => item.type === 'evm')
             .flatMap(network => tokensAssets.filterTokensByChainId(network.chainId))
             .reduce<TokenAsset[]>((acc, token) => (
@@ -80,21 +82,24 @@ export function EventsInner({
     }
 
     React.useEffect(() => {
-        events.fetch({
-            roundNum,
-            timestampGe,
-            timestampLe,
-            amountGe,
-            amountLe,
-            tokenAddress,
-            chainId,
-            transferKind,
-            relayAddress: relay || relayAddress,
-            limit: pagination.limit,
-            offset: pagination.offset,
-            ordering: tableOrder.order,
-        })
+        if (events.isReady) {
+            events.fetch({
+                roundNum,
+                timestampGe,
+                timestampLe,
+                amountGe,
+                amountLe,
+                tokenAddress,
+                chainId,
+                transferKind,
+                relayAddress: relay || relayAddress,
+                limit: pagination.limit,
+                offset: pagination.offset,
+                ordering: tableOrder.order,
+            })
+        }
     }, [
+        events.isReady,
         roundNum,
         relay,
         timestampGe,
@@ -191,8 +196,8 @@ export function EventsInner({
                                     allowClear
                                     value={localFilters.chainId?.toString()}
                                     onChange={changeLocalFilter('chainId')}
-                                    options={networks.map(item => ({
-                                        value: item.id,
+                                    options={evmNetworks.map(item => ({
+                                        value: item.chainId,
                                         label: item.label,
                                     }))}
                                     placeholder={intl.formatMessage({

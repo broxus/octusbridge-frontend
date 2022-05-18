@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
+import { Link } from 'react-router-dom'
 
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { Badge, BadgeStatus } from '@/components/common/Badge'
@@ -13,6 +14,7 @@ import './index.scss'
 type Props = {
     address?: string;
     title: string;
+    titleLink?: string;
     startTime?: number;
     endTime?: number;
     size?: 'lg';
@@ -38,6 +40,7 @@ function mapStatusName(status: RoundStatus): string {
 export function RoundCard({
     address,
     title,
+    titleLink,
     startTime,
     endTime,
     size,
@@ -58,7 +61,13 @@ export function RoundCard({
             )}
 
             <div>
-                <h3 className="round-card__title">{title}</h3>
+                <h3 className="round-card__title">
+                    {titleLink ? (
+                        <Link to={titleLink}>
+                            {title}
+                        </Link>
+                    ) : title}
+                </h3>
 
                 <div className="round-card__meta">
                     {roundStatus !== undefined && (

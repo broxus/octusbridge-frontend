@@ -28,7 +28,7 @@ export function EventHeaderInner(): JSX.Element {
                 <div>
                     <h3 className="event-header-card__title">
                         {intl.formatMessage({
-                            id: 'EVENT_HEADER_TITLE',
+                            id: event ? 'EVENT_HEADER_TITLE' : 'EVENT_HEADER_TITLE_EMPTY',
                         }, {
                             from: event ? getEventFromName(event.transferKind, event.chainId) : undefined,
                             to: event ? getEventToName(event.transferKind, event.chainId) : undefined,
@@ -45,8 +45,6 @@ export function EventHeaderInner(): JSX.Element {
                                 {sliceAddress(event.contractAddress)}
                             </EverscanAccountLink>
                         )}
-
-                        {/* <Badge status="success">Active</Badge> */}
                     </div>
                 </div>
             </div>

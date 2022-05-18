@@ -5,6 +5,7 @@ import {
     RelayersEvent, RelayersEventsParams, RelayersEventsStoreData,
     RelayersEventsStoreState,
 } from '@/modules/Relayers/types'
+import { TokensCacheService } from '@/stores/TokensCacheService'
 import { error, lastOfCalls } from '@/utils'
 
 export class RelayersEventsStore {
@@ -15,7 +16,9 @@ export class RelayersEventsStore {
 
     protected state: RelayersEventsStoreState = {}
 
-    constructor() {
+    constructor(
+        protected tokensCache: TokensCacheService,
+    ) {
         makeAutoObservable(this)
     }
 
@@ -26,6 +29,14 @@ export class RelayersEventsStore {
             })
 
             const result = await this.handleRelayersEvents(params)
+
+            if (result?.relays.length) {
+                await Promise.allSettled(
+                    result.relays.map(item => (
+                        this.tokensCache.syncCustomToken(item.tokenAddress)
+                    )),
+                )
+            }
 
             if (result) {
                 runInAction(() => {
@@ -45,6 +56,10 @@ export class RelayersEventsStore {
 
     public get isLoading(): boolean {
         return !!this.state.isLoading
+    }
+
+    public get isReady(): boolean {
+        return this.tokensCache.isReady
     }
 
     public get items(): RelayersEvent[] | undefined {

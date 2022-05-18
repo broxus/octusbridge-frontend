@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import { useRelayersEventsStore } from '@/modules/Relayers/hooks'
 import { RelayersEventsStore } from '@/modules/Relayers/store'
+import { useTokensCache } from '@/stores/TokensCacheService'
 
 export const RelayersEventsContext = React.createContext<RelayersEventsStore | undefined>(undefined)
 
@@ -22,7 +23,8 @@ type Props = {
 export function RelayersEventsProvider({
     children,
 }: Props): JSX.Element {
-    const relayersEvents = useRelayersEventsStore()
+    const tokensCache = useTokensCache()
+    const relayersEvents = useRelayersEventsStore(tokensCache)
 
     return (
         <RelayersEventsContext.Provider value={relayersEvents}>

@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx'
 
 import { RelayersEvent, TransferEventStoreData, TransferEventStoreState } from '@/modules/Relayers/types'
 import { handleRelayersEvents } from '@/modules/Relayers/utils'
+import { TokensCacheService } from '@/stores/TokensCacheService'
 import { error } from '@/utils'
 
 export class TransferEventStore {
@@ -10,7 +11,9 @@ export class TransferEventStore {
 
     protected state: TransferEventStoreState = {}
 
-    constructor() {
+    constructor(
+        protected tokensCache: TokensCacheService,
+    ) {
         makeAutoObservable(this)
     }
 
@@ -26,6 +29,10 @@ export class TransferEventStore {
                 transferContractAddress: contractAddress,
                 ordering: 'timestampdescending',
             })
+
+            if (result.relays.length) {
+                await this.tokensCache.syncCustomToken(result.relays[0].tokenAddress)
+            }
 
             runInAction(() => {
                 [this.data.event] = result.relays
@@ -47,6 +54,10 @@ export class TransferEventStore {
 
     public get isLoading(): boolean | undefined {
         return this.state.isLoading
+    }
+
+    public get isReady(): boolean {
+        return this.tokensCache.isReady
     }
 
 }

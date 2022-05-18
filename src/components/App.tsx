@@ -13,6 +13,7 @@ import { WalletConnectingModal } from '@/components/common/WalletConnectingModal
 import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
+import { ScrollManager } from '@/components/layout/ScrollManager'
 import { LocalizationContext } from '@/context/Localization'
 // import Airdrop from '@/pages/airdrop'
 import Bridge from '@/pages/bridge'
@@ -55,84 +56,86 @@ export function App(): JSX.Element {
             onError={noop}
         >
             <Router>
-                <div className="wrapper">
-                    <Header key="header" />
-                    <div className="main">
-                        <Switch>
-                            <Route exact path="/">
-                                <Redirect exact to="/bridge" />
-                            </Route>
-                            <Route exact path="/transfers">
-                                <TransferList />
-                            </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
-                                <TransferStatus />
-                            </Route>
-                            <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
-                                <TransferStatus />
-                            </Route>
-                            <Route exact path="/bridge">
-                                <Bridge />
-                            </Route>
-                            <Route exact path="/bridge/liquidity-requests">
-                                <LiquidityRequests />
-                            </Route>
-                            <Route path="/bridge/liquidity-requests/:chainId/:evmTokenAddress">
-                                <LiquidityDeposit />
-                            </Route>
-                            {/*
-                            <Route exact path="/airdrop">
-                                <Airdrop />
-                            </Route>
-                            */}
-                            <Route exact path="/staking">
-                                <StakingExplorer />
-                            </Route>
-                            <Route exact path="/staking/explorer/:userAddress(0:[A-Fa-f0-9]{64})">
-                                <StakingUser />
-                            </Route>
-                            <Route exact path="/staking/my">
-                                <StakingSelf />
-                            </Route>
+                <ScrollManager>
+                    <div className="wrapper">
+                        <Header key="header" />
+                        <div className="main">
+                            <Switch>
+                                <Route exact path="/">
+                                    <Redirect exact to="/bridge" />
+                                </Route>
+                                <Route exact path="/transfers">
+                                    <TransferList />
+                                </Route>
+                                <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
+                                    <TransferStatus />
+                                </Route>
+                                <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
+                                    <TransferStatus />
+                                </Route>
+                                <Route exact path="/bridge">
+                                    <Bridge />
+                                </Route>
+                                <Route exact path="/bridge/liquidity-requests">
+                                    <LiquidityRequests />
+                                </Route>
+                                <Route path="/bridge/liquidity-requests/:chainId/:evmTokenAddress">
+                                    <LiquidityDeposit />
+                                </Route>
+                                {/*
+                                <Route exact path="/airdrop">
+                                    <Airdrop />
+                                </Route>
+                                */}
+                                <Route exact path="/staking">
+                                    <StakingExplorer />
+                                </Route>
+                                <Route exact path="/staking/explorer/:userAddress(0:[A-Fa-f0-9]{64})">
+                                    <StakingUser />
+                                </Route>
+                                <Route exact path="/staking/my">
+                                    <StakingSelf />
+                                </Route>
 
-                            <Route exact path="/relayers/create">
-                                <RelayersStatus />
-                            </Route>
-                            <Route exact path="/relayers/create/keys">
-                                <RelayersKeys />
-                            </Route>
-                            <Route exact path="/relayers">
-                                <Relayers />
-                            </Route>
-                            <Route exact path="/relayers/round/:num">
-                                <RelayersValidationRound />
-                            </Route>
-                            <Route exact path="/relayers/bidding/:num">
-                                <RelayersBiddingRound />
-                            </Route>
-                            <Route exact path="/relayers/:address">
-                                <Relayer />
-                            </Route>
-                            <Route exact path="/relayers/event/:contractAddress">
-                                <RelayersEvent />
-                            </Route>
+                                <Route exact path="/relayers/create">
+                                    <RelayersStatus />
+                                </Route>
+                                <Route exact path="/relayers/create/keys">
+                                    <RelayersKeys />
+                                </Route>
+                                <Route exact path="/relayers">
+                                    <Relayers />
+                                </Route>
+                                <Route exact path="/relayers/round/:num">
+                                    <RelayersValidationRound />
+                                </Route>
+                                <Route exact path="/relayers/bidding/:num">
+                                    <RelayersBiddingRound />
+                                </Route>
+                                <Route exact path="/relayers/:address">
+                                    <Relayer />
+                                </Route>
+                                <Route exact path="/relayers/event/:contractAddress">
+                                    <RelayersEvent />
+                                </Route>
 
-                            <Route exact path="/governance">
-                                <Overview />
-                            </Route>
-                            <Route exact path="/governance/proposals">
-                                <Proposals />
-                            </Route>
-                            <Route exact path="/governance/proposals/create">
-                                <ProposalCreate />
-                            </Route>
-                            <Route exact path="/governance/proposals/:id([0-9]+)?">
-                                <Proposal />
-                            </Route>
-                        </Switch>
+                                <Route exact path="/governance">
+                                    <Overview />
+                                </Route>
+                                <Route exact path="/governance/proposals">
+                                    <Proposals />
+                                </Route>
+                                <Route exact path="/governance/proposals/create">
+                                    <ProposalCreate />
+                                </Route>
+                                <Route exact path="/governance/proposals/:id([0-9]+)?">
+                                    <Proposal />
+                                </Route>
+                            </Switch>
+                        </div>
+                        <Footer key="footer" />
                     </div>
-                    <Footer key="footer" />
-                </div>
+                </ScrollManager>
                 <WalletConnectingModal />
                 <Observer>
                     {() => (

@@ -6,6 +6,8 @@ import { ContentLoader } from '@/components/common/ContentLoader'
 import { Section, Title } from '@/components/common/Section'
 import { Calendar } from '@/modules/Relayers/components/RoundsCalendar/calendar'
 import { useRoundsCalendarContext } from '@/modules/Relayers/providers'
+import { TonButtonConnector } from '@/modules/TonWalletConnector'
+import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
@@ -18,9 +20,14 @@ export function RoundsCalendarInner({
 }: Props): JSX.Element {
     const intl = useIntl()
     const roundsCalendar = useRoundsCalendarContext()
+    const wallet = useEverWallet()
     const [isLoading, setIsLoading] = React.useState(true)
 
     const fetch = async () => {
+        if (!wallet.isConnected) {
+            return
+        }
+
         setIsLoading(true)
 
         try {
@@ -40,7 +47,7 @@ export function RoundsCalendarInner({
 
     React.useEffect(() => {
         fetch()
-    }, [roundNum])
+    }, [roundNum, wallet.isConnected])
 
     return (
         <Section>
@@ -51,23 +58,27 @@ export function RoundsCalendarInner({
             </Title>
 
             <div className="card card--flat card--small rounds-calendar">
-                {isLoading && (
-                    <div className="rounds-calendar__msg">
-                        <ContentLoader slim transparent />
-                    </div>
-                )}
+                <TonButtonConnector
+                    block={false}
+                >
+                    {isLoading && (
+                        <div className="rounds-calendar__msg">
+                            <ContentLoader slim transparent />
+                        </div>
+                    )}
 
-                {!isLoading && !roundsCalendar.rounds?.length && (
-                    <div className="rounds-calendar__msg">
-                        {intl.formatMessage({
-                            id: 'CHART_LAYOUT_NO_DATA',
-                        })}
-                    </div>
-                )}
+                    {!isLoading && !roundsCalendar.rounds?.length && (
+                        <div className="rounds-calendar__msg">
+                            {intl.formatMessage({
+                                id: 'CHART_LAYOUT_NO_DATA',
+                            })}
+                        </div>
+                    )}
 
-                {!!roundsCalendar.rounds?.length && (
-                    <Calendar />
-                )}
+                    {!!roundsCalendar.rounds?.length && (
+                        <Calendar />
+                    )}
+                </TonButtonConnector>
             </div>
         </Section>
     )

@@ -111,9 +111,10 @@ export type RelayRoundInfoParams = {
 export type RelayRoundInfoResponse = Partial<{
     ethToTonUsdt: string;
     eventsConfirmed: number;
+    eventsConfirmedShare: string;
     roundNum: number;
     stake: string;
-    relayPlace: number;
+    relayPlace?: number;
     tonToEthUsdt: string;
 }>
 

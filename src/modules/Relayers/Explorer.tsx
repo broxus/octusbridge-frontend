@@ -40,7 +40,9 @@ export function RelayersExplorer(): JSX.Element {
             </RoundInfoListProvider>
 
             <RoundsCalendarProvider>
-                <RoundsCalendar roundNum="current" />
+                <RoundsCalendar
+                    roundNum="current"
+                />
             </RoundsCalendarProvider>
 
             <RelayersEventsProvider>

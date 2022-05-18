@@ -22,14 +22,7 @@
         letter-spacing: 0.6px;
         line-height: 16px;
         text-decoration: none;
-
-        a {
-            color: rgba(255, 255, 255, 0.48);
-
-            &:hover {
-                color: rgba(255, 255, 255, 0.48);
-            }
-        }
+        color: rgba(255, 255, 255, 0.48);
     }
 
     &__link {

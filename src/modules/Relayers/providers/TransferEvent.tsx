@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import { useTransferEventStore } from '@/modules/Relayers/hooks'
 import { TransferEventStore } from '@/modules/Relayers/store'
+import { useTokensCache } from '@/stores/TokensCacheService'
 
 export const TransferEventContext = React.createContext<TransferEventStore | undefined>(undefined)
 
@@ -22,7 +23,8 @@ type Props = {
 export function TransferEventProvider({
     children,
 }: Props): JSX.Element {
-    const transferEvent = useTransferEventStore()
+    const tokensCache = useTokensCache()
+    const transferEvent = useTransferEventStore(tokensCache)
 
     return (
         <TransferEventContext.Provider value={transferEvent}>

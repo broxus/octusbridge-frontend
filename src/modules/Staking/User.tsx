@@ -5,7 +5,6 @@ import { Container } from '@/components/common/Section'
 import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { UserStats } from '@/modules/Staking/components/UserStats'
 import { Transactions } from '@/modules/Staking/components/Transactions'
-import { useScrollTop } from '@/hooks/useScrollTop'
 import { sliceAddress } from '@/utils'
 
 type Props = {
@@ -16,8 +15,6 @@ export function User({
     userAddress,
 }: Props): JSX.Element {
     const intl = useIntl()
-
-    useScrollTop()
 
     return (
         <Container size="lg">

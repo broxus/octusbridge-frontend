@@ -74,18 +74,16 @@ export function EventType({
                 </div>
 
                 <div className="events-type__info">
-                    <Link to={`/relayers/event/${contractAddress}`}>
-                        {intl.formatMessage({
-                            id: 'EVENTS_TYPE_INFO',
-                        }, {
-                            left: fromName || intl.formatMessage({
-                                id: 'NA',
-                            }),
-                            right: toName || intl.formatMessage({
-                                id: 'NA',
-                            }),
-                        })}
-                    </Link>
+                    {intl.formatMessage({
+                        id: 'EVENTS_TYPE_INFO',
+                    }, {
+                        left: fromName || intl.formatMessage({
+                            id: 'NA',
+                        }),
+                        right: toName || intl.formatMessage({
+                            id: 'NA',
+                        }),
+                    })}
                 </div>
             </div>
 
