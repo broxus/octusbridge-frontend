@@ -1,0 +1,42 @@
+.events-type-icons {
+    align-items: center;
+    display: flex;
+
+    &__item {
+        margin-left: -10px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+    }
+
+    &__blank {
+        display: block;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: rgba(5, 10, 46, 0.7);
+    }
+
+    &_size {
+        &_lg {
+            svg {
+                width: 36px;
+                height: 36px;
+            }
+
+            .events-type-icons__item {
+                margin-left: -15px;
+
+                &:first-child {
+                    margin-left: 0;
+                }
+            }
+
+            .events-type-icons__blank {
+                width: 36px;
+                height: 36px;
+            }
+        }
+    }
+}

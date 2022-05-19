@@ -25,7 +25,7 @@ export function RelayerPerformance(): JSX.Element | null {
                 })}
             </Title>
 
-            <div className="tiles tiles_twice">
+            <div className="tiles tiles_third">
                 <DataCard
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_STAKE',
@@ -66,14 +66,22 @@ export function RelayerPerformance(): JSX.Element | null {
                         id: 'RELAYER_PERFORMANCE_SUCCESS_ROUNDS',
                     })}
                     value={relayInfo?.successfulRounds && relayInfo?.totalCountRounds
-                        ? intl.formatMessage({
-                            id: 'RELAYER_PERFORMANCE_ROUNDS',
-                        }, {
-                            success: relayInfo.successfulRounds,
-                            total: relayInfo.totalCountRounds,
-                        })
+                        ? `${relayInfo?.successfulRounds}/${relayInfo?.totalCountRounds}`
                         : noValue}
                 />
+
+                <DataCard
+                    title={intl.formatMessage({
+                        id: 'RELAYER_PERFORMANCE_EVENTS_SHARE',
+                    })}
+                    value={relayInfo?.potentialTotalConfirmed && relayInfo.relayTotalConfirmed
+                        ? `${((100 * relayInfo.relayTotalConfirmed) / relayInfo.potentialTotalConfirmed).toFixed(2)}%`
+                        : noValue}
+                >
+                    {relayInfo?.potentialTotalConfirmed && relayInfo.relayTotalConfirmed
+                        ? `${relayInfo.relayTotalConfirmed}/${relayInfo.potentialTotalConfirmed}`
+                        : null}
+                </DataCard>
             </div>
 
             {/* <div className="board">

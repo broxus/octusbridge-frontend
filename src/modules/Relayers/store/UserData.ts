@@ -15,7 +15,8 @@ export class UserDataStore {
     protected data: UserDataStoreData = {}
 
     protected stakingContract = rpc.createContract(
-        StackingAbi.Root, BridgeConstants.StakingAccountAddress,
+        StackingAbi.Root,
+        BridgeConstants.StakingAccountAddress,
     )
 
     protected relayersData = new RelayersDataStore()
@@ -106,7 +107,7 @@ export class UserDataStore {
         }
 
         return new BigNumber(this.data.userDetails.token_balance)
-            .gte(this.relayersData.relayConfig.minRelayDeposit)
+            .lt(this.relayersData.relayConfig.minRelayDeposit)
     }
 
 }

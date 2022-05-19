@@ -8,23 +8,14 @@
     }
 }
 
-.relayers-rounds {
-    &__percent {
-        color: rgba(255, 255, 255, 0.48);
-        font-size: 12px;
-        line-height: 16px;
-        margin: 2px 0 0;
-    }
-}
-
 .relayers-table {
     &.list {
-        --list-grid-template: 30px minmax(150px, 10%) minmax(150px, 50%) minmax(140px, 10%) minmax(140px, 10%) minmax(140px, 10%) minmax(160px, 10%);
+        --list-grid-template: 30px minmax(150px, 1fr) minmax(150px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(160px, 1fr);
     }
 }
 
 .round-relayers-table {
     &.list {
-        --list-grid-template: 30px minmax(150px, 1fr) minmax(150px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr);
+        --list-grid-template: 30px minmax(150px, 1fr) minmax(150px, 1fr) minmax(140px, 1fr);
     }
 }

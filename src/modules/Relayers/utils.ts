@@ -2,6 +2,8 @@ import { ETH_ADDRESS_REGEXP, TON_PUBLIC_KEY_REGEXP } from '@/modules/Relayers/co
 import { IndexerApiBaseUrl, networks } from '@/config'
 import { handleApi } from '@/utils'
 import {
+    AllRelayRoundsInfoRequest,
+    AllRelayRoundsInfoResponse,
     RelayersEventsParams, RelayersEventsResponse, RelayersEventsTransferKind,
     RelayersSearchParams, RelayersSearchResponse, RelayInfoParams,
     RelayInfoResponse, RelayRoundInfoParams,
@@ -82,6 +84,13 @@ export function handleRelayRoundsInfo(params: RelayRoundsInfoRequest): Promise<R
 export function handleRelaysRoundInfo(params: RelaysRoundInfoRequest): Promise<RelaysRoundInfoResponse> {
     return handleApi<RelaysRoundInfoResponse>({
         url: `${IndexerApiBaseUrl}/relays_pages/relays_round_info`,
+        data: params,
+    })
+}
+
+export function handleAllRelayRoundsInfo(params: AllRelayRoundsInfoRequest): Promise<AllRelayRoundsInfoResponse> {
+    return handleApi<AllRelayRoundsInfoResponse>({
+        url: `${IndexerApiBaseUrl}/relays_pages/all_relay_rounds_info`,
         data: params,
     })
 }

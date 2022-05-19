@@ -291,7 +291,6 @@ export default {
     RELAYERS_STATUS_NO: '아니오',
     RELAYERS_STATUS_ACTIVE: '활성화',
     RELAYERS_STATUS_SKIP: '건너뛰기',
-    RELAYERS_ROUNDS_VALUE: '{amount} / {total}',
     RELAYERS_OVERVIEW_TITLE: '개요',
     RELAYERS_EXPLORER_TITLE: '탐색기',
     RELAYERS_BREADCRUMB_EXPLORER: '탐색기',
@@ -317,7 +316,6 @@ export default {
     RELAYER_PERFORMANCE_LATEST_REWARD: '최근 보상, BRIDGE',
     RELAYER_PERFORMANCE_TOTAL_REWARD: '총 보상, BRIDGE',
     RELAYER_PERFORMANCE_SUCCESS_ROUNDS: '성공적인 라운드',
-    RELAYER_PERFORMANCE_ROUNDS: '{success} / {total}',
     RELAYER_PERFORMANCE_EVENTS: '24시간 이벤트',
     ROUND_INFO_DATE_PERIOD: '{start} – {end}',
     ROUND_INFO_DAY_LEFT: '{value} 종료',
@@ -804,4 +802,5 @@ export default {
 
     RELAYERS_CALENDAR_VALIDATION_ROUNDS: 'Validation rounds',
     RELAYERS_CALENDAR_BIDDING_ROUNDS: 'Bidding rounds',
+    RELAYER_PERFORMANCE_EVENTS_SHARE: 'Events share',
 }

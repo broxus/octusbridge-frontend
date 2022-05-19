@@ -79,6 +79,8 @@ export type RelayersSearchResponse = {
         stake: string;
         successfulRounds: number;
         totalRounds: number;
+        relayTotalConfirmed: number;
+        potentialTotalConfirmed: number;
     }[];
     totalCount: number;
 }
@@ -111,6 +113,7 @@ export type RelayRoundInfoParams = {
 export type RelayRoundInfoResponse = Partial<{
     ethToTonUsdt: string;
     eventsConfirmed: number;
+    totalRoundConfirms: number;
     eventsConfirmedShare: string;
     roundNum: number;
     stake: string;
@@ -152,6 +155,8 @@ export type RelayInfoResponse = Partial<{
     totalCountRounds: number;
     totalReward: string;
     untilFrozen: number;
+    potentialTotalConfirmed: number;
+    relayTotalConfirmed: number;
 }>
 
 export type RelayersEventsOrdering =
@@ -251,10 +256,42 @@ export type RelaysRoundInfo = {
     stake: string;
     ethToTonUsdt: string;
     tonToEthUsdt: string;
+    totalRoundConfirms: number;
 }
 
 export type RelaysRoundInfoResponse = {
     relays: RelaysRoundInfo[];
+    totalCount: number;
+}
+
+export type AllRelayRoundsInfoOrdering =
+    | 'roundnumascending'
+    | 'roundnumdescending'
+
+export type AllRelayRoundsInfoRequest = {
+    limit: number;
+    offset: number;
+    ordering: AllRelayRoundsInfoOrdering;
+    userAddress: string;
+}
+
+export type AllRelayRoundsInfo = {
+    ethToTonUsdt: string;
+    eventsConfirmed: number;
+    eventsConfirmedShare: string;
+    relayAddress: string;
+    relayPlace: number;
+    roundNum: number;
+    roundAddress: string;
+    stake: string;
+    tonToEthUsdt: string;
+    startTime: number;
+    endTime: number;
+    totalRoundConfirms: number;
+}
+
+export type AllRelayRoundsInfoResponse = {
+    relays: AllRelayRoundsInfo[];
     totalCount: number;
 }
 
@@ -355,4 +392,12 @@ export type RelaysRoundInfoStoreState = {
 
 export type RelaysRoundInfoStoreData = {
     relaysRoundInfo?: RelaysRoundInfoResponse;
+}
+
+export type AllRelayRoundsInfoStoreState = {
+    isLoading?: boolean;
+}
+
+export type AllRelayRoundsInfoStoreData = {
+    allRelayRoundsInfo?: AllRelayRoundsInfoResponse;
 }

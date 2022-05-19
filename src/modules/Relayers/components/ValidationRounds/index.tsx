@@ -5,6 +5,7 @@ import {
     Header, Line, Section, Title,
 } from '@/components/common/Section'
 import { Rounds } from '@/modules/Relayers/components/Rounds'
+import { RelayRounds } from '@/modules/Relayers/components/RelayRounds'
 import { RoundData } from '@/modules/Relayers/components/RoundData'
 import { RelayRoundData } from '@/modules/Relayers/components/RelayRoundData'
 import { RoundHeader } from '@/modules/Relayers/components/ValidationRounds/RoundHeader'
@@ -29,12 +30,10 @@ export function ValidationRounds(): JSX.Element | null {
                     })}
                 </Title>
 
-                {!roundInfoList.relayAddress && (
-                    <ViewSwitcher
-                        view={view}
-                        onChange={setView}
-                    />
-                )}
+                <ViewSwitcher
+                    view={view}
+                    onChange={setView}
+                />
             </Header>
 
             <Line />
@@ -51,7 +50,15 @@ export function ValidationRounds(): JSX.Element | null {
                         )}
                     </>
                 ) : (
-                    <Rounds />
+                    <>
+                        {roundInfoList.relayAddress ? (
+                            <RelayRounds
+                                relayAddress={roundInfoList.relayAddress}
+                            />
+                        ) : (
+                            <Rounds />
+                        )}
+                    </>
                 )}
             </div>
         </Section>

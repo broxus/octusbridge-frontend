@@ -13,7 +13,7 @@ export class RelaysRoundInfoStore {
 
     protected state: RelaysRoundInfoStoreState = {}
 
-    handleRelaysRoundInfo = lastOfCalls(handleRelaysRoundInfo)
+    protected handleRelaysRoundInfo = lastOfCalls(handleRelaysRoundInfo)
 
     constructor() {
         makeAutoObservable(this)

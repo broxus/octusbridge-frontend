@@ -29,16 +29,3 @@
         color: rgba(255, 255, 255, 0.56);
     }
 }
-
-.events-type-icons {
-    align-items: center;
-    display: flex;
-
-    &__item {
-        margin-left: -10px;
-
-        &:first-child {
-            margin-left: 0;
-        }
-    }
-}

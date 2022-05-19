@@ -8,8 +8,9 @@ import { Pagination } from '@/components/common/Pagination'
 import { UserCard } from '@/components/common/UserCard'
 import { useRelaysRoundInfoContext } from '@/modules/Relayers/providers'
 import { RelaysRoundInfoOrdering } from '@/modules/Relayers/types'
-import { formatDigits, formattedAmount } from '@/utils'
+import { formattedAmount } from '@/utils'
 import { usePagination, useTableOrder } from '@/hooks'
+import { Ratio } from '@/components/common/Ratio'
 
 import './index.scss'
 
@@ -73,16 +74,6 @@ function RoundRelayersInner({
                             id: 'RELAYERS_EVENTS_CONFIRMED',
                         }),
                         align: Align.right,
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'RELAYERS_EVM_TO_EVER',
-                        }),
-                        align: Align.right,
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'RELAYERS_EVER_TO_EVM',
-                        }),
-                        align: Align.right,
                     }]}
                     rows={relayers.list?.map((item, index) => ({
                         cells: [
@@ -92,9 +83,10 @@ function RoundRelayersInner({
                                 link={`/relayers/${item.relayAddress}`}
                             />,
                             formattedAmount(item.stake),
-                            formatDigits(item.eventsConfirmed.toString()),
-                            `$${formattedAmount(item.ethToTonUsdt)}`,
-                            `$${formattedAmount(item.tonToEthUsdt)}`,
+                            <Ratio
+                                total={item.totalRoundConfirms}
+                                value={item.eventsConfirmed}
+                            />,
                         ],
                     }))}
                 />

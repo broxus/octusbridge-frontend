@@ -361,8 +361,6 @@ export default {
     RELAYERS_STATUS_ACTIVE: 'Active',
     RELAYERS_STATUS_SKIP: 'Skip',
 
-    RELAYERS_ROUNDS_VALUE: '{amount}/{total}',
-
     RELAYERS_OVERVIEW_TITLE: 'Overview',
     RELAYERS_OVERVIEW_FROZEN: 'Total frozen stakes, BRIDGE',
     RELAYERS_OVERVIEW_RELAYERS: 'Active relayers',
@@ -411,8 +409,8 @@ export default {
     RELAYER_PERFORMANCE_LATEST_REWARD: 'Latest reward, BRIDGE',
     RELAYER_PERFORMANCE_TOTAL_REWARD: 'Total reward, BRIDGE',
     RELAYER_PERFORMANCE_SUCCESS_ROUNDS: 'Successful rounds',
-    RELAYER_PERFORMANCE_ROUNDS: '{success}/{total}',
     RELAYER_PERFORMANCE_EVENTS: '24h events',
+    RELAYER_PERFORMANCE_EVENTS_SHARE: 'Events share',
 
     ROUND_INFO_DATE_PERIOD: '{start} – {end}',
     ROUND_INFO_DAY_LEFT: 'Ends {value}',

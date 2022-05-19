@@ -60,8 +60,9 @@ export function RelayRoundData(): JSX.Element | null {
                             title={intl.formatMessage({
                                 id: 'RELAY_ROUND_DATA_EVENTS',
                             })}
-                            value={relayRoundInfo.info?.eventsConfirmed !== undefined
-                                ? formatDigits(relayRoundInfo.info.eventsConfirmed.toString())
+                            value={relayRoundInfo.info?.totalRoundConfirms !== undefined
+                                && relayRoundInfo.info.eventsConfirmed !== undefined
+                                ? `${formatDigits(relayRoundInfo.info.eventsConfirmed.toString())}/${formatDigits(relayRoundInfo.info.totalRoundConfirms.toString())}`
                                 : noValue}
                         />
                     )}

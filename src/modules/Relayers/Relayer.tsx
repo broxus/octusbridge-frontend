@@ -12,8 +12,8 @@ import { RelayerPerformance } from '@/modules/Relayers/components/RelayerPerform
 import { ValidationRounds } from '@/modules/Relayers/components/ValidationRounds'
 import { RoundsCalendar } from '@/modules/Relayers/components/RoundsCalendar'
 import {
-    RelayersEventsProvider, RoundInfoListProvider, RoundsCalendarProvider, useRelayInfoContext,
-    useUserDataContext,
+    AllRelayRoundsInfoProvider, RelayersEventsProvider, RoundInfoListProvider,
+    RoundsCalendarProvider, useRelayInfoContext, useUserDataContext,
 } from '@/modules/Relayers/providers'
 import { Events } from '@/modules/Relayers/components/Events'
 import { sliceAddress } from '@/utils'
@@ -76,11 +76,13 @@ export function RelayerInner(): JSX.Element | null {
 
             <RelayerPerformance />
 
-            <RoundInfoListProvider
-                relayAddress={params.address}
-            >
-                <ValidationRounds />
-            </RoundInfoListProvider>
+            <AllRelayRoundsInfoProvider>
+                <RoundInfoListProvider
+                    relayAddress={params.address}
+                >
+                    <ValidationRounds />
+                </RoundInfoListProvider>
+            </AllRelayRoundsInfoProvider>
 
             <RoundsCalendarProvider>
                 <RoundsCalendar

@@ -10,10 +10,11 @@ import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import { UserCard } from '@/components/common/UserCard'
 import { Status } from '@/modules/Relayers/components/Relayers/status'
-import { Rounds } from '@/modules/Relayers/components/Relayers/rounds'
+import { Ratio } from '@/components/common/Ratio'
 import { useRelayersContext } from '@/modules/Relayers/providers'
 import { RelayersSearchFilters, RelayersSearchOrdering } from '@/modules/Relayers/types'
-import { dateFormat, formattedAmount } from '@/utils'
+import { DateCard } from '@/components/common/DateCard'
+import { formattedAmount } from '@/utils'
 import {
     useBNParam, useDateParam, usePagination, useTableOrder, useUrlParams,
 } from '@/hooks'
@@ -179,6 +180,11 @@ export function RelayersInner({
                         align: Align.right,
                     }, {
                         name: intl.formatMessage({
+                            id: 'RELAYERS_EVENTS_CONFIRMED',
+                        }),
+                        align: Align.right,
+                    }, {
+                        name: intl.formatMessage({
                             id: 'RELAYERS_RELAYER_SINCE',
                         }),
                         align: Align.right,
@@ -201,11 +207,17 @@ export function RelayersInner({
                                 state={item.currentRound ? 'success' : 'fail'}
                                 status={item.currentRound ? 'active' : 'no'}
                             />,
-                            <Rounds
-                                amount={item.successfulRounds}
+                            <Ratio
+                                value={item.successfulRounds}
                                 total={item.totalRounds}
                             />,
-                            dateFormat(item.createdAt),
+                            <Ratio
+                                value={item.relayTotalConfirmed}
+                                total={item.potentialTotalConfirmed}
+                            />,
+                            <DateCard
+                                time={item.createdAt}
+                            />,
                         ],
                     }))}
                 />

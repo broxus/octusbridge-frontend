@@ -31,7 +31,7 @@ function EventInformationInner(): JSX.Element {
                 })}
             </Title>
 
-            <div className="event-information">
+            <div className="tiles tiles_twice event-information">
                 <div className="card card--flat card--small">
                     <h3 className="event-information__title">
                         {intl.formatMessage({

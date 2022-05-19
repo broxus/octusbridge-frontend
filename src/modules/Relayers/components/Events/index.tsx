@@ -12,7 +12,7 @@ import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { EventType } from '@/modules/Relayers/components/Events/type'
 import { useRelayersEventsContext } from '@/modules/Relayers/providers/RelayersEvents'
-import { dateFormat, formattedAmount } from '@/utils'
+import { formattedAmount } from '@/utils'
 import {
     useBNParam, useDateParam, useDictParam, useNumParam,
     usePagination, useTableOrder, useTextParam, useUrlParams,
@@ -23,6 +23,7 @@ import { Select } from '@/components/common/Select'
 import { FromAddress } from '@/modules/Relayers/components/Events/FromAddress'
 import { ToAddress } from '@/modules/Relayers/components/Events/ToAddress'
 import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
+import { DateCard } from '@/components/common/DateCard'
 import { networks } from '@/config'
 
 import './index.scss'
@@ -303,7 +304,9 @@ export function EventsInner({
                             formattedAmount(item.amount, undefined, {
                                 target: 'token',
                             }),
-                            dateFormat(item.timestamp),
+                            <DateCard
+                                time={item.timestamp}
+                            />,
                         ],
                     }))}
                 />
