@@ -1,16 +1,15 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
-import BigNumber from 'bignumber.js'
 
 import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { AmountCard } from '@/components/common/AmountCard'
 import { UserCard } from '@/components/common/UserCard'
-import { dateFormat } from '@/utils'
 import { useRelayRoundsInfoContext } from '@/modules/Relayers/providers'
 import { RelayRoundsInfoOrdering } from '@/modules/Relayers/types'
 import { usePagination, useTableOrder } from '@/hooks'
+import { DateCard } from '@/components/common/DateCard'
 
 import './index.scss'
 
@@ -19,10 +18,6 @@ function RoundsInner(): JSX.Element {
     const relayRoundInfo = useRelayRoundsInfoContext()
     const pagination = usePagination(relayRoundInfo.totalCount)
     const tableOrder = useTableOrder<RelayRoundsInfoOrdering>('roundnumdescending')
-
-    const noValue = intl.formatMessage({
-        id: 'NO_VALUE',
-    })
 
     React.useEffect(() => {
         relayRoundInfo.fetch({
@@ -65,16 +60,6 @@ function RoundsInner(): JSX.Element {
                         align: Align.right,
                     }, {
                         name: intl.formatMessage({
-                            id: 'ROUNDS_TABLE_TON_TO_ETH',
-                        }),
-                        align: Align.right,
-                    }, {
-                        name: intl.formatMessage({
-                            id: 'ROUNDS_TABLE_ETH_TO_TON',
-                        }),
-                        align: Align.right,
-                    }, {
-                        name: intl.formatMessage({
                             id: 'ROUNDS_TABLE_START',
                         }),
                         align: Align.right,
@@ -99,18 +84,12 @@ function RoundsInner(): JSX.Element {
                                 showPriceChange={false}
                                 value={item.eventsConfirmed.toString()}
                             />,
-                            <AmountCard
-                                changesDirection={0}
-                                priceChange={new BigNumber(item.fromTonUsdtShare).times(100).dp(2).toFixed()}
-                                value={item.fromTonUsdt}
+                            <DateCard
+                                time={item.startTime}
                             />,
-                            <AmountCard
-                                changesDirection={0}
-                                priceChange={new BigNumber(item.toTonUsdtShare).times(100).dp(2).toFixed()}
-                                value={item.toTonUsdt}
+                            <DateCard
+                                time={item.endTime}
                             />,
-                            item.startTime ? dateFormat(item.startTime) : noValue,
-                            item.endTime ? dateFormat(item.endTime) : noValue,
                         ],
                     }))}
                 />

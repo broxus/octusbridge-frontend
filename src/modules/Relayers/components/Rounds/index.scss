@@ -1,7 +1,7 @@
 .rounds {
     &__table {
         &.list {
-            --list-grid-template: minmax(100px, 10%) minmax(130px, 20%) minmax(130px, 20%) minmax(130px, 10%) minmax(130px, 20%) minmax(150px, 10%) minmax(150px, 10%);
+            --list-grid-template: minmax(100px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr);
         }
     }
 }
