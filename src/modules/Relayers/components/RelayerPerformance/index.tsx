@@ -2,12 +2,24 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Section, Title } from '@/components/common/Section'
-import { DataCard } from '@/components/common/DataCard'
+import { DataCard, DataCardStatus } from '@/components/common/DataCard'
 // import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { dateRelative, formattedAmount } from '@/utils'
 import { useRelayInfoContext } from '@/modules/Relayers/providers'
+import { getEventsShare, getRelayStatus, RelayStatus } from '@/modules/Relayers/utils'
 
 import './index.scss'
+
+const mapRelayStatusToDataCard = (val: RelayStatus): DataCardStatus => {
+    switch (val) {
+        case RelayStatus.Success:
+            return DataCardStatus.Success
+        case RelayStatus.Warning:
+            return DataCardStatus.Warning
+        default:
+            return DataCardStatus.Fail
+    }
+}
 
 export function RelayerPerformance(): JSX.Element | null {
     const intl = useIntl()
@@ -16,6 +28,12 @@ export function RelayerPerformance(): JSX.Element | null {
     const noValue = intl.formatMessage({
         id: 'NO_VALUE',
     })
+
+    const eventsShare = getEventsShare(
+        relayInfo?.relayTotalConfirmed,
+        relayInfo?.potentialTotalConfirmed,
+    )
+    const relayerStatus = getRelayStatus(eventsShare)
 
     return (
         <Section>
@@ -71,12 +89,11 @@ export function RelayerPerformance(): JSX.Element | null {
                 />
 
                 <DataCard
+                    status={mapRelayStatusToDataCard(relayerStatus)}
+                    value={eventsShare ? `${eventsShare}%` : noValue}
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_EVENTS_SHARE',
                     })}
-                    value={relayInfo?.potentialTotalConfirmed && relayInfo.relayTotalConfirmed
-                        ? `${((100 * relayInfo.relayTotalConfirmed) / relayInfo.potentialTotalConfirmed).toFixed(2)}%`
-                        : noValue}
                 >
                     {relayInfo?.potentialTotalConfirmed && relayInfo.relayTotalConfirmed
                         ? `${relayInfo.relayTotalConfirmed}/${relayInfo.potentialTotalConfirmed}`

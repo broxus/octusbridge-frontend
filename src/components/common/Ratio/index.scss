@@ -5,4 +5,22 @@
         line-height: 16px;
         margin: 2px 0 0;
     }
+
+    &.warning {
+        color: #e6ac00;
+
+        .ratio__percent {
+            color: #e6ac00;
+            opacity: 0.6;
+        }
+    }
+
+    &.fail {
+        color: #eb4361;
+
+        .ratio__percent {
+            color: #eb4361;
+            opacity: 0.6;
+        }
+    }
 }

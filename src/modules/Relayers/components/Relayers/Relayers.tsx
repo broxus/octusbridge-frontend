@@ -18,6 +18,9 @@ import { formattedAmount } from '@/utils'
 import {
     useBNParam, useDateParam, usePagination, useTableOrder, useUrlParams,
 } from '@/hooks'
+import {
+    getEventsShare, getRelayStatus, mapRelayStatusToRatio,
+} from '@/modules/Relayers/utils'
 
 import './index.scss'
 
@@ -214,6 +217,12 @@ export function RelayersInner({
                             <Ratio
                                 value={item.relayTotalConfirmed}
                                 total={item.potentialTotalConfirmed}
+                                status={mapRelayStatusToRatio(
+                                    getRelayStatus(getEventsShare(
+                                        item.relayTotalConfirmed,
+                                        item.potentialTotalConfirmed,
+                                    )),
+                                )}
                             />,
                             <DateCard
                                 time={item.createdAt}

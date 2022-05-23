@@ -1,10 +1,17 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
+import classNames from 'classnames'
 
 import { Icon } from '@/components/common/Icon'
 
 import './index.scss'
+
+export enum DataCardStatus {
+    Success = 'success',
+    Warning = 'warning',
+    Fail = 'fail',
+}
 
 type Props = {
     title?: string;
@@ -13,6 +20,7 @@ type Props = {
     linkUrl?: string;
     linkTitle?: string;
     children?: React.ReactNode | React.ReactNode[];
+    status?: DataCardStatus;
 }
 
 export function DataCard({
@@ -22,6 +30,7 @@ export function DataCard({
     linkUrl,
     linkTitle,
     children,
+    status,
 }: Props): JSX.Element {
     const intl = useIntl()
 
@@ -33,7 +42,11 @@ export function DataCard({
     )
 
     return (
-        <div className="card card--flat data-card">
+        <div
+            className={classNames('card card--flat data-card', {
+                [`${status}`]: status !== undefined,
+            })}
+        >
             {title && (
                 <div className="data-card__title">
                     {title}

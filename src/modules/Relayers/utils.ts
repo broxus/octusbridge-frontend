@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js'
+
 import { ETH_ADDRESS_REGEXP, TON_PUBLIC_KEY_REGEXP } from '@/modules/Relayers/constants'
 import { IndexerApiBaseUrl, networks } from '@/config'
 import { handleApi } from '@/utils'
@@ -12,6 +14,7 @@ import {
     RoundsCalendarParams, RoundsCalendarResponse, RoundStatus,
 } from '@/modules/Relayers/types'
 import { NetworkShape } from '@/types'
+import { RatioStatus } from '@/components/common/Ratio'
 
 function normalizeKey(pattern: RegExp, value: string): string {
     const result = value.toLowerCase()
@@ -145,4 +148,45 @@ export function getEventToName(transferKind: RelayersEventsTransferKind, chainId
         return getEvmName(chainId)
     }
     return undefined
+}
+
+export enum RelayStatus {
+    Success = 'success',
+    Warning = 'warning',
+    Fail = 'fail',
+}
+
+export function getEventsShare(value?: number, total?: number): string {
+    if (value && total) {
+        return new BigNumber(value)
+            .times(100)
+            .dividedBy(total)
+            .dp(2)
+            .toFixed()
+    }
+
+    return '0'
+}
+
+export function getRelayStatus(eventsShare: string): RelayStatus {
+    if (new BigNumber(eventsShare).gte(70)) {
+        return RelayStatus.Success
+    }
+
+    if (new BigNumber(eventsShare).gte(50)) {
+        return RelayStatus.Warning
+    }
+
+    return RelayStatus.Fail
+}
+
+export function mapRelayStatusToRatio(val: RelayStatus): RatioStatus {
+    switch (val) {
+        case RelayStatus.Success:
+            return RatioStatus.Success
+        case RelayStatus.Warning:
+            return RatioStatus.Warning
+        default:
+            return RatioStatus.Fail
+    }
 }

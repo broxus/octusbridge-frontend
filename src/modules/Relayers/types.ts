@@ -148,7 +148,7 @@ export type RelayInfoParams = {
     relayAddress: string;
 }
 
-export type RelayInfoResponse = Partial<{
+export type RelayInfoResponse = {
     frozenStake: string;
     latestReward: string;
     successfulRounds: number;
@@ -157,7 +157,7 @@ export type RelayInfoResponse = Partial<{
     untilFrozen: number;
     potentialTotalConfirmed: number;
     relayTotalConfirmed: number;
-}>
+}
 
 export type RelayersEventsOrdering =
     | 'amountascending'

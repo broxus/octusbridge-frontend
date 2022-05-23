@@ -9,6 +9,16 @@
         padding: 16px 24px;
     }
 
+    &.success {
+        background: rgba(74, 180, 74, 0.48);
+    }
+    &.warning {
+        background: rgba(230, 172, 0, 0.48);
+    }
+    &.fail {
+        background: rgba(235, 67, 97, 0.48);
+    }
+
     &__title {
         color: rgba(255, 255, 255, 0.48);
         margin: 0 0 4px;
