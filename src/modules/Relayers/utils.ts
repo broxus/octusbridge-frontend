@@ -4,13 +4,12 @@ import { ETH_ADDRESS_REGEXP, TON_PUBLIC_KEY_REGEXP } from '@/modules/Relayers/co
 import { IndexerApiBaseUrl, networks } from '@/config'
 import { handleApi } from '@/utils'
 import {
-    AllRelayRoundsInfoRequest,
-    AllRelayRoundsInfoResponse,
+    AllRelayRoundsInfoRequest, AllRelayRoundsInfoResponse, GlobalRelayersEventsParams,
     RelayersEventsParams, RelayersEventsResponse, RelayersEventsTransferKind,
     RelayersSearchParams, RelayersSearchResponse, RelayInfoParams,
-    RelayInfoResponse, RelayRoundInfoParams,
-    RelayRoundInfoResponse, RelayRoundsInfoRequest, RelayRoundsInfoResponse,
-    RelaysRoundInfoRequest, RelaysRoundInfoResponse, RoundInfoParams, RoundInfoResponse,
+    RelayInfoResponse, RelayRoundInfoParams, RelayRoundInfoResponse,
+    RelayRoundsInfoRequest, RelayRoundsInfoResponse, RelaysRoundInfoRequest,
+    RelaysRoundInfoResponse, RoundInfoParams, RoundInfoResponse,
     RoundsCalendarParams, RoundsCalendarResponse, RoundStatus,
 } from '@/modules/Relayers/types'
 import { NetworkShape } from '@/types'
@@ -50,7 +49,7 @@ export function handleRoundInfo(params: RoundInfoParams): Promise<RoundInfoRespo
 }
 
 export function handleRelayRoundInfo(params: RelayRoundInfoParams): Promise<RelayRoundInfoResponse> {
-    return handleApi<RoundInfoResponse>({
+    return handleApi<RelayRoundInfoResponse>({
         url: `${IndexerApiBaseUrl}/relays_pages/relay_round_info`,
         data: params,
     })
@@ -73,6 +72,13 @@ export function handleRelayInfo(params: RelayInfoParams): Promise<RelayInfoRespo
 export function handleRelayersEvents(params: RelayersEventsParams): Promise<RelayersEventsResponse> {
     return handleApi<RelayersEventsResponse>({
         url: `${IndexerApiBaseUrl}/relays_pages/search/relays_events`,
+        data: params,
+    })
+}
+
+export function handleGlobalRelayersEvents(params: GlobalRelayersEventsParams): Promise<RelayersEventsResponse> {
+    return handleApi<RelayersEventsResponse>({
+        url: `${IndexerApiBaseUrl}/relays_pages/search/global_relays_events`,
         data: params,
     })
 }
@@ -189,4 +195,27 @@ export function mapRelayStatusToRatio(val: RelayStatus): RatioStatus {
         default:
             return RatioStatus.Fail
     }
+}
+
+export function getEvmNetworkColor(chainId: number): string {
+    switch (chainId) {
+        case 1:
+            return '#AD90E9'
+        case 56:
+            return '#3A458C'
+        case 250:
+            return '#C5E4F3'
+        case 137:
+            return '#69B99C'
+        case 43114:
+            return '#EFA2C5'
+        default:
+            return '#FCF1F1'
+    }
+}
+
+export function getEvmNetworkName(chainId: number): string | null {
+    return networks.find(item => (
+        item.chainId === chainId.toString() && item.type === 'evm'
+    ))?.name ?? null
 }

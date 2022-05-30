@@ -1,4 +1,5 @@
 import * as React from 'react'
+import BigNumber from 'bignumber.js'
 
 import { Tooltip } from '@/components/common/PieChart/tooltip'
 import { Chart } from '@/components/common/PieChart/chart'
@@ -42,24 +43,38 @@ export function PieChart({
         setTooltipPosition([e.clientX, e.clientY])
     }
 
+    const hasData = data.some(item => !new BigNumber(item.value).isZero())
+
     return (
         <>
-            <Chart
-                data={data}
-                radius={radius}
-                innerRadius={innerRadius}
-                onMouseOver={onMouseOver}
-                onMouseOut={onMouseOut}
-                onMouseMove={onMouseMove}
-            />
-
-            {_tooltipVisible && (
-                <Tooltip
-                    left={tooltipPosition[0]}
-                    top={tooltipPosition[1]}
-                >
-                    {tooltipContent}
-                </Tooltip>
+            {hasData ? (
+                <>
+                    <Chart
+                        data={data}
+                        radius={radius}
+                        innerRadius={innerRadius}
+                        onMouseOver={onMouseOver}
+                        onMouseOut={onMouseOut}
+                        onMouseMove={onMouseMove}
+                    />
+                    {_tooltipVisible && (
+                        <Tooltip
+                            left={tooltipPosition[0]}
+                            top={tooltipPosition[1]}
+                        >
+                            {tooltipContent}
+                        </Tooltip>
+                    )}
+                </>
+            ) : (
+                <Chart
+                    data={[{
+                        color: 'rgba(255, 255, 255, 0.12)',
+                        value: '1',
+                    }]}
+                    radius={radius}
+                    innerRadius={innerRadius}
+                />
             )}
         </>
     )

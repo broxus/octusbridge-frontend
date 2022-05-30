@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx'
 
-import { handleRelayersEvents } from '@/modules/Relayers/utils'
+import { handleGlobalRelayersEvents, handleRelayersEvents } from '@/modules/Relayers/utils'
 import {
     RelayersEvent, RelayersEventsParams, RelayersEventsStoreData,
     RelayersEventsStoreState,
@@ -11,6 +11,8 @@ import { error, lastOfCalls } from '@/utils'
 export class RelayersEventsStore {
 
     protected handleRelayersEvents = lastOfCalls(handleRelayersEvents)
+
+    protected handleGlobalRelayersEvents = lastOfCalls(handleGlobalRelayersEvents)
 
     protected data: RelayersEventsStoreData = {}
 
@@ -28,7 +30,9 @@ export class RelayersEventsStore {
                 this.state.isLoading = true
             })
 
-            const result = await this.handleRelayersEvents(params)
+            const result = params.relayAddress
+                ? await this.handleRelayersEvents(params)
+                : await this.handleGlobalRelayersEvents(params)
 
             if (result?.relays.length) {
                 await Promise.allSettled(

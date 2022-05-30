@@ -110,7 +110,13 @@ export type RelayRoundInfoParams = {
     roundNum?: number;
 }
 
-export type RelayRoundInfoResponse = Partial<{
+export type EvmStats = {
+    chainId: number;
+    potentialConfirmed: number;
+    relayConfirmed: number;
+}
+
+export type RelayRoundInfoResponse = {
     ethToTonUsdt: string;
     eventsConfirmed: number;
     totalRoundConfirms: number;
@@ -119,7 +125,8 @@ export type RelayRoundInfoResponse = Partial<{
     stake: string;
     relayPlace?: number;
     tonToEthUsdt: string;
-}>
+    evmStats: EvmStats[];
+}
 
 export type RoundsCalendarParams = {
     fromRoundNum: number;
@@ -188,6 +195,8 @@ export type RelayersEventsParams = RelayersEventsFilters & {
     ordering: RelayersEventsOrdering;
     roundNum?: number;
 }
+
+export type GlobalRelayersEventsParams = Omit<RelayersEventsParams, 'relayAddress'>
 
 export type RelayersEventsResponse = {
     relays: RelayersEvent[];

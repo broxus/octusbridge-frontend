@@ -8,10 +8,13 @@
         &.list {
             min-height: auto;
             --list-grid-template: 44px minmax(130px, 20%) minmax(100px, 35%) minmax(80px, 45%);
+        }
+    }
 
-            &.extra {
-                --list-grid-template: 44px minmax(130px, 1fr) minmax(100px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
-            }
+    &__chain-id-table {
+        &.list {
+            min-height: auto;
+            --list-grid-template: 44px minmax(130px, 1fr) minmax(100px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
         }
     }
 

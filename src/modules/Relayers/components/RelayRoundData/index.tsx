@@ -4,7 +4,7 @@ import { Observer } from 'mobx-react-lite'
 import BigNumber from 'bignumber.js'
 
 import { DataCard } from '@/components/common/DataCard'
-import { EventsDistribution } from '@/modules/Relayers/components/EventsDistribution'
+import { EventsByChainId } from '@/modules/Relayers/components/EventsDistribution'
 import { useRelayRoundInfoContext } from '@/modules/Relayers/providers'
 import { formatDigits, formattedAmount } from '@/utils'
 
@@ -88,10 +88,9 @@ export function RelayRoundData(): JSX.Element | null {
             <div className="board__main">
                 <Observer>
                     {() => (
-                        <EventsDistribution
+                        <EventsByChainId
                             isLoading={relayRoundInfo.isLoading}
-                            ethToTonUsdt={relayRoundInfo.info?.ethToTonUsdt}
-                            tonToEthUsdt={relayRoundInfo.info?.tonToEthUsdt}
+                            evmStats={relayRoundInfo.info?.evmStats}
                         />
                     )}
                 </Observer>
