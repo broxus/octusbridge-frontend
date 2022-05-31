@@ -270,9 +270,8 @@ export default (_: any, options: any): WebpackConfig => {
 
     if (isDevelopment) {
         config.watchOptions = {
-            aggregateTimeout: 5,
+            aggregateTimeout: 100,
             ignored: /node_modules/,
-            poll: true,
         }
     }
 

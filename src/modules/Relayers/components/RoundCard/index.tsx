@@ -78,15 +78,21 @@ export function RoundCard({
                         </Badge>
                     )}
 
-                    {startTime && endTime ? (
-                        intl.formatMessage({
-                            id: 'ROUND_INFO_DATE_PERIOD',
-                        }, {
-                            start: dateFormat(startTime),
-                            end: dateFormat(endTime),
-                        })
+                    {!startTime && !endTime ? (
+                        '\u200B'
                     ) : (
-                        startTime && dateFormat(startTime)
+                        <>
+                            {startTime && endTime ? (
+                                intl.formatMessage({
+                                    id: 'ROUND_INFO_DATE_PERIOD',
+                                }, {
+                                    start: dateFormat(startTime),
+                                    end: dateFormat(endTime),
+                                })
+                            ) : (
+                                startTime && dateFormat(startTime)
+                            )}
+                        </>
                     )}
 
                     {endTime && (

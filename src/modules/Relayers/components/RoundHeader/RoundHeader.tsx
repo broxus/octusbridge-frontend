@@ -44,6 +44,7 @@ export function RoundHeader({
                     page={roundNum}
                     totalPages={totalPages}
                     onSubmit={onSubmitRound}
+                    className="round-header__pagination"
                 />
             )}
 

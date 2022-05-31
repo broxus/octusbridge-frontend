@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import {
@@ -12,7 +13,7 @@ import { RoundHeader } from '@/modules/Relayers/components/ValidationRounds/Roun
 import { View, ViewSwitcher } from '@/modules/Relayers/components/ValidationRounds/ViewSwitcher'
 import { useRoundInfoListContext } from '@/modules/Relayers/providers'
 
-export function ValidationRounds(): JSX.Element | null {
+function ValidationRoundsInner(): JSX.Element | null {
     const intl = useIntl()
     const roundInfoList = useRoundInfoListContext()
     const [view, setView] = React.useState(View.Stats)
@@ -64,3 +65,5 @@ export function ValidationRounds(): JSX.Element | null {
         </Section>
     )
 }
+
+export const ValidationRounds = observer(ValidationRoundsInner)

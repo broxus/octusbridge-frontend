@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
@@ -21,7 +22,7 @@ const mapRelayStatusToDataCard = (val: RelayStatus): DataCardStatus => {
     }
 }
 
-export function RelayerPerformance(): JSX.Element | null {
+function RelayerPerformanceInner(): JSX.Element | null {
     const intl = useIntl()
     const { relayInfo } = useRelayInfoContext()
     // const [chartTypeId, setChartTypeId] = React.useState('stake')
@@ -29,11 +30,16 @@ export function RelayerPerformance(): JSX.Element | null {
         id: 'NO_VALUE',
     })
 
-    const eventsShare = getEventsShare(
-        relayInfo?.relayTotalConfirmed,
-        relayInfo?.potentialTotalConfirmed,
-    )
-    const relayerStatus = getRelayStatus(eventsShare)
+    const eventsShare = relayInfo
+        ? getEventsShare(
+            relayInfo?.relayTotalConfirmed,
+            relayInfo?.potentialTotalConfirmed,
+        )
+        : undefined
+
+    const relayerStatus = eventsShare
+        ? getRelayStatus(eventsShare)
+        : undefined
 
     return (
         <Section>
@@ -52,12 +58,14 @@ export function RelayerPerformance(): JSX.Element | null {
                         ? formattedAmount(relayInfo?.frozenStake, undefined, { target: 'token' })
                         : noValue}
                 >
-                    {relayInfo?.untilFrozen && (
+                    {relayInfo?.untilFrozen ? (
                         intl.formatMessage({
                             id: 'RELAYER_PERFORMANCE_DEFROST',
                         }, {
                             value: dateRelative(relayInfo.untilFrozen),
                         })
+                    ) : (
+                        '\u200B'
                     )}
                 </DataCard>
 
@@ -89,7 +97,9 @@ export function RelayerPerformance(): JSX.Element | null {
                 />
 
                 <DataCard
-                    status={mapRelayStatusToDataCard(relayerStatus)}
+                    status={relayerStatus
+                        ? mapRelayStatusToDataCard(relayerStatus)
+                        : undefined}
                     value={eventsShare ? `${eventsShare}%` : noValue}
                     title={intl.formatMessage({
                         id: 'RELAYER_PERFORMANCE_EVENTS_SHARE',
@@ -133,3 +143,5 @@ export function RelayerPerformance(): JSX.Element | null {
         </Section>
     )
 }
+
+export const RelayerPerformance = observer(RelayerPerformanceInner)

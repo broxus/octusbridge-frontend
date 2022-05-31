@@ -3,4 +3,8 @@
     display: flex;
     justify-content: space-between;
     margin: 0 0 24px;
+
+    &__pagination {
+        margin: 0;
+    }
 }

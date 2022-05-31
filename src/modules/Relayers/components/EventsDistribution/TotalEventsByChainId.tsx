@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { ChartByChainId } from '@/modules/Relayers/components/EventsDistribution/ChartByChainId'
-import { TableByChainId } from '@/modules/Relayers/components/EventsDistribution/TableByChainId'
+import { TotalTableByChainId } from '@/modules/Relayers/components/EventsDistribution/TotalTableByChainId'
 import { EvmStats } from '@/modules/Relayers/types'
 
 import './index.scss'
@@ -12,7 +12,7 @@ type Props = {
     evmStats?: EvmStats[]
 }
 
-export function EventsByChainId({
+export function TotalEventsByChainId({
     isLoading,
     evmStats,
 }: Props): JSX.Element {
@@ -29,12 +29,13 @@ export function EventsByChainId({
             <ChartByChainId
                 isLoading={isLoading}
                 data={evmStats?.map(item => ({
-                    amount: item.relayConfirmed,
+                    amount: item.potentialConfirmed,
                     chainId: item.chainId,
                 }))}
             />
 
-            <TableByChainId
+
+            <TotalTableByChainId
                 evmStats={evmStats}
             />
         </div>

@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 
 import { Container } from '@/components/common/Section'
-import { ContentLoader } from '@/components/common/ContentLoader'
 import { Relayers } from '@/modules/Relayers/components/Relayers'
 import { BiddingRoundHeader } from '@/modules/Relayers/components/RoundHeader'
 import { RoundsCalendar } from '@/modules/Relayers/components/RoundsCalendar'
@@ -27,14 +26,13 @@ export function BiddingRoundInner(): JSX.Element {
     const biddingRound = useBiddingRoundContext()
     const relayRoundInfo = useRelayRoundInfoContext()
     const userDataStore = useUserDataStore()
-    const [loading, setLoading] = React.useState(true)
     const roundNum = parseInt(params.num, 10)
 
     React.useEffect(() => {
         if (roundNum) {
             biddingRound.fetch(roundNum)
             roundInfo.fetch({
-                roundNum: roundNum - 1,
+                roundNum,
             })
         }
     }, [roundNum])
@@ -53,18 +51,6 @@ export function BiddingRoundInner(): JSX.Element {
             })
         }
     }, [roundNum, userDataStore.address, userDataStore.isRelay])
-
-    React.useEffect(() => {
-        if (biddingRound.isLoading !== undefined) {
-            setLoading(biddingRound.isLoading)
-        }
-    }, [biddingRound.isLoading])
-
-    if (loading) {
-        return (
-            <ContentLoader transparent />
-        )
-    }
 
     return (
         <Container size="lg">
@@ -96,7 +82,7 @@ export function BiddingRoundInner(): JSX.Element {
 
             <RelayersProvider>
                 <Relayers
-                    roundNum={parseInt(params.num, 10) - 1}
+                    roundNum={parseInt(params.num, 10)}
                 />
             </RelayersProvider>
         </Container>

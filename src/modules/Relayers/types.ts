@@ -103,6 +103,7 @@ export type RoundInfoResponse = Partial<{
     tonToEthUsdt: string;
     totalStake: string;
     totalStakeChange: string;
+    evmStats: EvmStats[];
 }>
 
 export type RelayRoundInfoParams = {

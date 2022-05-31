@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 
-import { ContentLoader } from '@/components/common/ContentLoader'
 import { Container } from '@/components/common/Section'
 import { ExplorerBreadcrumb } from '@/modules/Relayers/components/ExplorerBreadcrumb'
 import { RelayerHeader } from '@/modules/Relayers/components/RelayerHeader'
@@ -27,7 +26,6 @@ export function RelayerInner(): JSX.Element | null {
     const params = useParams<Params>()
     const relayInfo = useRelayInfoContext()
     const userData = useUserDataContext()
-    const [loading, setLoading] = React.useState(true)
 
     React.useEffect(() => {
         if (params.address) {
@@ -38,12 +36,6 @@ export function RelayerInner(): JSX.Element | null {
     }, [params.address])
 
     React.useEffect(() => {
-        if (relayInfo.isLoading !== undefined) {
-            setLoading(relayInfo.isLoading)
-        }
-    }, [relayInfo.isLoading])
-
-    React.useEffect(() => {
         if (userData.isConnected) {
             userData.fetch()
         }
@@ -51,12 +43,6 @@ export function RelayerInner(): JSX.Element | null {
             userData.dispose()
         }
     }, [userData.isConnected])
-
-    if (loading) {
-        return (
-            <ContentLoader />
-        )
-    }
 
     return (
         <Container size="lg">

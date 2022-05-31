@@ -18,6 +18,13 @@
         }
     }
 
+    &__total-chain-id-table {
+        &.list {
+            min-height: auto;
+            --list-grid-template: 44px minmax(130px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
+        }
+    }
+
     &__title {
         font-size: 18px;
         font-weight: 700;

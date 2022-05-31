@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 
 import { RoundHeader } from '@/modules/Relayers/components/RoundHeader/RoundHeader'
 import { useValidationRoundContext } from '@/modules/Relayers/providers'
@@ -12,6 +12,7 @@ export function ValidationRoundHeaderInner(): JSX.Element {
     const intl = useIntl()
     const validationRound = useValidationRoundContext()
     const history = useHistory()
+    const params = useParams<any>()
 
     const onSubmitRound = (roundNum: number) => {
         history.push(`/relayers/round/${roundNum}`)
@@ -27,7 +28,7 @@ export function ValidationRoundHeaderInner(): JSX.Element {
             title={intl.formatMessage({
                 id: 'VALIDATION_ROUND_PAGE_TITLE',
             }, {
-                num: validationRound.roundCalendar?.roundNum,
+                num: params.num,
             })}
             paginationLabel={intl.formatMessage({
                 id: 'VALIDATION_ROUND_HEADER_PAGINATION',

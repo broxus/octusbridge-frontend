@@ -13,7 +13,7 @@ type Props = {
     evmStats?: EvmStats[];
 }
 
-export function TableByChainId({
+export function TotalTableByChainId({
     evmStats,
 }: Props): JSX.Element | null {
     const intl = useIntl()
@@ -22,9 +22,13 @@ export function TableByChainId({
         return null
     }
 
+    const total = evmStats.reduce((acc, item) => (
+        acc + item.potentialConfirmed
+    ), 0)
+
     return (
         <TableBase
-            className="events-distribution__chain-id-table"
+            className="events-distribution__total-chain-id-table"
             cols={[
                 {
                     align: Align.center,
@@ -38,19 +42,13 @@ export function TableByChainId({
                 {
                     align: Align.right,
                     name: intl.formatMessage({
-                        id: 'EVENTS_DISTRIBUTION_EVENTS_CONFIRMED',
-                    }),
-                },
-                {
-                    align: Align.right,
-                    name: intl.formatMessage({
                         id: 'EVENTS_DISTRIBUTION_TOTAL_EVENTS',
                     }),
                 },
                 {
                     align: Align.right,
                     name: intl.formatMessage({
-                        id: 'EVENTS_DISTRIBUTION_EVENTS_SHARE',
+                        id: 'EVENTS_DISTRIBUTION_TABLE_PERCENT',
                     }),
                 },
             ]}
@@ -64,9 +62,8 @@ export function TableByChainId({
                     getEvmNetworkName(item.chainId) ?? intl.formatMessage({
                         id: 'NA',
                     }),
-                    formatDigits(item.relayConfirmed) || '0',
                     formatDigits(item.potentialConfirmed) || '0',
-                    `${getEventsShare(item.relayConfirmed, item.potentialConfirmed)}%`,
+                    `${getEventsShare(item.potentialConfirmed, total)}%`,
                 ],
             }))}
         />

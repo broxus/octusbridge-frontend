@@ -4,9 +4,9 @@ import { Observer } from 'mobx-react-lite'
 
 import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
-import { EventsDistribution } from '@/modules/Relayers/components/EventsDistribution'
 import { useRoundInfoContext } from '@/modules/Relayers/providers'
 import { formatDigits, formattedAmount } from '@/utils'
+import { TotalEventsByChainId } from '@/modules/Relayers/components/EventsDistribution/TotalEventsByChainId'
 
 export function RoundData(): JSX.Element | null {
     const intl = useIntl()
@@ -102,10 +102,9 @@ export function RoundData(): JSX.Element | null {
             <div className="board__main">
                 <Observer>
                     {() => (
-                        <EventsDistribution
+                        <TotalEventsByChainId
                             isLoading={roundInfo.isLoading}
-                            ethToTonUsdt={roundInfo.info?.ethToTonUsdt}
-                            tonToEthUsdt={roundInfo.info?.tonToEthUsdt}
+                            evmStats={roundInfo.info?.evmStats}
                         />
                     )}
                 </Observer>

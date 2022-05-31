@@ -3,40 +3,45 @@ import { useIntl } from 'react-intl'
 
 import { ContentLoader } from '@/components/common/ContentLoader'
 import { PieChart } from '@/components/common/PieChart'
-import { EvmStats } from '@/modules/Relayers/types'
 import { getEvmNetworkColor, getEvmNetworkName } from '@/modules/Relayers/utils'
 
 import './index.scss'
 
+type Data = {
+    chainId: number;
+    amount: number;
+}
+
 type Props = {
     isLoading?: boolean;
-    evmStats?: EvmStats[];
+    data?: Data[];
 }
 
 export function ChartByChainId({
     isLoading,
-    evmStats,
+    data,
 }: Props): JSX.Element | null {
     const intl = useIntl()
 
-    if (!evmStats) {
+    if (!data) {
         return null
     }
 
-    const data = evmStats
-        .filter(item => item.relayConfirmed !== 0)
+    const _data = data
+        .filter(item => item.amount !== 0)
         .map(item => ({
             color: getEvmNetworkColor(item.chainId),
-            amount: item.relayConfirmed.toString(),
+            amount: item.amount.toString(),
             name: getEvmNetworkName(item.chainId) ?? intl.formatMessage({
                 id: 'NA',
             }),
         }))
 
-    const pieData = data.map(item => ({
-        value: item.amount,
-        color: item.color,
-    }))
+    const pieData = _data
+        .map(item => ({
+            value: item.amount,
+            color: item.color,
+        }))
 
     return (
         <div className="events-distribution__chart">
@@ -51,10 +56,10 @@ export function ChartByChainId({
                 renderTooltip={(index, percent) => (
                     <div>
                         <div>
-                            <strong>{data[index].name}</strong>
+                            <strong>{_data[index].name}</strong>
                         </div>
                         <div>
-                            {data[index].amount}
+                            {_data[index].amount}
                         </div>
                         <div>
                             {percent}

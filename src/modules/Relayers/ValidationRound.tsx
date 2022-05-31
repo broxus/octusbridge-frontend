@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 
-import { ContentLoader } from '@/components/common/ContentLoader'
 import { Container, Section, Title } from '@/components/common/Section'
 import { Events } from '@/modules/Relayers/components/Events'
 import { RoundData } from '@/modules/Relayers/components/RoundData'
@@ -27,7 +26,6 @@ export function ValidationRoundInner(): JSX.Element {
     const params = useParams<Params>()
     const validationRound = useValidationRoundContext()
     const roundInfo = useRoundInfoContext()
-    const [loading, setLoading] = React.useState(true)
 
     React.useEffect(() => {
         const roundNum = parseInt(params.num, 10)
@@ -37,18 +35,6 @@ export function ValidationRoundInner(): JSX.Element {
             roundInfo.fetch({ roundNum })
         }
     }, [params.num])
-
-    React.useEffect(() => {
-        if (validationRound.isLoading !== undefined) {
-            setLoading(validationRound.isLoading)
-        }
-    }, [validationRound.isLoading])
-
-    if (loading) {
-        return (
-            <ContentLoader transparent />
-        )
-    }
 
     return (
         <Container size="lg">
