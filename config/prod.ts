@@ -141,8 +141,8 @@ export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/eve
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
-export const IndexerApiBaseUrl = 'https://bridge-indexer.broxus.com/v1'
+export const IndexerApiBaseUrl = 'https://api.octusbridge.io/v1'
 
-export const DaoIndexerApiBaseUrl = 'https://bridge-dao-indexer.broxus.com/v1'
+export const DaoIndexerApiBaseUrl = 'https://dao.octusbridge.io/v1'
 
-export const TonSwapIndexerApiBaseUrl = 'https://ton-swap-indexer.broxus.com/v1'
+export const TonSwapIndexerApiBaseUrl = 'https://api.flatqube.io/v1'
