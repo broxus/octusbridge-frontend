@@ -1,9 +1,11 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
+import { Copy } from '@/components/common/Copy'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { RelayerStatus } from '@/modules/Relayers/components/RelayerStatus'
 import { Status } from '@/modules/Relayers/types'
+import { Icon } from '@/components/common/Icon'
 import { sliceAddress } from '@/utils'
 
 import './index.scss'
@@ -35,12 +37,23 @@ export function RelayerCard({
 
             <div className="relayer-card__side">
                 {shortAddress && (
-                    <div className="relayer-card__name">
-                        {intl.formatMessage({
-                            id: 'RELAYER_HEADER_NAME',
-                        }, {
-                            address: shortAddress,
-                        })}
+                    <div className="relayer-card__title">
+                        <div className="relayer-card__name">
+                            {intl.formatMessage({
+                                id: 'RELAYER_HEADER_NAME',
+                            }, {
+                                address: shortAddress,
+                            })}
+                        </div>
+                        {address && (
+                            <Copy
+                                text={address}
+                                id={`copy-${address}`}
+                                className="text-muted"
+                            >
+                                <Icon icon="copy" ratio={1.25} />
+                            </Copy>
+                        )}
                     </div>
                 )}
 

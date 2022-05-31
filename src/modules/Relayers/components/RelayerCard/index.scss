@@ -19,4 +19,10 @@
         letter-spacing: 0.5px;
         line-height: 20px;
     }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        grid-gap: 16px;
+    }
 }
