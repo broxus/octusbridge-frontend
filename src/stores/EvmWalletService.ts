@@ -567,6 +567,7 @@ export function useEvmWallet(): EvmWalletService {
             symbol: 'ETH',
         }, {
             modalOptions: {
+                cacheProvider: true,
                 providerOptions: {
                     walletconnect: {
                         options: {
