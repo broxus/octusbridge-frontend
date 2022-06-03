@@ -104,7 +104,7 @@ export class BiddingRoundStore {
         const [prev, current] = toJS(roundsCalendar)
 
         if (current?.electionEndTime) {
-            return current.electionStartTime
+            return current.electionEndTime
         }
 
         const { relayConfig } = this.relayersData
