@@ -810,11 +810,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             try {
                 tries += 1
 
-                console.log(
-                    [target[0], `0x${target[1]}`],
-                    this.pipeline.evmTokenAddress,
-                )
-
                 const r = this.multiVaultContract.methods.deposit(
                     [target[0], `0x${target[1]}`],
                     this.pipeline.evmTokenAddress,
@@ -1132,25 +1127,62 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 return
             }
 
-            const data = await rpc.packIntoCell({
-                data: {
-                    addr: this.rightAddress,
-                },
-                structure: [
-                    { name: 'addr', type: 'uint160' },
-                ] as const,
-            })
+            if (this.pipeline.mergePool && this.pipeline.mergeEverscaleToken) {
 
-            await walletContract.methods.burn({
-                callbackTo: new Address(this.pipeline.proxy),
-                payload: data.boc,
-                remainingGasTo: new Address(this.everWallet.address),
-                amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
-            }).send({
-                amount: '6000000000',
-                bounce: true,
-                from: new Address(this.leftAddress),
-            })
+                const operationPayload = await rpc.packIntoCell({
+                    data: {
+                        addr: this.rightAddress,
+                    },
+                    structure: [
+                        { name: 'addr', type: 'uint160' },
+                    ] as const,
+                })
+
+                const data = await rpc.packIntoCell({
+                    data: {
+                        type: 0,
+                        targetToken: new Address(this.pipeline.mergeEverscaleToken),
+                        operationPayload: operationPayload.boc,
+                    },
+                    structure: [
+                        { name: 'type', type: 'uint8' },
+                        { name: 'targetToken', type: 'address' },
+                        { name: 'operationPayload', type: 'cell' },
+                    ] as const,
+                })
+
+                await walletContract.methods.burn({
+                    callbackTo: new Address(this.pipeline.mergePool),
+                    payload: data.boc,
+                    remainingGasTo: new Address(this.everWallet.address),
+                    amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                }).send({
+                    amount: '6000000000',
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
+            }
+            else {
+                const data = await rpc.packIntoCell({
+                    data: {
+                        addr: this.rightAddress,
+                    },
+                    structure: [
+                        { name: 'addr', type: 'uint160' },
+                    ] as const,
+                })
+
+                await walletContract.methods.burn({
+                    callbackTo: new Address(this.pipeline.proxy),
+                    payload: data.boc,
+                    remainingGasTo: new Address(this.everWallet.address),
+                    amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                }).send({
+                    amount: '6000000000',
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
+            }
 
             const eventAddress = await eventStream
 
@@ -2098,16 +2130,25 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     const meta = await rootContract.methods.meta({ answerId: 0 }).call()
 
                     runInAction(() => {
-                        this.pipeline!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
-                        this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
-                            .toString(16)
-                            .padStart(40, '0')}`
+                        if (this.pipeline?.mergeEvmToken) {
+                            this.pipeline!.isNative = false
+                            this.pipeline!.evmTokenAddress = this.pipeline.mergeEvmToken
+                            this.setData(
+                                'isTokenChainSameToTargetChain',
+                                true,
+                            )
+                        }
+                        else {
+                            this.pipeline!.isNative = !(meta.base_chainId === this.pipeline?.chainId)
+                            this.pipeline!.evmTokenAddress = `0x${new BigNumber(meta.base_token)
+                                .toString(16)
+                                .padStart(40, '0')}`
+                            this.setData(
+                                'isTokenChainSameToTargetChain',
+                                meta.base_chainId.toString() === this.rightNetwork?.chainId,
+                            )
+                        }
                     })
-
-                    this.setData(
-                        'isTokenChainSameToTargetChain',
-                        meta.base_chainId.toString() === this.rightNetwork?.chainId,
-                    )
                 }
                 catch (e) {
                     runInAction(() => {

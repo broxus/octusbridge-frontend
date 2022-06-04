@@ -107,6 +107,9 @@ export type Pipeline = {
     vaultBalance?: string;
     vaultLimit?: string;
     withdrawFee?: string;
+    mergeEvmToken?: string;
+    mergeEverscaleToken?: string;
+    mergePool?: string;
 }
 
 export type ComposedPipelinesHash = {
@@ -550,7 +553,10 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 }
             }
             else if (isEverscaleAddressValid(root)) {
-                let alien = false
+                let alien = false,
+                    mergeEvmToken,
+                    mergeEverscaleToken,
+                    mergePool
                 try {
                     await staticRpc.ensureInitialized()
                     const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
@@ -558,6 +564,70 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                     alien = meta.base_chainId === toChainId
                 }
                 catch (e) {}
+                if (!alien) {
+                    try {
+                        const p = this.multiAssets[`${toNetworkType}_${fromNetworkType}`]
+                        if (p !== undefined) {
+                            const v = p.vaults.find(
+                                item => item.chainId === toChainId && item.depositType === depositType,
+                            )
+                            if (v !== undefined) {
+                                const proxyContract = new staticRpc.Contract(
+                                    MultiVault.AlienProxy,
+                                    new Address(p.proxy),
+                                )
+                                const mergeRouterAddress = (await proxyContract.methods.deriveMergeRouter({
+                                    token: new Address(root),
+                                    answerId: 0,
+                                }).call()).router
+                                const mergeRouterContract = new staticRpc.Contract(
+                                    MultiVault.MergeRouter,
+                                    mergeRouterAddress,
+                                )
+                                const mergePoolAddress = (await mergeRouterContract.methods.getPool({
+                                    answerId: 0,
+                                }).call()).value0
+                                const mergePoolContract = new staticRpc.Contract(MultiVault.MergePool, mergePoolAddress)
+                                const mergeTokens = await mergePoolContract.methods.getTokens({
+                                    answerId: 0,
+                                }).call()
+
+                                const supportAlien = await Promise.all(mergeTokens._tokens.map(
+                                    async ([tokenAddress, tokenSettings]) => {
+                                        if (tokenSettings.enabled) {
+                                            const tokenContract = new staticRpc.Contract(
+                                                TokenAbi.TokenRootAlienEVM,
+                                                tokenAddress,
+                                            )
+                                            const tokenMeta = await tokenContract.methods.meta({ answerId: 0 }).call()
+                                            return {
+                                                merged: tokenMeta.base_chainId === toChainId,
+                                                everscaleToken: tokenAddress.toString(),
+                                                evmToken: `0x${new BigNumber(tokenMeta.base_token)
+                                                    .toString(16)
+                                                    .padStart(40, '0')}`,
+                                            }
+                                        }
+                                        return {
+                                            merged: false,
+                                            everscaleToken: '',
+                                            evmToken: '',
+                                        }
+                                    },
+                                ))
+
+                                const merged = supportAlien.find(e => e.merged)
+                                if (merged) {
+                                    alien = true
+                                    mergeEvmToken = merged.evmToken
+                                    mergeEverscaleToken = merged.everscaleToken
+                                    mergePool = mergePoolAddress.toString()
+                                }
+                            }
+                        }
+                    }
+                    catch (e) {}
+                }
 
                 if (alien) {
                     const p = this.multiAssets[`${toNetworkType}_${fromNetworkType}`]
@@ -576,6 +646,9 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                 isNative: false,
                                 from,
                                 to,
+                                mergeEvmToken,
+                                mergeEverscaleToken,
+                                mergePool,
                             }
                         }
                     }

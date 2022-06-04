@@ -3328,10 +3328,34 @@ export class MultiVault {
                 ],
             },
             {
+                name: 'withdrawTokensByMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'uint160' },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
                 name: 'onEventConfirmedExtended',
                 inputs: [
                     { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'value0', type: 'tuple' },
                     { name: 'meta', type: 'cell' },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'mintTokensByMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'address' },
                     { name: 'remainingGasTo', type: 'address' },
                 ],
                 outputs: [
@@ -3365,6 +3389,52 @@ export class MultiVault {
                 ],
             },
             {
+                name: 'deriveMergeRouter',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                    { name: 'router', type: 'address' },
+                ],
+            },
+            {
+                name: 'deployMergeRouter',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'deriveMergePool',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'nonce', type: 'uint256' },
+                ],
+                outputs: [
+                    { name: 'pool', type: 'address' },
+                ],
+            },
+            {
+                name: 'upgradeMergePool',
+                inputs: [
+                    { name: 'pool', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'deployMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'tokens', type: 'address[]' },
+                    { name: 'canonId', type: 'uint256' },
+                ],
+                outputs: [
+                ],
+            },
+            {
                 name: 'sendMessage',
                 inputs: [
                     { name: 'recipient', type: 'address' },
@@ -3387,6 +3457,58 @@ export class MultiVault {
                 inputs: [
                     { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }, { name: 'alienTokenRootCode', type: 'cell' }, { name: 'alienTokenWalletCode', type: 'cell' }, { name: 'alienTokenWalletPlatformCode', type: 'cell' }], name: '_config', type: 'tuple' },
                     { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setManager',
+                inputs: [
+                    { name: '_manager', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setMergePool',
+                inputs: [
+                    { name: '_mergePool', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setMergeRouter',
+                inputs: [
+                    { name: '_mergeRouter', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setMergePoolPlatform',
+                inputs: [
+                    { name: '_mergePoolPlatform', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'mint',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'burn',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'walletOwner', type: 'address' },
                 ],
                 outputs: [
                 ],
@@ -3430,6 +3552,14 @@ export class MultiVault {
                     { name: '_randomNonce', type: 'uint256' },
                 ],
             },
+            {
+                name: 'manager',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'manager', type: 'address' },
+                ],
+            },
         ],
         data: [
             { key: 1, name: '_randomNonce', type: 'uint256' },
@@ -3464,6 +3594,11 @@ export class MultiVault {
             { name: '_randomNonce', type: 'uint256' },
             { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }, { name: 'alienTokenRootCode', type: 'cell' }, { name: 'alienTokenWalletCode', type: 'cell' }, { name: 'alienTokenWalletPlatformCode', type: 'cell' }], name: 'config', type: 'tuple' },
             { name: 'api_version', type: 'uint8' },
+            { name: 'manager', type: 'address' },
+            { name: 'mergeRouter', type: 'cell' },
+            { name: 'mergePool', type: 'cell' },
+            { name: 'mergePoolPlatform', type: 'cell' },
+            { name: 'mergePoolVersion', type: 'uint8' },
         ],
     } as const
 
@@ -4207,6 +4342,322 @@ export class MultiVault {
             { name: 'name', type: 'string' },
             { name: 'symbol', type: 'string' },
             { name: 'decimals', type: 'uint8' },
+        ],
+    } as const
+
+    static MergeRouter = {
+        'ABI version': 2,
+        version: '2.2',
+        header: ['pubkey', 'time'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                    { name: '_owner', type: 'address' },
+                    { name: '_manager', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setPool',
+                inputs: [
+                    { name: 'pool_', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setManager',
+                inputs: [
+                    { name: '_manager', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'disablePool',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'getPool',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                ],
+            },
+            {
+                name: 'getDetails',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: '_proxy', type: 'address' },
+                    { name: '_token', type: 'address' },
+                    { name: '_pool', type: 'address' },
+                ],
+            },
+            {
+                name: 'transferOwnership',
+                inputs: [
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'renounceOwnership',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'owner',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'owner', type: 'address' },
+                ],
+            },
+            {
+                name: 'manager',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'manager', type: 'address' },
+                ],
+            },
+        ],
+        data: [
+            { key: 1, name: 'proxy', type: 'address' },
+            { key: 2, name: 'token', type: 'address' },
+        ],
+        events: [
+            {
+                name: 'OwnershipTransferred',
+                inputs: [
+                    { name: 'previousOwner', type: 'address' },
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'owner', type: 'address' },
+            { name: 'proxy', type: 'address' },
+            { name: 'token', type: 'address' },
+            { name: 'pool', type: 'address' },
+            { name: 'manager', type: 'address' },
+        ],
+    } as const
+
+    static MergePool = {
+        'ABI version': 2,
+        version: '2.2',
+        header: ['pubkey', 'time'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'acceptUpgrade',
+                inputs: [
+                    { name: 'code', type: 'cell' },
+                    { name: 'newVersion', type: 'uint8' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'receiveTokenDecimals',
+                inputs: [
+                    { name: 'decimals', type: 'uint8' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setManager',
+                inputs: [
+                    { name: '_manager', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'removeToken',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'addToken',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setCanon',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'enableToken',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'enableAll',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'disableToken',
+                inputs: [
+                    { name: 'token', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'disableAll',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'getCanon',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: 'value0', type: 'address' },
+                    { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: 'value1', type: 'tuple' },
+                ],
+            },
+            {
+                name: 'getTokens',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: '_tokens', type: 'map(address,tuple)' },
+                    { name: '_canon', type: 'address' },
+                ],
+            },
+            {
+                name: 'onAcceptTokensBurn',
+                inputs: [
+                    { name: '_amount', type: 'uint128' },
+                    { name: 'walletOwner', type: 'address' },
+                    { name: 'value2', type: 'address' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payload', type: 'cell' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'transferOwnership',
+                inputs: [
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'renounceOwnership',
+                inputs: [
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'owner',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'owner', type: 'address' },
+                ],
+            },
+            {
+                name: '_randomNonce',
+                inputs: [
+                ],
+                outputs: [
+                    { name: '_randomNonce', type: 'uint256' },
+                ],
+            },
+            {
+                name: 'version',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'version', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'manager',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'manager', type: 'address' },
+                ],
+            },
+        ],
+        data: [
+            { key: 1, name: '_randomNonce', type: 'uint256' },
+            { key: 2, name: 'proxy', type: 'address' },
+        ],
+        events: [
+            {
+                name: 'OwnershipTransferred',
+                inputs: [
+                    { name: 'previousOwner', type: 'address' },
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [
+                ],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'owner', type: 'address' },
+            { name: '_randomNonce', type: 'uint256' },
+            { name: 'proxy', type: 'address' },
+            { name: 'version', type: 'uint8' },
+            { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: 'tokens', type: 'map(address,tuple)' },
+            { name: 'manager', type: 'address' },
+            { name: 'canon', type: 'address' },
         ],
     } as const
 
