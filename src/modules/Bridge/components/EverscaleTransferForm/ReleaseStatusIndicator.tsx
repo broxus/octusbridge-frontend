@@ -5,7 +5,6 @@ import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
-import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { BountyForm } from '@/modules/Bridge/components/BountyForm'
 import { useBridge, useEverscaleTransfer } from '@/modules/Bridge/providers'
@@ -22,16 +21,16 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         && isEverscaleAddressValid(transfer.contractAddress.toString())
     )
     const evmWallet = transfer.useEvmWallet
-    const everWallet = transfer.useEverWallet
     const isEventConfirmed = transfer.eventState?.status === 'confirmed'
     const status = transfer.releaseState?.status || 'disabled'
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
     const waitingWallet = (
-        (!evmWallet.isReady || !everWallet.isReady)
+        !evmWallet.isReady
         && isEventConfirmed
         && !isConfirmed
+        && !isPending
     )
     const wrongNetwork = (
         evmWallet.isReady
@@ -39,6 +38,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         && !isEqual(transfer.rightNetwork.chainId, evmWallet.chainId)
         && isEventConfirmed
         && !isConfirmed
+        && !isPending
     )
 
     const onRelease = async (bounty?: string) => {
@@ -59,8 +59,8 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         await transfer.submitBounty(amount)
     }
 
-    const onClickRelease = () => {
-        onRelease()
+    const onClickRelease = async () => {
+        await onRelease()
     }
 
     return (
@@ -76,16 +76,21 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || everWallet.isInitializing) {
+                if (evmWallet.isInitializing) {
                     return null
                 }
 
                 if (waitingWallet) {
                     return (
-                        <WalletsConnectors
-                            evmWallet={evmWallet}
-                            everWallet={everWallet}
-                        />
+                        <Button
+                            disabled={evmWallet.isConnecting || evmWallet.isConnected}
+                            type="primary"
+                            onClick={evmWallet.connect}
+                        >
+                            {intl.formatMessage({
+                                id: 'EVM_WALLET_CONNECT_BTN_TEXT',
+                            })}
+                        </Button>
                     )
                 }
 

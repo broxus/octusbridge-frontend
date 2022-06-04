@@ -16,6 +16,7 @@ import {
     TokenListURI,
 } from '@/config'
 import rpc from '@/hooks/useRpcClient'
+import staticRpc from '@/hooks/useStaticRpc'
 import {
     EthAbi,
     MultiVault,
@@ -551,7 +552,8 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             else if (isEverscaleAddressValid(root)) {
                 let alien = false
                 try {
-                    const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
+                    await staticRpc.ensureInitialized()
+                    const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
                     const meta = await rootContract.methods.meta({ answerId: 0 }).call()
                     alien = meta.base_chainId === toChainId
                 }
@@ -721,15 +723,15 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @param {string} chainId
      */
     public getEvmTokenContract(root: string, chainId: string): EthContract | undefined {
-        if (this.evmWallet.web3 === undefined) {
-            return undefined
-        }
-
         const network = findNetwork(chainId, 'evm')
 
         if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.ERC20, root)
+        }
+
+        if (this.evmWallet.web3 === undefined) {
+            return undefined
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.ERC20, root)
@@ -741,15 +743,15 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @param {string} chainId
      */
     public getEvmTokenVaultContract(vault: string, chainId: string): EthContract | undefined {
-        if (this.evmWallet.web3 === undefined) {
-            return undefined
-        }
-
         const network = findNetwork(chainId, 'evm')
 
         if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.Vault, vault)
+        }
+
+        if (this.evmWallet.web3 === undefined) {
+            return undefined
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.Vault, vault)
@@ -761,15 +763,15 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @param {string} chainId
      */
     public getEvmTokenMultiVaultContract(vault: string, chainId: string): EthContract | undefined {
-        if (this.evmWallet.web3 === undefined) {
-            return undefined
-        }
-
         const network = findNetwork(chainId, 'evm')
 
         if (network?.rpcUrl !== undefined && this.evmWallet.chainId !== chainId) {
             const web3 = new Web3(new Web3.providers.HttpProvider(network.rpcUrl))
             return new web3.eth.Contract(EthAbi.MultiVault, vault)
+        }
+
+        if (this.evmWallet.web3 === undefined) {
+            return undefined
         }
 
         return new this.evmWallet.web3.eth.Contract(EthAbi.MultiVault, vault)
@@ -926,7 +928,8 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                     .call()
             }
             else {
-                const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
+                await staticRpc.ensureInitialized()
+                const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
                 const meta = await rootContract.methods.meta({ answerId: 0 }).call()
                 evmTokenAddress = `0x${new BigNumber(meta.base_token)
                     .toString(16)
@@ -1130,7 +1133,9 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 return
             }
 
-            everscaleTokenAddress = (await alienTokenProxyContract(rpc, pipeline.proxy).methods
+            await staticRpc.ensureInitialized()
+
+            everscaleTokenAddress = (await alienTokenProxyContract(staticRpc, pipeline.proxy).methods
                 .deriveAlienTokenRoot({
                     answerId: 0,
                     chainId: token.chainId,

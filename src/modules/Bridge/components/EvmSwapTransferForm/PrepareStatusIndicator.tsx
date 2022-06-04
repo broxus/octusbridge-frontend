@@ -1,12 +1,9 @@
 import * as React from 'react'
-import isEqual from 'lodash.isequal'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
-import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
-import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useEvmSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
 import { getEverscaleMainNetwork } from '@/utils'
@@ -16,22 +13,16 @@ function PrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmSwapTransfer()
 
-    const evmWallet = transfer.useEvmWallet
     const everWallet = transfer.useEverWallet
     const status = transfer.prepareState?.status || 'disabled'
     const isTransferConfirmed = transfer.transferState?.status === 'confirmed'
     const isConfirmed = status === 'confirmed'
+    const isPending = status === 'pending'
     const waitingWallet = (
-        (!evmWallet.isReady || !everWallet.isReady)
+        !everWallet.isReady
         && isTransferConfirmed
         && !isConfirmed
-    )
-    const wrongNetwork = (
-        evmWallet.isReady
-        && transfer.leftNetwork !== undefined
-        && !isEqual(transfer.leftNetwork.chainId, evmWallet.chainId)
-        && isTransferConfirmed
-        && !isConfirmed
+        && !isPending
     )
 
     return (
@@ -55,28 +46,23 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             status={status}
             txHash={isConfirmed ? transfer.creditProcessorAddress?.toString() : undefined}
             waitingWallet={waitingWallet}
-            wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || everWallet.isInitializing) {
+                if (everWallet.isInitializing) {
                     return null
                 }
 
                 if (waitingWallet) {
                     return (
-                        <WalletsConnectors
-                            evmWallet={evmWallet}
-                            everWallet={everWallet}
-                        />
-                    )
-                }
-
-                if (wrongNetwork) {
-                    return (
-                        <WrongNetworkError
-                            wallet={evmWallet}
-                            network={transfer.leftNetwork}
-                        />
+                        <Button
+                            disabled={everWallet.isConnecting || everWallet.isConnected}
+                            type="primary"
+                            onClick={everWallet.connect}
+                        >
+                            {intl.formatMessage({
+                                id: 'EVER_WALLET_CONNECT_BTN_TEXT',
+                            })}
+                        </Button>
                     )
                 }
 

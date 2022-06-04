@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { TonTransferForm } from '@/modules/Bridge/components/EverscaleTransferForm'
+import { EverscaleTransferForm } from '@/modules/Bridge/components/EverscaleTransferForm'
 
 
 export function EverscaleTransferStep(): JSX.Element {
@@ -22,7 +22,7 @@ export function EverscaleTransferStep(): JSX.Element {
                 </h2>
             </header>
 
-            <TonTransferForm />
+            <EverscaleTransferForm />
         </>
     )
 }

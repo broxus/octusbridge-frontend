@@ -5,7 +5,7 @@ import { PrepareStatusIndicator } from '@/modules/Bridge/components/EverscaleTra
 import { ReleaseStatusIndicator } from '@/modules/Bridge/components/EverscaleTransferForm/ReleaseStatusIndicator'
 
 
-export function TonTransferForm(): JSX.Element {
+export function EverscaleTransferForm(): JSX.Element {
     return (
         <div className="card card--flat card--small crosschain-transfer">
             <div className="crosschain-transfer__statuses">

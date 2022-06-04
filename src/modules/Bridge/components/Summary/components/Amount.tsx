@@ -75,6 +75,19 @@ export function Amount(): JSX.Element {
                                     </b>
                                 )
 
+                            case summary.isEvmToEvm:
+                                return (
+                                    <b className="text-lg text-truncate">
+                                        {(summary.amount && summary.amount !== '0')
+                                            ? formattedAmount(
+                                                summary.amount,
+                                                summary.evmTokenDecimals,
+                                                { preserve: true },
+                                            )
+                                            : '–'}
+                                    </b>
+                                )
+
                             default:
                                 return (
                                     <b className="text-lg text-truncate">

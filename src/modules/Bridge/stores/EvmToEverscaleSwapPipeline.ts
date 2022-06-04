@@ -14,8 +14,10 @@ import {
     toJS,
 } from 'mobx'
 import { Contract } from 'everscale-inpage-provider'
+import Web3 from 'web3'
 
 import { WEVERRootAddress } from '@/config'
+import staticRpc from '@/hooks/useStaticRpc'
 import rpc from '@/hooks/useRpcClient'
 import {
     BridgeConstants,
@@ -109,47 +111,14 @@ export class EvmToEverscaleSwapPipeline<
             return
         }
 
-        this.#chainIdDisposer = reaction(() => this.evmWallet.chainId, async () => {
-            if (
-                this.evmWallet.isConnected
-                && this.everWallet.isConnected
-                // && value === this.leftNetwork?.chainId
-            ) {
-                await this.checkTransaction()
-            }
-        }, { delay: 30 })
-
-        this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, async isConnected => {
-            if (
-                isConnected
-                && this.evmWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
-                await this.checkTransaction()
-            }
-        }, { delay: 30 })
-
         this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
-            if (
-                this.evmWallet.isConnected
-                && this.everWallet.isConnected
-                && this.evmWallet.chainId === this.leftNetwork?.chainId
-            ) {
-                await this.checkTransaction()
-            }
+            await this.checkTransaction(true)
         }, { delay: 30 })
 
-        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
-            if (isConnected) {
-                await this.checkTransaction(true)
-            }
-        }, { delay: 30, fireImmediately: true })
+        await this.checkTransaction()
     }
 
     public dispose(): void {
-        this.#chainIdDisposer?.()
-        this.#evmWalletDisposer?.()
-        this.#everWalletDisposer?.()
         this.#tokensDisposer?.()
         this.stopTransferUpdater()
         this.stopCreditProcessorUpdater()
@@ -157,11 +126,7 @@ export class EvmToEverscaleSwapPipeline<
     }
 
     public async checkTransaction(force: boolean = false): Promise<void> {
-        if (
-            this.txHash === undefined
-            || this.evmWallet.web3 === undefined
-            || (this.state.isCheckingTransaction && !force)
-        ) {
+        if (this.txHash === undefined || (this.state.isCheckingTransaction && !force)) {
             return
         }
 
@@ -175,7 +140,7 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
 
             if (txReceipt == null || txReceipt.to == null) {
                 setTimeout(async () => {
@@ -204,8 +169,7 @@ export class EvmToEverscaleSwapPipeline<
 
     public async resolve(): Promise<void> {
         if (
-            this.evmWallet.web3 === undefined
-            || this.txHash === undefined
+            this.txHash === undefined
             || this.leftNetwork === undefined
             || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
@@ -220,13 +184,13 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            const tx = await this.evmWallet.web3.eth.getTransaction(this.txHash)
+            const tx = await this.web3.eth.getTransaction(this.txHash)
             if (tx == null || tx.to == null) {
                 await this.checkTransaction()
                 return
             }
 
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
 
             addABI(EthAbi.Vault)
             addABI(EthAbi.MultiVault)
@@ -269,7 +233,8 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, this.pipeline?.ethereumConfiguration)
+            await staticRpc.ensureInitialized()
+            const ethConfig = new staticRpc.Contract(TokenAbi.EthEventConfig, this.pipeline?.ethereumConfiguration)
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
             const targetWid = factoryDepositLog!.events[1].value
@@ -515,7 +480,7 @@ export class EvmToEverscaleSwapPipeline<
 
         const { status } = this.swapState
 
-        this.runWithdrawWtonUpdater()
+        this.runWithdrawWeverUpdater()
 
         this.setState('swapState', {
             ...this.swapState,
@@ -637,17 +602,17 @@ export class EvmToEverscaleSwapPipeline<
         this.stopTransferUpdater();
 
         (async () => {
-            if (this.txHash === undefined || this.evmWallet.web3 === undefined) {
+            if (this.txHash === undefined) {
                 return
             }
 
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
 
             if (txReceipt == null) {
                 return
             }
 
-            const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
+            const networkBlockNumber = await this.web3.eth.getBlockNumber()
 
             if (txReceipt.blockNumber == null || networkBlockNumber == null) {
                 this.setState('transferState', {
@@ -685,7 +650,9 @@ export class EvmToEverscaleSwapPipeline<
                     return
                 }
 
-                const ethConfig = new rpc.Contract(
+                await staticRpc.ensureInitialized()
+
+                const ethConfig = new staticRpc.Contract(
                     TokenAbi.EthEventConfig,
                     this.pipeline?.ethereumConfiguration,
                 )
@@ -714,7 +681,7 @@ export class EvmToEverscaleSwapPipeline<
 
                 this.setData('deriveEventAddress', eventAddress)
 
-                const creditFactoryContract = new rpc.Contract(
+                const creditFactoryContract = new staticRpc.Contract(
                     TokenAbi.CreditFactory,
                     BridgeConstants.CreditFactoryAddress,
                 )
@@ -774,7 +741,9 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            const cachedState = (await rpc.getFullContractState({
+            await staticRpc.ensureInitialized()
+
+            const cachedState = (await staticRpc.getFullContractState({
                 address: this.deriveEventAddress,
             })).state
 
@@ -783,17 +752,17 @@ export class EvmToEverscaleSwapPipeline<
                     this.setState('prepareState', this.prepareState)
                 }
 
-                if (this.evmWallet.web3 !== undefined && this.txHash !== undefined) {
+                if (this.txHash !== undefined) {
                     try {
-                        const { blockNumber } = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
-                        const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
+                        const { blockNumber } = await this.web3.eth.getTransactionReceipt(this.txHash)
+                        const networkBlockNumber = await this.web3.eth.getBlockNumber()
                         this.setState('transferState', {
                             ...this.transferState,
                             confirmedBlocksCount: networkBlockNumber - blockNumber,
                         })
 
                         const ts = parseInt(
-                            (await this.evmWallet.web3.eth.getBlock(blockNumber)).timestamp.toString(),
+                            (await this.web3.eth.getBlock(blockNumber)).timestamp.toString(),
                             10,
                         )
                         debug('Outdated ts', `${(Date.now() / 1000) - ts} / 600`)
@@ -811,13 +780,20 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            if (this.creditProcessorContract === undefined || this.creditProcessorAddress === undefined) {
+            if (this.creditProcessorAddress === undefined) {
                 return
             }
 
             await this.checkOwner()
 
-            const creditProcessorDetails = (await this.creditProcessorContract.methods.getDetails({
+            await staticRpc.ensureInitialized()
+
+            const creditProcessorContract = new staticRpc.Contract(
+                TokenAbi.CreditProcessor,
+                this.creditProcessorAddress,
+            )
+
+            const creditProcessorDetails = (await creditProcessorContract.methods.getDetails({
                 answerId: 0,
             }).call()).value0
 
@@ -874,7 +850,7 @@ export class EvmToEverscaleSwapPipeline<
                 }
 
                 if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
-                    const eventContract = new rpc.Contract(
+                    const eventContract = new staticRpc.Contract(
                         TokenAbi.TokenTransferEthEvent,
                         this.deriveEventAddress,
                     )
@@ -912,7 +888,7 @@ export class EvmToEverscaleSwapPipeline<
                 }
             }
 
-            const tx = (await rpc.getTransactions({ address: this.deriveEventAddress })).transactions[0]
+            const tx = (await staticRpc.getTransactions({ address: this.deriveEventAddress })).transactions[0]
 
             this.setState('swapState', {
                 ...this.swapState,
@@ -1010,7 +986,7 @@ export class EvmToEverscaleSwapPipeline<
         runWithdrawTokenUpdater()
     }
 
-    protected runWithdrawWtonUpdater(): void {
+    protected runWithdrawWeverUpdater(): void {
         const status = this.swapState?.status
 
         const runWithdrawWtonUpdater = () => {
@@ -1092,12 +1068,17 @@ export class EvmToEverscaleSwapPipeline<
     }
 
     protected async checkOwner(): Promise<void> {
-        if (this.creditProcessorContract === undefined) {
+        if (this.creditProcessorAddress === undefined) {
             return
         }
 
         try {
-            const owner = (await this.creditProcessorContract.methods.getCreditEventData({
+            await staticRpc.ensureInitialized()
+            const creditProcessorContract = new staticRpc.Contract(
+                TokenAbi.CreditProcessor,
+                this.creditProcessorAddress,
+            )
+            const owner = (await creditProcessorContract.methods.getCreditEventData({
                 answerId: 0,
             }).call()).value0.user
 
@@ -1112,12 +1093,17 @@ export class EvmToEverscaleSwapPipeline<
     }
 
     protected async checkWithdrawBalances(): Promise<void> {
-        if (this.creditProcessorContract === undefined || this.creditProcessorAddress === undefined) {
+        if (this.creditProcessorAddress === undefined) {
             return
         }
 
         try {
-            const creditProcessorDetails = (await this.creditProcessorContract.methods.getDetails({
+            await staticRpc.ensureInitialized()
+            const creditProcessorContract = new staticRpc.Contract(
+                TokenAbi.CreditProcessor,
+                this.creditProcessorAddress,
+            )
+            const creditProcessorDetails = (await creditProcessorContract.methods.getDetails({
                 answerId: 0,
             }).call()).value0
 
@@ -1149,6 +1135,11 @@ export class EvmToEverscaleSwapPipeline<
         catch (e) {
             error('Balances update error', e)
         }
+    }
+
+    protected get web3(): Web3 {
+        const network = findNetwork(this.leftNetwork?.chainId as string, 'evm')
+        return new Web3(network?.rpcUrl as string)
     }
 
     public get amount(): EvmSwapTransferStoreData['amount'] {
@@ -1246,12 +1237,6 @@ export class EvmToEverscaleSwapPipeline<
             ? new rpc.Contract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
             : undefined
     }
-
-    #chainIdDisposer: IReactionDisposer | undefined
-
-    #evmWalletDisposer: IReactionDisposer | undefined
-
-    #everWalletDisposer: IReactionDisposer | undefined
 
     #tokensDisposer: IReactionDisposer | undefined
 
