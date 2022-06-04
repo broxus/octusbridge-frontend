@@ -25,7 +25,7 @@ function PrepareStatusIndicatorInner(): JSX.Element {
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
     const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
-    const waitingWallet = !everWallet.isReady && !isConfirmed
+    const waitingWallet = !everWallet.isReady && !isConfirmed && !isPending
 
     const onPrepare = async () => {
         if (isTransferPage || prepareStatus === 'pending') {

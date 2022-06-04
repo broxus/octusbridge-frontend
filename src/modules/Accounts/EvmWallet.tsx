@@ -63,6 +63,11 @@ export function EvmWallet(): JSX.Element | null {
                                                 <Icon icon="metamaskWalletIcon" ratio={0.45} />
                                             </div>
                                         )}
+                                        {wallet.isWalletConnect && (
+                                            <div className="wallet-icon">
+                                                <Icon icon="walletConnectIcon" ratio={0.8} />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="wallet__info">
                                         <div className="wallet__address" data-address={wallet.address}>

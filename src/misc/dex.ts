@@ -6,6 +6,7 @@ import {
 import { DexAbi } from '@/misc/abi'
 import { DexConstants } from '@/misc/dex-constants'
 import { debug } from '@/utils'
+import staticRpc from '@/hooks/useStaticRpc'
 import rpc from '@/hooks/useRpcClient'
 
 
@@ -24,7 +25,8 @@ export class Dex {
 
     public static async checkPair(leftAddress: Address, rightAddress: Address): Promise<Address | undefined> {
         const pairAddress = await Dex.pairAddress(leftAddress, rightAddress)
-        const pairState = await rpc.getFullContractState({
+        await staticRpc.ensureInitialized()
+        const pairState = await staticRpc.getFullContractState({
             address: pairAddress,
         })
 
@@ -64,7 +66,8 @@ export class Dex {
         rightAddress: Address,
         state?: FullContractState,
     ): Promise<Address> {
-        const rootContract = rpc.createContract(DexAbi.Root, DexConstants.DexRootAddress)
+        await staticRpc.ensureInitialized()
+        const rootContract = new staticRpc.Contract(DexAbi.Root, DexConstants.DexRootAddress)
         const {
             value0: pairAddress,
         } = await rootContract.methods.getExpectedPairAddress({
@@ -76,7 +79,8 @@ export class Dex {
     }
 
     public static async pairIsActive(pairAddress: Address, state?: FullContractState): Promise<boolean> {
-        const pairContract = rpc.createContract(DexAbi.Pair, pairAddress)
+        await staticRpc.ensureInitialized()
+        const pairContract = new staticRpc.Contract(DexAbi.Pair, pairAddress)
         const {
             value0: isActive,
         } = await pairContract.methods.isActive({

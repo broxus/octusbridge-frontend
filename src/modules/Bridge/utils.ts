@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { Contract } from 'everscale-inpage-provider'
 
-import rpc from '@/hooks/useRpcClient'
+import staticRpc from '@/hooks/useStaticRpc'
 import { BridgeConstants, DexConstants, TokenAbi } from '@/misc'
 
 export function unshiftedAmountWithSlippage(amount: BigNumber, slippage: number | string): BigNumber {
@@ -12,7 +12,7 @@ export function unshiftedAmountWithSlippage(amount: BigNumber, slippage: number 
 }
 
 export function getCreditFactoryContract(): Contract<typeof TokenAbi.CreditFactory> {
-    return rpc.createContract(
+    return new staticRpc.Contract(
         TokenAbi.CreditFactory,
         BridgeConstants.CreditFactoryAddress,
     )

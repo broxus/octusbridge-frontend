@@ -13,8 +13,10 @@ import {
     toJS,
 } from 'mobx'
 import { Address, Subscription } from 'everscale-inpage-provider'
+import Web3 from 'web3'
 
 import rpc from '@/hooks/useRpcClient'
+import staticRpc from '@/hooks/useStaticRpc'
 import { EthAbi, TokenAbi, TokenWallet } from '@/misc'
 import {
     DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA,
@@ -62,7 +64,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         this.data = DEFAULT_EVM_TO_TON_TRANSFER_STORE_DATA
         this.state = DEFAULT_EVM_TO_TON_TRANSFER_STORE_STATE
 
-        makeObservable<EvmToEverscalePipeline>(this, {
+        makeObservable<EvmToEverscalePipeline, 'web3'>(this, {
             amount: computed,
             deriveEventAddress: computed,
             leftAddress: computed,
@@ -78,6 +80,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             useEverWallet: computed,
             useEvmWallet: computed,
             useTokensAssets: computed,
+            web3: computed,
         })
     }
 
@@ -87,31 +90,20 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         }
 
         this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
-            if (this.evmWallet.isConnected) {
-                await this.checkTransaction()
-            }
+            await this.checkTransaction(true)
         }, { delay: 30 })
 
-        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, async isConnected => {
-            if (isConnected) {
-                await this.checkTransaction(true)
-            }
-        }, { delay: 30, fireImmediately: true })
+        await this.checkTransaction()
     }
 
     public dispose(): void {
-        this.#evmWalletDisposer?.()
         this.#tokensDisposer?.()
         this.stopTransferUpdater()
         this.stopPrepareUpdater()
     }
 
     public async checkTransaction(force: boolean = false): Promise<void> {
-        if (
-            this.txHash === undefined
-            || this.evmWallet.web3 === undefined
-            || (this.state.isCheckingTransaction && !force)
-        ) {
+        if (this.txHash === undefined || (this.state.isCheckingTransaction && !force)) {
             return
         }
 
@@ -125,7 +117,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         })
 
         try {
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
 
             if (txReceipt == null || txReceipt.to == null) {
                 setTimeout(async () => {
@@ -161,8 +153,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
     public async resolve(): Promise<void> {
         if (
-            this.evmWallet.web3 === undefined
-            || this.txHash === undefined
+            this.txHash === undefined
             || this.leftNetwork === undefined
             || this.tokensAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
@@ -177,7 +168,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         })
 
         try {
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
 
             if (txReceipt == null || txReceipt.to == null) {
                 await this.checkTransaction()
@@ -426,7 +417,10 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 return
             }
 
-            const ethConfig = new rpc.Contract(TokenAbi.EthEventConfig, this.pipeline.ethereumConfiguration)
+            await staticRpc.ensureInitialized()
+
+            const ethConfig = new staticRpc.Contract(TokenAbi.EthEventConfig, this.pipeline.ethereumConfiguration)
+
             const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
 
@@ -542,12 +536,12 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         this.stopTransferUpdater();
 
         (async () => {
-            if (this.txHash === undefined || this.evmWallet.web3 === undefined) {
+            if (this.txHash === undefined) {
                 return
             }
 
-            const txReceipt = await this.evmWallet.web3.eth.getTransactionReceipt(this.txHash)
-            const networkBlockNumber = await this.evmWallet.web3.eth.getBlockNumber()
+            const txReceipt = await this.web3.eth.getTransactionReceipt(this.txHash)
+            const networkBlockNumber = await this.web3.eth.getBlockNumber()
 
             if (txReceipt?.blockNumber == null || networkBlockNumber == null) {
                 this.setState('transferState', {
@@ -592,7 +586,9 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                     return
                 }
 
-                const ethConfig = new rpc.Contract(
+                await staticRpc.ensureInitialized()
+
+                const ethConfig = new staticRpc.Contract(
                     TokenAbi.EthEventConfig,
                     this.pipeline.ethereumConfiguration,
                 )
@@ -609,13 +605,14 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
                 if (alienTransferLog != null) {
                     if (!this.prepareState?.isTokenDeployed) {
-                        const { state } = await rpc.getFullContractState({
+                        const { state } = await staticRpc.getFullContractState({
                             address: new Address(this.pipeline!.everscaleTokenAddress!),
                         })
 
                         this.setState({
                             prepareState: {
                                 ...this.prepareState,
+                                status: transferState.status === 'confirmed' ? 'pending' : this.prepareState?.status,
                                 isTokenDeployed: state?.isDeployed ?? false,
                             } as EvmTransferStoreState['prepareState'],
                             transferState,
@@ -718,7 +715,9 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 })
             }
 
-            const cachedState = (await rpc.getFullContractState({
+            await staticRpc.ensureInitialized()
+
+            const cachedState = (await staticRpc.getFullContractState({
                 address: this.deriveEventAddress,
             })).state
 
@@ -729,14 +728,15 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         isDeployed: false,
                         status: 'disabled',
                     })
+                    return
                 }
+
                 if (this.prepareState?.status !== 'pending') {
                     this.setState('prepareState', this.prepareState)
                 }
-                return
             }
 
-            const eventContract = new rpc.Contract(
+            const eventContract = new staticRpc.Contract(
                 TokenAbi.TokenTransferEthEvent,
                 this.deriveEventAddress,
             )
@@ -790,7 +790,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                     } as TokenAsset
 
                     try {
-                        const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
+                        const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
                         const meta = await rootContract.methods.meta({ answerId: 0 }).call()
                         const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
                         const evmToken = this.tokensAssets.get('evm', meta.base_chainId, evmTokenAddress)
@@ -869,6 +869,11 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                 error('Unsubscribe error', e)
             }
         }
+    }
+
+    protected get web3(): Web3 {
+        const network = findNetwork(this.leftNetwork?.chainId as string, 'evm')
+        return new Web3(network?.rpcUrl as string)
     }
 
     public get pipeline(): EvmTransferStoreData['pipeline'] {
@@ -962,8 +967,6 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
     }
 
     #alienTokenRootDeploySubscriber: Subscription<'contractStateChanged'> | undefined
-
-    #evmWalletDisposer: IReactionDisposer | undefined
 
     #tokensDisposer: IReactionDisposer | undefined
 

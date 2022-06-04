@@ -12,11 +12,7 @@ function SecondPrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmHiddenSwapTransfer()
 
-    const everWallet = transfer.useEverWallet
-    const isSwapConfirmed = transfer.swapState?.status === 'confirmed'
     const { status = 'disabled' } = { ...transfer.secondPrepareState }
-    const isConfirmed = status === 'confirmed'
-    const waitingWallet = !everWallet.isReady && isSwapConfirmed && !isConfirmed
 
     return (
         <PrepareStatus
@@ -31,7 +27,6 @@ function SecondPrepareStatusIndicatorInner(): JSX.Element {
             })}
             status={status}
             txHash={transfer.contractAddress?.toString()}
-            waitingWallet={waitingWallet}
         />
     )
 }

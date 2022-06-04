@@ -1,13 +1,10 @@
 import * as React from 'react'
 import BigNumber from 'bignumber.js'
-import isEqual from 'lodash.isequal'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { SwapStatus } from '@/modules/Bridge/components/Statuses'
-import { WalletsConnectors } from '@/modules/Bridge/components/WalletsConnectors'
-import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useEvmHiddenSwapTransfer } from '@/modules/Bridge/providers'
 import { CreditProcessorState } from '@/modules/Bridge/types'
 import { isGoodBignumber } from '@/utils'
@@ -17,7 +14,6 @@ function SwapStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEvmHiddenSwapTransfer()
 
-    const evmWallet = transfer.useEvmWallet
     const everWallet = transfer.useEverWallet
     const isEventConfirmed = transfer.eventState?.status === 'confirmed'
     const status = transfer.swapState?.status || 'disabled'
@@ -34,15 +30,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
         CreditProcessorState.ProcessRequiresGas,
     ].includes(transfer.creditProcessorState) : false
     const waitingWallet = (
-        (!evmWallet.isReady || !everWallet.isReady)
-        && isEventConfirmed
-        && !isConfirmed
-        && !isCancelled
-    )
-    const wrongNetwork = (
-        evmWallet.isReady
-        && transfer.leftNetwork !== undefined
-        && !isEqual(transfer.leftNetwork.chainId, evmWallet.chainId)
+        !everWallet.isReady
         && isEventConfirmed
         && !isConfirmed
         && !isCancelled
@@ -59,29 +47,10 @@ function SwapStatusIndicatorInner(): JSX.Element {
             })}
             status={status}
             waitingWallet={waitingWallet}
-            wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing || everWallet.isInitializing) {
+                if (everWallet.isInitializing) {
                     return null
-                }
-
-                if (waitingWallet) {
-                    return (
-                        <WalletsConnectors
-                            evmWallet={evmWallet}
-                            everWallet={everWallet}
-                        />
-                    )
-                }
-
-                if (wrongNetwork) {
-                    return (
-                        <WrongNetworkError
-                            wallet={evmWallet}
-                            network={transfer.leftNetwork}
-                        />
-                    )
                 }
 
                 const displayProcessBtn = (
@@ -95,6 +64,20 @@ function SwapStatusIndicatorInner(): JSX.Element {
 
                 switch (true) {
                     case displayProcessBtn || displayCancelBtn:
+                        if (waitingWallet) {
+                            return (
+                                <Button
+                                    disabled={everWallet.isConnecting || everWallet.isConnected}
+                                    type="primary"
+                                    onClick={everWallet.connect}
+                                >
+                                    {intl.formatMessage({
+                                        id: 'EVER_WALLET_CONNECT_BTN_TEXT',
+                                    })}
+                                </Button>
+                            )
+                        }
+
                         return (
                             <div className="btn-group">
                                 {displayProcessBtn && (
@@ -131,17 +114,31 @@ function SwapStatusIndicatorInner(): JSX.Element {
                         )
 
                     case isCancelled && transfer.isOwner: {
+                        if (waitingWallet) {
+                            return (
+                                <Button
+                                    disabled={everWallet.isConnecting || everWallet.isConnected}
+                                    type="primary"
+                                    onClick={everWallet.connect}
+                                >
+                                    {intl.formatMessage({
+                                        id: 'EVER_WALLET_CONNECT_BTN_TEXT',
+                                    })}
+                                </Button>
+                            )
+                        }
+
                         const hasTokens = isGoodBignumber(
                             new BigNumber(transfer.swapState?.tokenBalance || 0),
                         )
-                        const hasTons = isGoodBignumber(
+                        const hasEvers = isGoodBignumber(
                             new BigNumber(transfer.swapState?.everBalance || 0),
                         )
-                        const hasWtons = isGoodBignumber(
+                        const hasWevers = isGoodBignumber(
                             new BigNumber(transfer.swapState?.weverBalance || 0),
                         )
 
-                        if (!hasTokens && !hasTons && !hasWtons) {
+                        if (!hasTokens && !hasEvers && !hasWevers) {
                             return null
                         }
 
@@ -161,7 +158,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
                                         })}
                                     </Button>
                                 )}
-                                {hasWtons && (
+                                {hasWevers && (
                                     <Button
                                         disabled={transfer.swapState?.isWithdrawing}
                                         key="wtons"
@@ -173,7 +170,7 @@ function SwapStatusIndicatorInner(): JSX.Element {
                                         })}
                                     </Button>
                                 )}
-                                {hasTons && (
+                                {hasEvers && (
                                     <Button
                                         disabled={transfer.swapState?.isWithdrawing}
                                         key="ton"
