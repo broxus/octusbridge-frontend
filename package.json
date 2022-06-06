@@ -1,7 +1,14 @@
 {
-    "name": "ton-bridge-v2",
-    "version": "0.0.1",
-    "private": true,
+    "name": "octusbridge-frontend",
+    "version": "1.0.0",
+    "description": "OctusBridge frontend source code",
+    "keywords": [
+        "everscale",
+        "ever",
+        "blockchain",
+        "bridge"
+    ],
+    "license": "AGPL-3.0",
     "engines": {
         "node": ">=16",
         "npm": ">=8"
