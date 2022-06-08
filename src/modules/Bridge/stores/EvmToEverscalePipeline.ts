@@ -490,8 +490,8 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
         if (
             this.everWallet.account?.address === undefined
             || this.pipeline?.everscaleTokenAddress === undefined
-            || this.token?.chainId === undefined
-            || this.token?.name === undefined
+            || this.pipeline?.evmTokenAddress === undefined
+            || this.leftNetwork?.chainId === undefined
         ) {
             return
         }
@@ -505,14 +505,20 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
             await this.subscribeAlienTokenRootDeploy()
 
+            const [decimals, name, symbol] = await Promise.all([
+                this.tokensAssets.getEvmTokenDecimals(this.pipeline.evmTokenAddress, this.leftNetwork.chainId),
+                this.tokensAssets.getEvmTokenName(this.pipeline.evmTokenAddress, this.leftNetwork.chainId),
+                this.tokensAssets.getEvmTokenSymbol(this.pipeline.evmTokenAddress, this.leftNetwork.chainId),
+            ])
+
             await alienTokenProxyContract(rpc, this.pipeline.proxy).methods
                 .deployAlienToken({
-                    chainId: this.token.chainId,
-                    decimals: this.token.decimals,
-                    name: this.token.name,
+                    chainId: this.leftNetwork.chainId,
+                    decimals,
+                    name,
                     remainingGasTo: this.everWallet.account.address,
-                    symbol: this.token.symbol,
-                    token: this.token.root,
+                    symbol,
+                    token: this.pipeline.everscaleTokenAddress,
                 })
                 .send({
                     amount: '5000000000',

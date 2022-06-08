@@ -1050,6 +1050,18 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         )
     }
 
+    public async getEvmTokenName(root: string, chainId: string): Promise<string> {
+        return this.getEvmTokenContract(root, chainId)?.methods
+            .name()
+            .call()
+    }
+
+    public async getEvmTokenSymbol(root: string, chainId: string): Promise<string> {
+        return this.getEvmTokenContract(root, chainId)?.methods
+            .symbol()
+            .call()
+    }
+
     /**
      * Sync EVM token balance by the given Evm token `root` address and `pipeline`
      * @param {string} [root]

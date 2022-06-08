@@ -724,7 +724,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     return undefined
                 }
                 return undefined
-            }).first()
+            })
+                .first()
 
             const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
 
@@ -933,7 +934,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     return undefined
                 }
                 return undefined
-            }).first()
+            })
+                .first()
 
             const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
 
@@ -1118,7 +1120,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     return undefined
                 }
                 return undefined
-            }).first()
+            })
+                .first()
 
             const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
 
