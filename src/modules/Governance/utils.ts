@@ -92,7 +92,7 @@ export function calcGazToUnlockVotes(count: number): string {
     const minAmountBN = new BigNumber(MinGasToUnlockCastedVotes)
     const unlockAmountBN = new BigNumber(GasToUnlockCastedVote)
         .times(count)
-        .plus('1000000000')
+        .plus('1500000000')
     const amountBN = BigNumber.max(unlockAmountBN, minAmountBN)
 
     return amountBN.toFixed()
