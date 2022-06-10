@@ -1082,45 +1082,45 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         const subscriber = new rpc.Subscriber()
 
         try {
-            const eventStream = subscriber.transactions(
-                everscaleConfigurationContract.address,
-            ).flatMap(item => item.transactions).filter(tx => !startLt || tx.id.lt > startLt).filterMap(async tx => {
-                const decodedTx = await everscaleConfigurationContract.decodeTransaction({
-                    methods: ['deployEvent'],
-                    transaction: tx,
-                })
-
-                if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
-                    const { eventData } = decodedTx.input.eventVoteData
-                    const event = await rpc.unpackFromCell({
-                        allowPartial: true,
-                        boc: eventData,
-                        structure: [
-                            { name: 'proxy', type: 'address' },
-                            { name: 'token', type: 'address' },
-                            { name: 'remainingGasTo', type: 'address' },
-                            { name: 'amount', type: 'uint128' },
-                            { name: 'recipient', type: 'uint160' },
-                        ] as const,
+            const eventStream = subscriber.transactions(everscaleConfigurationContract.address)
+                .flatMap(item => item.transactions).filter(tx => !startLt || tx.id.lt > startLt)
+                .filterMap(async tx => {
+                    const decodedTx = await everscaleConfigurationContract.decodeTransaction({
+                        methods: ['deployEvent'],
+                        transaction: tx,
                     })
 
-                    const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
+                    if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                        const { eventData } = decodedTx.input.eventVoteData
+                        const event = await rpc.unpackFromCell({
+                            allowPartial: true,
+                            boc: eventData,
+                            structure: [
+                                { name: 'proxy', type: 'address' },
+                                { name: 'token', type: 'address' },
+                                { name: 'remainingGasTo', type: 'address' },
+                                { name: 'amount', type: 'uint128' },
+                                { name: 'recipient', type: 'uint160' },
+                            ] as const,
+                        })
 
-                    if (
-                        event.data.remainingGasTo.toString().toLowerCase() === this.leftAddress.toLowerCase()
-                        && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
-                    ) {
-                        const eventAddress = await everscaleConfigurationContract.methods.deriveEventAddress({
-                            answerId: 0,
-                            eventVoteData: decodedTx.input.eventVoteData,
-                        }).call()
+                        const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
 
-                        return eventAddress.eventContract
+                        if (
+                            event.data.remainingGasTo.toString().toLowerCase() === this.leftAddress.toLowerCase()
+                            && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                        ) {
+                            const eventAddress = await everscaleConfigurationContract.methods.deriveEventAddress({
+                                answerId: 0,
+                                eventVoteData: decodedTx.input.eventVoteData,
+                            }).call()
+
+                            return eventAddress.eventContract
+                        }
+                        return undefined
                     }
                     return undefined
-                }
-                return undefined
-            })
+                })
                 .first()
 
             const walletContract = await this.tokensAssets.getTokenWalletContract(this.token.root)
@@ -1131,7 +1131,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             }
 
             if (this.pipeline.mergePool && this.pipeline.mergeEverscaleToken) {
-
                 const operationPayload = await rpc.packIntoCell({
                     data: {
                         addr: this.rightAddress,
@@ -2134,8 +2133,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                     runInAction(() => {
                         if (this.pipeline?.mergeEvmToken) {
-                            this.pipeline!.isNative = false
-                            this.pipeline!.evmTokenAddress = this.pipeline.mergeEvmToken
+                            this.pipeline.isNative = false
+                            this.pipeline.evmTokenAddress = this.pipeline.mergeEvmToken
                             this.setData(
                                 'isTokenChainSameToTargetChain',
                                 true,
