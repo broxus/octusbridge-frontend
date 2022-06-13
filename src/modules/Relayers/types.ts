@@ -62,12 +62,15 @@ export type RelayersSearchFilters = {
     stakeLe?: string;
 }
 
+export type RoundInterval = 'bidding' | 'default';
+
 export type RelayersSearchParams = RelayersSearchFilters & {
     limit: number;
     offset: number;
     ordering: RelayersSearchOrdering;
     roundNum?: number;
     transferContractAddress?: string;
+    roundInterval?: RoundInterval;
 }
 
 export type RelayersSearchResponse = {

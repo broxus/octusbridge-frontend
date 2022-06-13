@@ -83,6 +83,7 @@ export function BiddingRoundInner(): JSX.Element {
             <RelayersProvider>
                 <Relayers
                     roundNum={parseInt(params.num, 10)}
+                    roundInterval="bidding"
                 />
             </RelayersProvider>
         </Container>

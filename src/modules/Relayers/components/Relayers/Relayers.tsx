@@ -12,7 +12,7 @@ import { UserCard } from '@/components/common/UserCard'
 import { Status } from '@/modules/Relayers/components/Relayers/status'
 import { Ratio } from '@/components/common/Ratio'
 import { useRelayersContext } from '@/modules/Relayers/providers'
-import { RelayersSearchFilters, RelayersSearchOrdering } from '@/modules/Relayers/types'
+import { RelayersSearchFilters, RelayersSearchOrdering, RoundInterval } from '@/modules/Relayers/types'
 import { DateCard } from '@/components/common/DateCard'
 import { formattedAmount } from '@/utils'
 import {
@@ -29,6 +29,7 @@ type Props = {
     roundNum?: number;
     transferContractAddress?: string;
     showFilter?: boolean;
+    roundInterval?: RoundInterval;
 }
 
 export function RelayersInner({
@@ -36,6 +37,7 @@ export function RelayersInner({
     roundNum,
     transferContractAddress,
     showFilter = true,
+    roundInterval,
 }: Props): JSX.Element {
     const intl = useIntl()
     const relayers = useRelayersContext()
@@ -67,6 +69,7 @@ export function RelayersInner({
             stakeLe,
             createdAtGe,
             createdAtLe,
+            roundInterval,
             limit: pagination.limit,
             offset: pagination.offset,
             ordering: tableOrder.order,
@@ -78,6 +81,7 @@ export function RelayersInner({
         stakeLe,
         createdAtGe,
         createdAtLe,
+        roundInterval,
         pagination.offset,
         pagination.limit,
         tableOrder.order,
