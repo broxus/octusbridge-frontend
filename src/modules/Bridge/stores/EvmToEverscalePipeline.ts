@@ -518,7 +518,7 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                     name,
                     remainingGasTo: this.everWallet.account.address,
                     symbol,
-                    token: this.pipeline.everscaleTokenAddress,
+                    token: `0x${new BigNumber(this.pipeline.evmTokenAddress).toString(16).padStart(40, '0')}`.toLowerCase(),
                 })
                 .send({
                     amount: '5000000000',
