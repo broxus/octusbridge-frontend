@@ -458,6 +458,7 @@ export default {
     TRANSFERS_BC_FROM: '로부터',
     TRANSFERS_BC_TO: '에게',
     TRANSFERS_TOKEN: '토큰',
+    TRANSFERS_ONLY_MY_TRANSFERS_LABEL: '내 전송기록만 보기',
     TRANSFERS_STATUS_CONFIRMED: '실행됨',
     TRANSFERS_STATUS_PENDING: '보류 중',
     TRANSFERS_STATUS_REJECTED: '취소됨',

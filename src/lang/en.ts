@@ -622,6 +622,7 @@ export default {
     TRANSFERS_BC_FROM: 'From',
     TRANSFERS_BC_TO: 'To',
     TRANSFERS_TOKEN: 'Token',
+    TRANSFERS_ONLY_MY_TRANSFERS_LABEL: 'Only my transfers',
 
     TRANSFERS_STATUS_CONFIRMED: 'Executed',
     TRANSFERS_STATUS_PENDING: 'Pending',

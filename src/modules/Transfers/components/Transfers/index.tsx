@@ -11,7 +11,9 @@ import {
     TextFilter,
     TokenFilter,
 } from '@/components/common/Filters'
-import { Header, Section, Title } from '@/components/common/Section'
+import {
+    Actions, Header, Section, Title,
+} from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import {
     useDateParam,
@@ -34,6 +36,7 @@ import { useEverWallet } from '@/stores/EverWalletService'
 import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
 import { error } from '@/utils'
 import { Select } from '@/components/common/Select'
+import { Checkbox } from '@/components/common/Checkbox'
 
 
 function TransfersListInner(): JSX.Element {
@@ -219,6 +222,19 @@ function TransfersListInner(): JSX.Element {
         })
     }
 
+    const toggleUserTransfers = () => {
+        changeFilters({
+            fromId,
+            toId,
+            status,
+            transferType,
+            createdAtGe,
+            createdAtLe,
+            tonTokenAddress,
+            userAddress: userAddress === tonWallet.address ? undefined : tonWallet.address,
+        })
+    }
+
     React.useEffect(() => {
         (async () => {
             await fetchAll()
@@ -246,157 +262,168 @@ function TransfersListInner(): JSX.Element {
                     })}
                 </Title>
 
-                <Filters<TransfersFilters>
-                    filters={{
-                        fromId,
-                        toId,
-                        status,
-                        transferType,
-                        createdAtGe,
-                        createdAtLe,
-                        tonTokenAddress,
-                        userAddress,
-                    }}
-                    onChange={changeFilters}
-                >
-                    {(filters, changeFilter) => (
-                        <>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_USER',
-                                })}
-                            >
-                                <TextFilter
-                                    value={filters.userAddress}
-                                    onChange={changeFilter('userAddress')}
-                                    placeholder={intl.formatMessage({
-                                        id: 'TRANSFERS_USER_ADDRESS',
-                                    })}
-                                />
-                            </FilterField>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_DATE',
-                                })}
-                            >
-                                <DateFilter
-                                    value={filters.createdAtGe}
-                                    onChange={changeFilter('createdAtGe')}
-                                />
-                                <DateFilter
-                                    value={filters.createdAtLe}
-                                    onChange={changeFilter('createdAtLe')}
-                                />
-                            </FilterField>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_BC_FROM',
-                                })}
-                            >
-                                <Select
-                                    allowClear
-                                    value={filters.fromId}
-                                    onChange={changeFilter('fromId')}
-                                    options={networks.map(item => ({
-                                        value: item.id,
-                                        label: item.label,
-                                    }))}
-                                    placeholder={intl.formatMessage({
-                                        id: 'FILTERS_BC',
-                                    })}
-                                />
-                            </FilterField>
-
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_BC_TO',
-                                })}
-                            >
-                                <Select
-                                    allowClear
-                                    value={filters.toId}
-                                    onChange={changeFilter('toId')}
-                                    options={networks.map(item => ({
-                                        value: item.id,
-                                        label: item.label,
-                                    }))}
-                                    placeholder={intl.formatMessage({
-                                        id: 'FILTERS_BC',
-                                    })}
-                                />
-                            </FilterField>
-
-                            {tokens && (
+                <Actions>
+                    {tonWallet.isReady && (
+                        <Checkbox
+                            checked={userAddress === tonWallet.address}
+                            label={intl.formatMessage({
+                                id: 'TRANSFERS_ONLY_MY_TRANSFERS_LABEL',
+                            })}
+                            onChange={toggleUserTransfers}
+                        />
+                    )}
+                    <Filters<TransfersFilters>
+                        filters={{
+                            fromId,
+                            toId,
+                            status,
+                            transferType,
+                            createdAtGe,
+                            createdAtLe,
+                            tonTokenAddress,
+                            userAddress,
+                        }}
+                        onChange={changeFilters}
+                    >
+                        {(filters, changeFilter) => (
+                            <>
                                 <FilterField
                                     title={intl.formatMessage({
-                                        id: 'TRANSFERS_TOKEN',
+                                        id: 'TRANSFERS_USER',
                                     })}
                                 >
-                                    <TokenFilter
-                                        tokens={tokens}
-                                        tokenAddress={filters.tonTokenAddress}
-                                        onChange={changeFilter('tonTokenAddress')}
+                                    <TextFilter
+                                        value={filters.userAddress}
+                                        onChange={changeFilter('userAddress')}
+                                        placeholder={intl.formatMessage({
+                                            id: 'TRANSFERS_USER_ADDRESS',
+                                        })}
                                     />
                                 </FilterField>
-                            )}
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_STATUS',
-                                })}
-                            >
-                                <RadioFilter<TransfersRequestStatus>
-                                    value={filters.status}
-                                    onChange={changeFilter('status')}
-                                    labels={[{
-                                        id: 'confirmed',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_STATUS_CONFIRMED',
-                                        }),
-                                    }, {
-                                        id: 'pending',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_STATUS_PENDING',
-                                        }),
-                                    }, {
-                                        id: 'rejected',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_STATUS_REJECTED',
-                                        }),
-                                    }]}
-                                />
-                            </FilterField>
-                            <FilterField
-                                title={intl.formatMessage({
-                                    id: 'TRANSFERS_TYPE',
-                                })}
-                            >
-                                <RadioFilter<TransferType>
-                                    value={filters.transferType}
-                                    onChange={changeFilter('transferType')}
-                                    labels={[{
-                                        id: 'Default',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_TYPE_DEFAULT',
-                                        }),
-                                        disabled: !validTypes.includes('Default'),
-                                    }, {
-                                        id: 'Credit',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_TYPE_CREDIT',
-                                        }),
-                                        disabled: !validTypes.includes('Credit'),
-                                    }, {
-                                        id: 'Transit',
-                                        name: intl.formatMessage({
-                                            id: 'TRANSFERS_TYPE_TRANSIT',
-                                        }),
-                                        disabled: !validTypes.includes('Transit'),
-                                    }]}
-                                />
-                            </FilterField>
-                        </>
-                    )}
-                </Filters>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_DATE',
+                                    })}
+                                >
+                                    <DateFilter
+                                        value={filters.createdAtGe}
+                                        onChange={changeFilter('createdAtGe')}
+                                    />
+                                    <DateFilter
+                                        value={filters.createdAtLe}
+                                        onChange={changeFilter('createdAtLe')}
+                                    />
+                                </FilterField>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_BC_FROM',
+                                    })}
+                                >
+                                    <Select
+                                        allowClear
+                                        value={filters.fromId}
+                                        onChange={changeFilter('fromId')}
+                                        options={networks.map(item => ({
+                                            value: item.id,
+                                            label: item.label,
+                                        }))}
+                                        placeholder={intl.formatMessage({
+                                            id: 'FILTERS_BC',
+                                        })}
+                                    />
+                                </FilterField>
+
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_BC_TO',
+                                    })}
+                                >
+                                    <Select
+                                        allowClear
+                                        value={filters.toId}
+                                        onChange={changeFilter('toId')}
+                                        options={networks.map(item => ({
+                                            value: item.id,
+                                            label: item.label,
+                                        }))}
+                                        placeholder={intl.formatMessage({
+                                            id: 'FILTERS_BC',
+                                        })}
+                                    />
+                                </FilterField>
+
+                                {tokens && (
+                                    <FilterField
+                                        title={intl.formatMessage({
+                                            id: 'TRANSFERS_TOKEN',
+                                        })}
+                                    >
+                                        <TokenFilter
+                                            tokens={tokens}
+                                            tokenAddress={filters.tonTokenAddress}
+                                            onChange={changeFilter('tonTokenAddress')}
+                                        />
+                                    </FilterField>
+                                )}
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_STATUS',
+                                    })}
+                                >
+                                    <RadioFilter<TransfersRequestStatus>
+                                        value={filters.status}
+                                        onChange={changeFilter('status')}
+                                        labels={[{
+                                            id: 'confirmed',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_STATUS_CONFIRMED',
+                                            }),
+                                        }, {
+                                            id: 'pending',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_STATUS_PENDING',
+                                            }),
+                                        }, {
+                                            id: 'rejected',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_STATUS_REJECTED',
+                                            }),
+                                        }]}
+                                    />
+                                </FilterField>
+                                <FilterField
+                                    title={intl.formatMessage({
+                                        id: 'TRANSFERS_TYPE',
+                                    })}
+                                >
+                                    <RadioFilter<TransferType>
+                                        value={filters.transferType}
+                                        onChange={changeFilter('transferType')}
+                                        labels={[{
+                                            id: 'Default',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_DEFAULT',
+                                            }),
+                                            disabled: !validTypes.includes('Default'),
+                                        }, {
+                                            id: 'Credit',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_CREDIT',
+                                            }),
+                                            disabled: !validTypes.includes('Credit'),
+                                        }, {
+                                            id: 'Transit',
+                                            name: intl.formatMessage({
+                                                id: 'TRANSFERS_TYPE_TRANSIT',
+                                            }),
+                                            disabled: !validTypes.includes('Transit'),
+                                        }]}
+                                    />
+                                </FilterField>
+                            </>
+                        )}
+                    </Filters>
+                </Actions>
             </Header>
 
             <div className="card card--flat card--small">
