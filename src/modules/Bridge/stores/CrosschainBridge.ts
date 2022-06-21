@@ -1566,8 +1566,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isFetching', true)
 
-            this.tokensAssets.buildPipelines(this.leftNetwork.type, this.leftNetwork.chainId, selectedToken)
-
             if (
                 this.token?.root !== undefined
                 && this.leftNetwork?.type !== undefined
@@ -1577,18 +1575,19 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             ) {
                 const everscaleMainNetwork = getEverscaleMainNetwork()
 
+                const from = `${this.leftNetwork.type}-${this.leftNetwork.chainId}`
+                const to = this.isEvmToEvm
+                    ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                    : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`
+
                 const pipeline = await this.tokensAssets.pipeline(
                     this.token.root,
-                    `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-                    this.isEvmToEvm
-                        ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                        : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+                    from,
+                    to,
                     this.depositType,
                 )
 
-
                 this.setData('pipeline', pipeline)
-
             }
 
             if (this.isFromEvm && this.isCreditAvailable) {
@@ -2596,6 +2595,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             && this.leftAddress.length > 0
             && this.rightNetwork !== undefined
             && this.rightAddress.length > 0
+            && this.tokensAssets.isReady
         )
 
         if (this.isFromEvm) {

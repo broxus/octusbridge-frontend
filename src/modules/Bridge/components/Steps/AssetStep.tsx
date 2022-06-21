@@ -40,21 +40,17 @@ export function AssetStep(): JSX.Element {
         bridge.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
     }
 
-    React.useEffect(() => {
-        const dispose = reaction(
-            () => bridge.evmPendingWithdrawal,
-            () => {
-                if (bridge.evmPendingWithdrawal) {
-                    bridge.setData('selectedToken', bridge.evmPendingWithdrawal.evmTokenAddress)
-                }
-            },
-            {
-                fireImmediately: true,
-            },
-        )
-
-        return dispose
-    }, [])
+    React.useEffect(() => reaction(
+        () => bridge.evmPendingWithdrawal,
+        () => {
+            if (bridge.evmPendingWithdrawal) {
+                bridge.setData('selectedToken', bridge.evmPendingWithdrawal.evmTokenAddress)
+            }
+        },
+        {
+            fireImmediately: true,
+        },
+    ), [])
 
     return (
         <>

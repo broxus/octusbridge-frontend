@@ -31,7 +31,6 @@ import { NetworkType, Token } from '@/types'
 import {
     error,
     findNetwork,
-    getEverscaleMainNetwork,
     isEverscaleAddressValid,
     isEvmAddressValid,
     storage,
@@ -112,10 +111,6 @@ export type Pipeline = {
     withdrawFee?: string;
 }
 
-export type ComposedPipelinesHash = {
-    [composedKey: string]: Pipeline;
-}
-
 
 type TokensAssetsStoreData = {
     assets: TokensAssets;
@@ -133,6 +128,55 @@ type TokensAssetsServiceCtorOptions = {
     primaryTokensList: TokensListService;
 }
 
+
+export async function getCanonicalToken(pipeline: Pipeline): Promise<string | undefined> {
+    try {
+        if (pipeline.everscaleTokenAddress === undefined) {
+            return undefined
+        }
+        const proxyContract = new staticRpc.Contract(
+            MultiVault.AlienProxy,
+            new Address(pipeline.proxy),
+        )
+        const mergeRouterAddress = (await proxyContract.methods.deriveMergeRouter({
+            token: new Address(pipeline.everscaleTokenAddress),
+            answerId: 0,
+        }).call()).router
+
+        const mergeRouterState = (await staticRpc.getFullContractState(
+            { address: mergeRouterAddress },
+        )).state
+
+        if (mergeRouterState?.isDeployed) {
+            const mergeRouterContract = new staticRpc.Contract(
+                MultiVault.MergeRouter,
+                mergeRouterAddress,
+            )
+            const mergePoolAddress = (await mergeRouterContract.methods.getPool({
+                answerId: 0,
+            }).call()).value0
+
+            const mergePoolState = (await staticRpc.getFullContractState({
+                address: mergePoolAddress,
+            })).state
+
+            if (mergePoolState?.isDeployed) {
+                const mergePoolContract = new staticRpc.Contract(
+                    MultiVault.MergePool,
+                    mergePoolAddress,
+                )
+                return (await mergePoolContract.methods.getCanon({
+                    answerId: 0,
+                }).call()).value0.toString()
+            }
+        }
+        return undefined
+    }
+    catch (e) {
+        error('Check merged token error', e)
+        return undefined
+    }
+}
 
 export function alienTokenProxyContract(
     provider: ProviderRpcClient,
@@ -178,7 +222,8 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
         makeObservable<TokensAssetsService, '_byKey'>(this, {
             _byKey: computed,
-            pipelines: computed,
+            isFetchingAssets: computed,
+            isReady: computed,
         })
 
         // When the Tokens List Service has loaded the list of
@@ -211,8 +256,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             return
         }
 
-        this.setState('isReady', false)
-
         this.tokensList.tokens.forEach(token => {
             this.add({
                 chainId: token.chainId.toString(),
@@ -227,8 +270,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 vendor: token.vendor,
                 verified: token.verified,
             })
-
-            this.buildPipelines('everscale', token.chainId.toString(), token.address.toLowerCase())
         })
 
         const exists = new Set<string>()
@@ -255,7 +296,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                             })
 
                             exists.add(key)
-                            this.buildPipelines('evm', vault.chainId.toString(), vault.token.toLowerCase())
                         }
                     })
                 })
@@ -303,8 +343,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 }
             }, 10)
         }
-
-        this.setState('isReady', true)
     }
 
     /**
@@ -360,98 +398,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
     }
 
     /**
-     * Build token pipelines
-     * @param networkType
-     * @param chainId
-     * @param {string} [root]
-     */
-    public buildPipelines(networkType: string, chainId: string, root: string): void {
-        const tokenRoot = root?.toLowerCase()
-        let assetRoot: string | undefined
-
-        if (isEvmAddressValid(tokenRoot)) {
-            assetRoot = this.findAssetRootByVaultTokenAndChain(tokenRoot, chainId)
-        }
-
-        const token = this.get(networkType, chainId, tokenRoot)
-
-        if (token === undefined) {
-            return
-        }
-
-        const bridgeAssets = this.assets[assetRoot ?? tokenRoot]
-
-        const pipelinesHash: Record<string, Pipeline> = {}
-
-        token?.pipelines.forEach(pipeline => {
-            pipelinesHash[`${tokenRoot}-${pipeline.from}-${pipeline.to}-${pipeline.depositType}-${pipeline.tokenBase}`] = pipeline
-        })
-
-        const esMainNetwork = getEverscaleMainNetwork()
-        const esMainNetworkId = `${esMainNetwork?.type}-${esMainNetwork?.chainId}`
-
-        const reducer = (acc: Pipeline[], [key, pipeline]: [string, TokenRawPipeline]) => {
-            const [tokenBase, to] = key.split('_') as NetworkType[]
-            pipeline.vaults.forEach(vault => {
-                const firstFrom = tokenBase === esMainNetwork?.type ? esMainNetworkId : `${tokenBase}-${vault.chainId}`
-                const firstTo = to === esMainNetwork?.type ? esMainNetworkId : `${to}-${vault.chainId}`
-                const secondFrom = to === esMainNetwork?.type ? esMainNetworkId : `${to}-${vault.chainId}`
-                const secondTo = tokenBase === esMainNetwork?.type ? esMainNetworkId : `${tokenBase}-${vault.chainId}`
-
-                const firstCached = pipelinesHash[`${tokenRoot}-${firstFrom}-${firstTo}-${vault.depositType}-${tokenBase}`]
-                const secondCached = pipelinesHash[`${tokenRoot}-${secondFrom}-${secondTo}-${vault.depositType}-${tokenBase}`]
-
-                const isEverscaleToken = isEverscaleAddressValid(tokenRoot)
-                const isEvmToken = isEvmAddressValid(tokenRoot)
-
-                const pl = {
-                    chainId: vault.chainId,
-                    depositType: vault.depositType,
-                    ethereumConfiguration: new Address(vault.ethereumConfiguration),
-                    everscaleTokenAddress: isEverscaleToken ? tokenRoot : assetRoot,
-                    evmTokenAddress: isEvmToken ? tokenRoot : undefined,
-                    isMultiVault: false,
-                    proxy: pipeline.proxy,
-                    tokenBase,
-                    vault: vault.vault,
-                }
-
-                acc.push({
-                    ...pl,
-                    everscaleConfiguration: firstCached?.everscaleConfiguration,
-                    evmTokenDecimals: firstCached?.evmTokenDecimals || (
-                        isEvmToken ? token.decimals : undefined
-                    ),
-                    vaultBalance: firstCached?.vaultBalance,
-                    vaultLimit: firstCached?.vaultLimit,
-                    from: firstFrom,
-                    to: firstTo,
-                })
-                // if (!isMultiVault) {
-                acc.push({
-                    ...pl,
-                    everscaleConfiguration: secondCached?.everscaleConfiguration,
-                    evmTokenDecimals: secondCached?.evmTokenDecimals || (
-                        isEvmToken ? token.decimals : undefined
-                    ),
-                    vaultBalance: secondCached?.vaultBalance,
-                    vaultLimit: secondCached?.vaultLimit,
-                    from: secondFrom,
-                    to: secondTo,
-                })
-                // }
-            })
-            return acc
-        }
-
-        runInAction(() => {
-            if (bridgeAssets !== undefined) {
-                token.pipelines = Object.entries({ ...bridgeAssets }).reduce(reducer, [])
-            }
-        })
-    }
-
-    /**
      *
      */
     public get assets(): TokensAssetsStoreData['assets'] {
@@ -463,26 +409,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      */
     public get multiAssets(): TokensAssetsStoreData['multiAssets'] {
         return this.data.multiAssets
-    }
-
-    /**
-     * Returns hash of all possible pipelines
-     * @returns {ComposedPipelinesHash}
-     */
-    public get pipelines(): ComposedPipelinesHash {
-        const pipelines: ComposedPipelinesHash = {}
-        this.tokens.forEach(token => {
-            token.pipelines?.forEach(pipeline => {
-                const key = [
-                    token.root,
-                    pipeline.from,
-                    pipeline.to,
-                    pipeline.depositType,
-                ]
-                pipelines[key.join('-')] = pipeline
-            })
-        })
-        return pipelines
     }
 
     /**
@@ -499,12 +425,62 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
         to: string,
         depositType: string = 'default',
     ): Promise<Pipeline | undefined> {
-        const pipeline = this.pipelines[`${root}-${from}-${to}-${depositType}`]
-        if (pipeline === undefined) {
-            const [fromNetworkType, fromChainId] = from.split('-')
-            const [toNetworkType, toChainId] = to.split('-')
+        if (!this.isReady) {
+            return undefined
+        }
 
-            if (isEvmAddressValid(root)) {
+        const tokenRoot = root?.toLowerCase()
+        const [fromNetworkType, fromChainId] = from.split('-')
+        const [toNetworkType, toChainId] = to.split('-')
+
+        const token = this.get(fromNetworkType, fromChainId, tokenRoot)
+
+        if (token === undefined) {
+            return undefined
+        }
+
+        let pipeline: Pipeline | undefined,
+            assetRoot: string | undefined
+
+        if (isEvmAddressValid(tokenRoot)) {
+            assetRoot = this.findAssetRootByVaultTokenAndChain(tokenRoot, fromChainId)
+        }
+
+        const bridgeAssets = this.assets[assetRoot ?? tokenRoot]
+
+        Object.entries({ ...bridgeAssets }).forEach(([key, { proxy, vaults }]) => {
+            const [tokenBase] = key.split('_') as NetworkType[]
+            pipeline = vaults.map(vault => {
+                const isEverscaleToken = isEverscaleAddressValid(tokenRoot)
+                const isEvmToken = isEvmAddressValid(tokenRoot)
+
+                return {
+                    chainId: vault.chainId,
+                    depositType: vault.depositType,
+                    ethereumConfiguration: new Address(vault.ethereumConfiguration),
+                    everscaleTokenAddress: isEverscaleToken ? tokenRoot : assetRoot,
+                    evmTokenAddress: isEvmToken ? tokenRoot : undefined,
+                    evmTokenDecimals: isEvmToken ? token.decimals : undefined,
+                    isMultiVault: false,
+                    proxy,
+                    tokenBase,
+                    vault: vault.vault,
+                    from,
+                    to,
+                }
+            }).find(asset => {
+                if (fromNetworkType === 'evm') {
+                    return asset.chainId === fromChainId && asset.depositType === depositType
+                }
+                if (toNetworkType === 'evm') {
+                    return asset.chainId === toChainId && asset.depositType === depositType
+                }
+                return undefined
+            })
+        })
+
+        if (pipeline === undefined) {
+            if (isEvmAddressValid(tokenRoot)) {
                 const asset = this.multiAssets[`${fromNetworkType}_${toNetworkType}`]
                 const assetVault = asset.vaults.find(
                     item => item.chainId === fromChainId && item.depositType === depositType,
@@ -512,7 +488,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
                 if (assetVault !== undefined) {
                     const contract = this.getEvmTokenMultiVaultContract(assetVault.vault, fromChainId)
-                    const meta = await contract?.methods.tokens(root).call()
+                    const meta = await contract?.methods.tokens(tokenRoot).call()
 
                     if (meta.isNative) {
                         const oppositeAsset = this.multiAssets[`${toNetworkType}_${fromNetworkType}`]
@@ -526,7 +502,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                 chainId: vault.chainId,
                                 depositType: vault.depositType,
                                 ethereumConfiguration: new Address(vault.ethereumConfiguration),
-                                evmTokenAddress: root,
+                                evmTokenAddress: tokenRoot,
                                 isMultiVault: true,
                                 proxy: oppositeAsset.proxy,
                                 tokenBase: 'everscale',
@@ -542,7 +518,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                             chainId: assetVault.chainId,
                             depositType: assetVault.depositType,
                             ethereumConfiguration: new Address(assetVault.ethereumConfiguration),
-                            evmTokenAddress: root,
+                            evmTokenAddress: tokenRoot,
                             isMultiVault: true,
                             proxy: asset.proxy,
                             tokenBase: 'evm',
@@ -554,7 +530,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                     }
                 }
             }
-            else if (isEverscaleAddressValid(root)) {
+            else if (isEverscaleAddressValid(tokenRoot)) {
                 let alien = false,
                     canonical,
                     mergeEvmToken,
@@ -563,7 +539,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
 
                 try {
                     await staticRpc.ensureInitialized()
-                    const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(root))
+                    const rootContract = new staticRpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(tokenRoot))
                     alien = (await rootContract.methods.meta({ answerId: 0 }).call()).base_chainId === toChainId
                 }
                 catch (e) {
@@ -584,7 +560,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                     new Address(asset.proxy),
                                 )
                                 const mergeRouterAddress = (await proxyContract.methods.deriveMergeRouter({
-                                    token: new Address(root),
+                                    token: new Address(tokenRoot),
                                     answerId: 0,
                                 }).call()).router
                                 const mergeRouterContract = new staticRpc.Contract(
@@ -653,7 +629,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                 chainId: assetVault.chainId,
                                 depositType: assetVault.depositType,
                                 ethereumConfiguration: new Address(assetVault.ethereumConfiguration),
-                                everscaleTokenAddress: root,
+                                everscaleTokenAddress: tokenRoot,
                                 isMultiVault: true,
                                 proxy: asset.proxy,
                                 tokenBase: 'evm',
@@ -666,7 +642,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                 mergePool,
                             }
                             if (canonical === undefined) {
-                                const everscaleTokenAddress = await this.getCanonicalToken(p)
+                                const everscaleTokenAddress = await getCanonicalToken(p)
                                 if (everscaleTokenAddress !== undefined) {
                                     p.everscaleTokenAddress = everscaleTokenAddress
                                 }
@@ -689,7 +665,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                                 chainId: assetVault.chainId,
                                 depositType: assetVault.depositType,
                                 ethereumConfiguration: new Address(assetVault.ethereumConfiguration),
-                                everscaleTokenAddress: root,
+                                everscaleTokenAddress: tokenRoot,
                                 isMultiVault: true,
                                 proxy: asset.proxy,
                                 tokenBase: 'everscale',
@@ -703,6 +679,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 }
             }
         }
+
         return pipeline
     }
 
@@ -795,55 +772,6 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
             ),
         )
         return assetRoot
-    }
-
-    public async getCanonicalToken(pipeline: Pipeline): Promise<string | undefined> {
-        try {
-            if (pipeline.everscaleTokenAddress === undefined) {
-                return undefined
-            }
-            const proxyContract = new staticRpc.Contract(
-                MultiVault.AlienProxy,
-                new Address(pipeline.proxy),
-            )
-            const mergeRouterAddress = (await proxyContract.methods.deriveMergeRouter({
-                token: new Address(pipeline.everscaleTokenAddress),
-                answerId: 0,
-            }).call()).router
-
-            const mergeRouterState = (await staticRpc.getFullContractState(
-                { address: mergeRouterAddress },
-            )).state
-
-            if (mergeRouterState?.isDeployed) {
-                const mergeRouterContract = new staticRpc.Contract(
-                    MultiVault.MergeRouter,
-                    mergeRouterAddress,
-                )
-                const mergePoolAddress = (await mergeRouterContract.methods.getPool({
-                    answerId: 0,
-                }).call()).value0
-
-                const mergePoolState = (await staticRpc.getFullContractState({
-                    address: mergePoolAddress,
-                })).state
-
-                if (mergePoolState?.isDeployed) {
-                    const mergePoolContract = new staticRpc.Contract(
-                        MultiVault.MergePool,
-                        mergePoolAddress,
-                    )
-                    return (await mergePoolContract.methods.getCanon({
-                        answerId: 0,
-                    }).call()).value0.toString()
-                }
-            }
-            return undefined
-        }
-        catch (e) {
-            error('Check merged token error', e)
-            return undefined
-        }
     }
 
     /**
@@ -1309,7 +1237,7 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 .value0
                 .toString()
 
-            const canonicalEverscaleTokenAddress = await this.getCanonicalToken({ ...pipeline, everscaleTokenAddress })
+            const canonicalEverscaleTokenAddress = await getCanonicalToken({ ...pipeline, everscaleTokenAddress })
 
             if (canonicalEverscaleTokenAddress !== undefined) {
                 everscaleTokenAddress = canonicalEverscaleTokenAddress
@@ -1328,11 +1256,14 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
      * @param {string} uri
      */
     public async fetchAssets(uri: string): Promise<void> {
-        if (this.state.isFetchingAssets) {
+        if (this.isFetchingAssets) {
             return
         }
 
-        this.setState('isFetchingAssets', true)
+        this.setState({
+            isFetchingAssets: true,
+            isReady: false,
+        })
 
         fetch(uri, { method: 'GET' }).then(
             value => value.json(),
@@ -1341,11 +1272,22 @@ export class TokensAssetsService extends BaseStore<TokensAssetsStoreData, Tokens
                 assets: value.token,
                 multiAssets: value.multitoken,
             })
-            this.setState('isFetchingAssets', false)
+            this.setState({
+                isFetchingAssets: false,
+                isReady: Object.keys(value.token).length > 0
+                    && 'multitoken' in value ? Object.keys(value.multitoken).length > 0 : true,
+            })
         }).catch(reason => {
             error('Cannot load bridge token assets list', reason)
-            this.setState('isFetchingAssets', false)
+            this.setState({
+                isFetchingAssets: false,
+                isReady: false,
+            })
         })
+    }
+
+    public get isFetchingAssets(): TokensAssetsStoreState['isFetchingAssets'] {
+        return this.state.isFetchingAssets
     }
 
     /**

@@ -15,6 +15,7 @@ import {
 } from '@/modules/Bridge/types'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
+import { Icon } from '@/components/common/Icon'
 
 
 export function RouteStep(): JSX.Element {
@@ -22,6 +23,7 @@ export function RouteStep(): JSX.Element {
     const { bridge } = useBridge()
     const evmWallet = bridge.useEvmWallet
     const everWallet = bridge.useEverWallet
+    const tokenAssets = bridge.useTokensAssets
 
     const onChangeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
         bridge.setData(key, value)
@@ -36,25 +38,21 @@ export function RouteStep(): JSX.Element {
         bridge.setState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
 
-    React.useEffect(() => {
-        const dispose = reaction(
-            () => bridge.evmPendingWithdrawal,
-            () => {
-                if (bridge.evmPendingWithdrawal) {
-                    const { chainId } = bridge.evmPendingWithdrawal
-                    const evmNetwork = networks.find(({ id }) => id === `evm-${chainId}`)
-                    const everNetwork = networks.find(({ id }) => id === 'everscale-1')
-                    bridge.changeNetwork('leftNetwork', evmNetwork)
-                    bridge.changeNetwork('rightNetwork', everNetwork)
-                }
-            },
-            {
-                fireImmediately: true,
-            },
-        )
-
-        return dispose
-    }, [])
+    React.useEffect(() => reaction(
+        () => bridge.evmPendingWithdrawal,
+        () => {
+            if (bridge.evmPendingWithdrawal) {
+                const { chainId } = bridge.evmPendingWithdrawal
+                const evmNetwork = networks.find(({ id }) => id === `evm-${chainId}`)
+                const everNetwork = networks.find(({ id }) => id === 'everscale-1')
+                bridge.changeNetwork('leftNetwork', evmNetwork)
+                bridge.changeNetwork('rightNetwork', everNetwork)
+            }
+        },
+        {
+            fireImmediately: true,
+        },
+    ), [])
 
     return (
         <>
@@ -150,12 +148,14 @@ export function RouteStep(): JSX.Element {
                     {() => (
                         <Button
                             className="crosschain-transfer__btn-next"
-                            disabled={!bridge.isRouteValid}
+                            disabled={tokenAssets.isFetchingAssets || !bridge.isRouteValid}
                             size="lg"
                             type="primary"
                             onClick={nextStep}
                         >
-                            {intl.formatMessage({
+                            {tokenAssets.isFetchingAssets ? (
+                                <Icon icon="loader" className="spin" />
+                            ) : intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT',
                             })}
                         </Button>
