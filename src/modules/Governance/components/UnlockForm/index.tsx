@@ -15,7 +15,7 @@ import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { useVotingContext } from '@/modules/Governance/providers'
 import { usePagination } from '@/hooks'
 import { DexConstants } from '@/misc'
-import { error, formattedAmount } from '@/utils'
+import { error, formattedTokenAmount } from '@/utils'
 import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
@@ -155,10 +155,9 @@ export function UnlockFormInner({
                                             <Icon icon="success" />
                                         ) : (
                                             voting.token?.decimals ? (
-                                                formattedAmount(
+                                                formattedTokenAmount(
                                                     vote.votes,
                                                     voting.token.decimals,
-                                                    { target: 'token' },
                                                 )
                                             ) : noValue
                                         ),
@@ -174,10 +173,9 @@ export function UnlockFormInner({
                                     value: intl.formatMessage({
                                         id: 'AMOUNT',
                                     }, {
-                                        value: formattedAmount(
+                                        value: formattedTokenAmount(
                                             calcGazToUnlockVotes(userProposals.items.length),
                                             DexConstants.CoinDecimals,
-                                            { target: 'token' },
                                         ),
                                         symbol: DexConstants.CoinSymbol,
                                     }),

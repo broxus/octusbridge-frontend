@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 
 export function VaultDetails(): JSX.Element {
@@ -24,10 +24,10 @@ export function VaultDetails(): JSX.Element {
                                 })}
                             </div>
                             <div className="text-truncate">
-                                {formattedAmount(
+                                {formattedTokenAmount(
                                     summary.vaultBalance,
                                     summary.vaultBalanceDecimals,
-                                    { target: 'token' },
+                                    { preserve: true },
                                 )}
                             </div>
                         </li>

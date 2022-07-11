@@ -33,7 +33,7 @@ import {
     TransferType,
 } from '@/modules/Transfers/types'
 import { useEverWallet } from '@/stores/EverWalletService'
-import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
+import { BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { error } from '@/utils'
 import { Select } from '@/components/common/Select'
 import { Checkbox } from '@/components/common/Checkbox'
@@ -42,7 +42,7 @@ import { Checkbox } from '@/components/common/Checkbox'
 function TransfersListInner(): JSX.Element {
     const intl = useIntl()
     const transfers = useTransfersContext()
-    const tokensAssets = useTokensAssets()
+    const bridgeAssets = useBridgeAssets()
     const tonWallet = useEverWallet()
 
     const pagination = usePagination(transfers.totalCount)
@@ -66,15 +66,15 @@ function TransfersListInner(): JSX.Element {
     const tokens = React.useMemo(() => (
         networks
             .filter(item => item.type === 'evm')
-            .flatMap(network => tokensAssets.filterTokensByChainId(network.chainId))
-            .reduce<TokenAsset[]>((acc, token) => {
+            .flatMap(network => bridgeAssets.filterTokensByChain(network.chainId))
+            .reduce<BridgeAsset[]>((acc, token) => {
                 if (acc.findIndex(({ root }) => root === token.root) > -1) {
                     return acc
                 }
                 acc.push(token)
                 return acc
             }, [])
-    ), [tokensAssets.tokens])
+    ), [bridgeAssets.tokens])
 
     let titleId = 'TRANSFERS_ALL_TITLE'
 

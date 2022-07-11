@@ -39,12 +39,12 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             }
             if (
                 bridge.pipeline?.isMultiVault
-                && bridge.pipeline?.isNative === false
+                && bridge.pipeline.isNative === false
                 && bridge.isTokenChainSameToTargetChain
             ) {
                 await bridge.burnViaAlienProxy(reject)
             }
-            else if (bridge.pipeline?.isMultiVault && bridge.pipeline?.isNative === true) {
+            else if (bridge.pipeline?.isMultiVault && bridge.pipeline.isNative === true) {
                 await bridge.transferNativeMultiToken(reject)
             }
             else {

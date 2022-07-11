@@ -43,7 +43,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-250',
         label: 'Fantom Opera',
         name: 'Fantom Opera',
-        rpcUrl: 'https://rpc.ftm.tools/',
+        rpcUrl: 'https://rpc.ankr.com/fantom/',
         transactionType: '0x0',
         type: 'evm',
     },
@@ -101,7 +101,7 @@ export const WEVERRootAddress = new AddressLiteral('0:a49cd4e158a9a15555e624759e
 
 export const CreditBody = '5800000000'
 
-export const EmptyWalletMinTonsAmount = '10000000000'
+export const EmptyWalletMinEversAmount = '10000000000'
 
 export const CreditFactoryAddress = new AddressLiteral('0:5ae128e08b2c17428629e092c1a7bd5c77a83a27fa3b833a31c2eb3d704d7f68')
 

@@ -11,6 +11,7 @@ import {
     RouteStep,
     Summary,
 } from '@/modules/Bridge/components'
+import { Debug } from '@/modules/Bridge/components/Debug'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep, EvmPendingWithdrawal } from '@/modules/Bridge/types'
 
@@ -74,6 +75,10 @@ export function Bridge({
 
                 <aside className="sidebar">
                     <Summary />
+
+                    {process.env.NODE_ENV !== 'production' && (
+                        <Debug />
+                    )}
                 </aside>
             </div>
         </section>

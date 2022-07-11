@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { EvmHiddenSwapTransferStep, Summary } from '@/modules/Bridge/components'
+import { Debug } from '@/modules/Bridge/components/Debug'
 
 
 export function EvmToEvmHiddenSwap(): JSX.Element {
@@ -14,6 +15,10 @@ export function EvmToEvmHiddenSwap(): JSX.Element {
 
                 <aside className="sidebar">
                     <Summary />
+
+                    {process.env.NODE_ENV !== 'production' && (
+                        <Debug />
+                    )}
                 </aside>
             </div>
         </section>

@@ -1,9 +1,10 @@
 import { makeAutoObservable, runInAction, toJS } from 'mobx'
 
-import { error, lastOfCalls } from '@/utils'
+import { error, findNetwork, lastOfCalls } from '@/utils'
 import { handleLiquidityRequests } from '@/modules/LiquidityRequests/utils'
 import { SearchNotInstant, SearchNotInstantRequest, SearchNotInstantResponse } from '@/modules/LiquidityRequests/types'
-import { TokensAssetsService } from '@/stores/TokensAssetsService'
+import { BridgeAssetsService } from '@/stores/BridgeAssetsService'
+import { BridgeUtils } from '@/misc/BridgeUtils'
 
 type Data = {
     liquidityRequests?: SearchNotInstantResponse;
@@ -29,7 +30,7 @@ export class LiquidityRequestsStore {
     protected handleLiquidityRequests = lastOfCalls(handleLiquidityRequests)
 
     constructor(
-        protected tokensAssetsService: TokensAssetsService,
+        protected bridgeAssets: BridgeAssetsService,
     ) {
         makeAutoObservable(this)
     }
@@ -72,7 +73,13 @@ export class LiquidityRequestsStore {
             if (this.getEvmTokenDecimals(evmTokenAddress, chainId) !== undefined) {
                 return
             }
-            const decimals = await this.tokensAssetsService.getEvmTokenDecimals(evmTokenAddress, chainId)
+
+            const network = findNetwork(chainId, 'evm')
+            if (network === undefined) {
+                return
+            }
+
+            const decimals = await BridgeUtils.getEvmTokenDecimals(evmTokenAddress, network.rpcUrl)
             runInAction(() => {
                 this.data.evmTokenDecimals[`${chainId}.${evmTokenAddress}`] = decimals
             })
@@ -126,7 +133,7 @@ export class LiquidityRequestsStore {
     }
 
     public get isReady(): boolean {
-        return this.tokensAssetsService.isReady
+        return this.bridgeAssets.isReady
     }
 
 }

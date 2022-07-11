@@ -13,7 +13,7 @@ import {
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 export class AccountDataStore {
 
@@ -221,7 +221,7 @@ export class AccountDataStore {
         return this.tokensCache.isReady && this.tonWallet.isConnected
     }
 
-    public get token(): Token | undefined {
+    public get token(): TokenCache | undefined {
         if (!this.data.stakingDetails) {
             return undefined
         }

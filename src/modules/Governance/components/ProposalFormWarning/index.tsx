@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite'
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 import { useProposalCreateContext } from '@/modules/Governance/providers'
 
 import './index.scss'
@@ -37,25 +37,22 @@ export function ProposalFormWarningInner(): JSX.Element | null {
                         intl.formatMessage({
                             id: 'PROPOSAL_FORM_LOCKED_TEXT',
                         }, {
-                            locked: formattedAmount(
+                            locked: formattedTokenAmount(
                                 proposalCreate.lockedTokens,
                                 proposalCreate.token.decimals,
-                                { target: 'token' },
                             ),
-                            amount: formattedAmount(
+                            amount: formattedTokenAmount(
                                 proposalCreate.tokenMissing || proposalCreate.threshold,
                                 proposalCreate.token.decimals,
-                                { target: 'token' },
                             ),
                         })
                     ) : (
                         intl.formatMessage({
                             id: 'PROPOSAL_FORM_WARNING_TEXT',
                         }, {
-                            amount: formattedAmount(
+                            amount: formattedTokenAmount(
                                 proposalCreate.tokenMissing || proposalCreate.threshold,
                                 proposalCreate.token.decimals,
-                                { target: 'token' },
                             ),
                         })
                     )}

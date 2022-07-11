@@ -5,7 +5,7 @@ import { Observer } from 'mobx-react-lite'
 import { Description, Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
 import { useVotingContext } from '@/modules/Governance/providers'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 
 export function UserStats(): JSX.Element {
     const intl = useIntl()
@@ -36,9 +36,7 @@ export function UserStats(): JSX.Element {
                                 id: 'USER_VOTES_POWER',
                             })}
                             value={voting.votingPower && voting.tokenDecimals
-                                ? formattedAmount(voting.votingPower, voting.tokenDecimals, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(voting.votingPower, voting.tokenDecimals)
                                 : noValue}
                         />
                         <DataCard

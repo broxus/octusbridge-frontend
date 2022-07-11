@@ -12,7 +12,7 @@ import { DaoRootContractAddress } from '@/config'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 export class ProposalCreateStore {
 
@@ -132,7 +132,7 @@ export class ProposalCreateStore {
         return !!this.state.createLoading
     }
 
-    public get token(): Token | undefined {
+    public get token(): TokenCache | undefined {
         return this.userData.token
     }
 

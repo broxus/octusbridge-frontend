@@ -1,6 +1,5 @@
 import * as React from 'react'
 import BigNumber from 'bignumber.js'
-import { Address } from 'everscale-inpage-provider'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
@@ -8,26 +7,29 @@ import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
 import { BaseSelectRef, Select } from '@/components/common/Select'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import rpc from '@/hooks/useRpcClient'
-import { TokenAbi, TokenWallet } from '@/misc'
+import { TokenWallet } from '@/misc'
 import { TokenImportPopup } from '@/modules/Bridge/components/TokenImportPopup'
 import { useBridge } from '@/modules/Bridge/providers'
-import { TokenAsset } from '@/stores/TokensAssetsService'
 import {
+    findNetwork,
     isEverscaleAddressValid,
     isEvmAddressValid,
     sliceAddress,
     storage,
 } from '@/utils'
+import { EverscaleToken, EvmToken, EvmTokenData } from '@/models'
+import { BridgeAsset } from '@/stores/BridgeAssetsService'
+import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
+import { BridgeUtils } from '@/misc/BridgeUtils'
 
 
 export function TokensAssetsFieldset(): JSX.Element {
     const intl = useIntl()
     const { bridge } = useBridge()
-    const tokensAssets = bridge.useTokensAssets
+    const bridgeAssets = bridge.useBridgeAssets
 
     const selectRef = React.useRef<BaseSelectRef>(null)
-    const [token, setToken] = React.useState<TokenAsset | undefined>()
+    const [token, setToken] = React.useState<BridgeAsset>()
     const [isImporting, setImporting] = React.useState(false)
 
     const onChangeToken = (value?: string) => {
@@ -49,18 +51,18 @@ export function TokensAssetsFieldset(): JSX.Element {
         }
         const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
 
-        importedAssets[token.key] = {
+        importedAssets[token.get('key')] = {
             decimals: token.decimals,
             name: token.name,
             root: token.root,
             icon: token.icon,
             symbol: token.symbol,
             chainId: token.chainId,
-            key: token.key,
+            key: token.get('key'),
         }
 
         storage.set('imported_assets', JSON.stringify(importedAssets))
-        tokensAssets.add(token)
+        bridgeAssets.add(token)
         bridge.setData('selectedToken', token.root)
         setImporting(false)
         setToken(undefined)
@@ -81,80 +83,85 @@ export function TokensAssetsFieldset(): JSX.Element {
         const root = value.toLowerCase()
         const { type, chainId } = bridge.leftNetwork
         const key = `${type}-${chainId}-${root}`
-        if (tokensAssets.has(key)) {
+        if (bridgeAssets.has(key)) {
             bridge.setData('selectedToken', root)
         }
         else if (bridge.isFromEverscale && isEverscaleAddressValid(root)) {
             try {
-                const asset = await TokenWallet.getTokenFullDetails(root) as TokenAsset
+                const asset = await TokenWallet.getTokenFullDetails(root)
 
-                try {
-                    const rootContract = new rpc.Contract(TokenAbi.TokenRootAlienEVM, new Address(asset.root))
-                    const meta = await rootContract.methods.meta({ answerId: 0 }).call()
-                    const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
-                    const evmToken = tokensAssets.get('evm', meta.base_chainId, evmTokenAddress)
-                    asset.icon = evmToken?.icon
-                }
-                catch (e) {
-                    //
-                }
+                if (asset?.address !== undefined) {
+                    try {
+                        const meta = await BridgeUtils.getAlienTokenRootMeta(asset.address)
+                        const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
+                        const evmToken = bridgeAssets.get('evm', meta.base_chainId, evmTokenAddress)
+                        asset.logoURI = evmToken?.icon
+                    }
+                    catch (e) {
+                        //
+                    }
 
-                setToken({
-                    ...asset,
-                    root,
-                    key,
-                    chainId,
-                    pipelines: [],
-                })
-                selectRef.current?.blur()
+                    setToken(new EverscaleToken({
+                        ...asset,
+                        root,
+                        key,
+                        chainId,
+                    }))
+                    selectRef.current?.blur()
+                }
             }
             catch (e) {
                 //
             }
         }
         else if (bridge.isFromEvm && isEvmAddressValid(root)) {
+            const network = findNetwork(bridge.leftNetwork.chainId, 'evm')
+
+            if (network === undefined) {
+                return
+            }
+
             try {
-                const contract = tokensAssets.getEvmTokenContract(root, bridge.leftNetwork.chainId)
                 const [name, symbol, decimals] = await Promise.all([
-                    contract?.methods.name().call(),
-                    contract?.methods.symbol().call(),
-                    contract?.methods.decimals().call(),
+                    erc20TokenContract(root, network.rpcUrl).methods.name().call(),
+                    erc20TokenContract(root, network.rpcUrl).methods.symbol().call(),
+                    erc20TokenContract(root, network.rpcUrl).methods.decimals().call(),
                 ])
 
-                const asset = {
+                const asset: EvmTokenData = {
+                    address: root,
                     root,
                     decimals: parseInt(decimals, 10),
                     name,
                     symbol,
-                } as TokenAsset
+                }
 
                 try {
-                    const vault = tokensAssets.multiAssets.evm_everscale.vaults.find(v => (
+                    const vault = bridgeAssets.multiAssets.evm_everscale.vaults.find(v => (
                         v.chainId === bridge.leftNetwork?.chainId
                     ))
 
                     if (vault !== undefined) {
-                        const vaultContract = tokensAssets.getEvmTokenMultiVaultContract(
+                        const vaultContract = evmMultiVaultContract(
                             vault.vault,
-                            bridge.leftNetwork.chainId,
+                            network.rpcUrl,
                         )
-                        const result = await vaultContract?.methods.natives(root).call()
+                        const result = await vaultContract.methods.natives(root).call()
                         const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
-                        const everscaleToken = tokensAssets.get('everscale', '1', everscaleAddress)
-                        asset.icon = everscaleToken?.icon
+                        const everscaleToken = bridgeAssets.get('everscale', '1', everscaleAddress)
+                        asset.logoURI = everscaleToken?.icon
                     }
                 }
                 catch (e) {
                     //
                 }
 
-                setToken({
+                setToken(new EvmToken({
                     ...asset,
                     root,
                     key,
                     chainId,
-                    pipelines: [],
-                })
+                }))
                 selectRef.current?.blur()
             }
             catch (e) {

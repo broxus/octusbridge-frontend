@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 
 
 export default function Page(): JSX.Element {
@@ -21,9 +21,9 @@ export default function Page(): JSX.Element {
             </header>
 
             <CrosschainBridgeStoreProvider
+                bridgeAssets={useBridgeAssets()}
                 evmWallet={useEvmWallet()}
                 everWallet={useEverWallet()}
-                tokensAssets={useTokensAssets()}
             >
                 <Bridge />
             </CrosschainBridgeStoreProvider>

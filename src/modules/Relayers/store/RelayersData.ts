@@ -2,10 +2,9 @@ import {
     IReactionDisposer, makeAutoObservable, runInAction, toJS,
 } from 'mobx'
 
+import { StakingAccountAddress } from '@/config'
 import { RelayersDataStoreData } from '@/modules/Relayers/types'
-import {
-    BridgeConstants, RelayConfig, StackingAbi,
-} from '@/misc'
+import { RelayConfig, StackingAbi } from '@/misc'
 import { error } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 
@@ -18,7 +17,7 @@ export class RelayersDataStore {
 
     protected stakingContract = rpc.createContract(
         StackingAbi.Root,
-        BridgeConstants.StakingAccountAddress,
+        StakingAccountAddress,
     )
 
     constructor() {

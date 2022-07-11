@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 
 
 export function SwapDetails(): JSX.Element {
@@ -37,7 +37,7 @@ export function SwapDetails(): JSX.Element {
                                         })}
                                     </div>
                                     <div className="text-truncate">
-                                        {formattedAmount(
+                                        {formattedTokenAmount(
                                             summary.swapAmount,
                                             summary.token?.decimals,
                                             { preserve: true },

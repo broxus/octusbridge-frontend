@@ -41,7 +41,7 @@ export function TokensAmountFieldset(): JSX.Element {
                         {() => (
                             <TokenAmountField
                                 decimals={bridge.token?.decimals}
-                                disabled={!bridge.amount}
+                                disabled={bridge.isFetching || !bridge.amount}
                                 displayMaxButton={false}
                                 isValid={bridge.isTokensAmountValid}
                                 placeholder={!bridge.amount ? intl.formatMessage({
@@ -50,7 +50,7 @@ export function TokensAmountFieldset(): JSX.Element {
                                 token={bridge.token}
                                 size="md"
                                 value={bridge.tokenAmount || ''}
-                                onChange={onChange}
+                                onChange={bridge.isFetching ? undefined : onChange}
                             />
                         )}
                     </Observer>

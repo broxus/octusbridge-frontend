@@ -3,9 +3,9 @@ import { useIntl } from 'react-intl'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
 
 export default function Page(): JSX.Element {
     const intl = useIntl()
@@ -36,7 +36,7 @@ export default function Page(): JSX.Element {
             <CrosschainBridgeStoreProvider
                 evmWallet={useEvmWallet()}
                 everWallet={useEverWallet()}
-                tokensAssets={useTokensAssets()}
+                bridgeAssets={useBridgeAssets()}
             >
                 <Bridge
                     evmPendingWithdrawal={evmPendingWithdrawal}

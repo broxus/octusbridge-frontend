@@ -1,16 +1,14 @@
 import { makeAutoObservable, toJS } from 'mobx'
 
-import {
-    BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
-} from '@/misc'
+import { CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { VotingStoreState } from '@/modules/Governance/types'
 import { UserDataStore } from '@/modules/Governance/stores/UserData'
 import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
 import { error, throwException } from '@/utils'
-import { GasToCastVote } from '@/config'
+import { GasToCastVote, StakingAccountAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 export class VotingStore {
 
@@ -50,7 +48,7 @@ export class VotingStore {
                 throwException('userDataAddress must be defined')
             }
 
-            const stakingContract = rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = rpc.createContract(StackingAbi.Root, StakingAccountAddress)
             const userDataContract = rpc.createContract(UserDataAbi.Root, this.userData.userDataAddress)
 
             const successStream = subscriber
@@ -117,7 +115,7 @@ export class VotingStore {
                 throwException('userDataAddress must be defined')
             }
 
-            const stakingContract = rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = rpc.createContract(StackingAbi.Root, StakingAccountAddress)
             const userDataContract = rpc.createContract(UserDataAbi.Root, this.userData.userDataAddress)
 
             let testIds = proposalIds.map(id => `${id}`)
@@ -199,7 +197,7 @@ export class VotingStore {
         return this.userData.lockedTokens
     }
 
-    public get token(): Token | undefined {
+    public get token(): TokenCache | undefined {
         return this.userData.token
     }
 

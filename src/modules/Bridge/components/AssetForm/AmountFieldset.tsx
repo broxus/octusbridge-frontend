@@ -58,7 +58,7 @@ export function AmountFieldset(): JSX.Element {
                         {() => (
                             <AmountField
                                 decimals={bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals}
-                                disabled={bridge.token === undefined}
+                                disabled={bridge.isFetching || bridge.token === undefined}
                                 displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
                                 isValid={bridge.isAmountValid}
                                 placeholder={intl.formatMessage({
@@ -66,8 +66,8 @@ export function AmountFieldset(): JSX.Element {
                                 })}
                                 size="md"
                                 value={bridge.amount}
-                                onChange={onChange}
-                                onClickMax={onClickMax}
+                                onChange={bridge.isFetching ? undefined : onChange}
+                                onClickMax={bridge.isFetching ? undefined : onClickMax}
                             />
                         )}
                     </Observer>
@@ -153,7 +153,10 @@ export function AmountFieldset(): JSX.Element {
                         {() => (
                             <>
                                 {(
-                                    !bridge.pipeline?.isMultiVault
+                                    (!bridge.pipeline?.isMultiVault
+                                        || (bridge.pipeline.vaultBalance !== undefined
+                                            && bridge.pipeline.mergePoolAddress !== undefined)
+                                    )
                                     && bridge.isEverscaleToEvm
                                     && bridge.isInsufficientVaultBalance
                                     && !bridge.isEverscaleBasedToken
@@ -187,33 +190,6 @@ export function AmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            {`> Multi: ${bridge.pipeline?.isMultiVault}`}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
-                                            {`> Native: ${bridge.pipeline?.isNative}`}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
-                                            {`> Blacklisted: ${bridge.pipeline?.isBlacklisted}`}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
                                             {'> Min value: '}
                                             {formattedAmount(
                                                 bridge.minAmount || 0,
@@ -238,22 +214,6 @@ export function AmountFieldset(): JSX.Element {
                                     )}
                                 </Observer>
                             </div>
-                            <Observer>
-                                {() => (
-                                    <>
-                                        {bridge.isEvmToEverscale && (
-                                            <div className="crosschain-transfer__control-hint">
-                                                {'> Available vault limit: '}
-                                                {formattedAmount(
-                                                    bridge.vaultLimitNumber.toFixed(),
-                                                    bridge.amountMinDecimals,
-                                                    { preserve: true },
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </Observer>
                             <div className="crosschain-transfer__control-hint">
                                 <Observer>
                                     {() => (

@@ -6,9 +6,9 @@ import { ConfirmationStatus, RelayerBroadcastStoreData, RelayerBroadcastStoreSta
 import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
 import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
-import { TokenAbi } from '@/misc'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { BridgeAbi } from '@/misc'
 
 export class RelayerBroadcastStore {
 
@@ -54,7 +54,7 @@ export class RelayerBroadcastStore {
             }
 
             const eventConfigContract = rpc.createContract(
-                TokenAbi.EthEventConfig,
+                BridgeAbi.EthereumEventConfiguration,
                 this.stakingData.bridgeEventConfigEthTon,
             )
 

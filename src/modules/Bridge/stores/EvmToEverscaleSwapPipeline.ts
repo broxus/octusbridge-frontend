@@ -13,24 +13,26 @@ import {
     reaction,
     toJS,
 } from 'mobx'
-import { Contract } from 'everscale-inpage-provider'
 import Web3 from 'web3'
 
-import { WEVERRootAddress } from '@/config'
+import { CreditFactoryAddress, WEVERRootAddress } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
 import rpc from '@/hooks/useRpcClient'
+import { EthAbi, TokenWallet } from '@/misc'
 import {
-    BridgeConstants,
-    EthAbi,
-    TokenAbi,
-    TokenWallet,
-} from '@/misc'
+    creditFactoryContract,
+    creditProcessorContract,
+    ethereumEventConfigurationContract,
+    getFullContractState,
+    tokenTransferEthereumEventContract,
+} from '@/misc/contracts'
+import { EverscaleToken, Pipeline } from '@/models'
 import {
     DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA,
     DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE,
 } from '@/modules/Bridge/constants'
-import {
-    CreditProcessorState,
+import { CreditProcessorState } from '@/modules/Bridge/types'
+import type {
     EventVoteData,
     EvmSwapTransferStoreData,
     EvmSwapTransferStoreState,
@@ -39,8 +41,8 @@ import {
 import { BaseStore } from '@/stores/BaseStore'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
-import { TokensAssetsService } from '@/stores/TokensAssetsService'
-import { NetworkShape } from '@/types'
+import { BridgeAssetsService, BridgeAssetUniqueKey } from '@/stores/BridgeAssetsService'
+import type { NetworkShape } from '@/types'
 import {
     debug,
     error,
@@ -64,7 +66,7 @@ export class EvmToEverscaleSwapPipeline<
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
-        protected readonly tokensAssets: TokensAssetsService,
+        protected readonly bridgeAssets: BridgeAssetsService,
         protected readonly params?: EvmTransferQueryParams,
     ) {
         super()
@@ -72,17 +74,13 @@ export class EvmToEverscaleSwapPipeline<
         this.setData(DEFAULT_EVM_SWAP_TRANSFER_STORE_DATA)
         this.setState(DEFAULT_EVM_SWAP_TRANSFER_STORE_STATE)
 
-        makeObservable<
-            EvmToEverscaleSwapPipeline<T, U>,
-            | 'creditProcessorContract'
-        >(this, {
+        makeObservable(this, {
             broadcast: action.bound,
             process: action.bound,
             cancel: action.bound,
             withdrawTokens: action.bound,
             withdrawWevers: action.bound,
             withdrawEvers: action.bound,
-            creditProcessorContract: computed,
             amount: computed,
             creditProcessorAddress: computed,
             deriveEventAddress: computed,
@@ -102,7 +100,7 @@ export class EvmToEverscaleSwapPipeline<
             txHash: computed,
             useEverWallet: computed,
             useEvmWallet: computed,
-            useTokensAssets: computed,
+            useBridgeAssets: computed,
         })
     }
 
@@ -111,7 +109,7 @@ export class EvmToEverscaleSwapPipeline<
             return
         }
 
-        this.#tokensDisposer = reaction(() => this.tokensAssets.tokens, async () => {
+        this.#tokensDisposer = reaction(() => this.bridgeAssets.tokens, async () => {
             await this.checkTransaction(true)
         }, { delay: 30 })
 
@@ -171,7 +169,7 @@ export class EvmToEverscaleSwapPipeline<
         if (
             this.txHash === undefined
             || this.leftNetwork === undefined
-            || this.tokensAssets.tokens.length === 0
+            || this.bridgeAssets.tokens.length === 0
             || this.transferState?.status === 'confirmed'
         ) {
             return
@@ -185,6 +183,7 @@ export class EvmToEverscaleSwapPipeline<
 
         try {
             const tx = await this.web3.eth.getTransaction(this.txHash)
+
             if (tx == null || tx.to == null) {
                 await this.checkTransaction()
                 return
@@ -198,8 +197,8 @@ export class EvmToEverscaleSwapPipeline<
             const decodedLogs = decodeLogs(txReceipt.logs)
             const factoryDepositLog = decodedLogs.find(log => log?.name === 'FactoryDeposit')
 
-            const token = this.tokensAssets.findTokenByVaultAddress(
-                factoryDepositLog!.address,
+            const token = this.bridgeAssets.findTokenByVaultAndChain(
+                factoryDepositLog!.address.toLowerCase(),
                 this.leftNetwork.chainId,
             )
 
@@ -216,26 +215,23 @@ export class EvmToEverscaleSwapPipeline<
                 && this.rightNetwork?.type !== undefined
                 && this.rightNetwork?.chainId !== undefined
             ) {
-                const pipeline = await this.tokensAssets.pipeline(
+                const pipeline = await this.bridgeAssets.pipeline(
                     this.token.root,
                     `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
                     `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
                     this.depositType,
                 )
 
-                this.setData('pipeline', pipeline)
+                this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
             }
-
-            await this.tokensAssets.syncEvmTokenAddress(token.root, this.pipeline)
-            await this.tokensAssets.syncEvmToken(this.pipeline?.evmTokenAddress, this.pipeline)
 
             if (this.pipeline?.ethereumConfiguration === undefined) {
                 return
             }
 
-            await staticRpc.ensureInitialized()
-            const ethConfig = new staticRpc.Contract(TokenAbi.EthEventConfig, this.pipeline?.ethereumConfiguration)
-            const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
+            const ethConfigDetails = await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
+                .methods.getDetails({ answerId: 0 })
+                .call()
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
             const targetWid = factoryDepositLog!.events[1].value
             const targetAddress = factoryDepositLog!.events[4].value
@@ -280,19 +276,16 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            const creditFactoryContract = new rpc.Contract(
-                TokenAbi.CreditFactory,
-                BridgeConstants.CreditFactoryAddress,
-            )
-
-            await creditFactoryContract.methods.deployProcessorForUser({
-                eventVoteData: this.data.eventVoteData,
-                configuration: this.pipeline?.ethereumConfiguration,
-            }).send({
-                amount: '5500000000',
-                bounce: true,
-                from: this.everWallet.account.address,
-            })
+            await creditFactoryContract(CreditFactoryAddress, rpc)
+                .methods.deployProcessorForUser({
+                    eventVoteData: this.data.eventVoteData,
+                    configuration: this.pipeline?.ethereumConfiguration,
+                })
+                .send({
+                    amount: '5500000000',
+                    bounce: true,
+                    from: this.everWallet.account.address,
+                })
         }
         catch (e) {
             this.setState('prepareState', {
@@ -307,7 +300,7 @@ export class EvmToEverscaleSwapPipeline<
         if (
             this.swapState?.isCanceling === true
             || this.swapState?.isProcessing === true
-            || this.creditProcessorContract === undefined
+            || this.creditProcessorAddress === undefined
             || this.everWallet.account?.address === undefined
         ) {
             return
@@ -319,11 +312,13 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            await this.creditProcessorContract.methods.process({}).send({
-                amount: '10000000',
-                bounce: false,
-                from: this.everWallet.account.address,
-            })
+            await creditProcessorContract(this.creditProcessorAddress, rpc)
+                .methods.process({})
+                .send({
+                    amount: '10000000',
+                    bounce: false,
+                    from: this.everWallet.account.address,
+                })
 
             this.setState('swapState', {
                 ...this.swapState,
@@ -343,7 +338,7 @@ export class EvmToEverscaleSwapPipeline<
         if (
             this.swapState?.isCanceling === true
             || this.swapState?.isProcessing === true
-            || this.creditProcessorContract === undefined
+            || this.creditProcessorAddress === undefined
             || this.everWallet.account?.address === undefined
         ) {
             return
@@ -355,9 +350,10 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            const creditProcessorDetails = (await this.creditProcessorContract.methods.getDetails({
-                answerId: 0,
-            }).call()).value0
+            const creditProcessorDetails = (await creditProcessorContract(this.creditProcessorAddress)
+                .methods.getDetails({ answerId: 0 })
+                .call())
+                .value0
 
             await this.checkWithdrawBalances()
 
@@ -366,11 +362,13 @@ export class EvmToEverscaleSwapPipeline<
                 new BigNumber('100000000'),
             )
 
-            await this.creditProcessorContract.methods.cancel({}).send({
-                amount: gasAmount.toFixed(),
-                bounce: false,
-                from: this.everWallet.account.address,
-            })
+            await creditProcessorContract(this.creditProcessorAddress, rpc)
+                .methods.cancel({})
+                .send({
+                    amount: gasAmount.toFixed(),
+                    bounce: false,
+                    from: this.everWallet.account.address,
+                })
             await this.checkWithdrawBalances()
             this.setState('swapState', {
                 ...this.swapState,
@@ -391,7 +389,7 @@ export class EvmToEverscaleSwapPipeline<
             this.swapState?.tokenBalance === undefined
             || this.swapState.tokenWallet === undefined
             || this.swapState.isWithdrawing
-            || this.creditProcessorContract === undefined
+            || this.creditProcessorAddress === undefined
             || this.everWallet.account?.address === undefined
             || this.token === undefined
         ) {
@@ -408,9 +406,7 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensAssets.syncEverscaleToken(this.token.root)
-
-        if (this.token.wallet === undefined) {
+        if ((this.token as EverscaleToken<BridgeAssetUniqueKey>).wallet === undefined) {
             this.stopWithdrawUpdater()
 
             this.setState('swapState', {
@@ -437,20 +433,22 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            await this.creditProcessorContract.methods.proxyTokensTransfer({
-                _amount: this.swapState.tokenBalance || 0,
-                _deployWalletValue: deployGrams,
-                _remainingGasTo: this.everWallet.account.address,
-                _gasValue: proxyGasValue,
-                _notify: false,
-                _recipient: this.everWallet.account.address,
-                _payload: '',
-                _tokenWallet: this.swapState.tokenWallet,
-            }).send({
-                amount: gasAmount.toFixed(),
-                bounce: false,
-                from: this.everWallet.account.address,
-            })
+            await creditProcessorContract(this.creditProcessorAddress, rpc)
+                .methods.proxyTokensTransfer({
+                    _amount: this.swapState.tokenBalance || 0,
+                    _deployWalletValue: deployGrams,
+                    _remainingGasTo: this.everWallet.account.address,
+                    _gasValue: proxyGasValue,
+                    _notify: false,
+                    _recipient: this.everWallet.account.address,
+                    _payload: '',
+                    _tokenWallet: this.swapState.tokenWallet,
+                })
+                .send({
+                    amount: gasAmount.toFixed(),
+                    bounce: false,
+                    from: this.everWallet.account.address,
+                })
         }
         catch (e) {
             this.stopWithdrawUpdater()
@@ -470,7 +468,7 @@ export class EvmToEverscaleSwapPipeline<
             this.swapState?.tokenBalance === undefined
             || this.swapState.tokenWallet === undefined
             || this.swapState.isWithdrawing
-            || this.creditProcessorContract === undefined
+            || this.creditProcessorAddress === undefined
             || this.everWallet.account?.address === undefined
             || this.token === undefined
             || this.leftNetwork === undefined
@@ -488,13 +486,11 @@ export class EvmToEverscaleSwapPipeline<
             status: 'pending',
         })
 
-        await this.tokensAssets.syncEverscaleToken(WEVERRootAddress.toString())
-
-        const weverToken = this.tokensAssets.get(
+        const weverToken = this.bridgeAssets.get(
             this.leftNetwork?.type,
             this.leftNetwork?.chainId,
             WEVERRootAddress.toString(),
-        )
+        ) as EverscaleToken<BridgeAssetUniqueKey>
 
         if (weverToken?.wallet === undefined) {
             this.stopWithdrawUpdater()
@@ -524,20 +520,22 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            await this.creditProcessorContract.methods.proxyTokensTransfer({
-                _amount: this.swapState.weverBalance || 0,
-                _deployWalletValue: deployGrams,
-                _remainingGasTo: this.everWallet.account.address,
-                _gasValue: proxyGasValue,
-                _notify: false,
-                _recipient: this.everWallet.account.address,
-                _payload: '',
-                _tokenWallet: this.swapState.tokenWallet,
-            }).send({
-                amount: gasAmount.toFixed(),
-                bounce: false,
-                from: this.everWallet.account.address,
-            })
+            await creditProcessorContract(this.creditProcessorAddress, rpc)
+                .methods.proxyTokensTransfer({
+                    _amount: this.swapState.weverBalance || 0,
+                    _deployWalletValue: deployGrams,
+                    _remainingGasTo: this.everWallet.account.address,
+                    _gasValue: proxyGasValue,
+                    _notify: false,
+                    _recipient: this.everWallet.account.address,
+                    _payload: '',
+                    _tokenWallet: this.swapState.tokenWallet,
+                })
+                .send({
+                    amount: gasAmount.toFixed(),
+                    bounce: false,
+                    from: this.everWallet.account.address,
+                })
         }
         catch (e) {
             this.stopWithdrawUpdater()
@@ -556,7 +554,7 @@ export class EvmToEverscaleSwapPipeline<
         if (
             this.swapState?.everBalance === undefined
             || this.swapState.isWithdrawing
-            || this.creditProcessorContract === undefined
+            || this.creditProcessorAddress === undefined
             || this.everWallet.account?.address === undefined
         ) {
             return
@@ -564,7 +562,7 @@ export class EvmToEverscaleSwapPipeline<
 
         const { status } = this.swapState
 
-        this.runWithdrawTonUpdater()
+        this.runWithdrawEversUpdater()
 
         this.setState('swapState', {
             ...this.swapState,
@@ -573,15 +571,17 @@ export class EvmToEverscaleSwapPipeline<
         })
 
         try {
-            await this.creditProcessorContract.methods.sendGas({
-                flag_: 128,
-                to: this.everWallet.account.address,
-                value_: 0,
-            }).send({
-                amount: '10000000',
-                bounce: false,
-                from: this.everWallet.account.address,
-            })
+            await creditProcessorContract(this.creditProcessorAddress, rpc)
+                .methods.sendGas({
+                    flag_: 128,
+                    to: this.everWallet.account.address,
+                    value_: 0,
+                })
+                .send({
+                    amount: '10000000',
+                    bounce: false,
+                    from: this.everWallet.account.address,
+                })
         }
         catch (e) {
             this.stopWithdrawUpdater()
@@ -650,14 +650,9 @@ export class EvmToEverscaleSwapPipeline<
                     return
                 }
 
-                await staticRpc.ensureInitialized()
+                const ethConfigContract = ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
 
-                const ethConfig = new staticRpc.Contract(
-                    TokenAbi.EthEventConfig,
-                    this.pipeline?.ethereumConfiguration,
-                )
-
-                const ethConfigDetails = await ethConfig.methods.getDetails({ answerId: 0 }).call()
+                const ethConfigDetails = await ethConfigContract.methods.getDetails({ answerId: 0 }).call()
 
                 const eventData = mapEthBytesIntoTonCell(
                     Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
@@ -674,23 +669,21 @@ export class EvmToEverscaleSwapPipeline<
 
                 this.setData('eventVoteData', eventVoteData)
 
-                const eventAddress = (await ethConfig.methods.deriveEventAddress({
+                const eventAddress = (await ethConfigContract.methods.deriveEventAddress({
                     answerId: 0,
                     eventVoteData,
                 }).call()).eventContract
 
                 this.setData('deriveEventAddress', eventAddress)
 
-                const creditFactoryContract = new staticRpc.Contract(
-                    TokenAbi.CreditFactory,
-                    BridgeConstants.CreditFactoryAddress,
-                )
-
-                const creditProcessorAddress = (await creditFactoryContract.methods.getCreditProcessorAddress({
-                    answerId: 0,
-                    eventVoteData,
-                    configuration: this.pipeline?.ethereumConfiguration,
-                }).call()).value0
+                const creditProcessorAddress = (await creditFactoryContract(CreditFactoryAddress)
+                    .methods.getCreditProcessorAddress({
+                        answerId: 0,
+                        eventVoteData,
+                        configuration: this.pipeline.ethereumConfiguration,
+                    })
+                    .call())
+                    .value0
 
                 this.setData('creditProcessorAddress', creditProcessorAddress)
 
@@ -741,11 +734,7 @@ export class EvmToEverscaleSwapPipeline<
                 return
             }
 
-            await staticRpc.ensureInitialized()
-
-            const cachedState = (await staticRpc.getFullContractState({
-                address: this.deriveEventAddress,
-            })).state
+            const cachedState = await getFullContractState(this.deriveEventAddress)
 
             if (cachedState === undefined || !cachedState?.isDeployed) {
                 if (this.prepareState?.status !== 'pending') {
@@ -786,16 +775,10 @@ export class EvmToEverscaleSwapPipeline<
 
             await this.checkOwner()
 
-            await staticRpc.ensureInitialized()
-
-            const creditProcessorContract = new staticRpc.Contract(
-                TokenAbi.CreditProcessor,
-                this.creditProcessorAddress,
-            )
-
-            const creditProcessorDetails = (await creditProcessorContract.methods.getDetails({
-                answerId: 0,
-            }).call()).value0
+            const creditProcessorDetails = (await creditProcessorContract(this.creditProcessorAddress)
+                .methods.getDetails({ answerId: 0 })
+                .call())
+                .value0
 
             const state = parseInt(creditProcessorDetails.state, 10)
             const isCancelled = state === CreditProcessorState.Cancelled
@@ -850,15 +833,9 @@ export class EvmToEverscaleSwapPipeline<
                 }
 
                 if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {
-                    const eventContract = new staticRpc.Contract(
-                        TokenAbi.TokenTransferEthEvent,
-                        this.deriveEventAddress,
-                    )
-                    const eventDetails = await eventContract.methods.getDetails({
-                        answerId: 0,
-                    }).call({
-                        cachedState,
-                    })
+                    const eventDetails = await tokenTransferEthereumEventContract(this.deriveEventAddress)
+                        .methods.getDetails({ answerId: 0 })
+                        .call({ cachedState })
 
                     const eventState: EvmSwapTransferStoreState['eventState'] = {
                         confirmations: eventDetails._confirms.length,
@@ -989,7 +966,7 @@ export class EvmToEverscaleSwapPipeline<
     protected runWithdrawWeverUpdater(): void {
         const status = this.swapState?.status
 
-        const runWithdrawWtonUpdater = () => {
+        const runWithdrawWeverUpdater = () => {
             debug('runWithdrawWtonUpdater', toJS(this.state.swapState))
 
             this.stopWithdrawUpdater();
@@ -1008,7 +985,7 @@ export class EvmToEverscaleSwapPipeline<
                         this.swapState?.isWithdrawing
                         && isGoodBignumber(new BigNumber(this.swapState.weverBalance || 0))
                     ) {
-                        runWithdrawWtonUpdater()
+                        runWithdrawWeverUpdater()
                     }
                     else {
                         this.setState('swapState', {
@@ -1020,13 +997,13 @@ export class EvmToEverscaleSwapPipeline<
             })
         }
 
-        runWithdrawWtonUpdater()
+        runWithdrawWeverUpdater()
     }
 
-    protected runWithdrawTonUpdater(): void {
+    protected runWithdrawEversUpdater(): void {
         const status = this.swapState?.status
 
-        const runWithdrawTonUpdater = () => {
+        const runWithdrawEversUpdater = () => {
             debug('runWithdrawTonUpdater', toJS(this.state.swapState))
 
             this.stopWithdrawUpdater();
@@ -1045,7 +1022,7 @@ export class EvmToEverscaleSwapPipeline<
                         this.swapState?.isWithdrawing
                         && isGoodBignumber(new BigNumber(this.swapState.everBalance || 0))
                     ) {
-                        runWithdrawTonUpdater()
+                        runWithdrawEversUpdater()
                     }
                     else {
                         this.setState('swapState', {
@@ -1057,7 +1034,7 @@ export class EvmToEverscaleSwapPipeline<
             })
         }
 
-        runWithdrawTonUpdater()
+        runWithdrawEversUpdater()
     }
 
     protected stopWithdrawUpdater(): void {
@@ -1073,14 +1050,11 @@ export class EvmToEverscaleSwapPipeline<
         }
 
         try {
-            await staticRpc.ensureInitialized()
-            const creditProcessorContract = new staticRpc.Contract(
-                TokenAbi.CreditProcessor,
-                this.creditProcessorAddress,
-            )
-            const owner = (await creditProcessorContract.methods.getCreditEventData({
-                answerId: 0,
-            }).call()).value0.user
+            const owner = (await creditProcessorContract(this.creditProcessorAddress)
+                .methods.getCreditEventData({ answerId: 0 })
+                .call())
+                .value0
+                .user
 
             this.setState('swapState', {
                 ...this.swapState,
@@ -1098,26 +1072,22 @@ export class EvmToEverscaleSwapPipeline<
         }
 
         try {
-            await staticRpc.ensureInitialized()
-            const creditProcessorContract = new staticRpc.Contract(
-                TokenAbi.CreditProcessor,
-                this.creditProcessorAddress,
-            )
-            const creditProcessorDetails = (await creditProcessorContract.methods.getDetails({
-                answerId: 0,
-            }).call()).value0
+            const creditProcessorDetails = (await creditProcessorContract(this.creditProcessorAddress)
+                .methods.getDetails({
+                    answerId: 0,
+                })
+                .call())
+                .value0
 
             const [
                 tokenBalance,
-                { state: creditState },
+                creditState,
                 weverBalance,
             ] = await Promise.all([
                 TokenWallet.balance({
                     wallet: creditProcessorDetails.tokenWallet,
                 }),
-                rpc.getFullContractState({
-                    address: this.creditProcessorAddress,
-                }),
+                getFullContractState(this.creditProcessorAddress),
                 TokenWallet.balance({
                     wallet: creditProcessorDetails.wtonWallet,
                 }),
@@ -1228,14 +1198,8 @@ export class EvmToEverscaleSwapPipeline<
         return this.evmWallet
     }
 
-    public get useTokensAssets(): TokensAssetsService {
-        return this.tokensAssets
-    }
-
-    protected get creditProcessorContract(): Contract<typeof TokenAbi.CreditProcessor> | undefined {
-        return this.creditProcessorAddress !== undefined
-            ? new rpc.Contract(TokenAbi.CreditProcessor, this.creditProcessorAddress)
-            : undefined
+    public get useBridgeAssets(): BridgeAssetsService {
+        return this.bridgeAssets
     }
 
     #tokensDisposer: IReactionDisposer | undefined

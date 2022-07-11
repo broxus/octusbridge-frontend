@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 
 export function TokenAmountDetails(): JSX.Element {
@@ -38,7 +38,7 @@ export function TokenAmountDetails(): JSX.Element {
                         <li>
                             <b className="text-lg text-truncate" data-amount={summary.tokenAmount}>
                                 {(summary.tokenAmount !== undefined && summary.tokenAmount !== '0')
-                                    ? formattedAmount(
+                                    ? formattedTokenAmount(
                                         summary.tokenAmount,
                                         summary.token?.decimals,
                                         { preserve: true },

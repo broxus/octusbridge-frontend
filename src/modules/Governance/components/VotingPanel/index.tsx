@@ -8,7 +8,7 @@ import { Align, Table } from '@/components/common/Table'
 import { UserCard } from '@/components/common/UserCard'
 import { ProgressBar } from '@/components/common/ProgressBar'
 import { VoteCard } from '@/modules/Governance/components/VoteCard'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 
 import './index.scss'
 
@@ -67,10 +67,9 @@ export function VotingPanel({
                             {intl.formatMessage({
                                 id: 'VOTING_PANEL_TOTAL',
                             }, {
-                                total: formattedAmount(
+                                total: formattedTokenAmount(
                                     total,
                                     DexConstants.CoinDecimals,
-                                    { target: 'token' },
                                 ),
                             })}
                         </span>

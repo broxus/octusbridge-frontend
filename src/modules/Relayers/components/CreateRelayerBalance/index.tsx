@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 
 import { Alert } from '@/components/common/Alert'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 
 type Props = {
     isSubmitted?: boolean;
@@ -49,10 +49,9 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {stakingBalance && stakingTokenDecimals !== undefined ? (
-                        formattedAmount(
+                        formattedTokenAmount(
                             stakingBalance,
                             stakingTokenDecimals,
-                            { target: 'token' },
                         )
                     ) : noValue}
                 </li>
@@ -68,10 +67,9 @@ export function CreateRelayerBalance({
                         })}
                     </span>
                     {requiredStake && stakingTokenDecimals !== undefined ? (
-                        formattedAmount(
+                        formattedTokenAmount(
                             requiredStake,
                             stakingTokenDecimals,
-                            { target: 'token' },
                         )
                     ) : noValue}
                 </li>
@@ -91,10 +89,9 @@ export function CreateRelayerBalance({
                                     symbol: stakingTokenSymbol,
                                 })}
                             </span>
-                            {formattedAmount(
+                            {formattedTokenAmount(
                                 new BigNumber(requiredStake).minus(stakingBalance).toFixed(),
                                 stakingTokenDecimals,
-                                { target: 'token' },
                             )}
                         </li>
                     )
@@ -124,10 +121,9 @@ export function CreateRelayerBalance({
                             id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
                         }, {
                             symbol: stakingTokenSymbol,
-                            amount: formattedAmount(
+                            amount: formattedTokenAmount(
                                 requiredStake,
                                 stakingTokenDecimals,
-                                { target: 'token' },
                             ),
                         })}
                         type="danger"
@@ -153,7 +149,7 @@ export function CreateRelayerBalance({
                             amount: formattedAmount(
                                 contractFee,
                                 tonTokenDecimals,
-                                { preserve: true, roundIfThousand: false },
+                                { preserve: true, roundOn: false },
                             ),
                             symbol: tonTokenSymbol,
                         }, { ignoreTag: true })}

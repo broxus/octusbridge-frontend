@@ -7,7 +7,7 @@ import {
 import rpc from '@/hooks/useRpcClient'
 import { TokenAbi } from '@/misc/abi'
 import { debug, error } from '@/utils'
-import { Token } from '@/types'
+import type { EverscaleTokenData } from '@/models'
 
 export type BalanceWalletRequest = {
     wallet: Address;
@@ -128,7 +128,7 @@ export class TokenWallet {
         }
     }
 
-    public static async getTokenFullDetails(root: string): Promise<Token | undefined> {
+    public static async getTokenFullDetails(root: string): Promise<Partial<EverscaleTokenData> | undefined> {
         const address = new Address(root)
 
         const { state } = await rpc.getFullContractState({ address })
@@ -147,6 +147,7 @@ export class TokenWallet {
 
             return {
                 ...details,
+                address,
                 decimals,
                 name,
                 root,

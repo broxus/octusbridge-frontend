@@ -9,7 +9,7 @@ import { Button } from '@/components/common/Button'
 // import { TvlChange } from '@/components/common/TvlChange'
 import { DataCard } from '@/components/common/DataCard'
 import { useUserContext } from '@/modules/Staking/providers/UserProvider'
-import { error, formattedAmount } from '@/utils'
+import { error, formattedTokenAmount } from '@/utils'
 
 type Props = {
     userAddress: string;
@@ -67,9 +67,7 @@ export function UserStats({
                                 id: 'STAKING_STATS_TVL',
                             })}
                             value={userInfo.userTvl
-                                ? formattedAmount(userInfo.userTvl, undefined, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(userInfo.userTvl)
                                 : noValue}
                         >
                             {/* {userInfo.userTvlChange && (
@@ -90,9 +88,7 @@ export function UserStats({
                                 id: 'STAKING_STATS_FROZEN',
                             })}
                             value={userInfo.userFrozenStake
-                                ? formattedAmount(userInfo.userFrozenStake, undefined, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(userInfo.userFrozenStake)
                                 : noValue}
                         />
                     )}

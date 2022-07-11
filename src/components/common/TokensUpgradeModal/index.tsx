@@ -8,7 +8,7 @@ import { ContentLoader } from '@/components/common/ContentLoader'
 import { Icon } from '@/components/common/Icon'
 import { OutdatedToken, useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 import './index.scss'
 
@@ -81,13 +81,7 @@ export function TokensUpgradeModal(): JSX.Element {
                                             style={{ display: 'flex', alignItems: 'center' }}
                                         >
                                             <span>
-                                                {formattedAmount(
-                                                    token.balance,
-                                                    token.decimals,
-                                                    {
-                                                        target: 'token',
-                                                    },
-                                                )}
+                                                {formattedTokenAmount(token.balance, token.decimals)}
                                             </span>
                                             <Button
                                                 type="primary"

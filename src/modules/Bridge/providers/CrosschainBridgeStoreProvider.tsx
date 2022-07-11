@@ -3,9 +3,9 @@ import { reaction } from 'mobx'
 import { useHistory } from 'react-router-dom'
 
 import { CrosschainBridge, TransferSummary } from '@/modules/Bridge/stores'
+import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 
 export type CrosschainBridgeContextConsumerProps = {
     bridge: CrosschainBridge;
@@ -16,9 +16,9 @@ export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge
     bridge: new CrosschainBridge(
         useEvmWallet(),
         useEverWallet(),
-        useTokensAssets(),
+        useBridgeAssets(),
     ),
-    summary: new TransferSummary(useTokensAssets()),
+    summary: new TransferSummary(useBridgeAssets()),
 })
 
 export function useBridge(): CrosschainBridgeContextConsumerProps {
@@ -27,10 +27,10 @@ export function useBridge(): CrosschainBridgeContextConsumerProps {
 
 
 type Props = {
+    bridgeAssets: BridgeAssetsService;
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
-    tokensAssets: TokensAssetsService;
 }
 
 
@@ -40,10 +40,10 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
     const bridge = React.useMemo(() => new CrosschainBridge(
         props.evmWallet,
         props.everWallet,
-        props.tokensAssets,
+        props.bridgeAssets,
     ), [])
 
-    const summary = React.useMemo(() => new TransferSummary(bridge.useTokensAssets), [bridge.useTokensAssets])
+    const summary = React.useMemo(() => new TransferSummary(bridge.useBridgeAssets), [bridge.useBridgeAssets])
 
     const context = React.useMemo(() => ({ bridge, summary }), [bridge, summary])
 

@@ -10,7 +10,7 @@ import {
 } from '@/components/common/Section'
 import { Button } from '@/components/common/Button'
 import { useCurrentUserContext } from '@/modules/Staking/providers'
-import { formattedAmount, parseCurrencyBillions } from '@/utils'
+import { formattedTokenAmount, parseCurrencyBillions } from '@/utils'
 
 import './index.scss'
 
@@ -69,10 +69,9 @@ export function StakingPerformance(): JSX.Element {
                             {() => (
                                 <div className="staking-performance-card__value staking-performance-card__value_small">
                                     {accountData.tokenStakingBalance && accountData.tokenDecimals
-                                        ? formattedAmount(
+                                        ? formattedTokenAmount(
                                             accountData.tokenStakingBalance,
                                             accountData.tokenDecimals,
-                                            { target: 'token' },
                                         )
                                         : noValue}
                                 </div>
@@ -159,10 +158,9 @@ export function StakingPerformance(): JSX.Element {
                             {() => (
                                 <div className="staking-performance-card__value staking-performance-card__value_small">
                                     {accountData.pendingReward && accountData.tokenDecimals
-                                        ? formattedAmount(
+                                        ? formattedTokenAmount(
                                             accountData.pendingReward,
                                             accountData.tokenDecimals,
-                                            { target: 'token' },
                                         )
                                         : noValue}
                                 </div>

@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { Section, Title } from '@/components/common/Section'
 import { DataCard, DataCardStatus } from '@/components/common/DataCard'
 // import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
-import { dateRelative, formattedAmount } from '@/utils'
+import { dateRelative, formattedTokenAmount } from '@/utils'
 import { useRelayInfoContext } from '@/modules/Relayers/providers'
 import { getEventsShare, getRelayStatus, RelayStatus } from '@/modules/Relayers/utils'
 
@@ -55,7 +55,7 @@ function RelayerPerformanceInner(): JSX.Element | null {
                         id: 'RELAYER_PERFORMANCE_STAKE',
                     })}
                     value={relayInfo?.frozenStake
-                        ? formattedAmount(relayInfo?.frozenStake, undefined, { target: 'token' })
+                        ? formattedTokenAmount(relayInfo?.frozenStake)
                         : noValue}
                 >
                     {relayInfo?.untilFrozen ? (
@@ -74,7 +74,7 @@ function RelayerPerformanceInner(): JSX.Element | null {
                         id: 'RELAYER_PERFORMANCE_LATEST_REWARD',
                     })}
                     value={relayInfo?.latestReward
-                        ? formattedAmount(relayInfo.latestReward, undefined, { target: 'token' })
+                        ? formattedTokenAmount(relayInfo.latestReward)
                         : noValue}
                 /> */}
 
@@ -83,7 +83,7 @@ function RelayerPerformanceInner(): JSX.Element | null {
                         id: 'RELAYER_PERFORMANCE_TOTAL_REWARD',
                     })}
                     value={relayInfo?.totalReward
-                        ? formattedAmount(relayInfo.totalReward, undefined, { target: 'token' })
+                        ? formattedTokenAmount(relayInfo.totalReward)
                         : noValue}
                 /> */}
 

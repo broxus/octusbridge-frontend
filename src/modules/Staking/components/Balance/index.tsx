@@ -9,7 +9,7 @@ import { AmountField } from '@/components/common/AmountField'
 import { CardLayout } from '@/modules/Staking/components/Balance/CardLayout'
 import { FormLayout } from '@/modules/Staking/components/Balance/FormLayout'
 import { useCurrentUserContext } from '@/modules/Staking/providers/CurrentUserProvider'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 import { DexConstants } from '@/misc'
 
 type Tabs = 'redeem' | 'claim'
@@ -53,10 +53,9 @@ export function StakingBalance(): JSX.Element {
                                 }, {
                                     /* eslint-disable no-nested-ternary */
                                     amount: stakingForm.balance
-                                        ? formattedAmount(
+                                        ? formattedTokenAmount(
                                             stakingForm.balance,
                                             accountData.tokenDecimals,
-                                            { target: 'token' },
                                         )
                                         : '0',
                                     symbol: accountData.tokenSymbol,
@@ -140,10 +139,9 @@ export function StakingBalance(): JSX.Element {
                                                 id: 'STAKING_BALANCE_STAKE_BALANCE',
                                             }, {
                                                 amount: accountData.hasAccount
-                                                    ? formattedAmount(
+                                                    ? formattedTokenAmount(
                                                         redeemForm.balance,
                                                         accountData.tokenDecimals,
-                                                        { target: 'token' },
                                                     )
                                                     : '0',
                                                 symbol: accountData.tokenSymbol,
@@ -196,10 +194,9 @@ export function StakingBalance(): JSX.Element {
                                     //     ? intl.formatMessage({
                                     //         id: 'STAKING_BALANCE_LOCKED_REWARD',
                                     //     }, {
-                                    //         amount: formattedAmount(
+                                    //         amount: formattedTokenAmount(
                                     //             accountData.lockedReward,
                                     //             accountData.tokenDecimals,
-                                    //             { target: 'token' },
                                     //         ),
                                     //         symbol: accountData.tokenSymbol,
                                     //     })

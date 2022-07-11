@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import { Checkbox } from '@/components/common/Checkbox'
 import { TokenBadge } from '@/components/common/TokenBadge'
 import { Align, Table, Value } from '@/components/common/Table'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
 import { SearchNotInstant, SearchNotInstantOrdering } from '@/modules/LiquidityRequests/types'
 import {
@@ -25,7 +25,7 @@ function LiquidityRequestsTableInner({
     onSort,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const tokensAssets = useTokensAssets()
+    const bridgeAssets = useBridgeAssets()
     const liquidityRequests = useLiquidityRequests()
 
     const items = liquidityRequests.transfers.map(item => ({
@@ -96,8 +96,8 @@ function LiquidityRequestsTableInner({
                         <TokenBadge
                             size="xsmall"
                             address={item.tonTokenAddress}
-                            uri={tokensAssets.get('everscale', '1', item.tonTokenAddress)?.icon}
-                            symbol={tokensAssets.get('everscale', '1', item.tonTokenAddress)?.symbol ?? sliceAddress(item.tonTokenAddress)}
+                            uri={bridgeAssets.get('everscale', '1', item.tonTokenAddress)?.icon}
+                            symbol={bridgeAssets.get('everscale', '1', item.tonTokenAddress)?.symbol ?? sliceAddress(item.tonTokenAddress)}
                         />,
                         <Value
                             label={findNetwork(item.chainId.toString(), 'evm')?.name}

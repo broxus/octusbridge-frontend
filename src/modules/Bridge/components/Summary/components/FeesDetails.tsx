@@ -3,7 +3,7 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 
 export function FeesDetails(): JSX.Element {
@@ -34,8 +34,8 @@ export function FeesDetails(): JSX.Element {
 
                     {(
                         summary.pipeline?.isMultiVault
-                            && summary.isFromEverscale
-                            && summary.withdrawFee !== undefined
+                        && summary.isFromEverscale
+                        && summary.withdrawFee !== undefined
                     ) && (
                         <li key="max-transfer-fee">
                             <div className="text-muted">
@@ -44,11 +44,7 @@ export function FeesDetails(): JSX.Element {
                                 }, { symbol: summary.token?.symbol || '' })}
                             </div>
                             <div className="text-truncate">
-                                {formattedAmount(
-                                    summary.withdrawFee,
-                                    undefined,
-                                    { preserve: true },
-                                )}
+                                {formattedTokenAmount(summary.withdrawFee, undefined, { preserve: true })}
                             </div>
                         </li>
                     )}
@@ -65,11 +61,7 @@ export function FeesDetails(): JSX.Element {
                                 }, { symbol: summary.token?.symbol || '' })}
                             </div>
                             <div className="text-truncate">
-                                {formattedAmount(
-                                    summary.depositFee,
-                                    undefined,
-                                    { preserve: true },
-                                )}
+                                {formattedTokenAmount(summary.depositFee, undefined, { preserve: true })}
                             </div>
                         </li>
                     )}

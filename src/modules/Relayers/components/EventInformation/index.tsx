@@ -8,7 +8,7 @@ import { FromAddress } from '@/modules/Relayers/components/Events/FromAddress'
 import { ToAddress } from '@/modules/Relayers/components/Events/ToAddress'
 import { useTransferEventContext } from '@/modules/Relayers/providers'
 import { useTokensCache } from '@/stores/TokensCacheService'
-import { dateFormat, formattedAmount } from '@/utils'
+import { dateFormat, formattedTokenAmount } from '@/utils'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 
 import './index.scss'
@@ -64,9 +64,7 @@ function EventInformationInner(): JSX.Element {
                                 })}
                             </span>
 
-                            {event ? formattedAmount(event.amount, undefined, {
-                                target: 'token',
-                            }) : noValue}
+                            {event ? formattedTokenAmount(event.amount) : noValue}
                         </li>
                         <li>
                             <span className="text-muted">

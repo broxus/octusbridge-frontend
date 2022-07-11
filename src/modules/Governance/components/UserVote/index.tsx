@@ -12,7 +12,7 @@ import { useProposalContext, useVotingContext } from '@/modules/Governance/provi
 import { VotingForm } from '@/modules/Governance/components/VotingForm'
 import { ProposalDates } from '@/modules/Governance/components/UserVote/Dates'
 import { DexConstants } from '@/misc'
-import { error, formattedAmount } from '@/utils'
+import { error, formattedAmount, formattedTokenAmount } from '@/utils'
 
 import './index.scss'
 
@@ -82,10 +82,9 @@ export function UserVoteInner(): JSX.Element {
                         id: 'USER_VOTE_VOTING_POWER',
                     }),
                     value: voting.votingPower
-                        ? formattedAmount(
+                        ? formattedTokenAmount(
                             voting.votingPower,
                             DexConstants.CoinDecimals,
-                            { target: 'token' },
                         )
                         : intl.formatMessage({
                             id: 'NO_VALUE',

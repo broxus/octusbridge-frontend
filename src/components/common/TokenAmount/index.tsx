@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 import './index.scss'
 
@@ -13,7 +13,7 @@ type Props = {
     amount?: string;
     decimals?: number;
     truncate?: number;
-    roundIfThousand?: boolean;
+    roundOn?: boolean;
     preserve?: boolean;
 }
 
@@ -24,7 +24,7 @@ export function TokenAmount({
     amount,
     decimals,
     truncate,
-    roundIfThousand,
+    roundOn,
     preserve,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -40,11 +40,9 @@ export function TokenAmount({
                 {intl.formatMessage({
                     id: 'AMOUNT',
                 }, {
-                    value: formattedAmount(amount, decimals, {
+                    value: formattedTokenAmount(amount, decimals, {
                         preserve,
-                        roundIfThousand,
-                        // ignores if preserve or truncate are presented
-                        target: 'token',
+                        roundOn,
                         truncate,
                     }),
                     symbol,

@@ -4,9 +4,10 @@ import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
+import { Pipeline } from '@/models'
 import { useBridge } from '@/modules/Bridge/providers'
-import { Pipeline } from '@/stores/TokensAssetsService'
-import { sliceAddress } from '@/utils'
+import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
+import { findNetwork, sliceAddress } from '@/utils'
 
 
 export function Tokens(): JSX.Element {
@@ -14,7 +15,7 @@ export function Tokens(): JSX.Element {
     const { bridge, summary } = useBridge()
     const everWallet = bridge.useEverWallet
     const evmWallet = bridge.useEvmWallet
-    const tokensAssets = bridge.useTokensAssets
+    const bridgeAssets = bridge.useBridgeAssets
 
     const addToEverAsset = (root: string) => async () => {
         try {
@@ -30,20 +31,20 @@ export function Tokens(): JSX.Element {
             return
         }
 
-        const asset = tokensAssets.get('evm', pipeline.chainId, address.toLowerCase())
+        const asset = bridgeAssets.get('evm', pipeline.chainId, address.toLowerCase())
         try {
-            const contract = tokensAssets.getEvmTokenContract(address, pipeline.chainId)
+            const network = findNetwork(pipeline.chainId, 'evm')
+            if (network === undefined) {
+                return
+            }
             let symbol
             try {
-                symbol = await contract?.methods.symbol().call()
+                symbol = await erc20TokenContract(address, network.rpcUrl).methods.symbol().call()
             }
             catch (e) {
-                const vaultContract = tokensAssets.getEvmTokenMultiVaultContract(
-                    pipeline.vault,
-                    pipeline.chainId,
-                )
-                const [activation, , symbolPrefix] = await vaultContract!.methods
-                    .prefixes(address.toLowerCase()).call()
+                const [activation, , symbolPrefix] = await evmMultiVaultContract(pipeline.vaultAddress, network.rpcUrl)
+                    .methods.prefixes(address.toLowerCase())
+                    .call()
                 symbol = `${activation === '0' ? 'oct' : symbolPrefix}${summary.token.symbol}`
             }
 
@@ -109,11 +110,11 @@ export function Tokens(): JSX.Element {
                                     <EverscanAccountLink
                                         key="token-link"
                                         addAsset
-                                        address={everscaleTokenAddress}
+                                        address={everscaleTokenAddress.toString()}
                                         className="text-regular"
-                                        onAddAsset={addToEverAsset(everscaleTokenAddress)}
+                                        onAddAsset={addToEverAsset(everscaleTokenAddress.toString())}
                                     >
-                                        {sliceAddress(everscaleTokenAddress)}
+                                        {sliceAddress(everscaleTokenAddress.toString())}
                                     </EverscanAccountLink>
                                 </div>
                             ) : <div>-</div>}
@@ -152,11 +153,11 @@ export function Tokens(): JSX.Element {
                                     <EverscanAccountLink
                                         key="token-link"
                                         addAsset
-                                        address={everscaleTokenAddress}
+                                        address={everscaleTokenAddress.toString()}
                                         className="text-regular"
-                                        onAddAsset={addToEverAsset(everscaleTokenAddress)}
+                                        onAddAsset={addToEverAsset(everscaleTokenAddress.toString())}
                                     >
-                                        {sliceAddress(everscaleTokenAddress)}
+                                        {sliceAddress(everscaleTokenAddress.toString())}
                                     </EverscanAccountLink>
                                 </div>
                             ) : <div>-</div>}

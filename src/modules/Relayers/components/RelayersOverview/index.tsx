@@ -7,7 +7,7 @@ import { Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
 // import { ChartLayout } from '@/modules/Chart/components/ChartLayout'
 import { useRoundInfoContext } from '@/modules/Relayers/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 export function RelayersOverview(): JSX.Element {
     const intl = useIntl()
@@ -35,9 +35,7 @@ export function RelayersOverview(): JSX.Element {
                     {() => (
                         <DataCard
                             value={roundInfo.info?.totalStake !== undefined
-                                ? formattedAmount(roundInfo.info.totalStake, undefined, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(roundInfo.info.totalStake)
                                 : noValue}
                             title={intl.formatMessage({
                                 id: 'RELAYERS_OVERVIEW_FROZEN',
@@ -72,9 +70,7 @@ export function RelayersOverview(): JSX.Element {
                     {() => (
                         <DataCard
                             value={roundInfo.info?.averageRelayStake !== undefined
-                                ? formattedAmount(roundInfo.info.averageRelayStake, undefined, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(roundInfo.info.averageRelayStake)
                                 : noValue}
                             title={intl.formatMessage({
                                 id: 'RELAYERS_OVERVIEW_AVERAGE',

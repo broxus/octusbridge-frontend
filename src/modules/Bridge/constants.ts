@@ -1,6 +1,3 @@
-import BigNumber from 'bignumber.js'
-
-import { BridgeConstants, DexConstants } from '@/misc'
 import {
     CrosschainBridgeStep,
     CrosschainBridgeStoreData,
@@ -13,7 +10,8 @@ import {
     EvmSwapTransferStoreState,
     EvmTransferStoreData,
     EvmTransferStoreState,
-    TransferSummaryData, TransferSummaryState,
+    TransferSummaryData,
+    TransferSummaryState,
 } from '@/modules/Bridge/types'
 
 
@@ -23,7 +21,6 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     creditFactoryFee: undefined,
     depositType: 'default',
     eversAmount: undefined,
-    isTokenChainSameToTargetChain: false,
     leftAddress: '',
     leftNetwork: undefined,
     minAmount: undefined,
@@ -51,6 +48,7 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState =
     isPendingAllowance: false,
     isPendingApproval: false,
     isProcessing: false,
+    isTokenChainSameToTargetChain: false,
     step: CrosschainBridgeStep.SELECT_ROUTE,
 }
 
@@ -132,7 +130,3 @@ export const DEFAULT_TRANSFER_SUMMARY_STORE_DATA: TransferSummaryData = {}
 export const DEFAULT_TRANSFER_SUMMARY_STORE_STATE: TransferSummaryState = {
     isTransferPage: false,
 }
-
-export const EMPTY_WALLET_MIN_TONS_AMOUNT = new BigNumber(
-    BridgeConstants.EmptyWalletMinTonsAmount,
-).shiftedBy(-DexConstants.CoinDecimals)
