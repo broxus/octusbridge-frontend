@@ -75,7 +75,7 @@ export function Amount(): JSX.Element {
                                     </b>
                                 )
 
-                            case summary.isEvmToEvm || summary.isFromEvm:
+                            case summary.isEvmToEvm || (summary.isFromEvm && summary.pipeline?.depositType !== 'credit'):
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
