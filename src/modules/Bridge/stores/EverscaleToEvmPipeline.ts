@@ -6,6 +6,7 @@ import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
 import Web3 from 'web3'
 
 import { BridgeAbi, EthAbi, TokenWallet } from '@/misc'
+import { BridgeUtils } from '@/misc/BridgeUtils'
 import {
     alienProxyContract,
     ethereumTokenTransferProxyContract,
@@ -18,7 +19,7 @@ import {
     tokenTransferEverscaleEventContract,
 } from '@/misc/contracts'
 import { evmBridgeContract, evmMultiVaultContract, evmVaultContract } from '@/misc/eth-contracts'
-import { EverscaleToken, EvmToken, Pipeline } from '@/models'
+import { EverscaleToken, Pipeline } from '@/models'
 import {
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_DATA,
     DEFAULT_TON_TO_EVM_TRANSFER_STORE_STATE,
@@ -170,6 +171,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                     if (data !== undefined) {
                         this.bridgeAssets.add(new EverscaleToken({
+                            address: tokenAddress,
                             chainId: this.leftNetwork.chainId,
                             decimals: data.decimals,
                             key: `${this.leftNetwork.type}-${this.leftNetwork.chainId}-${tokenAddress.toString()}`,
@@ -242,9 +244,15 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 recipient_: ethereum_address,
                 remainingGasTo_: owner_address,
                 amount_: tokens,
-                token_: tokenAddress,
                 base_chainId_: chainId,
             } = eventData
+            let { token_: tokenAddress } = eventData
+
+            const canonicalAddress = await BridgeUtils.getCanonicalToken(tokenAddress, proxyAddress)
+
+            if (canonicalAddress !== undefined) {
+                tokenAddress = canonicalAddress
+            }
 
             const token = this.bridgeAssets.get(
                 this.leftNetwork.type,
@@ -257,7 +265,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     const data = await TokenWallet.getTokenFullDetails(tokenAddress.toString())
 
                     if (data !== undefined) {
-                        this.bridgeAssets.add(new EvmToken({
+                        this.bridgeAssets.add(new EverscaleToken({
+                            address: tokenAddress,
                             chainId: this.leftNetwork.chainId,
                             decimals: data.decimals,
                             key: `${this.leftNetwork.type}-${this.leftNetwork.chainId}-${tokenAddress.toString()}`,
@@ -268,7 +277,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     }
                 }
                 catch (e) {
-
                 }
             }
 
