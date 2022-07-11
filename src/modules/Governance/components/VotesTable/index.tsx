@@ -9,7 +9,9 @@ import { UserCard } from '@/components/common/UserCard'
 import { VoteType } from '@/modules/Governance/components/VoteType'
 import { VoteReason } from '@/modules/Governance/components/VoteReason'
 import { useProposalContext } from '@/modules/Governance/providers'
-import { dateFormat, error, formattedAmount } from '@/utils'
+import {
+    dateFormat, error, formattedTokenAmount,
+} from '@/utils'
 import { usePagination } from '@/hooks'
 import { DexConstants } from '@/misc'
 
@@ -99,7 +101,7 @@ export function VotesTableInner(): JSX.Element {
                                 badge
                                 type={item.support ? 1 : 0}
                                 value={item.votes
-                                    ? formattedAmount(item.votes, DexConstants.CoinDecimals, { target: 'token' })
+                                    ? formattedTokenAmount(item.votes, DexConstants.CoinDecimals)
                                     : undefined}
                             />,
                             dateFormat(item.createdAt * 1000),

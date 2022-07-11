@@ -13,7 +13,9 @@ import { useTransactionsContext } from '@/modules/Staking/providers/Transactions
 import { TransactionKindApiRequest, TransactionOrdering } from '@/modules/Staking/types'
 import { usePagination } from '@/hooks/usePagination'
 import { useTableOrder } from '@/hooks/useTableOrder'
-import { dateFormat, error, formattedAmount } from '@/utils'
+import {
+    dateFormat, error, formattedTokenAmount,
+} from '@/utils'
 
 import './index.scss'
 
@@ -156,9 +158,7 @@ export function TransactionsInner({
                                 ? <TransactionExplorerLink withIcon id={item.transactionHash} />
                                 : noValue,
                             item.amountExec
-                                ? formattedAmount(new BigNumber(item.amountExec).abs().toFixed(), undefined, {
-                                    target: 'token',
-                                })
+                                ? formattedTokenAmount(new BigNumber(item.amountExec).abs().toFixed())
                                 : noValue,
                             item.timestampBlock ? dateFormat(item.timestampBlock) : noValue,
                         ],

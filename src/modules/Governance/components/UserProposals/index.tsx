@@ -19,7 +19,7 @@ import { ProposalsFilters as Filters } from '@/modules/Governance/types'
 import { useProposalsFilters, useUserProposals } from '@/modules/Governance/hooks'
 import { WalletConnector } from '@/modules/TonWalletConnector/Panel'
 import { usePagination } from '@/hooks'
-import { error, formattedAmount } from '@/utils'
+import { error, formattedTokenAmount } from '@/utils'
 import { DexConstants } from '@/misc'
 import { useEverWallet } from '@/stores/EverWalletService'
 
@@ -153,9 +153,7 @@ export function UserProposalsInner(): JSX.Element | null {
                                         badge
                                         type={vote.support ? 1 : 0}
                                         value={vote.votes
-                                            ? formattedAmount(vote.votes, DexConstants.CoinDecimals, {
-                                                target: 'token',
-                                            })
+                                            ? formattedTokenAmount(vote.votes, DexConstants.CoinDecimals)
                                             : undefined}
                                     />
                                 ) : noValue,

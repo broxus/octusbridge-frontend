@@ -9,7 +9,7 @@ import {
 } from '@/components/common/Filters'
 import { Button } from '@/components/common/Button'
 import { Select } from '@/components/common/Select'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { SearchNotInstantFilters, SearchNotInstantStatus } from '@/modules/LiquidityRequests/types'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
 import { formattedAmount } from '@/utils'
@@ -29,11 +29,11 @@ function LiquidityRequestsHeaderInner({
     onChangeFilters,
 }: Props): JSX.Element {
     const intl = useIntl()
-    const tokensAssets = useTokensAssets()
+    const bridgeAssets = useBridgeAssets()
     const liquidityRequests = useLiquidityRequests()
 
     const tokenSymbol = liquidityRequests.selected.length > 0
-        ? tokensAssets.get('everscale', '1', liquidityRequests.selected[0].tonTokenAddress)?.symbol
+        ? bridgeAssets.get('everscale', '1', liquidityRequests.selected[0].tonTokenAddress)?.symbol
         : undefined
 
     const evmTokenDecimals = liquidityRequests.selected.length > 0

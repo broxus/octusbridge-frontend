@@ -4,13 +4,13 @@ import {
     StakingUserApiRequest, StakingUserApiResponse, TransactionKindApiResponse,
     TransactionsApiRequest, TransactionsApiResponse,
 } from '@/modules/Staking/types'
-import { BridgeConstants, StackingAbi, StackingContract } from '@/misc'
-import { IndexerApiBaseUrl, TonSwapIndexerApiBaseUrl } from '@/config'
+import { StackingAbi, StackingContract } from '@/misc'
+import { IndexerApiBaseUrl, StakingAccountAddress, TonSwapIndexerApiBaseUrl } from '@/config'
 import { handleApi } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 
 export function getStakingContract(): StackingContract {
-    return rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+    return rpc.createContract(StackingAbi.Root, StakingAccountAddress)
 }
 
 export async function handleMainInfoApi(): Promise<StakingMainApiResponse> {

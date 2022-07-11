@@ -1,7 +1,8 @@
 import { Contract, DecodedAbiFunctionInputs, DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 
 import {
-    DaoAbi, ProposalAbi, StackingAbi, TokenAbi, UserDataAbi,
+    BridgeAbi,
+    DaoAbi, ProposalAbi, StackingAbi, UserDataAbi,
 } from '@/misc/abi'
 
 export type StackingDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getDetails'>['value0']
@@ -14,9 +15,9 @@ export type RelayConfig = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'ge
 
 export type RelayRoundsDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getRelayRoundsDetails'>['value0']
 
-export type EventVoteData = DecodedAbiFunctionInputs<typeof TokenAbi.EthEventConfig, 'deployEvent'>['eventVoteData']
+export type EventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
 
-export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof TokenAbi.EthEventConfig, 'getDetails'>
+export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof BridgeAbi.EthereumEventConfiguration, 'getDetails'>
 
 export type StackingContract = Contract<typeof StackingAbi.Root>
 

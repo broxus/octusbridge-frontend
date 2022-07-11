@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 
 export function Amount(): JSX.Element {
@@ -43,7 +43,7 @@ export function Amount(): JSX.Element {
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
-                                            ? formattedAmount(
+                                            ? formattedTokenAmount(
                                                 new BigNumber(summary.amount || 0)
                                                     .shiftedBy(-(summary.token?.decimals || 0))
                                                     .minus(summary.withdrawFee || 0)
@@ -63,7 +63,7 @@ export function Amount(): JSX.Element {
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
-                                            ? formattedAmount(
+                                            ? formattedTokenAmount(
                                                 new BigNumber(summary.amount || 0)
                                                     .shiftedBy(-(summary.token?.decimals || 0))
                                                     .minus(summary.depositFee || 0)
@@ -75,11 +75,11 @@ export function Amount(): JSX.Element {
                                     </b>
                                 )
 
-                            case summary.isEvmToEvm:
+                            case summary.isEvmToEvm || summary.isFromEvm:
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
-                                            ? formattedAmount(
+                                            ? formattedTokenAmount(
                                                 summary.amount,
                                                 summary.evmTokenDecimals,
                                                 { preserve: true },
@@ -92,14 +92,9 @@ export function Amount(): JSX.Element {
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
-                                            ? formattedAmount(
+                                            ? formattedTokenAmount(
                                                 summary.amount,
-                                                (
-                                                    summary.isFromEverscale
-                                                    || (summary.isFromEvm && summary.pipeline?.depositType === 'credit')
-                                                )
-                                                    ? summary.token?.decimals
-                                                    : summary.evmTokenDecimals,
+                                                summary.token?.decimals,
                                                 { preserve: true },
                                             )
                                             : '–'}

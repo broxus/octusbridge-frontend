@@ -5,7 +5,7 @@ import { Alert } from '@/components/common/Alert'
 import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/common/Button'
 import { CreateRelayerPopupLayout } from '@/modules/Relayers/components/CreateRelayerPopupLayout'
-import { formattedAmount } from '@/utils'
+import { formattedAmount, formattedTokenAmount } from '@/utils'
 
 type Props = {
     isValid?: boolean;
@@ -68,10 +68,9 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(
+                                value: formattedTokenAmount(
                                     stakingBalance,
                                     stakingTokenDecimals,
-                                    { target: 'token' },
                                 ),
                                 symbol: stakingTokenSymbol,
                             })
@@ -90,7 +89,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(tonWalletBalance, tonTokenDecimals, { target: 'token' }),
+                                value: formattedTokenAmount(tonWalletBalance, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
                             : noValue
@@ -108,7 +107,7 @@ export function CreateRelayerConfirmation({
                             ? intl.formatMessage({
                                 id: 'AMOUNT',
                             }, {
-                                value: formattedAmount(contractFee, tonTokenDecimals, { target: 'token' }),
+                                value: formattedTokenAmount(contractFee, tonTokenDecimals),
                                 symbol: tonTokenSymbol,
                             })
                             : noValue
@@ -129,7 +128,7 @@ export function CreateRelayerConfirmation({
                                 id: 'RELAYERS_CREATE_FORM_INSUFFICIENT_WARNING_TEXT',
                             }, {
                                 symbol: stakingTokenSymbol,
-                                amount: formattedAmount(requiredStake, stakingTokenDecimals, { target: 'token' }),
+                                amount: formattedTokenAmount(requiredStake, stakingTokenDecimals),
                             })}
                             type="danger"
                         />
@@ -152,7 +151,7 @@ export function CreateRelayerConfirmation({
                                 amount: formattedAmount(
                                     contractFee,
                                     tonTokenDecimals,
-                                    { preserve: true, roundIfThousand: false },
+                                    { preserve: true, roundOn: false },
                                 ),
                                 symbol: tonTokenSymbol,
                             }, { ignoreTag: true })}

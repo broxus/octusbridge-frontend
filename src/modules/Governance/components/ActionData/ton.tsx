@@ -5,7 +5,7 @@ import { DexConstants } from '@/misc'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Summary } from '@/components/common/Summary'
 import { TonAction } from '@/modules/Governance/types'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 
 import './index.scss'
 
@@ -41,9 +41,7 @@ export function TonActionData({
                 key: intl.formatMessage({
                     id: 'PROPOSAL_ACTION_VALUE',
                 }),
-                value: formattedAmount(value, DexConstants.CoinDecimals, {
-                    target: 'token',
-                }),
+                value: formattedTokenAmount(value, DexConstants.CoinDecimals),
             }]}
         />
     )

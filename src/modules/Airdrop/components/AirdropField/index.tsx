@@ -2,7 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 
 import { TokenBadge } from '@/components/common/TokenBadge'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
     id?: string;
     isValid?: boolean;
     readOnly?: boolean;
-    token?: Token;
+    token?: TokenCache;
     value?: string;
     onChange?: (value: string) => void;
     onToggleTokensList?: () => void;

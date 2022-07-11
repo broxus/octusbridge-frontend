@@ -2,34 +2,11 @@ import { computed, makeObservable } from 'mobx'
 
 import { error } from '@/utils'
 import { BaseStore } from '@/stores/BaseStore'
+import { TokenRaw, TokensListManifest } from '@/types'
 
 
-export type TonToken = {
-    name: string;
-    chainId: number;
-    symbol: string;
-    decimals: number;
-    address: string;
-    logoURI?: string;
-    version?: number;
-    vendor: string;
-    verified: boolean;
-}
-
-export type TonTokenListManifest<T> = {
-    name: string;
-    version: {
-        major: number;
-        minor: number;
-        patch: number;
-    };
-    keywords: string[];
-    timestamp: string;
-    tokens: T[];
-}
-
-export type TokensListData<T> = {
-    tokens: T[];
+export type TokensListData = {
+    tokens: TokenRaw<string>[];
 }
 
 export type TokensListState = {
@@ -39,7 +16,7 @@ export type TokensListState = {
 }
 
 
-export class TokensListService<T = TonToken> extends BaseStore<TokensListData<T>, TokensListState> {
+export class TokensListService extends BaseStore<TokensListData, TokensListState> {
 
     constructor(uri: string) {
         super()
@@ -74,7 +51,7 @@ export class TokensListService<T = TonToken> extends BaseStore<TokensListData<T>
             method: 'GET',
         }).then(
             value => value.json(),
-        ).then((value: TonTokenListManifest<T>) => {
+        ).then((value: TokensListManifest) => {
             this.setData('tokens', value.tokens)
             this.setState({
                 isFetching: false,
@@ -104,7 +81,7 @@ export class TokensListService<T = TonToken> extends BaseStore<TokensListData<T>
     /**
      * Returns computed Ton tokens list
      */
-    public get tokens(): T[] {
+    public get tokens(): TokenRaw<string>[] {
         return this.data.tokens
     }
 

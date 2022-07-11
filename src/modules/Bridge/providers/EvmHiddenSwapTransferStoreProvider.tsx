@@ -6,7 +6,7 @@ import { EvmToEvmHiddenSwapPipeline } from '@/modules/Bridge/stores'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
+import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { isEvmTxHashValid } from '@/utils'
 
 
@@ -14,7 +14,7 @@ export const EvmHiddenSwapTransferContext = React.createContext<EvmToEvmHiddenSw
     new EvmToEvmHiddenSwapPipeline(
         useEvmWallet(),
         useEverWallet(),
-        useTokensAssets(),
+        useBridgeAssets(),
     ),
 )
 
@@ -23,10 +23,10 @@ export function useEvmHiddenSwapTransfer(): EvmToEvmHiddenSwapPipeline {
 }
 
 type Props = {
+    bridgeAssets: BridgeAssetsService;
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
-    tokensAssets: TokensAssetsService;
 }
 
 export function EvmHiddenSwapTransferStoreProvider({ children, ...props }: Props): JSX.Element {
@@ -39,7 +39,7 @@ export function EvmHiddenSwapTransferStoreProvider({ children, ...props }: Props
     const transfer = React.useMemo(() => new EvmToEvmHiddenSwapPipeline(
         props.evmWallet,
         props.everWallet,
-        props.tokensAssets,
+        props.bridgeAssets,
         params,
     ), [params])
 

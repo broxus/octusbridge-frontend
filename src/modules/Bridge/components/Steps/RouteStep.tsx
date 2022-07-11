@@ -23,7 +23,7 @@ export function RouteStep(): JSX.Element {
     const { bridge } = useBridge()
     const evmWallet = bridge.useEvmWallet
     const everWallet = bridge.useEverWallet
-    const tokenAssets = bridge.useTokensAssets
+    const bridgeAssets = bridge.useBridgeAssets
 
     const onChangeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
         bridge.setData(key, value)
@@ -148,12 +148,12 @@ export function RouteStep(): JSX.Element {
                     {() => (
                         <Button
                             className="crosschain-transfer__btn-next"
-                            disabled={tokenAssets.isFetchingAssets || !bridge.isRouteValid}
+                            disabled={bridgeAssets.isFetching || !bridge.isRouteValid}
                             size="lg"
                             type="primary"
                             onClick={nextStep}
                         >
-                            {tokenAssets.isFetchingAssets ? (
+                            {bridgeAssets.isFetching ? (
                                 <Icon icon="loader" className="spin" />
                             ) : intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT',

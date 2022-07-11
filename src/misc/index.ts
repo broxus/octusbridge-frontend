@@ -1,5 +1,4 @@
 export * from '@/misc/abi'
-export * from '@/misc/bridge-constants'
 export * from '@/misc/dex'
 export * from '@/misc/dex-constants'
 export * from '@/misc/token-wallet'

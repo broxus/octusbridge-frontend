@@ -8,20 +8,20 @@ import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import { usePagination, useTableOrder, useTextParam } from '@/hooks'
 import { TransfersOrdering } from '@/modules/Transfers/types'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { error } from '@/utils'
 
 function PendingTransfersInner(): JSX.Element {
     const intl = useIntl()
     const transfers = useTransfersContext()
-    const tokensAssets = useTokensAssets()
+    const bridgeAssets = useBridgeAssets()
     const pagination = usePagination(transfers.totalCount)
     const tableOrder = useTableOrder<TransfersOrdering>('createdatdescending')
 
     const [userAddress] = useTextParam('user')
 
     const fetchPending = React.useCallback(async () => {
-        if (!tokensAssets.isReady) {
+        if (!bridgeAssets.isReady) {
             return
         }
         try {
@@ -36,7 +36,7 @@ function PendingTransfersInner(): JSX.Element {
         catch (e) {
             error(e)
         }
-    }, [tokensAssets.isReady])
+    }, [bridgeAssets.isReady])
 
     React.useEffect(() => {
         fetchPending()
@@ -45,7 +45,7 @@ function PendingTransfersInner(): JSX.Element {
         pagination.limit,
         pagination.offset,
         tableOrder.order,
-        tokensAssets.isReady,
+        bridgeAssets.isReady,
     ])
 
     return (

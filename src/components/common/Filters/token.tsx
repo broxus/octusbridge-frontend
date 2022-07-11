@@ -3,12 +3,12 @@ import { useIntl } from 'react-intl'
 
 import { TokenBadge } from '@/components/common/TokenBadge'
 import { Select } from '@/components/common/Select'
-import { Token } from '@/types'
+import { BridgeAsset } from '@/stores/BridgeAssetsService'
 
 import './index.scss'
 
 type Props = {
-    tokens: Token[];
+    tokens: BridgeAsset[];
     tokenAddress?: string;
     onChange: (tokenAddress: string) => void;
 }

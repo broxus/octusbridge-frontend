@@ -1,18 +1,20 @@
 import { Address } from 'everscale-inpage-provider'
 import {
-    IReactionDisposer, makeAutoObservable, reaction, toJS,
+    IReactionDisposer,
+    makeAutoObservable,
+    reaction,
+    toJS,
 } from 'mobx'
 
-import {
-    BridgeConstants, CastedVotes, StackingAbi, UserDataAbi,
-} from '@/misc'
+import { StakingAccountAddress } from '@/config'
+import { CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
 import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
 import { handleProposalsCount, handleStakeholder } from '@/modules/Governance/utils'
 import { TokensCacheService } from '@/stores/TokensCacheService'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 
 export class UserDataStore {
@@ -58,7 +60,7 @@ export class UserDataStore {
                 throwException('Wallet must be connected')
             }
 
-            const stakingContract = rpc.createContract(StackingAbi.Root, BridgeConstants.StakingAccountAddress)
+            const stakingContract = rpc.createContract(StackingAbi.Root, StakingAccountAddress)
 
             const [
                 { value0: userDataAddress },
@@ -181,7 +183,7 @@ export class UserDataStore {
         return this.tokensCache.isReady && this.tonWallet.isConnected
     }
 
-    public get token(): Token | undefined {
+    public get token(): TokenCache | undefined {
         if (!this.data.stakingDetails) {
             return undefined
         }

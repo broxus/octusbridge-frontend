@@ -4,7 +4,12 @@ import { useIntl } from 'react-intl'
 import { RelayEvmNetworkChainId } from '@/config'
 import { Copy } from '@/components/common/Copy'
 import { Icon } from '@/components/common/Icon'
-import { findNetwork, formattedAmount, sliceAddress } from '@/utils'
+import {
+    findNetwork,
+    formattedAmount,
+    formattedTokenAmount,
+    sliceAddress,
+} from '@/utils'
 
 type Props = {
     tonTokenSymbol?: string;
@@ -104,7 +109,7 @@ export function CreateRelayerSummary({
                     <span>
                         {
                             stakingBalance !== undefined && stakingTokenDecimals !== undefined
-                                ? formattedAmount(stakingBalance, stakingTokenDecimals, { target: 'token' })
+                                ? formattedTokenAmount(stakingBalance, stakingTokenDecimals)
                                 : noValue
                         }
                     </span>
@@ -123,7 +128,7 @@ export function CreateRelayerSummary({
                             ? formattedAmount(
                                 contractFee,
                                 tonTokenDecimals,
-                                { preserve: true, roundIfThousand: false },
+                                { preserve: true, roundOn: false },
                             )
                             : noValue
                     }

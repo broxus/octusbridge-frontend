@@ -12,7 +12,7 @@ import { Align, Table } from '@/components/common/Table'
 import { Pagination } from '@/components/common/Pagination'
 import { EventType } from '@/modules/Relayers/components/Events/type'
 import { useRelayersEventsContext } from '@/modules/Relayers/providers/RelayersEvents'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 import {
     useBNParam, useDateParam, useDictParam, useNumParam,
     usePagination, useTableOrder, useTextParam, useUrlParams,
@@ -22,7 +22,7 @@ import { useTokensCache } from '@/stores/TokensCacheService'
 import { Select } from '@/components/common/Select'
 import { FromAddress } from '@/modules/Relayers/components/Events/FromAddress'
 import { ToAddress } from '@/modules/Relayers/components/Events/ToAddress'
-import { TokenAsset, useTokensAssets } from '@/stores/TokensAssetsService'
+import { BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { DateCard } from '@/components/common/DateCard'
 import { networks } from '@/config'
 
@@ -45,7 +45,7 @@ export function EventsInner({
     const urlParams = useUrlParams()
     const events = useRelayersEventsContext()
     const tokensCache = useTokensCache()
-    const tokensAssets = useTokensAssets()
+    const bridgeAssets = useBridgeAssets()
     const pagination = usePagination(events.totalCount)
     const tableOrder = useTableOrder<RelayersEventsOrdering>('timestampdescending')
 
@@ -61,11 +61,11 @@ export function EventsInner({
     const tokens = React.useMemo(() => (
         evmNetworks
             .filter(item => item.type === 'evm')
-            .flatMap(network => tokensAssets.filterTokensByChainId(network.chainId))
-            .reduce<TokenAsset[]>((acc, token) => (
+            .flatMap(network => bridgeAssets.filterTokensByChain(network.chainId))
+            .reduce<BridgeAsset[]>((acc, token) => (
                 acc.find(({ root }) => root === token.root) ? acc : [...acc, token]
             ), [])
-    ), [tokensAssets.tokens])
+    ), [bridgeAssets.tokens])
 
     const changeFilters = (filters: RelayersEventsFilters) => {
         pagination.submit(1)
@@ -301,9 +301,7 @@ export function EventsInner({
                                 symbol={tokensCache.get(item.tokenAddress)?.symbol
                                     || intl.formatMessage({ id: 'NA' })}
                             />,
-                            formattedAmount(item.amount, undefined, {
-                                target: 'token',
-                            }),
+                            formattedTokenAmount(item.amount),
                             <DateCard
                                 time={item.timestamp}
                             />,

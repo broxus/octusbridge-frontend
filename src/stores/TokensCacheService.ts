@@ -27,7 +27,7 @@ import {
     storage,
     warn,
 } from '@/utils'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 
 export type TokensCacheData<T> = {
@@ -58,7 +58,7 @@ export function getImportedTokens(): string[] {
 
 
 export class TokensCacheService<
-    T extends Token | Record<string, any> = Token,
+    T extends TokenCache | Record<string, any> = TokenCache,
     U extends TokensCacheData<T> | Record<string, any> = TokensCacheData<T>,
     V extends TokensCacheState<T> | Record<string, any> = TokensCacheState<T>
 > extends BaseStore<U, V> {

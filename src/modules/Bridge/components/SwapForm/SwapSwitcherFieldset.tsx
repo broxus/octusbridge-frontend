@@ -6,7 +6,8 @@ import { useIntl } from 'react-intl'
 import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
 import { OptionSwitcher } from '@/components/common/OptionSwitcher'
-import { BridgeConstants, DexConstants } from '@/misc'
+import { EmptyWalletMinEversAmount } from '@/config'
+import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
 
 
@@ -32,14 +33,14 @@ export function SwapSwitcherFieldset(): JSX.Element {
                             <OptionSwitcher
                                 checked={bridge.isSwapEnabled}
                                 id="gas-fees"
-                                disabled={bridge.isInsufficientEverBalance
+                                disabled={bridge.isFetching || bridge.isInsufficientEverBalance
                                     || bridge.evmPendingWithdrawal !== undefined}
                                 label={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL',
                                 }, {
                                     symbol: bridge.token?.symbol,
                                 })}
-                                onChange={onSwitch}
+                                onChange={bridge.isFetching ? undefined : onSwitch}
                             />
                         )}
                     </Observer>
@@ -101,7 +102,7 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                                 id: 'CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT',
                                             }, {
                                                 minTons: (
-                                                    new BigNumber(BridgeConstants.EmptyWalletMinTonsAmount)
+                                                    new BigNumber(EmptyWalletMinEversAmount)
                                                         .shiftedBy(-DexConstants.CoinDecimals)
                                                         .toFixed()
                                                 ),

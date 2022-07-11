@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { findNetwork, formattedAmount, sliceAddress } from '@/utils'
+import { findNetwork, formattedTokenAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
@@ -78,12 +78,12 @@ export function EvmWallet(): JSX.Element | null {
                                                 {intl.formatMessage({
                                                     id: 'WALLET_BALANCE_HINT',
                                                 }, {
-                                                    value: formattedAmount(
+                                                    value: formattedTokenAmount(
                                                         wallet.balance,
                                                         18,
                                                         {
                                                             truncate: 9,
-                                                            roundIfThousand: false,
+                                                            roundOn: false,
                                                         },
                                                     ),
                                                     currency: network?.currencySymbol || 'ETH',

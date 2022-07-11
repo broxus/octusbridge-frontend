@@ -8,7 +8,7 @@ export type WalletNativeCoin = {
     symbol: string;
 }
 
-export type Token = {
+export type TokenCache = {
     balance?: string;
     chainId?: string;
     decimals: number;
@@ -22,6 +22,21 @@ export type Token = {
     vendor?: string | null;
     verified?: boolean;
     wallet?: string;
+}
+
+export interface Token<Addr = unknown> {
+    address: Addr;
+    decimals: number;
+    logoURI?: string;
+    name?: string;
+    symbol: string;
+}
+
+export interface TokenRaw<Addr = unknown> extends Token<Addr> {
+    chainId?: string;
+    vendor?: string;
+    verified?: boolean;
+    version?: number;
 }
 
 export type NetworkType = 'evm' | 'everscale' | 'solana' & string
@@ -41,7 +56,14 @@ export type NetworkShape = {
     type: NetworkType;
 }
 
-export type LabeledNetwork = {
-    label: string;
-    value: string;
+export type TokensListManifest = {
+    name: string;
+    version: {
+        major: number;
+        minor: number;
+        patch: number;
+    };
+    keywords: string[];
+    timestamp: string;
+    tokens: TokenRaw<string>[];
 }

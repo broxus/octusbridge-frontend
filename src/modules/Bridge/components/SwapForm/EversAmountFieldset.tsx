@@ -22,7 +22,7 @@ export function EversAmountFieldset(): JSX.Element {
 
     const changeTonsAmountRecalculate = debounce(() => {
         (async () => {
-            await bridge.onChangeTonsAmount()
+            await bridge.onChangeEversAmount()
         })()
     }, 50)
 
@@ -30,15 +30,6 @@ export function EversAmountFieldset(): JSX.Element {
         bridge.setData('eversAmount', value)
         changeTonsAmountRecalculate()
     }
-
-    // const onClickMax = () => {
-    //     let formattedBalance = new BigNumber(bridge.maxTonsAmount || 0)
-    //     if (!isGoodBignumber(formattedBalance)) {
-    //         return
-    //     }
-    //     formattedBalance = formattedBalance.shiftedBy(-DexConstants.TONDecimals)
-    //     onChange(formattedBalance.toFixed())
-    // }
 
     return (
         <fieldset className="form-fieldset">
@@ -53,8 +44,8 @@ export function EversAmountFieldset(): JSX.Element {
                         {() => (
                             <TokenAmountField
                                 decimals={DexConstants.CoinDecimals}
+                                disabled={bridge.isFetching}
                                 displayMaxButton={false}
-                                // displayMaxButton={bridge.maxTonsAmount !== undefined && bridge.maxTonsAmount !== '0'}
                                 isValid={bridge.isEversAmountValid}
                                 placeholder="0"
                                 suffix={(
@@ -66,8 +57,7 @@ export function EversAmountFieldset(): JSX.Element {
                                 token={bridge.token}
                                 size="md"
                                 value={bridge.eversAmount || ''}
-                                onChange={onChange}
-                                // onClickMax={onClickMax}
+                                onChange={bridge.isFetching ? undefined : onChange}
                             />
                         )}
                     </Observer>

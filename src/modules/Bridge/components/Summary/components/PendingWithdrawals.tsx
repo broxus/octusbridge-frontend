@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
 
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 
 
@@ -51,7 +51,7 @@ export function PendingWithdrawals(): JSX.Element {
                                     )}
                                 </div>
                                 <div>
-                                    {formattedAmount(
+                                    {formattedTokenAmount(
                                         item.bounty,
                                         summary.evmTokenDecimals,
                                         { preserve: true },
@@ -68,7 +68,7 @@ export function PendingWithdrawals(): JSX.Element {
                                     })}
                                 </div>
                                 <div>
-                                    {formattedAmount(
+                                    {formattedTokenAmount(
                                         summary.pendingWithdrawals
                                             .reduce((acc, item) => acc.plus(item.bounty), new BigNumber(0))
                                             .toFixed(),
@@ -104,7 +104,7 @@ export function PendingWithdrawals(): JSX.Element {
                                     )}
                                 </div>
                                 <div>
-                                    {formattedAmount(
+                                    {formattedTokenAmount(
                                         item.amount,
                                         summary.evmTokenDecimals,
                                         { preserve: true },
@@ -121,7 +121,7 @@ export function PendingWithdrawals(): JSX.Element {
                                     })}
                                 </div>
                                 <div>
-                                    {formattedAmount(
+                                    {formattedTokenAmount(
                                         summary.pendingWithdrawals
                                             .reduce((acc, item) => acc.plus(item.amount), new BigNumber(0))
                                             .toFixed(),

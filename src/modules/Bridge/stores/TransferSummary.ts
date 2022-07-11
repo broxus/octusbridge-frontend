@@ -6,12 +6,12 @@ import {
 } from '@/modules/Bridge/constants'
 import { PendingWithdrawal, TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { TokensAssetsService } from '@/stores/TokensAssetsService'
+import { BridgeAssetsService } from '@/stores/BridgeAssetsService'
 
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
 
-    constructor(protected readonly tokensCache: TokensAssetsService) {
+    constructor(protected readonly bridgeAssets: BridgeAssetsService) {
         super()
 
         this.reset()

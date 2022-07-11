@@ -10,7 +10,7 @@ import { TokenWallet, TonAirdrop } from '@/misc'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { TokensCacheService, useTokensCache } from '@/stores/TokensCacheService'
 import { error, isGoodBignumber } from '@/utils'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 
 export type AirdropStoreData = {
@@ -128,7 +128,7 @@ export class AirdropStore {
         }
     }
 
-    public get token(): Token | undefined {
+    public get token(): TokenCache | undefined {
         return this.data.tokenRoot ? this.tokenCache.get(this.data.tokenRoot) : undefined
     }
 

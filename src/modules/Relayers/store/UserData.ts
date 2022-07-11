@@ -2,7 +2,8 @@ import BigNumber from 'bignumber.js'
 import { makeAutoObservable, runInAction } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
 
-import { BridgeConstants, StackingAbi, UserDataAbi } from '@/misc'
+import { StakingAccountAddress } from '@/config'
+import { StackingAbi, UserDataAbi } from '@/misc'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
 import { UserDataStoreData } from '@/modules/Relayers/types'
 import { useEverWallet } from '@/stores/EverWalletService'
@@ -16,7 +17,7 @@ export class UserDataStore {
 
     protected stakingContract = rpc.createContract(
         StackingAbi.Root,
-        BridgeConstants.StakingAccountAddress,
+        StakingAccountAddress,
     )
 
     protected relayersData = new RelayersDataStore()

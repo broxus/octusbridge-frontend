@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Section, Title } from '@/components/common/Section'
 import { DataCard } from '@/components/common/DataCard'
 import { RelayRoundInfoResponse, RoundInfoResponse } from '@/modules/Relayers/types'
-import { formattedAmount } from '@/utils'
+import { formattedTokenAmount } from '@/utils'
 import { RelayConfig } from '@/misc'
 
 type Props = {
@@ -47,9 +47,7 @@ export function RoundInformation({
                             title={intl.formatMessage({
                                 id: 'RELAYERS_ROUND_STAKE',
                             })}
-                            value={formattedAmount(relayRoundInfo.stake, undefined, {
-                                target: 'token',
-                            })}
+                            value={formattedTokenAmount(relayRoundInfo.stake)}
                         />
 
                         <DataCard
@@ -73,9 +71,7 @@ export function RoundInformation({
 
                 <DataCard
                     value={relayConfig?.minRelayDeposit
-                        ? formattedAmount(relayConfig.minRelayDeposit, 9, {
-                            target: 'token',
-                        }) : noValue}
+                        ? formattedTokenAmount(relayConfig.minRelayDeposit, 9) : noValue}
                     title={intl.formatMessage({
                         id: 'RELAYERS_ROUND_MINIMUM_STAKE',
                     })}
@@ -83,9 +79,7 @@ export function RoundInformation({
 
                 <DataCard
                     value={roundInfo?.averageRelayStake
-                        ? formattedAmount(roundInfo.averageRelayStake, undefined, {
-                            target: 'token',
-                        }) : noValue}
+                        ? formattedTokenAmount(roundInfo.averageRelayStake) : noValue}
                     title={intl.formatMessage({
                         id: 'RELAYERS_ROUND_AVERAGE_STAKE',
                     })}

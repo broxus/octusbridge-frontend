@@ -6,7 +6,7 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { DexConstants } from '@/misc'
 import { useEverWallet } from '@/stores/EverWalletService'
-import { formattedAmount, sliceAddress } from '@/utils'
+import { formattedTokenAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
 
@@ -68,12 +68,12 @@ export function EverWallet(): JSX.Element | null {
                                             {intl.formatMessage({
                                                 id: 'WALLET_BALANCE_HINT',
                                             }, {
-                                                value: formattedAmount(
+                                                value: formattedTokenAmount(
                                                     wallet.balance,
                                                     DexConstants.CoinDecimals,
                                                     {
                                                         preserve: true,
-                                                        roundIfThousand: false,
+                                                        roundOn: false,
                                                     },
                                                 ),
                                                 currency: DexConstants.CoinSymbol,

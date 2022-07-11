@@ -4,9 +4,9 @@ import { Redirect, useParams } from 'react-router-dom'
 import { useTransferLifecycle } from '@/modules/Bridge/hooks'
 import { EverscaleToEvmPipeline } from '@/modules/Bridge/stores'
 import { EverscaleTransferQueryParams } from '@/modules/Bridge/types'
+import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { TokensAssetsService, useTokensAssets } from '@/stores/TokensAssetsService'
 import { isEverscaleAddressValid } from '@/utils'
 
 
@@ -14,7 +14,7 @@ export const EverscaleTransferContext = React.createContext<EverscaleToEvmPipeli
     new EverscaleToEvmPipeline(
         useEverWallet(),
         useEvmWallet(),
-        useTokensAssets(),
+        useBridgeAssets(),
     ),
 )
 
@@ -27,7 +27,7 @@ type Props = {
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
-    tokensAssets: TokensAssetsService;
+    tokensAssets: BridgeAssetsService;
 }
 
 export function EverscaleTransferStoreProvider({ children, ...props }: Props): JSX.Element {

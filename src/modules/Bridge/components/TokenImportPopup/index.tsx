@@ -5,11 +5,11 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { TokenAsset } from '@/stores/TokensAssetsService'
+import { BridgeAsset } from '@/stores/BridgeAssetsService'
 
 
 type Props = {
-    token: TokenAsset;
+    token: BridgeAsset;
     ocConfirm: () => void;
     onClose: () => void;
 }

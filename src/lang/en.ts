@@ -217,7 +217,11 @@ export default {
 
     CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_TOKENS_BTN_TEXT: 'Withdraw {symbol}',
     CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_TONS_BTN_TEXT: 'Withdraw EVER',
-    CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_WTON_BTN_TEXT: 'Withdraw WTON',
+    CROSSCHAIN_TRANSFER_STATUS_SWAP_WITHDRAW_WTON_BTN_TEXT: 'Withdraw WEVER',
+    CROSSCHAIN_TRANSFER_CONFIRMATION_EXPIRED_ALERT: 'Transfer confirmation time has expired.',
+    CROSSCHAIN_TRANSFER_CONFIRMATION_ALERT: 'Please complete the transfer within{days, plural, =0 {} few { # day} other { # days}}{hours, plural, =0 {} one { and # hour} other { and # hours}} or your assets will be lost.',
+    CROSSCHAIN_TRANSFER_CONFIRMATION_ALERT_MINUTES: 'Please complete the transfer within{hours, plural, =0 {} one { # hour} other { # hours}}{minutes, plural, =0 {} few { and # minute} other { and # minutes}} or your assets will be lost.',
+    CROSSCHAIN_TRANSFER_CONFIRMATION_ALERT_SECONDS: 'Please complete the transfer within{minutes, plural, =0 {} few { # minute} other { # minutes}}{seconds, plural, =0 {} one { and # second} other { and # seconds}} or your assets will be lost.',
 
     CROSSCHAIN_TRANSFER_STATUS_WAITING_NETWORK: 'Waiting network',
     CROSSCHAIN_TRANSFER_STATUS_WAITING_WALLET: 'Waiting wallet',

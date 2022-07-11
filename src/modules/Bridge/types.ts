@@ -1,8 +1,9 @@
 import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-inpage-provider'
 
-import { TokenAbi } from '@/misc'
-import { Pipeline, TokenAsset } from '@/stores/TokensAssetsService'
 import { NetworkShape, NetworkType } from '@/types'
+import { BridgeAbi } from '@/misc'
+import { EverscaleToken, EvmToken, Pipeline } from '@/models'
+import { BridgeAsset } from '@/stores/BridgeAssetsService'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
 
@@ -20,7 +21,6 @@ export type CrosschainBridgeStoreData = {
     depositType: 'default' | 'credit';
     eversAmount?: string;
     hiddenBridgePipeline?: Pipeline;
-    isTokenChainSameToTargetChain: boolean;
     leftAddress: string;
     leftNetwork?: NetworkShape;
     maxEversAmount?: string;
@@ -50,13 +50,14 @@ export type CrosschainBridgeStoreState = {
     isPendingAllowance: boolean;
     isPendingApproval: boolean;
     isProcessing: boolean;
+    isTokenChainSameToTargetChain: boolean;
     step: CrosschainBridgeStep;
     evmPendingWithdrawal?: EvmPendingWithdrawal;
 }
 
 export type AddressesFields = Pick<CrosschainBridgeStoreData, 'leftAddress' | 'rightAddress'>
 
-export type EventVoteData = DecodedAbiFunctionInputs<typeof TokenAbi.EthEventConfig, 'deployEvent'>['eventVoteData']
+export type EventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
 
 export type NetworkFields = Pick<CrosschainBridgeStoreData, 'leftNetwork' | 'rightNetwork'>
 
@@ -86,7 +87,7 @@ export type EvmTransferStoreData = {
     leftAddress?: string;
     pipeline?: Pipeline;
     rightAddress?: string;
-    token?: TokenAsset;
+    token?: (EverscaleToken | EvmToken);
     pendingWithdrawals?: PendingWithdrawal[];
 }
 
@@ -184,7 +185,7 @@ export type EverscaleTransferStoreData = {
     leftAddress?: string;
     pipeline?: Pipeline;
     rightAddress?: string;
-    token?: TokenAsset;
+    token?: BridgeAsset;
     withdrawalId?: string;
     pendingWithdrawalId?: string;
     pendingWithdrawalStatus?: PendingWithdrawalStatus;
@@ -196,6 +197,7 @@ export type EverscaleTransferStoreState = {
         confirmations: number;
         errorMessage?: string;
         requiredConfirmations: number;
+        roundNumber?: number;
         status: EventStateStatus;
     };
     isCheckingContract: boolean;
@@ -207,6 +209,7 @@ export type EverscaleTransferStoreState = {
         errorMessage?: string;
         isReleased?: boolean;
         status: ReleaseStateStatus;
+        ttl?: number;
     };
     isSubmitBountyLoading?: boolean;
     isPendingWithdrawalSynced?: boolean;
@@ -227,7 +230,7 @@ export type TransferSummaryData = {
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     swapAmount?: string;
-    token?: TokenAsset;
+    token?: (EverscaleToken | EvmToken);
     tokenAmount?: string;
     withdrawFee?: string;
     pendingWithdrawals?: PendingWithdrawal[];

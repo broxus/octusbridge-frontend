@@ -13,9 +13,9 @@ import {
     EvmTransferStoreProvider,
 } from '@/modules/Bridge'
 import { EvmTransferQueryParams } from '@/modules/Bridge/types'
+import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
-import { useTokensAssets } from '@/stores/TokensAssetsService'
 
 
 export default function Page(): JSX.Element | null {
@@ -53,7 +53,7 @@ export default function Page(): JSX.Element | null {
                         <EvmSwapTransferStoreProvider
                             evmWallet={useEvmWallet()}
                             everWallet={useEverWallet()}
-                            tokensAssets={useTokensAssets()}
+                            bridgeAssets={useBridgeAssets()}
                         >
                             <EvmToEverscaleSwap />
                         </EvmSwapTransferStoreProvider>
@@ -61,7 +61,7 @@ export default function Page(): JSX.Element | null {
                         <EvmTransferStoreProvider
                             evmWallet={useEvmWallet()}
                             everWallet={useEverWallet()}
-                            tokensAssets={useTokensAssets()}
+                            tokensAssets={useBridgeAssets()}
                         >
                             <EvmToEverscale />
                         </EvmTransferStoreProvider>
@@ -83,7 +83,7 @@ export default function Page(): JSX.Element | null {
                     <EvmHiddenSwapTransferStoreProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
-                        tokensAssets={useTokensAssets()}
+                        bridgeAssets={useBridgeAssets()}
                     >
                         <EvmToEvmHiddenSwap />
                     </EvmHiddenSwapTransferStoreProvider>
@@ -104,7 +104,7 @@ export default function Page(): JSX.Element | null {
                     <EverscaleTransferStoreProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
-                        tokensAssets={useTokensAssets()}
+                        tokensAssets={useBridgeAssets()}
                     >
                         <EverscaleToEvm />
                     </EverscaleTransferStoreProvider>

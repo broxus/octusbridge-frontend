@@ -16,7 +16,9 @@ import {
     useBNParam, useDateParam, useDictParam, usePagination,
     useTableOrder, useUrlParams,
 } from '@/hooks'
-import { dateFormat, error, formattedAmount } from '@/utils'
+import {
+    dateFormat, error, formattedTokenAmount,
+} from '@/utils'
 
 import './index.scss'
 
@@ -325,20 +327,10 @@ export function StakeholdersInner(): JSX.Element | null {
                                     intl.formatMessage({
                                         id: mapStakeholderKindToIntlId(item.userType),
                                     }),
-                                    item.stakeBalance ? formattedAmount(item.stakeBalance, undefined, {
-                                        target: 'token',
-                                    }) : noValue,
-                                    item.frozenStakeBalance
-                                        ? formattedAmount(item.frozenStakeBalance, undefined, {
-                                            target: 'token',
-                                        })
-                                        : noValue,
-                                    item.lastReward ? formattedAmount(item.lastReward, undefined, {
-                                        target: 'token',
-                                    }) : noValue,
-                                    item.totalReward ? formattedAmount(item.totalReward, undefined, {
-                                        target: 'token',
-                                    }) : noValue,
+                                    item.stakeBalance ? formattedTokenAmount(item.stakeBalance) : noValue,
+                                    item.frozenStakeBalance ? formattedTokenAmount(item.frozenStakeBalance) : noValue,
+                                    item.lastReward ? formattedTokenAmount(item.lastReward) : noValue,
+                                    item.totalReward ? formattedTokenAmount(item.totalReward) : noValue,
                                     item.createdAt ? dateFormat(item.createdAt) : noValue,
                                 ],
                             }))}

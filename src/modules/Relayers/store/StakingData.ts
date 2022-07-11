@@ -15,12 +15,13 @@ import {
     EventVoteData, RelayConfig, StackingDetails, UserDetails,
 } from '@/misc/types'
 import {
-    EthAbi, EventConfigDetails, TokenAbi, UserDataAbi,
+    BridgeAbi,
+    EthAbi, EventConfigDetails, UserDataAbi,
 } from '@/misc'
 import { Web3Url } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { Token } from '@/types'
+import { TokenCache } from '@/types'
 
 export class StakingDataStore {
 
@@ -106,7 +107,7 @@ export class StakingDataStore {
     ): Promise<EventConfigDetails | undefined> {
         try {
             const eventConfigContract = rpc.createContract(
-                TokenAbi.EthEventConfig,
+                BridgeAbi.EthereumEventConfiguration,
                 stackingDetails.bridge_event_config_eth_ton,
             )
             const eventConfigDetails = await eventConfigContract.methods.getDetails({
@@ -186,7 +187,7 @@ export class StakingDataStore {
     ): Promise<FullContractState | undefined> {
         try {
             const eventConfigContract = rpc.createContract(
-                TokenAbi.EthEventConfig,
+                BridgeAbi.EthereumEventConfiguration,
                 stackingDetails.bridge_event_config_eth_ton,
             )
             const eventAddress = await eventConfigContract.methods.deriveEventAddress({
@@ -336,7 +337,7 @@ export class StakingDataStore {
             && this.tonWallet.isConnected
     }
 
-    public get stakingToken(): Token | undefined {
+    public get stakingToken(): TokenCache | undefined {
         if (!this.data.stackingDetails) {
             return undefined
         }
