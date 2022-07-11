@@ -58,7 +58,7 @@ export function AmountFieldset(): JSX.Element {
                         {() => (
                             <AmountField
                                 decimals={bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals}
-                                disabled={bridge.isFetching || bridge.token === undefined}
+                                disabled={bridge.isFetching || bridge.isLocked || bridge.token === undefined}
                                 displayMaxButton={bridge.balance !== undefined && bridge.balance !== '0'}
                                 isValid={bridge.isAmountValid}
                                 placeholder={intl.formatMessage({
@@ -66,8 +66,8 @@ export function AmountFieldset(): JSX.Element {
                                 })}
                                 size="md"
                                 value={bridge.amount}
-                                onChange={bridge.isFetching ? undefined : onChange}
-                                onClickMax={bridge.isFetching ? undefined : onClickMax}
+                                onChange={(bridge.isFetching || bridge.isLocked) ? undefined : onChange}
+                                onClickMax={(bridge.isFetching || bridge.isLocked) ? undefined : onClickMax}
                             />
                         )}
                     </Observer>
@@ -160,6 +160,7 @@ export function AmountFieldset(): JSX.Element {
                                     && bridge.isEverscaleToEvm
                                     && bridge.isInsufficientVaultBalance
                                     && !bridge.isEverscaleBasedToken
+                                    && !bridge.isLocked
                                 ) && (
                                     <Alert
                                         className="margin-top"

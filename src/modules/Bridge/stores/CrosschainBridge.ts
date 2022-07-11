@@ -1593,7 +1593,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.depositType,
                 )
 
-                this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
+                if (pipeline === undefined) {
+                    this.setState('isLocked', true)
+                    return
+                }
+
+                this.setData('pipeline', new Pipeline(pipeline))
 
                 if (this.isEvmToEvm && pipeline?.everscaleTokenAddress !== undefined) {
                     const hiddenBridgePipeline = await this.bridgeAssets.pipeline(
@@ -1603,10 +1608,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         'default',
                     )
 
-                    this.setData(
-                        'hiddenBridgePipeline',
-                        hiddenBridgePipeline !== undefined ? new Pipeline(hiddenBridgePipeline) : undefined,
-                    )
+                    if (hiddenBridgePipeline === undefined) {
+                        this.setState('isLocked', true)
+                        return
+                    }
+
+                    this.setData('hiddenBridgePipeline', new Pipeline(hiddenBridgePipeline))
                 }
             }
 
@@ -1641,10 +1648,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     }
                 }
             }
-
         }
         catch (e) {
-            console.log(e)
+            error(e)
             this.setState('isLocked', true)
         }
         finally {

@@ -32,7 +32,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-56',
         label: 'BNB Chain (Binance Smart Chain)',
         name: 'BNB Chain',
-        rpcUrl: 'https://rpc.ankr.com/bsc/',
+        rpcUrl: 'https://bsc-dataseed.binance.org/',
         transactionType: '0x0',
         type: 'evm',
     },
