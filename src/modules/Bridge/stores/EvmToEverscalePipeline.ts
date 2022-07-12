@@ -95,15 +95,15 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
             return
         }
 
-        this.#tokensDisposer = reaction(() => this.bridgeAssets.tokens, async () => {
-            await this.checkTransaction(true)
-        }, { delay: 30 })
-
-        await this.checkTransaction()
+        this.#bridgeAssetsDisposer = reaction(() => this.bridgeAssets.isReady, async isReady => {
+            if (isReady) {
+                await this.checkTransaction(true)
+            }
+        }, { fireImmediately: true })
     }
 
     public dispose(): void {
-        this.#tokensDisposer?.()
+        this.#bridgeAssetsDisposer?.()
         this.stopTransferUpdater()
         this.stopPrepareUpdater()
     }
@@ -232,14 +232,15 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         ])
 
                         if (data !== undefined) {
-                            this.bridgeAssets.add(new EvmToken<BridgeAssetUniqueKey>({
+                            token = new EvmToken<BridgeAssetUniqueKey>({
                                 root,
                                 decimals: data[2],
                                 name: data[0],
                                 symbol: data[1],
                                 key: `${type}-${chainId}-${root}`,
                                 chainId,
-                            }))
+                            })
+                            this.bridgeAssets.add(token)
                         }
                     }
                     catch (e) {
@@ -308,14 +309,15 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
                         ])
 
                         if (data !== undefined) {
-                            this.bridgeAssets.add(new EvmToken<BridgeAssetUniqueKey>({
+                            token = new EvmToken<BridgeAssetUniqueKey>({
                                 root,
                                 decimals: data[2],
                                 name: data[0],
                                 symbol: data[1],
                                 key: `${type}-${chainId}-${root}`,
                                 chainId,
-                            }))
+                            })
+                            this.bridgeAssets.add(token)
                         }
                     }
                     catch (e) {
@@ -976,6 +978,6 @@ export class EvmToEverscalePipeline extends BaseStore<EvmTransferStoreData, EvmT
 
     #alienTokenRootDeploySubscriber: Subscription<'contractStateChanged'> | undefined
 
-    #tokensDisposer: IReactionDisposer | undefined
+    #bridgeAssetsDisposer: IReactionDisposer | undefined
 
 }

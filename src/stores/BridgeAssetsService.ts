@@ -95,10 +95,11 @@ export type BridgeAssetsServiceData = {
 }
 
 export type BridgeAssetsServiceState = {
+    isAlienTokensFetched: boolean;
     isAssetsFetched: boolean;
+    isBuilt: boolean;
     isFetching: boolean;
     isPrimaryTokensFetched: boolean;
-    isAlienTokensFetched: boolean;
 }
 
 
@@ -121,6 +122,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         this.setState(() => ({
             isAlienTokensFetched: false,
             isAssetsFetched: false,
+            isBuilt: false,
             isFetching: false,
             isPrimaryTokensFetched: false,
         }))
@@ -144,7 +146,10 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
     public async init(): Promise<void> {
         const { alienTokensLists, assetsUri, primaryTokensList } = this.options
 
-        this.setState('isFetching', true)
+        this.setState({
+            isBuilt: false,
+            isFetching: true,
+        })
 
         try {
             const [
@@ -302,6 +307,8 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                 }
             }, 10)
         }
+
+        this.setState('isBuilt', true)
     }
 
     /**
@@ -1062,7 +1069,12 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
      *
      */
     public get isReady(): boolean {
-        return this.state.isPrimaryTokensFetched && this.state.isAssetsFetched && this.state.isAlienTokensFetched
+        return (
+            this.state.isBuilt
+            && this.state.isPrimaryTokensFetched
+            && this.state.isAssetsFetched
+            && this.state.isAlienTokensFetched
+        )
     }
 
     /**

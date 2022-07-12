@@ -109,15 +109,15 @@ export class EvmToEverscaleSwapPipeline<
             return
         }
 
-        this.#tokensDisposer = reaction(() => this.bridgeAssets.tokens, async () => {
-            await this.checkTransaction(true)
-        }, { delay: 30 })
-
-        await this.checkTransaction()
+        this.#bridgeAssetsDisposer = reaction(() => this.bridgeAssets.isReady, async isReady => {
+            if (isReady) {
+                await this.checkTransaction(true)
+            }
+        }, { fireImmediately: true })
     }
 
     public dispose(): void {
-        this.#tokensDisposer?.()
+        this.#bridgeAssetsDisposer?.()
         this.stopTransferUpdater()
         this.stopCreditProcessorUpdater()
         this.stopWithdrawUpdater()
@@ -1202,6 +1202,6 @@ export class EvmToEverscaleSwapPipeline<
         return this.bridgeAssets
     }
 
-    #tokensDisposer: IReactionDisposer | undefined
+    #bridgeAssetsDisposer: IReactionDisposer | undefined
 
 }

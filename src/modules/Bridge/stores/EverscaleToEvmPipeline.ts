@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js'
-import { computed, makeObservable, toJS } from 'mobx'
+import {
+    computed, IReactionDisposer, makeObservable, reaction, toJS,
+} from 'mobx'
 import { Address } from 'everscale-inpage-provider'
 import type { DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
@@ -79,10 +81,15 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             return
         }
 
-        await this.checkContract()
+        this.#bridgeAssetsDisposer = reaction(() => this.bridgeAssets.isReady, async isReady => {
+            if (isReady) {
+                await this.checkContract(true)
+            }
+        }, { fireImmediately: true })
     }
 
     public dispose(): void {
+        this.#bridgeAssetsDisposer?.()
         this.stopEventUpdater()
         this.stopReleaseUpdater()
     }
@@ -128,10 +135,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
     }
 
     public async resolve(): Promise<void> {
-        if (
-            this.contractAddress === undefined
-            || this.leftNetwork === undefined
-        ) {
+        if (this.contractAddress === undefined || this.leftNetwork === undefined) {
             return
         }
 
@@ -159,7 +163,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 token_: tokenAddress,
             } = eventData
 
-            const token = this.bridgeAssets.get(
+            let token = this.bridgeAssets.get(
                 this.leftNetwork.type,
                 this.leftNetwork.chainId,
                 tokenAddress.toString(),
@@ -170,7 +174,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     const data = await TokenWallet.getTokenFullDetails(tokenAddress.toString())
 
                     if (data !== undefined) {
-                        this.bridgeAssets.add(new EverscaleToken({
+                        token = new EverscaleToken({
                             address: tokenAddress,
                             chainId: this.leftNetwork.chainId,
                             decimals: data.decimals,
@@ -178,7 +182,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                             name: data.name,
                             root: tokenAddress.toString(),
                             symbol: data.symbol,
-                        }))
+                        })
+                        this.bridgeAssets.add(token)
                     }
 
                 }
@@ -254,7 +259,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 tokenAddress = canonicalAddress
             }
 
-            const token = this.bridgeAssets.get(
+            let token = this.bridgeAssets.get(
                 this.leftNetwork.type,
                 this.leftNetwork.chainId,
                 tokenAddress.toString(),
@@ -265,7 +270,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     const data = await TokenWallet.getTokenFullDetails(tokenAddress.toString())
 
                     if (data !== undefined) {
-                        this.bridgeAssets.add(new EverscaleToken({
+                        token = new EverscaleToken({
                             address: tokenAddress,
                             chainId: this.leftNetwork.chainId,
                             decimals: data.decimals,
@@ -273,7 +278,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                             name: data.name,
                             root: tokenAddress.toString(),
                             symbol: data.symbol,
-                        }))
+                        })
+                        this.bridgeAssets.add(token)
                     }
                 }
                 catch (e) {
@@ -1064,5 +1070,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
     public get useBridgeAssets(): BridgeAssetsService {
         return this.bridgeAssets
     }
+
+    #bridgeAssetsDisposer: IReactionDisposer | undefined
 
 }
