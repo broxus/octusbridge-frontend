@@ -687,7 +687,7 @@ export default {
     CROSSCHAIN_TRANSFER_SUMMARY_PENDING_WITHDRAWALS_AMOUNT: '보류 중인 인출, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_TOTAL: '총합',
     CROSSCHAIN_TRANSFER_BOUNTY_DEFAULT: '기본',
-    CROSSCHAIN_TRANSFER_BOUNTY_DEFAULT_TEXT: '<p>이더리움 가스 요금만 지불하여 금고에서 기존의 유동성을 인출합니다.</p><p>금고에 유동성이 충분치 않을 경우 밸런싱이 완료될 때까지 기다려야 할 수도 있습니다.</p>',
+    CROSSCHAIN_TRANSFER_BOUNTY_DEFAULT_TEXT: '<p><b>{network}</b> 가스 요금만 지불하여 금고에서 기존의 유동성을 인출합니다.</p><p>금고에 유동성이 충분치 않을 경우 밸런싱이 완료될 때까지 기다려야 할 수도 있습니다.</p>',
     CROSSCHAIN_TRANSFER_BOUNTY_REQUEST: '유동성 요청(가스비용+)',
     CROSSCHAIN_TRANSFER_BOUNTY_REQUEST_TEXT: '<p>귀하의 전송을 성공적으로 이행하기 위해 브리지의 반대편에 있는 유동성 공급자에 대한 보상을 설정하십시오.</p><p>새 네트워크로 상당한 금액을 인출해야 하는 경우에 적합합니다.</p><p>나중에 취소하거나 수정할 수 있습니다.</p>',
     CROSSCHAIN_TRANSFER_BOUNTY_REQUEST_AMOUNT: '보상 금액',

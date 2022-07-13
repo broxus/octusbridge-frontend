@@ -61,7 +61,9 @@ export function BountyFormInner({
                                 })}
                                 annotation={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_BOUNTY_DEFAULT_TEXT',
-                                })}
+                                }, {
+                                    network: transfer.rightNetwork?.label ?? '',
+                                }, { ignoreTag: true })}
                             >
                                 {isOwner && bountyKind === BountyKind.Default && (
                                     <Button

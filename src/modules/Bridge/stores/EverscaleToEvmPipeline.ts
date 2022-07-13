@@ -939,7 +939,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             await this.syncPendingWithdrawal()
 
             const isClosed = this.pendingWithdrawalStatus === 'Close'
-                || (this.pendingWithdrawalId === undefined && tries === 2)
+                || (this.pendingWithdrawalId === undefined && tries === 3)
 
             this.setState('releaseState', {
                 ...this.releaseState,
@@ -950,7 +950,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             if (!isClosed || this.pendingWithdrawalStatus === 'Open') {
                 this.pendingWithdrawalUpdater = setTimeout(async () => {
                     await runPendingWithdrawalUpdater()
-                }, 3000)
+                }, 4000)
             }
         }
 

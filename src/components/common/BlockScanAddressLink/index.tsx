@@ -13,6 +13,7 @@ type Props = {
     children?: React.ReactChild | React.ReactChild[] | null;
     className?: string;
     copy?: boolean;
+    external?: boolean;
     onAddAsset?: (root: string) => void;
 }
 
@@ -24,6 +25,7 @@ export function BlockScanAddressLink({
     children,
     className,
     copy,
+    external,
     onAddAsset,
 }: Props): JSX.Element {
     const intl = useIntl()
@@ -42,6 +44,9 @@ export function BlockScanAddressLink({
             >
                 {children || sliceAddress(address)}
             </a>
+            {external && (
+                <Icon icon="externalLink" ratio={0.75} />
+            )}
             {copy && (
                 <Copy text={address} id={`copy-${address}-${uniqueId()}`}>
                     <Icon icon="copy" />

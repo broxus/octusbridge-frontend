@@ -165,9 +165,9 @@ export function AmountFieldset(): JSX.Element {
                                 ) && (
                                     <Alert
                                         className="margin-top"
-                                        // text={intl.formatMessage({
-                                        //     id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT',
-                                        // })}
+                                        text={intl.formatMessage({
+                                            id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT',
+                                        })}
                                         title={intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE',
                                         }, {
