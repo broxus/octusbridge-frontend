@@ -1,7 +1,8 @@
-import { observer } from 'mobx-react-lite'
 import * as React from 'react'
-import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
+import { observer } from 'mobx-react-lite'
+import { useIntl } from 'react-intl'
+import { Link } from 'react-router-dom'
 
 import { Checkbox } from '@/components/common/Checkbox'
 import { TokenBadge } from '@/components/common/TokenBadge'
@@ -130,7 +131,11 @@ function LiquidityRequestsTableInner({
                                 })}
                         </Value>,
                         <Value
-                            label={dateFormat(item.timestamp, 'DD')}
+                            label={(
+                                <Link to={`/transfer/everscale-1/evm-${item.chainId}/${item.contractAddress}`}>
+                                    {dateFormat(item.timestamp, 'DD')}
+                                </Link>
+                            )}
                         >
                             {dateFormat(item.timestamp, 'TT')}
                         </Value>,

@@ -207,6 +207,7 @@ export type EverscaleTransferStoreState = {
     };
     releaseState?: {
         errorMessage?: string;
+        isPendingWithdrawal?: boolean;
         isReleased?: boolean;
         status: ReleaseStateStatus;
         ttl?: number;

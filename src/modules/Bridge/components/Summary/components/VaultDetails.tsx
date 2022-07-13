@@ -27,7 +27,6 @@ export function VaultDetails(): JSX.Element {
                                 {formattedTokenAmount(
                                     summary.vaultBalance,
                                     summary.vaultBalanceDecimals,
-                                    { preserve: true },
                                 )}
                             </div>
                         </li>

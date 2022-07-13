@@ -3,7 +3,7 @@ import * as React from 'react'
 import './index.scss'
 
 type Props = {
-    label?: string;
+    label?: React.ReactNode;
     children: React.ReactNode;
 }
 

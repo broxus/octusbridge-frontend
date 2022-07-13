@@ -153,14 +153,15 @@ export function AmountFieldset(): JSX.Element {
                         {() => (
                             <>
                                 {(
-                                    (!bridge.pipeline?.isMultiVault
-                                        || (bridge.pipeline.vaultBalance !== undefined
-                                            && bridge.pipeline.mergePoolAddress !== undefined)
+                                    (
+                                        !bridge.pipeline?.isMultiVault
+                                        || bridge.vaultBalance !== undefined
+                                        || bridge.pipeline.mergePoolAddress !== undefined
                                     )
-                                    && bridge.isEverscaleToEvm
                                     && bridge.isInsufficientVaultBalance
                                     && !bridge.isEverscaleBasedToken
                                     && !bridge.isLocked
+                                    && bridge.pendingWithdrawals === undefined
                                 ) && (
                                     <Alert
                                         className="margin-top"
@@ -172,8 +173,8 @@ export function AmountFieldset(): JSX.Element {
                                         }, {
                                             symbol: bridge.token?.symbol,
                                             value: formattedAmount(
-                                                bridge.pipeline?.vaultBalance,
-                                                bridge.evmTokenDecimals,
+                                                bridge.vaultBalance,
+                                                bridge.vaultBalanceDecimals,
                                             ),
                                         }, {
                                             ignoreTag: true,

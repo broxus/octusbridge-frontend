@@ -136,6 +136,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isEverscaleToEvm: computed,
             rightNetworks: computed,
             token: computed,
+            vaultBalance: computed,
+            vaultBalanceDecimals: computed,
             vaultLimitNumber: computed,
             tokens: computed,
             tokenAmountNumber: computed,
@@ -218,10 +220,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             () => [this.everWallet.balance, this.everWallet.isContractUpdating],
             this.handleEverWalletBalance,
         )
-        this.#evmPendingWithdrawalDisposer = reaction(
-            () => this.evmPendingWithdrawal,
-            this.handleEvmPendingWithdrawal,
-        )
     }
 
     /**
@@ -229,7 +227,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Reset all data to their defaults.
      */
     public dispose(): void {
-        this.#evmPendingWithdrawalDisposer?.()
         this.#evmWalletDisposer?.()
         this.#swapDisposer?.()
         this.#everWalletDisposer?.()
@@ -1647,6 +1644,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         await this.syncMinAmount()
                     }
                 }
+
+                await this.handleEvmPendingWithdrawal()
             }
         }
         catch (e) {
@@ -2398,15 +2397,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return true
         }
 
-        if (this.isEvmToEvm || (this.isSwapEnabled && isGoodBignumber(this.amountNumber))) {
-            return (
-                this.isAmountMinValueValid
-                && this.isAmountMaxValueValid
-            ) && (this.isEvmToEverscale ? !this.isAmountVaultLimitExceed : true)
-        }
-
-        return this.isAmountMaxValueValid && (
-            this.isEvmToEverscale ? !this.isAmountVaultLimitExceed : true
+        return (
+            this.isAmountMinValueValid
+            && this.isAmountMaxValueValid
+            && (this.isEvmToEverscale ? !this.isAmountVaultLimitExceed : true)
         )
     }
 
@@ -2503,6 +2497,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     public get isInsufficientVaultBalance(): boolean {
+        if (this.isEvmToEvm) {
+            return new BigNumber(this.hiddenBridgePipeline?.vaultBalance ?? 0)
+                .shiftedBy(-(this.hiddenBridgePipeline?.evmTokenDecimals ?? 0))
+                .lt(this.amountNumber)
+        }
         return new BigNumber(this.pipeline?.vaultBalance ?? 0)
             .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
             .lt(this.amountNumber)
@@ -2512,7 +2511,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.isFromEverscale && this.pipeline?.isMultiVault && !this.pipeline.isNative) {
             return this.token?.decimals
         }
-        return this.pipeline?.evmTokenDecimals
+        return this.isEvmToEvm ? this.hiddenBridgePipeline?.evmTokenDecimals : this.pipeline?.evmTokenDecimals
     }
 
     public get isEverscaleBasedToken(): boolean {
@@ -2558,6 +2557,20 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         return this.bridgeAssets.get(this.leftNetwork.type, this.leftNetwork.chainId, this.data.selectedToken)
+    }
+
+    public get vaultBalance(): string | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.vaultBalance
+        }
+        return this.pipeline?.vaultBalance
+    }
+
+    public get vaultBalanceDecimals(): number | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.evmTokenDecimals
+        }
+        return this.pipeline?.evmTokenDecimals
     }
 
     public get vaultLimitNumber(): BigNumber {
@@ -2679,8 +2692,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             .dp(0, BigNumber.ROUND_DOWN)
             .toFixed()
     }
-
-    #evmPendingWithdrawalDisposer: IReactionDisposer | undefined
 
     #everWalletBalanceDisposer: IReactionDisposer | undefined
 

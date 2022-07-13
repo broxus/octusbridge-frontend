@@ -47,6 +47,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
     protected releaseUpdater: ReturnType<typeof setTimeout> | undefined
 
+    protected pendingWithdrawalUpdater: ReturnType<typeof setTimeout> | undefined
+
     constructor(
         protected readonly everWallet: EverWalletService,
         protected readonly evmWallet: EvmWalletService,
@@ -92,6 +94,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         this.#bridgeAssetsDisposer?.()
         this.stopEventUpdater()
         this.stopReleaseUpdater()
+        this.stopPendingWithdrawalUpdater()
     }
 
     public async checkContract(force: boolean = false): Promise<void> {
@@ -870,8 +873,6 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     return
                 }
 
-                await this.syncPendingWithdrawal()
-
                 const vaultContract = this.pipeline.isMultiVault
                     ? evmMultiVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
                     : evmVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
@@ -887,28 +888,30 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 }
 
                 const isReleased = await vaultContract.methods.withdrawalIds(this.data.withdrawalId).call()
-                    && (this.pendingWithdrawalId === undefined || this.pendingWithdrawalStatus === 'Close')
 
                 if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
-                    const baseStatus = isReleased ? 'confirmed' : 'disabled'
                     this.setState('releaseState', {
                         isReleased,
-                        status: this.pendingWithdrawalId !== undefined && this.pendingWithdrawalStatus !== 'Close'
-                            ? 'pending'
-                            : baseStatus,
-                        ttl: ttl !== undefined ? parseInt(ttl, 10) : undefined,
+                        status: isReleased ? this.releaseState.status : 'disabled',
+                        ttl: (!isReleased && ttl !== undefined) ? parseInt(ttl, 10) : undefined,
                     })
                 }
 
                 if (isReleased) {
                     this.setState('releaseState', {
+                        ...this.releaseState,
+                        isPendingWithdrawal: true,
                         isReleased: true,
-                        status: 'confirmed',
-                    })
+                    } as EverscaleTransferStoreState['releaseState'])
+                    await this.runPendingWithdrawalUpdater()
                 }
             }
         })().finally(() => {
-            if (this.releaseState?.status !== 'confirmed' && this.releaseState?.status !== 'rejected') {
+            if (
+                this.releaseState?.status !== 'confirmed'
+                && this.releaseState?.status !== 'rejected'
+                && !this.releaseState?.isPendingWithdrawal
+            ) {
                 this.releaseUpdater = setTimeout(() => {
                     this.runReleaseUpdater()
                 }, 5000)
@@ -920,6 +923,44 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         if (this.releaseUpdater !== undefined) {
             clearTimeout(this.releaseUpdater)
             this.releaseUpdater = undefined
+        }
+    }
+
+    protected async runPendingWithdrawalUpdater(): Promise<void> {
+        this.stopPendingWithdrawalUpdater()
+
+        let tries = 0
+
+        const runPendingWithdrawalUpdater = async () => {
+            debug('runPendingWithdrawalUpdater', toJS(this.data), toJS(this.state))
+
+            tries += 1
+
+            await this.syncPendingWithdrawal()
+
+            const isClosed = this.pendingWithdrawalStatus === 'Close'
+                || (this.pendingWithdrawalId === undefined && tries === 2)
+
+            this.setState('releaseState', {
+                ...this.releaseState,
+                isPendingWithdrawal: !isClosed,
+                status: isClosed ? 'confirmed' : 'pending',
+            })
+
+            if (!isClosed || this.pendingWithdrawalStatus === 'Open') {
+                this.pendingWithdrawalUpdater = setTimeout(async () => {
+                    await runPendingWithdrawalUpdater()
+                }, 3000)
+            }
+        }
+
+        await runPendingWithdrawalUpdater()
+    }
+
+    protected stopPendingWithdrawalUpdater(): void {
+        if (this.pendingWithdrawalUpdater !== undefined) {
+            clearTimeout(this.pendingWithdrawalUpdater)
+            this.pendingWithdrawalUpdater = undefined
         }
     }
 
