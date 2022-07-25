@@ -7,18 +7,16 @@ import { useEverscaleTransfer } from '@/modules/Bridge/providers'
 import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { Button } from '@/components/common/Button'
 
-type Props = {
-    onSubmit: (amount: string) => void;
-}
-
-export function RewardFormInner({
-    ...props
-}: Props): JSX.Element {
+export function RewardFormInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEverscaleTransfer()
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
-    const disabled = isClosed || transfer.isSubmitBountyLoading
+    const disabled = (
+        isClosed
+        || transfer.releaseState?.isSettingWithdrawBounty
+        || transfer.releaseState?.isPendingClosing
+    )
     const isOwner = transfer.leftAddress
         ? transfer.leftAddress === transfer.useEverWallet.address
         : false
@@ -31,11 +29,11 @@ export function RewardFormInner({
             .gte(localBounty || 0)
         : undefined
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         if (transfer.evmTokenDecimals !== undefined) {
-            props.onSubmit(new BigNumber(localBounty)
+            await transfer.changeBounty(new BigNumber(localBounty)
                 .shiftedBy(transfer.evmTokenDecimals)
                 .dp(0, BigNumber.ROUND_DOWN)
                 .toFixed())

@@ -62,6 +62,9 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
         makeObservable<EverscaleToEvmPipeline>(this, {
             amount: computed,
+            isInsufficientVaultBalance: computed,
+            isEverscaleBasedToken: computed,
+            isPendingWithdrawalSynced: computed,
             leftAddress: computed,
             rightAddress: computed,
             eventState: computed,
@@ -408,7 +411,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         }
     }
 
-    public async release(bounty?: string): Promise<void> {
+    public async release(): Promise<void> {
         let tries = 0
 
         const send = async (transactionType?: string) => {
@@ -481,16 +484,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 }
                 else {
                     const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, this.pipeline.vaultAddress)
-                    r = bounty
-                        ? vaultContract.methods.saveWithdraw(
-                            this.data.encodedEvent,
-                            signatures.map(({ signature }) => signature),
-                            bounty,
-                        )
-                        : vaultContract.methods.saveWithdraw(
-                            this.data.encodedEvent,
-                            signatures.map(({ signature }) => signature),
-                        )
+                    r = vaultContract.methods.saveWithdraw(
+                        this.data.encodedEvent,
+                        signatures.map(({ signature }) => signature),
+                    )
                 }
 
                 if (r !== undefined) {
@@ -498,6 +495,12 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                         from: this.evmWallet.address,
                         type: transactionType,
                     })
+
+                    this.setState('releaseState', {
+                        ...this.releaseState,
+                        isInsufficientVaultBalance: this.isInsufficientVaultBalance,
+                    } as EverscaleTransferStoreState['releaseState'])
+
                     await r.send({
                         from: this.evmWallet.address,
                         type: transactionType,
@@ -517,6 +520,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     this.setState('releaseState', {
                         ...this.releaseState,
                         status: 'disabled',
+                        // eslint-disable-next-line no-void
+                        isInsufficientVaultBalance: void 0,
                     })
                     error('Release tokens error', e)
                 }
@@ -526,8 +531,69 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         await send(this.rightNetwork?.transactionType)
     }
 
-    public async submitBounty(amount: string): Promise<void> {
-        if (this.state.isSubmitBountyLoading) {
+    public async forceClose(reject?: (e: any) => void): Promise<void> {
+        let tries = 0
+
+        const send = async (transactionType?: string) => {
+            if (
+                tries >= 2
+                || this.pipeline === undefined
+                || this.evmWallet.web3 === undefined
+            ) {
+                return
+            }
+
+            const vaultContract = this.pipeline.isMultiVault
+                ? new this.evmWallet.web3.eth.Contract(EthAbi.MultiVault, this.pipeline.vaultAddress)
+                : new this.evmWallet.web3.eth.Contract(EthAbi.Vault, this.pipeline.vaultAddress)
+
+            this.setState('releaseState', {
+                ...this.releaseState,
+                isPendingClosing: true,
+            } as EverscaleTransferStoreState['releaseState'])
+
+            try {
+                tries += 1
+
+                const r = vaultContract.methods.forceWithdraw([[this.rightAddress, this.pendingWithdrawalId]])
+                if (r !== undefined) {
+                    const gas = await r.estimateGas({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                    await r.send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        gas,
+                    })
+                }
+            }
+            catch (e: any) {
+                if (
+                    /eip-1559/g.test(e.message.toLowerCase())
+                    && transactionType !== undefined && transactionType !== '0x0'
+                ) {
+                    error('Transfer deposit to factory error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.(e)
+                    error('Transfer deposit to factory error', e)
+                }
+            }
+            finally {
+                this.setState('releaseState', {
+                    ...this.releaseState,
+                    isPendingClosing: false,
+                } as EverscaleTransferStoreState['releaseState'])
+            }
+        }
+
+        await send(this.rightNetwork?.transactionType)
+    }
+
+    public async changeBounty(amount: string): Promise<void> {
+        if (this.releaseState?.isSettingWithdrawBounty) {
             return
         }
 
@@ -577,7 +643,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             }
         }
 
-        this.setState('isSubmitBountyLoading', true)
+        this.setState('releaseState', {
+            ...this.releaseState,
+            isSettingWithdrawBounty: true,
+        } as EverscaleTransferStoreState['releaseState'])
         const success = await send(this.rightNetwork?.transactionType)
 
         if (success) {
@@ -587,7 +656,10 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                 })
             }
         }
-        this.setState('isSubmitBountyLoading', false)
+        this.setState('releaseState', {
+            ...this.releaseState,
+            isSettingWithdrawBounty: false,
+        } as EverscaleTransferStoreState['releaseState'])
     }
 
     protected runEventUpdater(): void {
@@ -877,6 +949,8 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
                     ? evmMultiVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
                     : evmVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
 
+                await this.syncVaultBalance()
+
                 let ttl: string | undefined
 
                 if (typeof this.eventState?.roundNumber === 'number') {
@@ -884,26 +958,32 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
                     ttl = (await evmBridgeContract(bridgeAddress, network.rpcUrl)
                         .methods.rounds(this.eventState.roundNumber)
-                        .call()).ttl
+                        .call())
+                        .ttl
                 }
 
+                const firstIteration = this.releaseState?.isReleased === undefined
                 const isReleased = await vaultContract.methods.withdrawalIds(this.data.withdrawalId).call()
 
-                if (this.releaseState?.status === 'pending' && this.releaseState?.isReleased === undefined) {
+                if (this.releaseState?.status === 'pending' && firstIteration) {
+                    const status = isReleased ? 'confirmed' : 'disabled'
                     this.setState('releaseState', {
                         isReleased,
-                        status: isReleased ? this.releaseState.status : 'disabled',
+                        status: this.releaseState.isInsufficientVaultBalance ? 'pending' : status,
                         ttl: (!isReleased && ttl !== undefined) ? parseInt(ttl, 10) : undefined,
                     })
                 }
 
+                const insufficientVaultBalance = this.releaseState?.isInsufficientVaultBalance
+
                 if (isReleased) {
                     this.setState('releaseState', {
                         ...this.releaseState,
-                        isPendingWithdrawal: true,
                         isReleased: true,
+                        isPendingWithdrawal: true,
+                        status: 'pending',
                     } as EverscaleTransferStoreState['releaseState'])
-                    await this.runPendingWithdrawalUpdater()
+                    await this.runPendingWithdrawalUpdater(insufficientVaultBalance ? 20 : undefined)
                 }
             }
         })().finally(() => {
@@ -926,7 +1006,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         }
     }
 
-    protected async runPendingWithdrawalUpdater(): Promise<void> {
+    protected async runPendingWithdrawalUpdater(triesCount: number = 2): Promise<void> {
         this.stopPendingWithdrawalUpdater()
 
         let tries = 0
@@ -936,10 +1016,11 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
 
             tries += 1
 
+            await this.syncVaultBalance()
             await this.syncPendingWithdrawal()
 
             const isClosed = this.pendingWithdrawalStatus === 'Close'
-                || (this.pendingWithdrawalId === undefined && tries === 5)
+                || (this.pendingWithdrawalId === undefined && tries === triesCount)
 
             this.setState('releaseState', {
                 ...this.releaseState,
@@ -950,7 +1031,7 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
             if (!isClosed || this.pendingWithdrawalStatus === 'Open') {
                 this.pendingWithdrawalUpdater = setTimeout(async () => {
                     await runPendingWithdrawalUpdater()
-                }, 5000)
+                }, 3000)
             }
         }
 
@@ -961,6 +1042,29 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         if (this.pendingWithdrawalUpdater !== undefined) {
             clearTimeout(this.pendingWithdrawalUpdater)
             this.pendingWithdrawalUpdater = undefined
+        }
+    }
+
+    protected async syncVaultBalance(): Promise<void> {
+        if (this.pipeline === undefined) {
+            return
+        }
+
+        const network = findNetwork(this.pipeline.chainId, 'evm')
+
+        if (network === undefined) {
+            return
+        }
+
+        if (this.pipeline.evmTokenAddress !== undefined) {
+            if (this.pipeline.isMerged || (!this.pipeline.isMultiVault && !this.isEverscaleBasedToken)) {
+                const vaultBalance = await BridgeUtils.getEvmTokenBalance(
+                    this.pipeline.evmTokenAddress,
+                    this.pipeline.vaultAddress,
+                    network.rpcUrl,
+                )
+                this.pipeline.setData('vaultBalance', vaultBalance)
+            }
         }
     }
 
@@ -1074,16 +1178,18 @@ export class EverscaleToEvmPipeline extends BaseStore<EverscaleTransferStoreData
         return findNetwork(this.params.toId, this.params.toType)
     }
 
+    public get isInsufficientVaultBalance(): boolean {
+        return new BigNumber(this.pipeline?.vaultBalance ?? 0)
+            .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
+            .lt(this.amountNumber.shiftedBy(-(this.token?.decimals ?? 0)))
+    }
+
     public get isEverscaleBasedToken(): boolean {
         return this.pipeline?.tokenBase === 'everscale'
     }
 
     public get isPendingWithdrawalSynced(): boolean {
         return this.state.isPendingWithdrawalSynced === true
-    }
-
-    public get isSubmitBountyLoading(): boolean {
-        return this.state.isSubmitBountyLoading === true
     }
 
     public get evmTokenDecimals(): number | undefined {

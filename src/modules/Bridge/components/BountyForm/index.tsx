@@ -13,18 +13,16 @@ enum BountyKind {
     Bounty = 'Bounty',
 }
 
-type Props = {
-    onSubmit: (amount: string) => void;
-}
-
-export function BountyFormInner({
-    onSubmit,
-}: Props): JSX.Element {
+export function BountyFormInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEverscaleTransfer()
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
-    const disabled = isClosed || transfer.isSubmitBountyLoading
+    const disabled = (
+        isClosed
+        || transfer.releaseState?.isSettingWithdrawBounty
+        || transfer.releaseState?.isPendingClosing
+    )
     const isOwner = transfer.leftAddress
         ? transfer.leftAddress === transfer.useEverWallet.address
         : false
@@ -35,8 +33,8 @@ export function BountyFormInner({
         setBountyKind(val)
     }
 
-    const onSubmitDefault = () => {
-        onSubmit('0')
+    const onForceWithdraw = async () => {
+        await transfer.forceClose()
     }
 
     React.useEffect(() => {
@@ -53,7 +51,7 @@ export function BountyFormInner({
                         <div className="crosschain-transfer__control">
                             <SimpleRadio
                                 name={BountyKind.Default}
-                                checked={bountyKind === BountyKind.Default}
+                                checked={bountyKind === BountyKind.Default || bountyKind === undefined}
                                 disabled={disabled}
                                 onChange={onChangeKind}
                                 label={intl.formatMessage({
@@ -69,13 +67,11 @@ export function BountyFormInner({
                                     <Button
                                         type="primary"
                                         className="crosschain-transfer__btn-field"
-                                        onClick={onSubmitDefault}
-                                        disabled={disabled}
+                                        disabled={isClosed || (!isClosed && transfer.isInsufficientVaultBalance)}
+                                        onClick={onForceWithdraw}
                                     >
                                         {intl.formatMessage({
-                                            id: transfer.pendingWithdrawalId
-                                                ? 'CROSSCHAIN_TRANSFER_BOUNTY_CHANGE'
-                                                : 'CROSSCHAIN_TRANSFER_BOUNTY_TRANSFER',
+                                            id: 'CROSSCHAIN_TRANSFER_BOUNTY_TRANSFER',
                                         })}
                                     </Button>
                                 )}
@@ -100,9 +96,7 @@ export function BountyFormInner({
                                 })}
                             >
                                 {bountyKind === BountyKind.Bounty && (
-                                    <RewardForm
-                                        onSubmit={onSubmit}
-                                    />
+                                    <RewardForm />
                                 )}
                             </SimpleRadio>
                         </div>

@@ -201,19 +201,21 @@ export type EverscaleTransferStoreState = {
         status: EventStateStatus;
     };
     isCheckingContract: boolean;
+    isPendingWithdrawalSynced?: boolean;
     prepareState?: {
         errorMessage?: string;
         status: PrepareStateStatus;
     };
     releaseState?: {
         errorMessage?: string;
+        isInsufficientVaultBalance?: boolean;
+        isPendingClosing?: boolean;
         isPendingWithdrawal?: boolean;
         isReleased?: boolean;
+        isSettingWithdrawBounty?: boolean;
         status: ReleaseStateStatus;
         ttl?: number;
     };
-    isSubmitBountyLoading?: boolean;
-    isPendingWithdrawalSynced?: boolean;
 }
 
 export type TransferSummaryData = {

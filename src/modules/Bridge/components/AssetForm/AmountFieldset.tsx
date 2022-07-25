@@ -162,6 +162,7 @@ export function AmountFieldset(): JSX.Element {
                                     && !bridge.isEverscaleBasedToken
                                     && !bridge.isLocked
                                     && bridge.pendingWithdrawals === undefined
+                                    && (bridge.isFromEverscale || bridge.isEvmToEvm)
                                 ) && (
                                     <Alert
                                         className="margin-top"

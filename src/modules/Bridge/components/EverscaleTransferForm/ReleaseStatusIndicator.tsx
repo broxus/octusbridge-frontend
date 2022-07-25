@@ -43,7 +43,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         && !isPending
     )
 
-    const onRelease = async (bounty?: string) => {
+    const onRelease = async () => {
         if (
             !isTransferPage
             || (
@@ -54,15 +54,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
             return
         }
 
-        await transfer.release(bounty)
-    }
-
-    const onSubmitBounty = async (amount: string) => {
-        await transfer.submitBounty(amount)
-    }
-
-    const onClickRelease = async () => {
-        await onRelease()
+        await transfer.release()
     }
 
     return (
@@ -110,13 +102,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                     && transfer.isPendingWithdrawalSynced
                     && (transfer.pendingWithdrawalId || bridge.isInsufficientVaultBalance)
                 ) {
-                    return (
-                        <BountyForm
-                            onSubmit={transfer.pendingWithdrawalId
-                                ? onSubmitBounty
-                                : onRelease}
-                        />
-                    )
+                    return <BountyForm />
                 }
 
                 const start = DateTime.now()
@@ -180,7 +166,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                             <Button
                                 disabled={disabled}
                                 type="primary"
-                                onClick={(isTransferPage && !disabled) ? onClickRelease : undefined}
+                                onClick={(isTransferPage && !disabled) ? onRelease : undefined}
                             >
                                 {intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',
