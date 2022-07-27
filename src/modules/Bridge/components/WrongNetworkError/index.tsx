@@ -8,12 +8,13 @@ import { NetworkShape } from '@/types'
 
 
 type Props = {
+    className?: string;
     network: NetworkShape;
     wallet: EvmWalletService;
 }
 
 
-export function WrongNetworkError({ network, wallet }: Props): JSX.Element {
+export function WrongNetworkError({ className, network, wallet }: Props): JSX.Element {
     const intl = useIntl()
 
     const onChangeNetwork = async () => {
@@ -22,6 +23,7 @@ export function WrongNetworkError({ network, wallet }: Props): JSX.Element {
 
     return (
         <Alert
+            className={className}
             actions={(
                 <Button
                     size="md"

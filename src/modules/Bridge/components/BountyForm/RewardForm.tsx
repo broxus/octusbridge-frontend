@@ -1,15 +1,18 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { observer } from 'mobx-react-lite'
 import BigNumber from 'bignumber.js'
+import { observer } from 'mobx-react-lite'
+import isEqual from 'lodash.isequal'
 
-import { useEverscaleTransfer } from '@/modules/Bridge/providers'
-import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { Button } from '@/components/common/Button'
+import { TokenAmountField } from '@/components/common/TokenAmountField'
+import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
+import { useEverscaleTransfer } from '@/modules/Bridge/providers'
 
 export function RewardFormInner(): JSX.Element {
     const intl = useIntl()
     const transfer = useEverscaleTransfer()
+    const evmWallet = transfer.useEvmWallet
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
     const disabled = (
@@ -28,6 +31,12 @@ export function RewardFormInner(): JSX.Element {
             .shiftedBy(-transfer.token.decimals)
             .gte(localBounty || 0)
         : undefined
+
+    const wrongNetwork = (
+        evmWallet.isReady
+        && transfer.rightNetwork !== undefined
+        && !isEqual(transfer.rightNetwork.chainId, evmWallet.chainId)
+    )
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -88,19 +97,29 @@ export function RewardFormInner(): JSX.Element {
             </fieldset>
 
             {isOwner && (
-                <fieldset className="form-fieldset">
-                    <Button
-                        submit
-                        type="primary"
-                        disabled={!localBounty || !maxValueValid || disabled}
-                    >
-                        {intl.formatMessage({
-                            id: transfer.pendingWithdrawalId
-                                ? 'CROSSCHAIN_TRANSFER_BOUNTY_CHANGE'
-                                : 'CROSSCHAIN_TRANSFER_BOUNTY_TRANSFER',
-                        })}
-                    </Button>
-                </fieldset>
+                <>
+                    {wrongNetwork ? (
+                        <WrongNetworkError
+                            className="margin-top"
+                            network={transfer.rightNetwork}
+                            wallet={evmWallet}
+                        />
+                    ) : (
+                        <fieldset className="form-fieldset">
+                            <Button
+                                submit
+                                type="primary"
+                                disabled={!localBounty || !maxValueValid || disabled}
+                            >
+                                {intl.formatMessage({
+                                    id: transfer.pendingWithdrawalId
+                                        ? 'CROSSCHAIN_TRANSFER_BOUNTY_CHANGE'
+                                        : 'CROSSCHAIN_TRANSFER_BOUNTY_TRANSFER',
+                                })}
+                            </Button>
+                        </fieldset>
+                    )}
+                </>
             )}
         </form>
     )
