@@ -4,6 +4,8 @@ import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 import type { ICoreOptions } from 'web3modal'
 import BigNumber from 'bignumber.js'
+import * as UAuthWeb3Modal from '@uauth/web3modal'
+import UAuthSPA from '@uauth/js'
 
 import { BaseStore } from '@/stores/BaseStore'
 import {
@@ -601,6 +603,16 @@ export function useEvmWallet(): EvmWalletService {
                         },
                         package: WalletConnectProvider, // required
                     },
+                    'custom-uauth': {
+                        display: UAuthWeb3Modal.display,
+                        connector: UAuthWeb3Modal.connector,
+                        package: UAuthSPA,
+                        options: {
+                            clientID: "e3d0efd2-4666-4ea9-b58a-d97706718bea",
+                            redirectUri: "http://localhost:3000",
+                            scope: "openid wallet"
+                        }
+                    }
                 },
                 theme: 'dark',
             },
