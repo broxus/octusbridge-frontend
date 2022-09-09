@@ -3,7 +3,7 @@ import { EverscaleStandaloneClient } from 'everscale-standalone-client'
 
 const rpc = new ProviderRpcClient({
     fallback: () => EverscaleStandaloneClient.create({
-        connection: 'mainnet',
+        connection: 'mainnetJrpc',
     }),
     forceUseFallback: true,
 })
