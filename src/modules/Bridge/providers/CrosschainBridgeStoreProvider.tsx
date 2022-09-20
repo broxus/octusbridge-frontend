@@ -6,6 +6,7 @@ import { CrosschainBridge, TransferSummary } from '@/modules/Bridge/stores'
 import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
+import { SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
 
 export type CrosschainBridgeContextConsumerProps = {
     bridge: CrosschainBridge;
@@ -16,6 +17,7 @@ export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge
     bridge: new CrosschainBridge(
         useEvmWallet(),
         useEverWallet(),
+        useSolanaWallet(),
         useBridgeAssets(),
     ),
     summary: new TransferSummary(useBridgeAssets()),
@@ -31,6 +33,7 @@ type Props = {
     children: React.ReactNode;
     everWallet: EverWalletService;
     evmWallet: EvmWalletService;
+    solanaWallet: SolanaWalletService;
 }
 
 
@@ -40,6 +43,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
     const bridge = React.useMemo(() => new CrosschainBridge(
         props.evmWallet,
         props.everWallet,
+        props.solanaWallet,
         props.bridgeAssets,
     ), [])
 
@@ -65,11 +69,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
         const summaryDisposer = reaction(
             () => ({
-                amount: bridge.amountNumber
-                    .shiftedBy(bridge.isFromEverscale
-                        ? (bridge.token?.decimals || 0)
-                        : (bridge.pipeline?.evmTokenDecimals || 0))
-                    .toFixed(),
+                amount: bridge.amount,
                 depositFee: bridge.depositFee,
                 depositType: bridge.depositType,
                 hiddenBridgePipeline: bridge.hiddenBridgePipeline,
@@ -81,9 +81,7 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 rightAddress: bridge.rightAddress,
                 rightNetwork: bridge.rightNetwork,
                 token: bridge.token,
-                tokenAmount: bridge.tokenAmountNumber
-                    .shiftedBy(bridge.token?.decimals || 0)
-                    .toFixed(),
+                tokenAmount: bridge.tokenAmount,
                 withdrawFee: bridge.withdrawFee,
                 pendingWithdrawals: bridge.pendingWithdrawals,
             }),

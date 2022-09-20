@@ -67,10 +67,13 @@ export function App(): JSX.Element {
                                 <Route exact path="/transfers">
                                     <TransferList />
                                 </Route>
-                                <Route path="/transfer/:fromType-:fromId/:toType-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
+                                <Route path="/transfer/:fromType(evm)-:fromId/:toType(everscale|evm)-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
                                     <TransferStatus />
                                 </Route>
-                                <Route path="/transfer/:fromType-:fromId/:toType-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
+                                <Route path="/transfer/:fromType(everscale)-:fromId/:toType(evm|solana)-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
+                                    <TransferStatus />
+                                </Route>
+                                <Route path="/transfer/:fromType(solana)-:fromId/:toType(everscale)-:toId/:txSignature([A-HJ-NP-Za-km-z1-9]*)">
                                     <TransferStatus />
                                 </Route>
                                 <Route exact path="/bridge">
@@ -143,17 +146,6 @@ export function App(): JSX.Element {
                             {(everWallet.isInitialized && everWallet.isOutdated) ? (
                                 <WalletUpdateModal />
                             ) : null}
-
-                            {/*
-                            {(evmWallet.hasProvider || everWallet.hasProvider) && (
-                                <NativeScrollArea className="wallets-scroll-area">
-                                    <div className="wallets">
-                                        <EvmWallet />
-                                        <EverWallet />
-                                    </div>
-                                </NativeScrollArea>
-                            )}
-                            */}
 
                             {upgradeTokens.hasTokensToUpgrade ? (
                                 <TokensUpgradeModal />

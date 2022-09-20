@@ -34,7 +34,7 @@ export function Networks(): JSX.Element {
                                 <div>
                                     {summary.leftNetwork?.type === 'everscale' && (
                                         <EverscanAccountLink
-                                            key="ton-address"
+                                            key="everscale-address"
                                             address={summary.leftAddress}
                                             copy
                                         />
@@ -42,6 +42,14 @@ export function Networks(): JSX.Element {
                                     {summary.leftNetwork?.type === 'evm' && (
                                         <BlockScanAddressLink
                                             key="evm-address"
+                                            address={summary.leftAddress}
+                                            baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                            copy
+                                        />
+                                    )}
+                                    {summary.leftNetwork?.type === 'solana' && (
+                                        <BlockScanAddressLink
+                                            key="solana-address"
                                             address={summary.leftAddress}
                                             baseUrl={summary.leftNetwork.explorerBaseUrl}
                                             copy
@@ -76,7 +84,7 @@ export function Networks(): JSX.Element {
                                 <div>
                                     {summary.rightNetwork?.type === 'everscale' && (
                                         <EverscanAccountLink
-                                            key="ton-address"
+                                            key="everscale-address"
                                             address={summary.rightAddress}
                                             copy
                                         />
@@ -84,6 +92,14 @@ export function Networks(): JSX.Element {
                                     {summary.rightNetwork?.type === 'evm' && (
                                         <BlockScanAddressLink
                                             key="evm-address"
+                                            address={summary.rightAddress}
+                                            baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                            copy
+                                        />
+                                    )}
+                                    {summary.rightNetwork?.type === 'solana' && (
+                                        <BlockScanAddressLink
+                                            key="solana-address"
                                             address={summary.rightAddress}
                                             baseUrl={summary.rightNetwork.explorerBaseUrl}
                                             copy

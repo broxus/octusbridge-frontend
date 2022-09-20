@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
-import {
-    Address,
+import { Address } from 'everscale-inpage-provider'
+import type {
     DecodedAbiFunctionInputs,
     DecodedAbiFunctionOutputs,
     FullContractState,
@@ -8,7 +8,8 @@ import {
 
 import { MultiVaultAbi } from '@/misc/abi'
 import {
-    alienProxyContract, getFullContractState,
+    alienProxyContract,
+    getFullContractState,
     mergePoolContract,
     mergeRouterContract,
     tokenRootAlienEvmContract,
@@ -46,7 +47,7 @@ export abstract class BridgeUtils {
      * @param {string} tokenAddress - token address (eg. 0x00...0000)
      * @param {string} rpcUrl
      */
-    public static async getMultiVaultTokenMeta(
+    public static async getEvmMultiVaultTokenMeta(
         vaultAddress: string,
         tokenAddress: string,
         rpcUrl: string,
@@ -61,7 +62,7 @@ export abstract class BridgeUtils {
      * @param {string} tokenAddress - token address (eg. 0:00...0000)
      * @param {string} rpcUrl
      */
-    public static async getMultiVaultNativeToken(
+    public static async getEvmMultiVaultNativeToken(
         vaultAddress: string,
         tokenAddress: Address | string,
         rpcUrl: string,
@@ -76,7 +77,7 @@ export abstract class BridgeUtils {
      * @param {string} tokenAddress - token address (eg. 0x00...0000)
      * @param {string} rpcUrl
      */
-    public static async getMultiVaultExternalNativeToken(
+    public static async getEvmMultiVaultExternalNativeToken(
         vaultAddress: string,
         tokenAddress: string,
         rpcUrl: string,
@@ -88,7 +89,7 @@ export abstract class BridgeUtils {
             : undefined
     }
 
-    public static async getMultiVaultAlienFees(
+    public static async getEvmMultiVaultAlienFees(
         vaultAddress: string,
         rpcUrl: string,
     ): Promise<{ depositFee: string, withdrawFee: string }> {
@@ -99,7 +100,7 @@ export abstract class BridgeUtils {
         return { depositFee, withdrawFee }
     }
 
-    public static async getMultiVaultNativeFees(
+    public static async getEvmMultiVaultNativeFees(
         vaultAddress: string,
         rpcUrl: string,
     ): Promise<{ depositFee: string, withdrawFee: string }> {
@@ -115,11 +116,11 @@ export abstract class BridgeUtils {
      * @param {string} vaultAddress
      * @param {string} rpcUrl
      */
-    public static async getVaultTokenAddress(vaultAddress: string, rpcUrl: string): Promise<string> {
+    public static async getEvmVaultTokenAddress(vaultAddress: string, rpcUrl: string): Promise<string> {
         return evmVaultContract(vaultAddress, rpcUrl).methods.token().call()
     }
 
-    public static async getVaultAvailableDepositLimit(vaultAddress: string, rpcUrl: string): Promise<string> {
+    public static async getEvmVaultAvailableDepositLimit(vaultAddress: string, rpcUrl: string): Promise<string> {
         return evmVaultContract(vaultAddress, rpcUrl).methods.availableDepositLimit().call()
     }
 

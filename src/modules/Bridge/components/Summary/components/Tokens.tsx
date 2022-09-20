@@ -42,7 +42,8 @@ export function Tokens(): JSX.Element {
                 symbol = await erc20TokenContract(address, network.rpcUrl).methods.symbol().call()
             }
             catch (e) {
-                const [activation, , symbolPrefix] = await evmMultiVaultContract(pipeline.vaultAddress, network.rpcUrl)
+                const vaultAddress = pipeline.vaultAddress.toString()
+                const [activation, , symbolPrefix] = await evmMultiVaultContract(vaultAddress, network.rpcUrl)
                     .methods.prefixes(address.toLowerCase())
                     .call()
                 symbol = `${activation === '0' ? 'oct' : symbolPrefix}${summary.token.symbol}`
@@ -73,8 +74,10 @@ export function Tokens(): JSX.Element {
                 const isRightEverscale = summary.rightNetwork?.type === 'everscale'
                 const isLeftEvm = summary.leftNetwork?.type === 'evm'
                 const isRightEvm = summary.rightNetwork?.type === 'evm'
+                const isLeftSolana = summary.leftNetwork?.type === 'solana'
+                const isRightSolana = summary.rightNetwork?.type === 'solana'
 
-                const { everscaleTokenAddress, evmTokenAddress } = summary.pipeline
+                const { everscaleTokenAddress, evmTokenAddress, solanaTokenAddress } = summary.pipeline
 
                 return (
                     <>
@@ -105,6 +108,7 @@ export function Tokens(): JSX.Element {
                                         {sliceAddress(evmTokenAddress)}
                                     </BlockScanAddressLink>
                                 </div>
+                            /* eslint-disable-next-line no-nested-ternary */
                             ) : (isLeftEverscale && everscaleTokenAddress !== undefined) ? (
                                 <div>
                                     <EverscanAccountLink
@@ -116,6 +120,18 @@ export function Tokens(): JSX.Element {
                                     >
                                         {sliceAddress(everscaleTokenAddress.toString())}
                                     </EverscanAccountLink>
+                                </div>
+                            ) : (isLeftSolana && solanaTokenAddress !== undefined) ? (
+                                <div>
+                                    <BlockScanAddressLink
+                                        key="token-link"
+                                        address={solanaTokenAddress.toBase58()}
+                                        className="text-regular"
+                                        copy
+                                        baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                    >
+                                        {sliceAddress(solanaTokenAddress.toBase58())}
+                                    </BlockScanAddressLink>
                                 </div>
                             ) : <div>-</div>}
                         </li>
@@ -148,6 +164,7 @@ export function Tokens(): JSX.Element {
                                             : evmTokenAddress)}
                                     </BlockScanAddressLink>
                                 </div>
+                            /* eslint-disable-next-line no-nested-ternary */
                             ) : (isRightEverscale && everscaleTokenAddress !== undefined) ? (
                                 <div>
                                     <EverscanAccountLink
@@ -159,6 +176,18 @@ export function Tokens(): JSX.Element {
                                     >
                                         {sliceAddress(everscaleTokenAddress.toString())}
                                     </EverscanAccountLink>
+                                </div>
+                            ) : (isRightSolana && solanaTokenAddress !== undefined) ? (
+                                <div>
+                                    <BlockScanAddressLink
+                                        key="token-link"
+                                        address={solanaTokenAddress.toBase58()}
+                                        className="text-regular"
+                                        copy
+                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                    >
+                                        {sliceAddress(solanaTokenAddress.toBase58())}
+                                    </BlockScanAddressLink>
                                 </div>
                             ) : <div>-</div>}
                         </li>

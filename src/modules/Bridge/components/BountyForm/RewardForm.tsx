@@ -7,11 +7,11 @@ import isEqual from 'lodash.isequal'
 import { Button } from '@/components/common/Button'
 import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { useEverscaleTransfer } from '@/modules/Bridge/providers'
+import { useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
 
 export function RewardFormInner(): JSX.Element {
     const intl = useIntl()
-    const transfer = useEverscaleTransfer()
+    const transfer = useEverscaleEvmPipelineContext()
     const evmWallet = transfer.useEvmWallet
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'
@@ -27,9 +27,7 @@ export function RewardFormInner(): JSX.Element {
     const [localBounty, setLocalBounty] = React.useState<string>('')
 
     const maxValueValid = transfer.token && transfer.amount
-        ? new BigNumber(transfer.amount)
-            .shiftedBy(-transfer.token.decimals)
-            .gte(localBounty || 0)
+        ? new BigNumber(transfer.amount).gte(localBounty || 0)
         : undefined
 
     const wrongNetwork = (
@@ -87,9 +85,7 @@ export function RewardFormInner(): JSX.Element {
                                 id: 'CROSSCHAIN_TRANSFER_BOUNTY_LIMIT_ERROR',
                             }, {
                                 symbol: transfer.token?.symbol,
-                                value: new BigNumber(transfer.amount)
-                                    .shiftedBy(-(transfer.token?.decimals ?? 0))
-                                    .toFixed(),
+                                value: transfer.amount,
                             })}
                         </span>
                     </div>

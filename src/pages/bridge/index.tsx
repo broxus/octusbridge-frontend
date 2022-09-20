@@ -5,6 +5,7 @@ import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
+import { useSolanaWallet } from '@/stores/SolanaWalletService'
 
 
 export default function Page(): JSX.Element {
@@ -24,6 +25,7 @@ export default function Page(): JSX.Element {
                 bridgeAssets={useBridgeAssets()}
                 evmWallet={useEvmWallet()}
                 everWallet={useEverWallet()}
+                solanaWallet={useSolanaWallet()}
             >
                 <Bridge />
             </CrosschainBridgeStoreProvider>

@@ -7,10 +7,11 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { EvmWalletService } from '@/stores/EvmWalletService'
-import { NetworkShape } from '@/types'
-import { isEverscaleAddressValid, isEvmAddressValid } from '@/utils'
 import { EverWalletService } from '@/stores/EverWalletService'
+import { EvmWalletService } from '@/stores/EvmWalletService'
+import { SolanaWalletService } from '@/stores/SolanaWalletService'
+import { NetworkShape } from '@/types'
+import { isEverscaleAddressValid, isEvmAddressValid, isSolanaAddressValid } from '@/utils'
 
 import './index.scss'
 
@@ -26,9 +27,25 @@ type Props = {
     networkFieldDisabled?: boolean;
     networks: NetworkShape[];
     shouldDisplayNetworkAlert?: boolean;
-    wallet?: EverWalletService | EvmWalletService;
+    wallet?: EverWalletService | EvmWalletService | SolanaWalletService;
 }
 
+
+function isAddressValid(addr?: string, type?: NetworkShape['type']): boolean {
+    if (type === 'everscale') {
+        return isEverscaleAddressValid(addr)
+    }
+
+    if (type === 'evm') {
+        return isEvmAddressValid(addr)
+    }
+
+    if (type === 'solana') {
+        return isSolanaAddressValid(addr)
+    }
+
+    return true
+}
 
 export function RouteForm({
     address,
@@ -47,20 +64,6 @@ export function RouteForm({
 
     const onChangeAddress: React.ChangeEventHandler<HTMLInputElement> = event => {
         changeAddress(event.target.value)
-    }
-
-    const isAddressValid = () => {
-        if (address !== undefined) {
-            if (network?.type === 'evm') {
-                return isEvmAddressValid(address)
-            }
-
-            if (network?.type === 'everscale') {
-                return isEverscaleAddressValid(address)
-            }
-        }
-
-        return true
     }
 
     return (
@@ -171,7 +174,7 @@ export function RouteForm({
                                 {() => (
                                     <input
                                         className={classNames('form-input', 'form-input--md', {
-                                            invalid: !isAddressValid(),
+                                            invalid: !isAddressValid(address, network?.type),
                                         })}
                                         disabled={!wallet?.isConnected || addressFieldDisabled}
                                         type="text"

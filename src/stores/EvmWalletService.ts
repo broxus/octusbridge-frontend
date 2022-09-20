@@ -169,7 +169,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
                 // chainId: '1',
             })
 
-            this.provider = null
+            this.provider = Web3.givenProvider
         }
         catch (e) {
             error('EVM Wallet disconnect error', e)
@@ -580,9 +580,11 @@ let wallet: EvmWalletService
 
 export function useEvmWallet(): EvmWalletService {
     if (wallet === undefined) {
-        log(
-            '%cCreated a new one EvmWalletService instance as global service to interact with the EVM Wallet browser extension',
+        debug(
+            '%cCreated a new one %cEvm Wallet Service%c instance as a global service to interact with the EVM-compatible wallet browser extension (e.g. Metamask)',
+            'color: #c5e4f3',
             'color: #bae701',
+            'color: #c5e4f3',
         )
         wallet = new EvmWalletService({
             decimals: 18,

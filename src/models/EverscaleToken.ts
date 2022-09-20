@@ -34,7 +34,7 @@ export class EverscaleToken<
     ) {
         super()
 
-        this.setData(() => initialData)
+        this.setData(() => initialData as EverscaleTokenData)
 
         this.setState(() => ({
             isSyncing: false,

@@ -79,15 +79,13 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Soon',
         chainId: '1',
         currencySymbol: 'SOL',
-        disabled: true,
-        explorerBaseUrl: '',
+        explorerBaseUrl: 'https://solscan.io/',
         id: 'solana-1',
         label: 'Solana',
         name: 'Solana',
-        rpcUrl: '',
+        rpcUrl: 'https://rpc.ankr.com/solana',
         type: 'solana',
     },
 ]
@@ -133,7 +131,7 @@ export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridg
 
 export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/octus.json'
 
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/main.json'
+export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 

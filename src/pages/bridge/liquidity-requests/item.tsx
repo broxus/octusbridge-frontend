@@ -6,6 +6,7 @@ import { Bridge, CrosschainBridgeStoreProvider } from '@/modules/Bridge'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
+import { useSolanaWallet } from '@/stores/SolanaWalletService'
 
 export default function Page(): JSX.Element {
     const intl = useIntl()
@@ -36,6 +37,7 @@ export default function Page(): JSX.Element {
             <CrosschainBridgeStoreProvider
                 evmWallet={useEvmWallet()}
                 everWallet={useEverWallet()}
+                solanaWallet={useSolanaWallet()}
                 bridgeAssets={useBridgeAssets()}
             >
                 <Bridge

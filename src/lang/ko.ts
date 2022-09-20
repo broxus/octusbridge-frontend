@@ -75,6 +75,7 @@ export default {
     EVM_WALLET_WRONG_NETWORK_NOTE: 'MetaMask(메타메스크)에서 잘못된 블록체인이 선택되었습니다. 지갑을 열어 {network} 를 선택하세요.',
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: '네트워크 변경',
     EVM_WALLET_CONNECTOR_BLOCKCHAIN_NAME: '실적평가기준 네트워크',
+    SOLANA_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'Solana',
     CROSSCHAIN_TRANSFER_HEADER_TITLE: '크로스 체인 전송',
     CROSSCHAIN_TRANSFER_WALLET_CONNECT_BTN_TEXT: '지갑 연결',
     CROSSCHAIN_TRANSFER_SUMMARY_TITLE: '요약',

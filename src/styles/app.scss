@@ -1,9 +1,10 @@
 @keyframes checking {
     from {
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        border: 1px solid rgb(255 255 255 / 16%);
     }
+
     to {
-        border: 1px solid rgba(116, 166, 255, 0.76);
+        border: 1px solid rgb(116 166 255 / 76%);
     }
 }
 
@@ -11,6 +12,7 @@
     from {
         transform: rotate(0);
     }
+
     to {
         transform: rotate(360deg);
     }
@@ -55,7 +57,7 @@
             font-weight: 500;
             opacity: 0.48;
             outline: none;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
             text-decoration: none;
             transition: 0.25s ease;
 
@@ -137,7 +139,7 @@
 
 .divider {
     background: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-top: 1px solid rgb(255 255 255 / 16%);
     margin: 16px 0;
     opacity: 1;
 }
@@ -147,7 +149,7 @@
 }
 
 .explorer-link {
-    align-items: center;
+    align-items: flex-start;
     display: inline-flex;
     gap: 8px;
 }
@@ -253,10 +255,10 @@ ul.summary {
 
 .tiles {
     display: grid;
+    grid-auto-rows: 1fr;
     grid-column-gap: 8px;
     grid-row-gap: 8px;
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 1fr;
 
     &_twice {
         grid-template-columns: repeat(2, 1fr);

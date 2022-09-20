@@ -4,22 +4,26 @@ import { useParams } from 'react-router-dom'
 
 import { useBridge } from '@/modules/Bridge/providers/CrosschainBridgeStoreProvider'
 import type {
-    EverscaleToEvmPipeline,
-    EvmToEverscalePipeline,
-    EvmToEverscaleSwapPipeline,
-    EvmToEvmHiddenSwapPipeline,
+    EverscaleEvmPipeline,
+    EverscaleSolanaPipeline,
+    EvmEverscaleCreditPipeline,
+    EvmEverscalePipeline,
+    EvmEvmHiddenBridgePipeline,
+    SolanaEverscalePipeline,
 } from '@/modules/Bridge/stores'
-import { EverscaleTransferQueryParams, EvmTransferQueryParams } from '@/modules/Bridge/types'
+import { EverscaleTransferUrlParams, EvmTransferUrlParams, SolanaTransferUrlParams } from '@/modules/Bridge/types'
 
 
-type Pipeline = EverscaleToEvmPipeline
-    | EvmToEverscalePipeline
-    | EvmToEverscaleSwapPipeline
-    | EvmToEvmHiddenSwapPipeline
+type Pipeline = EverscaleEvmPipeline
+    | EvmEverscalePipeline
+    | EvmEverscaleCreditPipeline
+    | EvmEvmHiddenBridgePipeline
+    | EverscaleSolanaPipeline
+    | SolanaEverscalePipeline
 
 export function useTransferLifecycle(pipeline: Pipeline): void {
     const { summary } = useBridge()
-    const params = useParams<EvmTransferQueryParams | EverscaleTransferQueryParams>()
+    const params = useParams<EverscaleTransferUrlParams | EvmTransferUrlParams | SolanaTransferUrlParams>()
 
     React.useEffect(() => {
         (async () => {
@@ -36,30 +40,31 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
         const summaryDisposer = reaction(
             () => ({
                 amount: pipeline.amount,
-                depositFee: (pipeline as EvmToEverscalePipeline).depositFee,
-                depositType: pipeline.depositType,
-                everscaleAddress: (pipeline as EvmToEvmHiddenSwapPipeline).everscaleAddress,
+                depositFee: (pipeline as EvmEverscalePipeline).depositFee,
+                depositType: pipeline.depositType || params.depositType,
+                everscaleAddress: (pipeline as EvmEvmHiddenBridgePipeline).everscaleAddress,
                 leftAddress: pipeline.leftAddress,
                 leftNetwork: pipeline.leftNetwork,
-                maxTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).maxTransferFee,
-                minTransferFee: (pipeline as EvmToEvmHiddenSwapPipeline).minTransferFee,
+                maxTransferFee: (pipeline as EvmEvmHiddenBridgePipeline).maxTransferFee,
+                minTransferFee: (pipeline as EvmEvmHiddenBridgePipeline).minTransferFee,
                 pipeline: pipeline.pipeline,
-                hiddenBridgePipeline: (pipeline as EvmToEvmHiddenSwapPipeline).pipelineDefault,
+                hiddenBridgePipeline: (pipeline as EvmEvmHiddenBridgePipeline).pipelineDefault,
                 rightAddress: pipeline.rightAddress,
                 rightNetwork: pipeline.rightNetwork,
-                swapAmount: (pipeline as EvmToEvmHiddenSwapPipeline).swapAmount,
+                swapAmount: (pipeline as EvmEvmHiddenBridgePipeline).swapAmount,
                 token: pipeline.token,
-                tokenAmount: (pipeline as EvmToEvmHiddenSwapPipeline).tokenAmount,
-                withdrawFee: (pipeline as EverscaleToEvmPipeline).withdrawFee,
-                pendingWithdrawals: (pipeline as EvmToEverscalePipeline).pendingWithdrawals,
+                tokenAmount: (pipeline as EvmEvmHiddenBridgePipeline).tokenAmount,
+                withdrawFee: (pipeline as EverscaleEvmPipeline).withdrawFee,
+                pendingWithdrawals: (pipeline as EvmEverscalePipeline).pendingWithdrawals,
             }),
             data => {
                 summary.setData(data)
             },
+            { fireImmediately: true },
         )
 
         const transferReleaseDisposer = reaction(
-            () => (pipeline as EvmToEvmHiddenSwapPipeline).releaseState?.isReleased,
+            () => (pipeline as EvmEvmHiddenBridgePipeline).releaseState?.isReleased,
             value => {
                 summary.setState('isTransferReleased', value)
             },

@@ -37,11 +37,7 @@ export function SwapDetails(): JSX.Element {
                                         })}
                                     </div>
                                     <div className="text-truncate">
-                                        {formattedTokenAmount(
-                                            summary.swapAmount,
-                                            summary.token?.decimals,
-                                            { preserve: true },
-                                        )}
+                                        {formattedTokenAmount(summary.swapAmount)}
                                     </div>
                                 </li>
                             )}
@@ -86,11 +82,7 @@ export function SwapDetails(): JSX.Element {
                                         })}
                                     </div>
                                     <div className="text-truncate">
-                                        {formattedAmount(
-                                            summary.minTransferFee,
-                                            summary.token?.decimals,
-                                            { preserve: true },
-                                        )}
+                                        {formattedAmount(summary.minTransferFee)}
                                     </div>
                                 </li>
                             )}
@@ -103,11 +95,7 @@ export function SwapDetails(): JSX.Element {
                                         })}
                                     </div>
                                     <div className="text-truncate">
-                                        {formattedAmount(
-                                            summary.maxTransferFee,
-                                            summary.token?.decimals,
-                                            { preserve: true },
-                                        )}
+                                        {formattedAmount(summary.maxTransferFee)}
                                     </div>
                                 </li>
                             )}

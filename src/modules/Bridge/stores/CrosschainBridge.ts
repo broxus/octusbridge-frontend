@@ -1,10 +1,20 @@
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { PublicKey, Transaction } from '@solana/web3.js'
 import BigNumber from 'bignumber.js'
+import bs58 from 'bs58'
 import { Address } from 'everscale-inpage-provider'
 import isEqual from 'lodash.isequal'
+import * as uuid from 'uuid'
 import {
-    action, computed, IReactionDisposer, makeObservable, reaction, toJS,
+    action,
+    computed,
+    makeObservable,
+    reaction,
+    toJS,
 } from 'mobx'
+import type { IReactionDisposer } from 'mobx'
 
+import initBridge, { depositSol } from '@/wasm/bridge'
 import {
     CreditBody,
     CreditFactoryAddress,
@@ -19,21 +29,31 @@ import {
 } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
 import { Dex, DexConstants, EthAbi } from '@/misc'
+import { erc20TokenContract, evmVaultContract } from '@/misc/eth-contracts'
 import {
-    DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA,
-    DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE,
-} from '@/modules/Bridge/constants'
-import {
-    CrosschainBridgeStep,
+    creditFactoryContract,
+    dexPairContract,
+    everscaleEventConfigurationContract,
+    everSolEventConfigurationContract,
+    getFullContractState,
+    hiddenBridgeFactoryContract,
+    hiddenBridgeStrategyContract,
+    tokenWalletContract,
+} from '@/misc/contracts'
+import { EverscaleToken, EvmToken, Pipeline } from '@/models'
+import type {
     CrosschainBridgeStoreData,
     CrosschainBridgeStoreState,
     NetworkFields,
     PendingWithdrawal,
 } from '@/modules/Bridge/types'
-import { unshiftedAmountWithSlippage } from '@/modules/Bridge/utils'
+import { CrosschainBridgeStep } from '@/modules/Bridge/types'
+import { findAssociatedTokenAddress, ixFromRust, unshiftedAmountWithSlippage } from '@/modules/Bridge/utils'
 import { BaseStore } from '@/stores/BaseStore'
+import { BridgeAsset, BridgeAssetsService } from '@/stores/BridgeAssetsService'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
+import { SolanaWalletService } from '@/stores/SolanaWalletService'
 import type { NetworkShape } from '@/types'
 import {
     debug,
@@ -43,28 +63,41 @@ import {
     isEverscaleAddressValid,
     isEvmAddressValid,
     isGoodBignumber,
+    isSolanaAddressValid,
     storage,
+    throwException,
     validateMaxValue,
     validateMinValue,
 } from '@/utils'
-import { BridgeAsset, BridgeAssetsService } from '@/stores/BridgeAssetsService'
-import { EverscaleToken, EvmToken, Pipeline } from '@/models'
-import { erc20TokenContract, evmVaultContract } from '@/misc/eth-contracts'
-import {
-    creditFactoryContract,
-    dexPairContract,
-    everscaleEventConfigurationContract,
-    getFullContractState,
-    hiddenBridgeFactoryContract,
-    hiddenBridgeStrategyContract,
-    tokenWalletContract,
-} from '@/misc/contracts'
+
+
+export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
+    amount: '',
+    depositType: 'default',
+    leftAddress: '',
+    rightAddress: '',
+    swapType: '0',
+}
+
+export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState = {
+    approvalStrategy: 'infinity',
+    isCalculating: false,
+    isFetching: false,
+    isLocked: false,
+    isPendingAllowance: false,
+    isPendingApproval: false,
+    isProcessing: false,
+    isTokenChainSameToTargetChain: false,
+    step: CrosschainBridgeStep.SELECT_ROUTE,
+}
+
 
 export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, CrosschainBridgeStoreState> {
 
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
+        protected readonly solanaWallet: SolanaWalletService,
         protected readonly bridgeAssets: BridgeAssetsService,
     ) {
         super()
@@ -79,12 +112,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             | 'handleEverWalletConnection'
             | 'handleEverWalletBalance'
             | 'handleEvmPendingWithdrawal'
+            | 'handleSolanaWalletConnection'
         >(this, {
             handleChangeToken: action.bound,
             handleEvmWalletConnection: action.bound,
             handleEverWalletConnection: action.bound,
             handleEverWalletBalance: action.bound,
             handleEvmPendingWithdrawal: action.bound,
+            handleSolanaWalletConnection: action.bound,
             amount: computed,
             maxTokenAmount: computed,
             maxEversAmount: computed,
@@ -133,7 +168,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isEvmToEverscale: computed,
             isFromEvm: computed,
             isFromEverscale: computed,
+            isFromSolana: computed,
             isEverscaleToEvm: computed,
+            isEverscaleToSolana: computed,
             rightNetworks: computed,
             token: computed,
             vaultBalance: computed,
@@ -160,26 +197,32 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * Change network by the given key and value.
      * @template {string} K
      * @param {K extends keyof NetworkFields} key
-     * @param {NetworkFields[K]} value
+     * @param {NetworkShape} [value]
      */
-    public changeNetwork<K extends keyof NetworkFields>(key: K, value: NetworkFields[K]): void {
+    public changeNetwork<K extends keyof NetworkFields>(key: K, value?: NetworkShape): void {
         if (value === undefined) {
             return
         }
 
         if (key === 'leftNetwork') {
-            const { leftAddress, rightAddress } = this
+            const { leftAddress } = this
             if (value.type === 'everscale') {
                 this.setData('leftAddress', this.everWallet.address || '')
             }
             else if (value.type === 'evm') {
                 this.setData('leftAddress', this.evmWallet.address || '')
+                if (this.rightNetwork?.type === 'solana') {
+                    this.setData('rightNetwork', undefined)
+                }
             }
+            else if (value.type === 'solana') {
+                this.setData('leftAddress', this.solanaWallet.address || '')
+            }
+
             if (value.id === this.rightNetwork?.id) {
                 this.setData({
                     rightNetwork: this.leftNetwork,
                     rightAddress: leftAddress,
-                    leftAddress: rightAddress,
                 })
             }
         }
@@ -190,13 +233,30 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             else if (value.type === 'evm') {
                 this.setData('rightAddress', this.evmWallet.address || '')
             }
+            else if (value.type === 'solana') {
+                this.setData('rightAddress', this.solanaWallet.address || '')
+            }
+
+            if (value.id === this.leftNetwork?.id) {
+                if (this.rightNetwork?.type === 'everscale') {
+                    this.setData('leftAddress', this.everWallet.address || '')
+                }
+                else if (this.rightNetwork?.type === 'evm') {
+                    this.setData('leftAddress', this.evmWallet.address || '')
+                }
+                else if (this.rightNetwork?.type === 'solana') {
+                    this.setData('leftAddress', this.solanaWallet.address || '')
+                }
+
+                this.setData({
+                    leftNetwork: this.rightNetwork,
+                })
+            }
         }
 
         this.resetAsset()
-        this.setData({
-            [key]: value,
-            depositType: this.isEvmToEvm ? 'credit' : 'default',
-        })
+        this.setData(key, value)
+        this.setData('depositType', this.isEvmToEvm ? 'credit' : 'default')
     }
 
     /**
@@ -220,6 +280,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             () => [this.everWallet.balance, this.everWallet.isContractUpdating],
             this.handleEverWalletBalance,
         )
+        this.#solanaWalletDisposer = reaction(() => this.solanaWallet.isConnected, this.handleSolanaWalletConnection)
     }
 
     /**
@@ -232,6 +293,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         this.#everWalletDisposer?.()
         this.#everWalletBalanceDisposer?.()
         this.#tokenDisposer?.()
+        this.#solanaWalletDisposer?.()
         this.reset()
     }
 
@@ -268,13 +330,13 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                 if (this.approvalStrategy === 'infinity') {
                     r = tokenContract.methods.approve(
-                        this.pipeline.vaultAddress,
+                        this.pipeline.vaultAddress.toString(),
                         '340282366920938463426481119284349108225',
                     )
                 }
                 else {
                     r = tokenContract.methods.approve(
-                        this.pipeline.vaultAddress,
+                        this.pipeline.vaultAddress.toString(),
                         this.amountNumber
                             .shiftedBy(this.pipeline.evmTokenDecimals)
                             .dp(0, BigNumber.ROUND_DOWN)
@@ -394,7 +456,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                 let r
 
-                const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, this.pipeline.vaultAddress)
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.Vault,
+                    this.pipeline.vaultAddress.toString(),
+                )
 
                 if (this.pendingWithdrawalsBounty && this.pendingWithdrawals) {
                     r = vaultContract.methods.deposit(
@@ -434,7 +499,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             }
             catch (e: any) {
                 if (
-                    /eip-1559/g.test(e.message.toLocaleString())
+                    /eip-1559/g.test(e.message.toLowerCase())
                     && transactionType !== undefined && transactionType !== '0x0'
                 ) {
                     error('Transfer deposit error. Try with transaction type 0x0', e)
@@ -479,7 +544,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             try {
                 tries += 1
 
-                const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, this.pipeline.vaultAddress)
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.Vault,
+                    this.pipeline.vaultAddress.toString(),
+                )
 
                 const r = vaultContract.methods.depositToFactory(
                     this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
@@ -584,7 +652,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .call())
                     .value0
 
-                const vaultContract = new this.evmWallet.web3.eth.Contract(EthAbi.Vault, this.pipeline.vaultAddress)
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.Vault,
+                    this.pipeline.vaultAddress.toString(),
+                )
 
                 const r = vaultContract.methods.depositToFactory(
                     this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
@@ -800,7 +871,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                 const vaultContract = new this.evmWallet.web3.eth.Contract(
                     EthAbi.MultiVault,
-                    this.pipeline.vaultAddress,
+                    this.pipeline.vaultAddress.toString(),
                 )
 
                 const r = vaultContract.methods.deposit(
@@ -953,8 +1024,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 try {
                     const { chainId, type } = this.rightNetwork
 
+                    const vaultAddress = this.pipeline.vaultAddress.toString()
+
                     const [wid, addr] = this.token.root.split(':')
-                    const root = (await evmVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
+                    const root = (await evmVaultContract(vaultAddress, network.rpcUrl)
                         .methods.getNativeToken(wid, `0x${addr}`)
                         .call())
                         .toLowerCase()
@@ -974,7 +1047,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             activation,
                             namePrefix,
                             symbolPrefix,
-                        ] = await evmVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
+                        ] = await evmVaultContract(vaultAddress, network.rpcUrl)
                             .methods.prefixes(root.toLowerCase())
                             .call()
 
@@ -1167,6 +1240,273 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     /**
+     *
+     * @param reject
+     */
+    public async prepareEverscaleToSolana(reject?: (e: any) => void): Promise<void> {
+        if (
+            this.everWallet.account?.address === undefined
+            || this.solanaWallet.publicKey == null
+            || this.solanaWallet.connection === undefined
+            || this.rightNetwork?.chainId === undefined
+            || (this.token as EverscaleToken) === undefined
+            || (this.token as EverscaleToken)?.wallet === undefined
+            || this.token?.decimals === undefined
+            || this.pipeline?.everscaleConfiguration === undefined
+            || this.pipeline.settings === undefined
+            || this.pipeline.solanaTokenAddress === undefined
+        ) {
+            return
+        }
+
+        this.setState('isProcessing', true)
+
+        const subscriber = new staticRpc.Subscriber()
+
+        try {
+            const everscaleConfigContract = everSolEventConfigurationContract(this.pipeline.everscaleConfiguration)
+
+            const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
+
+            const startLt = everscaleConfigState?.lastTransactionId?.lt
+
+            const eventStream = await subscriber
+                .transactions(everscaleConfigContract.address)
+                .flatMap(item => item.transactions)
+                .filter(tx => !startLt || tx.id.lt > startLt)
+                .filterMap(async tx => {
+                    const decodedTx = await everscaleConfigContract.decodeTransaction({
+                        methods: ['deployEvent'],
+                        transaction: tx,
+                    })
+
+                    if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                        const { eventData } = decodedTx.input.eventVoteData
+                        const event = await staticRpc.unpackFromCell({
+                            allowPartial: true,
+                            boc: eventData,
+                            structure: [
+                                { name: 'senderAddress', type: 'address' },
+                                { name: 'tokens', type: 'uint128' },
+                                { name: 'solanaOwnerAddress', type: 'uint256' },
+                            ] as const,
+                        })
+
+                        const targetAddress = bs58.encode(
+                            Buffer.from(new BigNumber(event.data.solanaOwnerAddress).toString(16), 'hex'),
+                        )
+
+                        if (
+                            event.data.senderAddress.toString().toLowerCase() === this.leftAddress.toLowerCase()
+                            && targetAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                        ) {
+                            const eventAddress = await everscaleConfigContract
+                                .methods.deriveEventAddress({
+                                    answerId: 0,
+                                    eventVoteData: decodedTx.input.eventVoteData,
+                                })
+                                .call()
+
+                            return eventAddress.eventContract
+                        }
+                        return undefined
+                    }
+                    return undefined
+                })
+                .delayed(s => s.first())
+
+            await initBridge()
+
+            const rightAddressKey = new PublicKey(this.rightAddress)
+
+            let account = (await this.solanaWallet.connection.getParsedTokenAccountsByOwner(
+                rightAddressKey,
+                {
+                    programId: TOKEN_PROGRAM_ID,
+                },
+            )).value.filter(
+                item => this.pipeline?.solanaTokenAddress?.equals(
+                    new PublicKey(item.account.data.parsed.info.mint),
+                ),
+            ).sort(
+                (a, b) => a.account.data.parsed.info.tokenAmount.uiAmount
+                    - b.account.data.parsed.info.tokenAmount.uiAmount,
+            ).pop()?.pubkey
+
+            if (account === undefined) {
+                account = await findAssociatedTokenAddress(
+                    rightAddressKey,
+                    this.pipeline.solanaTokenAddress,
+                )
+            }
+
+            const vaultAddress = this.pipeline.vaultAddress as PublicKey
+
+            const executeAccounts = [
+                // vault
+                {
+                    account: `0x${Buffer.from(vaultAddress.toBuffer()).toString('hex')}`,
+                    isSigner: false,
+                    readOnly: false,
+                },
+                // recipient token
+                {
+                    account: `0x${Buffer.from(account.toBuffer()).toString('hex')}`,
+                    isSigner: false,
+                    readOnly: false,
+                },
+                // token settings
+                {
+                    account: `0x${Buffer.from(this.pipeline.settings.toBuffer()).toString('hex')}`,
+                    isSigner: false,
+                    readOnly: false,
+                },
+                // settings
+                {
+                    account: '0x0d0a20d411e5eea9effa1cef17b0cce7091f81be20ad884f1a9bcbd81938e4f4',
+                    isSigner: false,
+                    readOnly: true,
+                },
+                // token program
+                {
+                    account: '0x06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9',
+                    isSigner: false,
+                    readOnly: true,
+                },
+                // clock
+                {
+                    account: '0x06a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000',
+                    isSigner: false,
+                    readOnly: true,
+                },
+            ]
+
+            const burnPayload = await staticRpc.packIntoCell({
+                structure: [
+                    { name: 'solanaOwnerAddress', type: 'uint256' },
+                    {
+                        name: 'executeAccounts',
+                        type: 'tuple[]',
+                        components: [
+                            { name: 'account', type: 'uint256' },
+                            { name: 'readOnly', type: 'bool' },
+                            { name: 'isSigner', type: 'bool' },
+                        ] as const,
+                    },
+                ] as const,
+                data: {
+                    solanaOwnerAddress: `0x${Buffer.from(rightAddressKey.toBuffer()).toString('hex')}`,
+                    executeAccounts,
+                },
+            })
+
+            const data = await staticRpc.packIntoCell({
+                data: {
+                    type: 1,
+                    burnPayload: burnPayload.boc,
+                },
+                structure: [
+                    { name: 'type', type: 'uint8' },
+                    { name: 'burnPayload', type: 'cell' },
+                ] as const,
+            })
+
+            await tokenWalletContract((this.token as EverscaleToken).wallet as Address)
+                .methods.burn({
+                    amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                    callbackTo: this.pipeline.proxyAddress,
+                    payload: data.boc,
+                    remainingGasTo: this.everWallet.account.address,
+                })
+                .send({
+                    amount: '6000000000',
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
+
+            const eventAddress = await eventStream()
+
+            this.setData('txHash', eventAddress?.toString())
+        }
+        catch (e) {
+            reject?.(e)
+            error('Prepare Everscale to Solana error', e)
+            await subscriber.unsubscribe()
+        }
+        finally {
+            this.setState('isProcessing', false)
+        }
+    }
+
+    public async depositSolana(reject?: (e: any) => void): Promise<void> {
+        if (
+            this.solanaWallet.publicKey == null
+            || this.solanaWallet.connection === undefined
+            || this.pipeline?.name === undefined
+            || this.pipeline.solanaTokenAddress === undefined
+            || this.pipeline.solanaTokenDecimals === undefined
+        ) {
+            return
+        }
+
+        this.setState('isProcessing', true)
+
+        try {
+            const account = (await this.solanaWallet.connection.getParsedTokenAccountsByOwner(
+                this.solanaWallet.publicKey,
+                {
+                    programId: TOKEN_PROGRAM_ID,
+                },
+            )).value.filter(
+                item => this.pipeline?.solanaTokenAddress?.equals(
+                    new PublicKey(item.account.data.parsed.info.mint),
+                ),
+            ).sort(
+                (a, b) => a.account.data.parsed.info.tokenAmount.uiAmount
+                    - b.account.data.parsed.info.tokenAmount.uiAmount,
+            ).pop()
+
+            if (account === undefined) {
+                throwException('Cant find token account by owner')
+                return
+            }
+
+            await initBridge()
+
+            const instruction = depositSol(
+                this.solanaWallet.publicKey.toBase58(),
+                this.solanaWallet.publicKey.toBase58(),
+                this.pipeline.solanaTokenAddress.toBase58(),
+                account.pubkey.toBase58(),
+                this.pipeline.name,
+                uuid.v4(),
+                this.rightAddress,
+                BigInt(this.amountNumber.shiftedBy(this.pipeline.solanaTokenDecimals).toFixed()),
+            )
+
+            const transaction = new Transaction().add(ixFromRust(instruction))
+            const signature = await this.solanaWallet.adapter.sendTransaction(transaction, this.solanaWallet.connection)
+
+            const latestBlockHash = await this.solanaWallet.connection.getLatestBlockhash()
+
+            await this.solanaWallet.connection.confirmTransaction({
+                blockhash: latestBlockHash.blockhash,
+                lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+                signature,
+            }, 'processed')
+
+            this.setData('txHash', signature)
+        }
+        catch (e) {
+            reject?.(e)
+            error('Deposit Solana error', e)
+        }
+        finally {
+            this.setState('isProcessing', false)
+        }
+    }
+
+    /**
      * Should be called after manually change amount field value for EVM-Everscale or EVM-EVM modes.
      * - EVM-EVM check min receive tokens
      * - EVM-Everscale (swap mode) sync max EVERs amount, sync min receive and tokens amounts.
@@ -1259,7 +1599,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     data.eversAmount = maxEversAmountNumber.toFixed()
                 }
 
-                this.setData(data)
+                this.setData(data as CrosschainBridgeStoreData)
             }
             else {
                 const minSpentTokensNumber = this.amountNumber.minus(this.tokenAmountNumber)
@@ -1500,7 +1840,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isFetching: false,
             isLocked: false,
             isPendingAllowance: false,
-            isTokenChainSameToTargetChain: undefined,
+            isTokenChainSameToTargetChain: false,
         })
     }
 
@@ -1523,7 +1863,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
         const { withdrawalIds } = this.evmPendingWithdrawal
 
-        const vaultContract = evmVaultContract(this.pipeline.vaultAddress, network.rpcUrl)
+        const vaultContract = evmVaultContract(this.pipeline.vaultAddress.toString(), network.rpcUrl)
 
         try {
             const pendingWithdrawals = (
@@ -1614,7 +1954,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
             }
 
-            if (this.isFromEverscale) {
+            if (this.isEverscaleToEvm) {
                 this.setState(
                     'isTokenChainSameToTargetChain',
                     this.pipeline?.mergePoolAddress !== undefined
@@ -1742,6 +2082,33 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
     }
 
+    /**
+     *
+     * @param connected
+     * @protected
+     */
+    protected async handleSolanaWalletConnection(connected?: boolean): Promise<void> {
+        debug('handleSolanaWalletConnection')
+
+        if (this.state.isProcessing) {
+            return
+        }
+
+        if (connected) {
+            if (this.leftNetwork?.type === 'solana') {
+                this.setData('leftAddress', this.solanaWallet.address ?? '')
+            }
+            if (this.rightNetwork?.type === 'solana' && !this.rightAddress) {
+                this.setData('rightAddress', this.solanaWallet.address ?? '')
+            }
+        }
+        else {
+            this.resetAsset()
+            this.setData('selectedToken', undefined)
+            this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        }
+    }
+
 
     /*
      * Internal utilities methods
@@ -1808,7 +2175,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
 
         const minReceiveTokensNumber = this.amountNumber.shiftedBy(this.amountMinDecimals)
-            .minus(this.data.maxTransferFee || 0)
+            .minus(new BigNumber(this.data.maxTransferFee || 0).shiftedBy(this.token.decimals))
             // .minus(0) // Bridge fee. 0 now
 
         if (isGoodBignumber(minReceiveTokensNumber)) {
@@ -2091,8 +2458,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             ]).then(r => r.map(i => (i.status === 'fulfilled' ? i.value : undefined)))
 
             this.setData({
-                maxTransferFee: results[1]?.expected_amount,
-                minTransferFee: results[0]?.expected_amount,
+                maxTransferFee: new BigNumber(results[1]?.expected_amount || 0)
+                    .shiftedBy(-this.token.decimals)
+                    .toFixed(),
+                minTransferFee: new BigNumber(results[0]?.expected_amount || 0)
+                    .shiftedBy(-this.token.decimals)
+                    .toFixed(),
                 minAmount: new BigNumber(results[1]?.expected_amount || 0).plus(1).toFixed(),
             })
             this.checkMinReceiveTokens()
@@ -2306,6 +2677,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
             return this.pipeline?.evmTokenBalance
         }
+        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
+            return this.pipeline?.solanaTokenBalance
+        }
         return this.token?.balance
     }
 
@@ -2323,6 +2697,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     public get decimals(): number | undefined {
         if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
             return this.pipeline?.evmTokenDecimals
+        }
+        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
+            return this.pipeline?.solanaTokenDecimals
         }
         return this.token?.decimals
     }
@@ -2432,8 +2809,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get isAssetValid(): boolean {
         return (
-            this.evmWallet.isConnected
-            && this.everWallet.isConnected
+            this.everWallet.isConnected
+            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
             && this.data.selectedToken !== undefined
             && this.amount.length > 0
             && isGoodBignumber(this.amountNumber)
@@ -2447,7 +2824,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     public get isRouteValid(): boolean {
         let isValid = (
             this.everWallet.isConnected
-            && this.evmWallet.isConnected
+            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
             && this.leftNetwork !== undefined
             && this.leftAddress.length > 0
             && this.rightNetwork !== undefined
@@ -2497,6 +2874,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     public get isInsufficientVaultBalance(): boolean {
+        if (this.isEverscaleToSolana) {
+            return new BigNumber(this.pipeline?.vaultBalance ?? 0)
+                .shiftedBy(-(this.pipeline?.solanaTokenDecimals ?? 0))
+                .lt(this.amountNumber)
+        }
         if (this.isEvmToEvm) {
             return new BigNumber(this.hiddenBridgePipeline?.vaultBalance ?? 0)
                 .shiftedBy(-(this.hiddenBridgePipeline?.evmTokenDecimals ?? 0))
@@ -2534,17 +2916,34 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         return this.leftNetwork?.type === 'everscale'
     }
 
+    public get isFromSolana(): boolean {
+        return this.leftNetwork?.type === 'solana'
+    }
+
     public get isEverscaleToEvm(): boolean {
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
     }
 
+    public get isEverscaleToSolana(): boolean {
+        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'solana'
+    }
+
+    public get isSolanaToEverscale(): boolean {
+        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'everscale'
+    }
+
     public get rightNetworks(): NetworkShape[] {
+        if (this.leftNetwork?.type === 'solana') {
+            const network = getEverscaleMainNetwork()
+            return network ? [network] : []
+        }
+        if (this.leftNetwork?.type === 'evm') {
+            return networks.filter(network => network.id !== this.leftNetwork?.id && network.type !== 'solana')
+        }
         if (process.env.NODE_ENV !== 'production') {
             return networks
         }
-        return networks.filter(
-            network => network.id !== this.leftNetwork?.id,
-        )
+        return networks.filter(network => network.id !== this.leftNetwork?.id)
     }
 
     public get token(): BridgeAsset | undefined {
@@ -2556,7 +2955,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             return undefined
         }
 
-        return this.bridgeAssets.get(this.leftNetwork.type, this.leftNetwork.chainId, this.data.selectedToken)
+        return this.bridgeAssets.get(
+            this.leftNetwork.type,
+            this.leftNetwork.chainId,
+            this.data.selectedToken.toLowerCase(),
+        )
     }
 
     public get vaultBalance(): string | undefined {
@@ -2569,6 +2972,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     public get vaultBalanceDecimals(): number | undefined {
         if (this.isEvmToEvm) {
             return this.hiddenBridgePipeline?.evmTokenDecimals
+        }
+        if (this.isEverscaleToSolana) {
+            return this.pipeline?.solanaTokenDecimals
         }
         return this.pipeline?.evmTokenDecimals
     }
@@ -2623,9 +3029,24 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             )
         }
 
+        if (this.isEverscaleToSolana) {
+            return this.bridgeAssets.tokens.filter(
+                token => {
+                    const assets = this.bridgeAssets.assets[token.root]
+                    return Object.keys({ ...assets }).some(key => key.split('_')[0] === 'solana')
+                },
+            )
+        }
+
         if (this.isFromEverscale && leftChainId !== undefined) {
             return this.bridgeAssets.tokens.filter(
                 token => isEverscaleAddressValid(token.root) && token.chainId === leftChainId,
+            )
+        }
+
+        if (this.isFromSolana && leftChainId !== undefined) {
+            return this.bridgeAssets.tokens.filter(
+                token => isSolanaAddressValid(token.root) && token.chainId === leftChainId,
             )
         }
 
@@ -2652,6 +3073,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get useEvmWallet(): EvmWalletService {
         return this.evmWallet
+    }
+
+    public get useSolanaWallet(): SolanaWalletService {
+        return this.solanaWallet
     }
 
     public get useBridgeAssets(): BridgeAssetsService {
@@ -2698,6 +3123,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     #everWalletDisposer: IReactionDisposer | undefined
 
     #evmWalletDisposer: IReactionDisposer | undefined
+
+    #solanaWalletDisposer: IReactionDisposer | undefined
 
     #swapDisposer: IReactionDisposer | undefined
 
