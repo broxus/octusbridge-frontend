@@ -162,3 +162,38 @@ export function everscaleEventNativeContract(
 ): Contract<typeof MultiVaultAbi.EverscaleEventNative> {
     return new provider.Contract(MultiVaultAbi.EverscaleEventNative, resolveEverscaleAddress(address))
 }
+
+export function solanaTokenTransferProxyContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof BridgeAbi.SolanaProxyTokenTransfer> {
+    return new provider.Contract(BridgeAbi.SolanaProxyTokenTransfer, resolveEverscaleAddress(address))
+}
+
+export function everSolEventConfigurationContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof BridgeAbi.EverscaleSolanaEventConfiguration> {
+    return new provider.Contract(BridgeAbi.EverscaleSolanaEventConfiguration, resolveEverscaleAddress(address))
+}
+
+export function solEverEventConfigurationContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof BridgeAbi.SolanaEverscaleEventConfiguration> {
+    return new provider.Contract(BridgeAbi.SolanaEverscaleEventConfiguration, resolveEverscaleAddress(address))
+}
+
+export function tokenTransferEverSolEventContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof BridgeAbi.TokenTransferEverscaleSolanaEvent> {
+    return new provider.Contract(BridgeAbi.TokenTransferEverscaleSolanaEvent, resolveEverscaleAddress(address))
+}
+
+export function tokenTransferSolEverEventContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof BridgeAbi.TokenTransferSolanaEverscaleEvent> {
+    return new provider.Contract(BridgeAbi.TokenTransferSolanaEverscaleEvent, resolveEverscaleAddress(address))
+}

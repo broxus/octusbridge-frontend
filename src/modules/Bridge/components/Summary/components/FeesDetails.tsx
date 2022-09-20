@@ -44,7 +44,7 @@ export function FeesDetails(): JSX.Element {
                                 }, { symbol: summary.token?.symbol || '' })}
                             </div>
                             <div className="text-truncate">
-                                {formattedTokenAmount(summary.withdrawFee, undefined, { preserve: true })}
+                                {formattedTokenAmount(summary.withdrawFee)}
                             </div>
                         </li>
                     )}
@@ -61,7 +61,7 @@ export function FeesDetails(): JSX.Element {
                                 }, { symbol: summary.token?.symbol || '' })}
                             </div>
                             <div className="text-truncate">
-                                {formattedTokenAmount(summary.depositFee, undefined, { preserve: true })}
+                                {formattedTokenAmount(summary.depositFee)}
                             </div>
                         </li>
                     )}

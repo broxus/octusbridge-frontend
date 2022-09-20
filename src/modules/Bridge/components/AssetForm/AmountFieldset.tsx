@@ -162,11 +162,11 @@ export function AmountFieldset(): JSX.Element {
                                     && !bridge.isEverscaleBasedToken
                                     && !bridge.isLocked
                                     && bridge.pendingWithdrawals === undefined
-                                    && (bridge.isFromEverscale || bridge.isEvmToEvm)
+                                    && (bridge.isEverscaleToEvm || bridge.isEverscaleToSolana || bridge.isEvmToEvm)
                                 ) && (
                                     <Alert
                                         className="margin-top"
-                                        text={intl.formatMessage({
+                                        text={bridge.isEverscaleToSolana ? undefined : intl.formatMessage({
                                             id: 'CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT',
                                         })}
                                         title={intl.formatMessage({

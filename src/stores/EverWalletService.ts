@@ -521,8 +521,10 @@ let wallet: EverWalletService
 export function useEverWallet(): EverWalletService {
     if (wallet === undefined) {
         debug(
-            '%cCreated a new one Web3WalletService instance as global service to interact with the Web3 Wallet browser extension',
+            '%cCreated a new one %cEver Wallet Service%c instance as a global service to interact with the EVER Wallet browser extension',
+            'color: #c5e4f3',
             'color: #bae701',
+            'color: #c5e4f3',
         )
         wallet = new EverWalletService({
             decimals: DexConstants.CoinDecimals,

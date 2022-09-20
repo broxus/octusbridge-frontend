@@ -6,7 +6,7 @@ import isEqual from 'lodash.isequal'
 
 import { Button } from '@/components/common/Button'
 import { SimpleRadio } from '@/components/common/SimpleRadio'
-import { useEverscaleTransfer } from '@/modules/Bridge/providers'
+import { useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
 import { RewardForm } from '@/modules/Bridge/components/BountyForm/RewardForm'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 
@@ -17,7 +17,7 @@ enum BountyKind {
 
 export function BountyFormInner(): JSX.Element {
     const intl = useIntl()
-    const transfer = useEverscaleTransfer()
+    const transfer = useEverscaleEvmPipelineContext()
     const evmWallet = transfer.useEvmWallet
 
     const isClosed = transfer.pendingWithdrawalStatus === 'Close'

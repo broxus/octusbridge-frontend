@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { reaction } from 'mobx'
 import isEqual from 'lodash.isequal'
+import { reaction } from 'mobx'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
@@ -8,14 +8,13 @@ import { Button } from '@/components/common/Button'
 import { networks } from '@/config'
 import { RouteForm } from '@/modules/Bridge/components/RouteForm'
 import { useBridge } from '@/modules/Bridge/providers'
-import {
-    AddressesFields,
-    CrosschainBridgeStep,
-    NetworkFields,
-} from '@/modules/Bridge/types'
+import { CrosschainBridgeStep } from '@/modules/Bridge/types'
+import type { AddressesFields, NetworkFields } from '@/modules/Bridge/types'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { EvmWalletService } from '@/stores/EvmWalletService'
 import { Icon } from '@/components/common/Icon'
+import { SolanaWalletService } from '@/stores/SolanaWalletService'
+import { findNetwork, getEverscaleMainNetwork } from '@/utils'
 
 
 export function RouteStep(): JSX.Element {
@@ -23,6 +22,7 @@ export function RouteStep(): JSX.Element {
     const { bridge } = useBridge()
     const evmWallet = bridge.useEvmWallet
     const everWallet = bridge.useEverWallet
+    const solanaWallet = bridge.useSolanaWallet
     const bridgeAssets = bridge.useBridgeAssets
 
     const onChangeAddress = <K extends keyof AddressesFields>(key: K) => (value: string) => {
@@ -31,7 +31,9 @@ export function RouteStep(): JSX.Element {
 
     const onChangeNetwork = <K extends keyof NetworkFields>(key: K) => (value: string) => {
         const network = networks.find(({ id }) => id === value)
-        bridge.changeNetwork(key, network)
+        if (network !== undefined) {
+            bridge.changeNetwork(key, network)
+        }
     }
 
     const nextStep = () => {
@@ -43,15 +45,11 @@ export function RouteStep(): JSX.Element {
         () => {
             if (bridge.evmPendingWithdrawal) {
                 const { chainId } = bridge.evmPendingWithdrawal
-                const evmNetwork = networks.find(({ id }) => id === `evm-${chainId}`)
-                const everNetwork = networks.find(({ id }) => id === 'everscale-1')
-                bridge.changeNetwork('leftNetwork', evmNetwork)
-                bridge.changeNetwork('rightNetwork', everNetwork)
+                bridge.changeNetwork('leftNetwork', findNetwork(chainId, 'evm'))
+                bridge.changeNetwork('rightNetwork', getEverscaleMainNetwork())
             }
         },
-        {
-            fireImmediately: true,
-        },
+        { fireImmediately: true },
     ), [])
 
     return (
@@ -71,7 +69,7 @@ export function RouteStep(): JSX.Element {
 
             <Observer>
                 {() => {
-                    let wallet: EverWalletService | EvmWalletService | undefined
+                    let wallet: EverWalletService | EvmWalletService | SolanaWalletService | undefined
 
                     if (bridge.leftNetwork !== undefined) {
                         if (bridge.leftNetwork.type === 'evm') {
@@ -79,6 +77,9 @@ export function RouteStep(): JSX.Element {
                         }
                         else if (bridge.leftNetwork.type === 'everscale') {
                             wallet = everWallet
+                        }
+                        else if (bridge.leftNetwork.type === 'solana') {
+                            wallet = solanaWallet
                         }
                     }
 
@@ -108,7 +109,7 @@ export function RouteStep(): JSX.Element {
 
             <Observer>
                 {() => {
-                    let wallet: EverWalletService | EvmWalletService | undefined
+                    let wallet: EverWalletService | EvmWalletService | SolanaWalletService | undefined
 
                     if (bridge.rightNetwork !== undefined) {
                         if (bridge.rightNetwork.type === 'evm') {
@@ -116,6 +117,9 @@ export function RouteStep(): JSX.Element {
                         }
                         else if (bridge.rightNetwork.type === 'everscale') {
                             wallet = everWallet
+                        }
+                        else if (bridge.rightNetwork.type === 'solana') {
+                            wallet = solanaWallet
                         }
                     }
 

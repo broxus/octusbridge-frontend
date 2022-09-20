@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { EvmSwapTransferStep, Summary } from '@/modules/Bridge/components'
+import { EvmEverscaleCreditStagesStep, Summary } from '@/modules/Bridge/components'
 import { Debug } from '@/modules/Bridge/components/Debug'
 
 
@@ -10,7 +10,7 @@ export function EvmToEverscaleSwap(): JSX.Element {
             <div className="section__wrapper">
                 <main className="content">
                     <hr />
-                    <EvmSwapTransferStep />
+                    <EvmEverscaleCreditStagesStep />
                 </main>
 
                 <aside className="sidebar">

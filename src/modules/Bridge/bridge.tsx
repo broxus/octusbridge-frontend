@@ -4,11 +4,13 @@ import { Observer } from 'mobx-react-lite'
 import {
     ApproveStep,
     AssetStep,
-    EverscaleTransferStep,
-    EvmHiddenSwapTransferStep,
-    EvmSwapTransferStep,
-    EvmTransferStep,
+    EverscaleEvmStagesStep,
+    EverscaleSolanaStagesStep,
+    EvmEverscaleCreditStagesStep,
+    EvmEverscaleHiddenBridgeStagesStep,
+    EvmEverscaleStagesStep,
     RouteStep,
+    SolanaEverscaleStagesStep,
     Summary,
 } from '@/modules/Bridge/components'
 import { Debug } from '@/modules/Bridge/components/Debug'
@@ -22,9 +24,7 @@ type Props = {
     evmPendingWithdrawal?: EvmPendingWithdrawal;
 }
 
-export function Bridge({
-    evmPendingWithdrawal,
-}: Props): JSX.Element {
+export function Bridge({ evmPendingWithdrawal }: Props): JSX.Element {
     const { bridge } = useBridge()
 
     React.useEffect(() => {
@@ -46,22 +46,26 @@ export function Bridge({
                                     return <ApproveStep key="approve" />
 
                                 case CrosschainBridgeStep.TRANSFER:
+                                    if (bridge.isEverscaleToEvm) {
+                                        return <EverscaleEvmStagesStep key="everscale-evm-transfer" />
+                                    }
+
                                     if (bridge.isEvmToEverscale) {
                                         return bridge.isSwapEnabled
-                                            ? <EvmSwapTransferStep key="evm-swap-transfer" />
-                                            : <EvmTransferStep key="evm-transfer" />
+                                            ? <EvmEverscaleCreditStagesStep key="evm-swap-transfer" />
+                                            : <EvmEverscaleStagesStep key="evm-transfer" />
                                     }
 
                                     if (bridge.isEvmToEvm) {
-                                        return (
-                                            <EvmHiddenSwapTransferStep
-                                                key="evm-hidden-swap-transfer"
-                                            />
-                                        )
+                                        return <EvmEverscaleHiddenBridgeStagesStep key="evm-hidden-swap-transfer" />
                                     }
 
-                                    if (bridge.isEverscaleToEvm) {
-                                        return <EverscaleTransferStep key="ton-transfer" />
+                                    if (bridge.isEverscaleToSolana) {
+                                        return <EverscaleSolanaStagesStep key="everscale-solana-transfer" />
+                                    }
+
+                                    if (bridge.isSolanaToEverscale) {
+                                        return <SolanaEverscaleStagesStep key="solana-everscale-transfer" />
                                     }
 
                                     return null

@@ -40,7 +40,7 @@ export function TokenAmountDetails(): JSX.Element {
                                 {(summary.tokenAmount !== undefined && summary.tokenAmount !== '0')
                                     ? formattedTokenAmount(
                                         summary.tokenAmount,
-                                        summary.token?.decimals,
+                                        undefined,
                                         { preserve: true },
                                     )
                                     : '–'}

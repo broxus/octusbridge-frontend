@@ -2,10 +2,12 @@ import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-
 
 import { NetworkShape, NetworkType } from '@/types'
 import { BridgeAbi } from '@/misc'
-import { EverscaleToken, EvmToken, Pipeline } from '@/models'
+import { Pipeline } from '@/models'
 import { BridgeAsset } from '@/stores/BridgeAssetsService'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
+
+export type TransferDepositType = 'default' | 'credit'
 
 export enum CrosschainBridgeStep {
     SELECT_ROUTE,
@@ -18,7 +20,7 @@ export type CrosschainBridgeStoreData = {
     amount: string;
     bridgeFee?: string;
     creditFactoryFee?: string;
-    depositType: 'default' | 'credit';
+    depositType: TransferDepositType;
     eversAmount?: string;
     hiddenBridgePipeline?: Pipeline;
     leftAddress: string;
@@ -57,7 +59,9 @@ export type CrosschainBridgeStoreState = {
 
 export type AddressesFields = Pick<CrosschainBridgeStoreData, 'leftAddress' | 'rightAddress'>
 
-export type EventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
+export type EvmEventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
+
+export type SolanaEventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.SolanaEverscaleEventConfiguration, 'deployEvent'>['eventVoteData']
 
 export type NetworkFields = Pick<CrosschainBridgeStoreData, 'leftNetwork' | 'rightNetwork'>
 
@@ -71,152 +75,27 @@ export type SwapStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejected'
 
 export type TransferStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejected'
 
-export type EvmTransferQueryParams = {
-    depositType?: string;
+
+export type TransferUrlBaseParams = {
+    depositType?: TransferDepositType;
     fromId: string;
     fromType: NetworkType;
     toId: string;
     toType: NetworkType;
+}
+
+export type EvmTransferUrlParams = TransferUrlBaseParams & {
     txHash: string;
 }
 
-export type EvmTransferStoreData = {
-    amount: string;
-    deriveEventAddress?: Address;
-    eventVoteData?: EventVoteData;
-    leftAddress?: string;
-    pipeline?: Pipeline;
-    rightAddress?: string;
-    token?: (EverscaleToken | EvmToken);
-    pendingWithdrawals?: PendingWithdrawal[];
-}
-
-export type EvmTransferStoreState = {
-    eventState?: {
-        confirmations: number;
-        errorMessage?: string;
-        requiredConfirmations: number;
-        status: EventStateStatus;
-    };
-    isCheckingTransaction: boolean;
-    prepareState?: {
-        errorMessage?: string;
-        isDeployed?: boolean;
-        isDeploying?: boolean;
-        isTokenDeployed?: boolean;
-        isTokenDeploying?: boolean;
-        status: PrepareStateStatus;
-    };
-    transferState?: {
-        confirmedBlocksCount: number;
-        errorMessage?: string;
-        eventBlocksToConfirm: number;
-        status: TransferStateStatus;
-    };
-}
-
-export type EvmSwapTransferStoreData = EvmTransferStoreData & {
-    creditProcessorAddress?: Address;
-}
-
-export type EvmSwapTransferStoreState = {
-    creditProcessorState?: CreditProcessorState;
-    eventState?: EvmTransferStoreState['eventState'];
-    isCheckingTransaction: boolean;
-    prepareState?: {
-        errorMessage?: string;
-        isBroadcasting?: boolean;
-        isOutdated?: boolean;
-        status: PrepareStateStatus;
-    };
-    transferState?: EvmTransferStoreState['transferState'];
-    swapState?: {
-        deployer?: Address;
-        errorMessage?: string;
-        isCanceling?: boolean;
-        isProcessing?: boolean;
-        isStuck?: boolean;
-        isWithdrawing?: boolean;
-        owner?: Address;
-        status: SwapStateStatus;
-        tokenBalance?: string;
-        tokenWallet?: Address;
-        everBalance?: string;
-        weverBalance?: string;
-        weverWallet?: Address;
-    };
-}
-
-export type EvmHiddenSwapTransferStoreData = EvmSwapTransferStoreData & {
-    contractAddress?: Address;
-    creditFactoryFee?: string;
-    encodedEvent?: string;
-    everscaleAddress?: string;
-    maxTransferFee?: string;
-    minTransferFee?: string;
-    pairAddress?: Address;
-    pairState?: FullContractState;
-    pipelineCredit?: Pipeline;
-    pipelineDefault?: Pipeline;
-    swapAmount?: string;
-    tokenAmount?: string;
-    withdrawalId?: string;
-}
-
-export type EvmHiddenSwapTransferStoreState = EvmSwapTransferStoreState & {
-    secondEventState?: EverscaleTransferStoreState['eventState'];
-    secondPrepareState?: EverscaleTransferStoreState['prepareState'];
-    releaseState?: EverscaleTransferStoreState['releaseState'];
-}
-
-export type EverscaleTransferQueryParams = {
+export type EverscaleTransferUrlParams = TransferUrlBaseParams & {
     contractAddress: string;
-    depositType?: string;
-    fromId: string;
-    fromType: NetworkType;
-    toId: string;
-    toType: NetworkType;
 }
 
-export type EverscaleTransferStoreData = {
-    amount: string;
-    chainId?: string;
-    encodedEvent?: string;
-    leftAddress?: string;
-    pipeline?: Pipeline;
-    rightAddress?: string;
-    token?: BridgeAsset;
-    withdrawalId?: string;
-    pendingWithdrawalId?: string;
-    pendingWithdrawalStatus?: PendingWithdrawalStatus;
-    pendingWithdrawalBounty?: string;
+export type SolanaTransferUrlParams = TransferUrlBaseParams & {
+    txSignature: string;
 }
 
-export type EverscaleTransferStoreState = {
-    eventState?: {
-        confirmations: number;
-        errorMessage?: string;
-        requiredConfirmations: number;
-        roundNumber?: number;
-        status: EventStateStatus;
-    };
-    isCheckingContract: boolean;
-    isPendingWithdrawalSynced?: boolean;
-    prepareState?: {
-        errorMessage?: string;
-        status: PrepareStateStatus;
-    };
-    releaseState?: {
-        errorMessage?: string;
-        isInsufficientVaultBalance?: boolean;
-        isPendingClosing?: boolean;
-        isPendingWithdrawal?: boolean;
-        isReleased?: boolean;
-        isSettingWithdrawBounty?: boolean;
-        status: ReleaseStateStatus;
-        ttl?: number;
-    };
-}
 
 export type TransferSummaryData = {
     amount?: string;
@@ -233,7 +112,7 @@ export type TransferSummaryData = {
     rightAddress?: string;
     rightNetwork?: NetworkShape;
     swapAmount?: string;
-    token?: (EverscaleToken | EvmToken);
+    token?: BridgeAsset;
     tokenAmount?: string;
     withdrawFee?: string;
     pendingWithdrawals?: PendingWithdrawal[];
@@ -243,6 +122,7 @@ export type TransferSummaryState = {
     isTransferPage?: boolean;
     isTransferReleased?: boolean;
 }
+
 
 export enum CreditProcessorState {
     Created,

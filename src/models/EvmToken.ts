@@ -24,7 +24,7 @@ export class EvmToken<
     ) {
         super()
 
-        this.setData(() => initialData)
+        this.setData(() => initialData as EvmTokenData)
 
         this.setState(() => ({
             isSyncing: false,

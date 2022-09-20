@@ -45,7 +45,15 @@ export function BlockScanAddressLink({
                 {children || sliceAddress(address)}
             </a>
             {external && (
-                <Icon icon="externalLink" ratio={0.75} />
+                <Icon
+                    component="a"
+                    href={`${baseUrl}address/${address}`}
+                    icon="externalLink"
+                    title={intl.formatMessage({ id: 'OPEN_IN_ETHERSCAN' })}
+                    target="_blank"
+                    ratio={0.75}
+                    rel="noopener noreferrer"
+                />
             )}
             {copy && (
                 <Copy text={address} id={`copy-${address}-${uniqueId()}`}>

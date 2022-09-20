@@ -1,9 +1,5 @@
-import { computed, makeObservable, runInAction } from 'mobx'
+import { computed, makeObservable } from 'mobx'
 
-import {
-    DEFAULT_TRANSFER_SUMMARY_STORE_DATA,
-    DEFAULT_TRANSFER_SUMMARY_STORE_STATE,
-} from '@/modules/Bridge/constants'
 import { PendingWithdrawal, TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
 import { BridgeAssetsService } from '@/stores/BridgeAssetsService'
@@ -35,19 +31,19 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             vaultBalance: computed,
             vaultBalanceDecimals: computed,
             evmTokenDecimals: computed,
+            solanaTokenDecimals: computed,
             isEverscaleBasedToken: computed,
             isEvmToEvm: computed,
             isEvmToEverscale: computed,
             isFromEverscale: computed,
             isEverscaleToEvm: computed,
+            isEverscaleToSolana: computed,
         })
     }
 
     public reset(): void {
-        runInAction(() => {
-            this.data = DEFAULT_TRANSFER_SUMMARY_STORE_DATA
-            this.state = DEFAULT_TRANSFER_SUMMARY_STORE_STATE
-        })
+        this.setData(() => ({}))
+        this.setState(() => ({ isTransferPage: false }))
     }
 
     public get amount(): TransferSummaryData['amount'] {
@@ -130,6 +126,9 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get vaultBalanceDecimals(): number | undefined {
+        if (this.isEverscaleToSolana) {
+            return this.pipeline?.solanaTokenDecimals
+        }
         if (this.isEvmToEvm) {
             return this.hiddenBridgePipeline?.evmTokenDecimals
         }
@@ -138,6 +137,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get evmTokenDecimals(): number | undefined {
         return this.pipeline?.evmTokenDecimals
+    }
+
+    public get solanaTokenDecimals(): number | undefined {
+        return this.pipeline?.solanaTokenDecimals
     }
 
     public get isEverscaleBasedToken(): boolean {
@@ -162,6 +165,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get isEverscaleToEvm(): boolean {
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
+    }
+
+    public get isEverscaleToSolana(): boolean {
+        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'solana'
     }
 
     public get pendingWithdrawals(): PendingWithdrawal[] | undefined {

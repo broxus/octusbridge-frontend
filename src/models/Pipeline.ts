@@ -1,5 +1,6 @@
 import { Address } from 'everscale-inpage-provider'
 import { computed, makeObservable } from 'mobx'
+import { PublicKey } from '@solana/web3.js'
 
 import { BaseStore } from '@/stores/BaseStore'
 
@@ -10,7 +11,7 @@ export type PipelineData = {
     chainId: string;
     depositFee?: string;
     depositType: string;
-    ethereumConfiguration: Address;
+    ethereumConfiguration?: Address;
     everscaleConfiguration?: Address;
     everscaleTokenAddress?: Address;
     evmTokenAddress?: string;
@@ -24,10 +25,16 @@ export type PipelineData = {
     mergeEverscaleTokenAddress?: Address;
     mergeEvmTokenAddress?: string;
     mergePoolAddress?: Address;
+    name?: string;
     proxyAddress: Address;
+    settings?: PublicKey;
+    solanaConfiguration?: Address;
+    solanaTokenAddress?: PublicKey;
+    solanaTokenBalance?: string;
+    solanaTokenDecimals?: number;
     to: string;
     tokenBase: string;
-    vaultAddress: string;
+    vaultAddress: string | PublicKey;
     vaultBalance?: string;
     vaultLimit?: string;
     withdrawFee?: string;
@@ -58,7 +65,13 @@ export class Pipeline extends BaseStore<PipelineData, any> {
             mergeEverscaleTokenAddress: computed,
             mergeEvmTokenAddress: computed,
             mergePoolAddress: computed,
+            name: computed,
             proxyAddress: computed,
+            settings: computed,
+            solanaConfiguration: computed,
+            solanaTokenAddress: computed,
+            solanaTokenBalance: computed,
+            solanaTokenDecimals: computed,
             to: computed,
             tokenBase: computed,
             vaultAddress: computed,
@@ -150,8 +163,32 @@ export class Pipeline extends BaseStore<PipelineData, any> {
         return this.data.mergePoolAddress
     }
 
+    public get name(): PipelineData['name'] {
+        return this.data.name
+    }
+
     public get proxyAddress(): PipelineData['proxyAddress'] {
         return this.data.proxyAddress
+    }
+
+    public get settings(): PipelineData['settings'] {
+        return this.data.settings
+    }
+
+    public get solanaConfiguration(): PipelineData['solanaConfiguration'] {
+        return this.data.solanaConfiguration
+    }
+
+    public get solanaTokenAddress(): PipelineData['solanaTokenAddress'] {
+        return this.data.solanaTokenAddress
+    }
+
+    public get solanaTokenBalance(): PipelineData['solanaTokenBalance'] {
+        return this.data.solanaTokenBalance
+    }
+
+    public get solanaTokenDecimals(): PipelineData['solanaTokenDecimals'] {
+        return this.data.solanaTokenDecimals
     }
 
     public get to(): PipelineData['to'] {

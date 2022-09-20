@@ -45,11 +45,10 @@ export function Amount(): JSX.Element {
                                         {(summary.amount && summary.amount !== '0')
                                             ? formattedTokenAmount(
                                                 new BigNumber(summary.amount || 0)
-                                                    .shiftedBy(-(summary.token?.decimals || 0))
                                                     .minus(summary.withdrawFee || 0)
                                                     .toFixed(),
                                                 undefined,
-                                                { preserve: true },
+                                                { preserve: true, roundOn: false },
                                             )
                                             : '–'}
                                     </b>
@@ -65,24 +64,10 @@ export function Amount(): JSX.Element {
                                         {(summary.amount && summary.amount !== '0')
                                             ? formattedTokenAmount(
                                                 new BigNumber(summary.amount || 0)
-                                                    .shiftedBy(-(summary.token?.decimals || 0))
                                                     .minus(summary.depositFee || 0)
                                                     .toFixed(),
                                                 undefined,
-                                                { preserve: true },
-                                            )
-                                            : '–'}
-                                    </b>
-                                )
-
-                            case summary.isEvmToEvm || (summary.isFromEvm && summary.pipeline?.depositType !== 'credit'):
-                                return (
-                                    <b className="text-lg text-truncate">
-                                        {(summary.amount && summary.amount !== '0')
-                                            ? formattedTokenAmount(
-                                                summary.amount,
-                                                summary.evmTokenDecimals,
-                                                { preserve: true },
+                                                { preserve: true, roundOn: false },
                                             )
                                             : '–'}
                                     </b>
@@ -94,8 +79,8 @@ export function Amount(): JSX.Element {
                                         {(summary.amount && summary.amount !== '0')
                                             ? formattedTokenAmount(
                                                 summary.amount,
-                                                summary.token?.decimals,
-                                                { preserve: true },
+                                                undefined,
+                                                { preserve: true, roundOn: false },
                                             )
                                             : '–'}
                                     </b>

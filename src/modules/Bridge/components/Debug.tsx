@@ -3,11 +3,10 @@ import { Observer } from 'mobx-react-lite'
 
 import { useBridge } from '@/modules/Bridge/providers'
 import {
-    findNetwork,
-    formattedAmount,
+    findNetwork, formattedTokenAmount,
     getEverscaleMainNetwork,
     isEverscaleAddressValid,
-    isEvmAddressValid,
+    isEvmAddressValid, isSolanaAddressValid,
     sliceAddress,
 } from '@/utils'
 
@@ -34,6 +33,9 @@ export function Debug(): JSX.Element {
                                 {Object.keys({ ...pipeline?.toJSON() }).sort().map(key => {
                                     // @ts-ignore
                                     const value = pipeline?.toJSON()[key]
+                                    if (value === undefined) {
+                                        return null
+                                    }
                                     return (
                                         <li style={{ fontSize: 13, padding: '5px 0' }} key={key}>
                                             <span className="text-muted">{`${key}: `}</span>
@@ -48,8 +50,11 @@ export function Debug(): JSX.Element {
                                                     case 'mergeEvmTokenAddress':
                                                     case 'mergePoolAddress':
                                                     case 'proxyAddress':
+                                                    case 'settings':
+                                                    case 'solanaConfiguration':
+                                                    case 'solanaTokenAddress':
                                                     case 'vaultAddress': {
-                                                        const address = value?.toString?.()
+                                                        const address = value?.toString()
                                                         let href = ''
                                                         if (isEverscaleAddressValid(address)) {
                                                             href = `${everscaleMainnet?.explorerBaseUrl || ''}accounts/${address}`
@@ -64,6 +69,12 @@ export function Debug(): JSX.Element {
                                                                 href = `${network?.explorerBaseUrl}address/${address}`
                                                             }
                                                         }
+                                                        if (isSolanaAddressValid(address)) {
+                                                            if (isFromEverscale) {
+                                                                const network = findNetwork(rightNetwork.chainId, 'solana')
+                                                                href = `${network?.explorerBaseUrl}address/${address}`
+                                                            }
+                                                        }
                                                         return (
                                                             <a href={href} rel="noreferrer noopener" target="_blank">
                                                                 <code>
@@ -74,13 +85,31 @@ export function Debug(): JSX.Element {
                                                     }
 
                                                     case 'evmTokenBalance':
+                                                        return (
+                                                            <code>
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.evmTokenDecimals,
+                                                                )}
+                                                            </code>
+                                                        )
+                                                    case 'solanaTokenBalance':
+                                                        return (
+                                                            <code>
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.solanaTokenDecimals,
+                                                                )}
+                                                            </code>
+                                                        )
                                                     case 'vaultBalance':
                                                     case 'vaultLimit':
                                                         return (
                                                             <code>
-                                                                {formattedAmount(
-                                                                    value?.toString?.(),
-                                                                    pipeline?.evmTokenDecimals,
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.evmTokenDecimals
+                                                                    ?? pipeline?.solanaTokenDecimals,
                                                                 )}
                                                             </code>
                                                         )
@@ -88,13 +117,13 @@ export function Debug(): JSX.Element {
                                                     case 'depositFee':
                                                     case 'withdrawFee':
                                                         return (
-                                                            <code>{value?.toString?.()}</code>
+                                                            <code>{value?.toString()}</code>
                                                         )
 
                                                     default:
                                                         return (
                                                             <code>
-                                                                {value?.toString?.()}
+                                                                {value?.toString()}
                                                             </code>
                                                         )
                                                 }
@@ -124,6 +153,9 @@ export function Debug(): JSX.Element {
                                 {Object.keys({ ...pipeline?.toJSON() }).sort().map(key => {
                                     // @ts-ignore
                                     const value = pipeline?.toJSON()[key]
+                                    if (value === undefined) {
+                                        return null
+                                    }
                                     return (
                                         <li style={{ fontSize: 13, padding: '5px 0' }} key={key}>
                                             <span className="text-muted">{`${key}: `}</span>
@@ -138,8 +170,9 @@ export function Debug(): JSX.Element {
                                                     case 'mergeEvmTokenAddress':
                                                     case 'mergePoolAddress':
                                                     case 'proxyAddress':
+                                                    case 'solanaConfiguration':
                                                     case 'vaultAddress': {
-                                                        const address = value?.toString?.()
+                                                        const address = value?.toString()
                                                         let href = ''
                                                         if (isEverscaleAddressValid(address)) {
                                                             href = `${everscaleMainnet?.explorerBaseUrl || ''}accounts/${address}`
@@ -164,13 +197,31 @@ export function Debug(): JSX.Element {
                                                     }
 
                                                     case 'evmTokenBalance':
+                                                        return (
+                                                            <code>
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.evmTokenDecimals,
+                                                                )}
+                                                            </code>
+                                                        )
+                                                    case 'solanaTokenBalance':
+                                                        return (
+                                                            <code>
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.solanaTokenDecimals,
+                                                                )}
+                                                            </code>
+                                                        )
                                                     case 'vaultBalance':
                                                     case 'vaultLimit':
                                                         return (
                                                             <code>
-                                                                {formattedAmount(
-                                                                    value?.toString?.(),
-                                                                    pipeline?.evmTokenDecimals,
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.evmTokenDecimals
+                                                                    ?? pipeline?.solanaTokenDecimals,
                                                                 )}
                                                             </code>
                                                         )
@@ -178,13 +229,13 @@ export function Debug(): JSX.Element {
                                                     case 'depositFee':
                                                     case 'withdrawFee':
                                                         return (
-                                                            <code>{value?.toString?.()}</code>
+                                                            <code>{value?.toString()}</code>
                                                         )
 
                                                     default:
                                                         return (
                                                             <code>
-                                                                {value?.toString?.()}
+                                                                {value?.toString()}
                                                             </code>
                                                         )
                                                 }
