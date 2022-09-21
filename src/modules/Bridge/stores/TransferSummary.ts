@@ -38,6 +38,7 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             isFromEverscale: computed,
             isEverscaleToEvm: computed,
             isEverscaleToSolana: computed,
+            isSolanaToEverscale: computed,
         })
     }
 
@@ -126,7 +127,7 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get vaultBalanceDecimals(): number | undefined {
-        if (this.isEverscaleToSolana) {
+        if (this.isEverscaleToSolana || this.isSolanaToEverscale) {
             return this.pipeline?.solanaTokenDecimals
         }
         if (this.isEvmToEvm) {
@@ -169,6 +170,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get isEverscaleToSolana(): boolean {
         return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'solana'
+    }
+
+    public get isSolanaToEverscale(): boolean {
+        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'everscale'
     }
 
     public get pendingWithdrawals(): PendingWithdrawal[] | undefined {

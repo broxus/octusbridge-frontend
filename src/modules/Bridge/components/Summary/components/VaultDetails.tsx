@@ -20,7 +20,7 @@ export function VaultDetails(): JSX.Element {
                     baseUrl = summary.rightNetwork?.explorerBaseUrl as string
                     vaultAddress = summary.hiddenBridgePipeline?.vaultAddress as string
                 }
-                else if (summary.isFromEvm) {
+                else if (summary.isFromEvm || summary.isSolanaToEverscale) {
                     baseUrl = summary.leftNetwork?.explorerBaseUrl as string
                 }
                 return (
