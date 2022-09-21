@@ -45,6 +45,7 @@ export default {
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
     EVM_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'EVM network',
     SOLANA_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'Solana',
+    SOLANA_WALLET_CONNECT_BTN_TEXT: 'Connect wallet',
 
     CONNECTION_TROUBLE_TITLE: 'Connection troubles',
     CONNECTION_TROUBLE_NOTE: 'At the moment we have found some problems with the network connection. Try again later or change your RPC settings',

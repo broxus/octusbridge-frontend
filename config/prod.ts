@@ -85,7 +85,7 @@ export const networks: NetworkShape[] = [
         id: 'solana-1',
         label: 'Solana',
         name: 'Solana',
-        rpcUrl: 'https://rpc.ankr.com/solana',
+        rpcUrl: 'https://api.mainnet-beta.solana.com/',
         type: 'solana',
     },
 ]

@@ -74,7 +74,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
                             onClick={solanaWallet.connect}
                         >
                             {intl.formatMessage({
-                                id: 'EVM_WALLET_CONNECT_BTN_TEXT',
+                                id: 'SOLANA_WALLET_CONNECT_BTN_TEXT',
                             })}
                         </Button>
                     )

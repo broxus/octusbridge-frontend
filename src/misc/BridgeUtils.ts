@@ -1,3 +1,5 @@
+import { Connection, PublicKey } from '@solana/web3.js'
+import { getMint } from '@solana/spl-token'
 import BigNumber from 'bignumber.js'
 import { Address } from 'everscale-inpage-provider'
 import type {
@@ -146,6 +148,10 @@ export abstract class BridgeUtils {
 
     public static async getEvmTokenTotalSupply(tokenAddress: string, rpcUrl: string): Promise<string> {
         return erc20TokenContract(tokenAddress, rpcUrl).methods.totalSupply().call()
+    }
+
+    public static async getSolanaTokenDecimals(tokenAddress: PublicKey, rpcUrl: string): Promise<number> {
+        return (await getMint(new Connection(rpcUrl), tokenAddress)).decimals
     }
 
     public static async getAlienTokenRootMeta(

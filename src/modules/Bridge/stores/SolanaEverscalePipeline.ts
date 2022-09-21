@@ -8,6 +8,7 @@ import {
     toJS,
 } from 'mobx'
 import type { IReactionDisposer } from 'mobx'
+import { Connection } from '@solana/web3.js'
 
 import initBridge, { unpackDeposit, unpackTokenSettings } from '@/wasm/bridge'
 import rpc from '@/hooks/useRpcClient'
@@ -136,7 +137,7 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
         })
 
         try {
-            const txReceipt = await this.solanaWallet.connection?.getConfirmedTransaction(this.txSignature)
+            const txReceipt = await this.connection?.getParsedTransaction(this.txSignature)
 
             if (txReceipt == null) {
                 setTimeout(async () => {
@@ -190,7 +191,7 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
         })
 
         try {
-            const txReceipt = await this.solanaWallet.connection?.getConfirmedTransaction(this.txSignature)
+            const txReceipt = await this.connection?.getConfirmedTransaction(this.txSignature)
 
             if (txReceipt == null) {
                 await this.checkTransaction()
@@ -202,8 +203,8 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
             const settingsAccount = instruction.keys[7]
 
             const [depositInfo, tokenInfo] = await Promise.all([
-                this.solanaWallet.connection?.getAccountInfo(depositAccount.pubkey),
-                this.solanaWallet.connection?.getAccountInfo(settingsAccount.pubkey),
+                this.connection?.getAccountInfo(depositAccount.pubkey),
+                this.connection?.getAccountInfo(settingsAccount.pubkey),
             ])
 
             if (depositInfo == null || tokenInfo == null) {
@@ -428,6 +429,11 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
             clearTimeout(this.txPrepareUpdater)
             this.txPrepareUpdater = undefined
         }
+    }
+
+    protected get connection(): Connection {
+        const network = findNetwork(this.leftNetwork?.chainId as string, 'solana')
+        return new Connection(network?.rpcUrl as string, { commitment: 'finalized' })
     }
 
     public get pipeline(): SolanaEverscalePipelineData['pipeline'] {

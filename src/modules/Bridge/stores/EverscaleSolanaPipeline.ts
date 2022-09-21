@@ -1,5 +1,5 @@
 import { createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import BigNumber from 'bignumber.js'
 import bs58 from 'bs58'
 import { Address } from 'everscale-inpage-provider'
@@ -266,12 +266,12 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
             const rightAddressKey = new PublicKey(this.rightAddress)
             let transaction = new Transaction()
 
-            const account = (await this.solanaWallet.connection!.getParsedTokenAccountsByOwner(
+            const account = (await this.connection?.getParsedTokenAccountsByOwner(
                 rightAddressKey,
                 {
                     programId: TOKEN_PROGRAM_ID,
                 },
-            )).value.filter(
+            ))?.value.filter(
                 item => this.pipeline?.solanaTokenAddress?.equals(
                     new PublicKey(item.account.data.parsed.info.mint),
                 ),
@@ -324,7 +324,7 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
             transaction = transaction.add(ixFromRust(instruction))
             const signature = await this.solanaWallet.adapter.sendTransaction(transaction, this.solanaWallet.connection)
 
-            const latestBlockHash = await this.solanaWallet.connection.getLatestBlockhash()
+            const latestBlockHash = await this.connection?.getLatestBlockhash()
             await this.solanaWallet.connection.confirmTransaction({
                 blockhash: latestBlockHash.blockhash,
                 lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
@@ -390,7 +390,7 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
                         new PublicKey('RLoadKXJz5Nsj4YW6mefe1eNVdFUsZvxyinir7fpEeM'),
                     )
 
-                    const round = await this.solanaWallet.connection?.getAccountInfo(publicKey)
+                    const round = await this.connection?.getAccountInfo(publicKey)
 
                     await initRoundLoader()
 
@@ -402,7 +402,7 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
                 }
 
                 const firstIteration = this.releaseState?.isReleased === undefined
-                const isReleased = (await this.solanaWallet.connection?.getAccountInfo(
+                const isReleased = (await this.connection?.getAccountInfo(
                     new PublicKey(proposalAddress),
                 )) != null
 
@@ -493,6 +493,11 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
             clearTimeout(this.eventUpdater)
             this.eventUpdater = undefined
         }
+    }
+
+    protected get connection(): Connection {
+        const network = findNetwork(this.rightNetwork?.chainId as string, 'solana')
+        return new Connection(network?.rpcUrl as string, { commitment: 'finalized' })
     }
 
     public get amount(): EverscaleSolanaPipelineData['amount'] {

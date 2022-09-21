@@ -532,10 +532,10 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
     ): Promise<PipelineData | undefined> {
         const [fromNetworkType, fromChainId] = from.split('-')
         const [toNetworkType, toChainId] = to.split('-')
-        const isFromEverscale = fromNetworkType === 'everscale'
-        const isFromEvm = fromNetworkType === 'evm'
-        const isFromSolanaToEverscale = fromNetworkType === 'solana' && toNetworkType === 'everscale'
+        const isFromEverscaleToEvm = fromNetworkType === 'everscale' && toNetworkType === 'evm'
+        const isFromEvmToEverscale = fromNetworkType === 'evm' && toNetworkType === 'everscale'
         const isFromEverscaleToSolana = fromNetworkType === 'everscale' && toNetworkType === 'solana'
+        const isFromSolanaToEverscale = fromNetworkType === 'solana' && toNetworkType === 'everscale'
 
         const isEverscaleToken = isEverscaleAddressValid(root)
         const isEvmToken = isEvmAddressValid(root)
@@ -560,11 +560,17 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             pipeline = await this.resolveMultiPipeline(root.toLowerCase(), from, to, depositType)
         }
 
-        if (isFromEverscale) {
+        if (isFromEverscaleToEvm) {
             network = findNetwork(toChainId, 'evm')
         }
-        else if (isFromEvm) {
+        else if (isFromEvmToEverscale) {
             network = findNetwork(fromChainId, 'evm')
+        }
+        else if (isFromEverscaleToSolana) {
+            network = findNetwork(toChainId, 'solana')
+        }
+        else if (isFromSolanaToEverscale) {
+            network = findNetwork(fromChainId, 'solana')
         }
 
         // Fetch everscale configuration
@@ -655,32 +661,28 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             }
         }
 
+        if (network?.rpcUrl !== undefined && pipeline?.solanaTokenAddress !== undefined) {
+            try {
+                pipeline.solanaTokenDecimals = await BridgeUtils.getSolanaTokenDecimals(
+                    pipeline.solanaTokenAddress,
+                    network.rpcUrl,
+                )
+            }
+            catch (e) {
+                error(e)
+            }
+        }
+
         if (
             this.wallets.solanaWallet?.publicKey != null
             && this.wallets.solanaWallet?.connection != null
             && pipeline?.solanaTokenAddress !== undefined
         ) {
-            // try {
-            //     const tokenAmount = (await this.wallets.solanaWallet.connection.getTokenAccountBalance(
-            //         pipeline.solanaTokenAddress,
-            //     )).value
-            //     pipeline.solanaTokenBalance = tokenAmount.amount
-            //     pipeline.solanaTokenDecimals = tokenAmount.decimals
-            // }
-            // catch (e) {
-            //     error(e)
-            // }
-
-
             try {
-                const tokenAccount = (await this.wallets.solanaWallet.connection.getParsedTokenAccountsByOwner(
+                pipeline.solanaTokenBalance = (await this.wallets.solanaWallet.connection.getParsedTokenAccountsByOwner(
                     this.wallets.solanaWallet.publicKey,
-                    {
-                        mint: pipeline.solanaTokenAddress,
-                    },
-                )).value.pop()
-                pipeline.solanaTokenDecimals = tokenAccount?.account.data.parsed.info.tokenAmount.decimals ?? 0
-                pipeline.solanaTokenBalance = tokenAccount?.account.data.parsed.info.tokenAmount.amount || 0
+                    { mint: pipeline.solanaTokenAddress },
+                )).value.pop()?.account.data.parsed.info.tokenAmount.amount || 0
             }
             catch (e) {
                 error(e)
