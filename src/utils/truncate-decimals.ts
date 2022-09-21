@@ -10,7 +10,7 @@ export function truncateDecimals(value: string, decimals?: number): string | und
         return value
     }
 
-    if (decimals !== undefined && result.decimalPlaces() > decimals) {
+    if (decimals !== undefined && (result.decimalPlaces() ?? 0) > decimals) {
         return result.dp(decimals, BigNumber.ROUND_DOWN).toFixed()
     }
 
