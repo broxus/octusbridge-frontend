@@ -1109,8 +1109,8 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                 ...pipeline,
                                 chainId: oppositeVault.chainId,
                                 depositType: oppositeVault.depositType,
-                                ethereumConfiguration: assetVault.ethereumConfiguration
-                                    ? new Address(assetVault.ethereumConfiguration.toLowerCase())
+                                ethereumConfiguration: oppositeVault.ethereumConfiguration
+                                    ? new Address(oppositeVault.ethereumConfiguration.toLowerCase())
                                     : undefined,
                                 isNative: true,
                                 proxyAddress: new Address(oppositeAsset.proxy.toLowerCase()),
