@@ -1,4 +1,4 @@
-import { BaseSignerWalletAdapter, WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
+import { BaseSignerWalletAdapter, WalletReadyState } from '@solana/wallet-adapter-base'
 import type { Adapter } from '@solana/wallet-adapter-base'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js'
@@ -9,6 +9,7 @@ import { action, computed, makeObservable } from 'mobx'
 import { BaseStore } from '@/stores/BaseStore'
 import type { WalletNativeCoin } from '@/types'
 import { debug, error } from '@/utils'
+import { networks } from '@/config'
 
 
 export type SolanaWallet = {
@@ -415,18 +416,18 @@ export function useSolanaWallet(): SolanaWalletService {
             'color: #bae701',
             'color: #c5e4f3',
         )
-        const network = WalletAdapterNetwork.Mainnet
+        const network = networks.find(item => item.chainId === '1' && item.type === 'solana')
         service = new SolanaWalletService({
             decimals: 9,
             name: 'SOL',
             symbol: 'SOL',
         }, {
             adapters: [
-                new PhantomWalletAdapter({ network }),
+                new PhantomWalletAdapter(),
             ],
             autoConnect: true,
-            connectionConfig: { commitment: 'finalized' },
-            endpoint: clusterApiUrl(network),
+            connectionConfig: { commitment: 'confirmed' },
+            endpoint: network?.rpcUrl || clusterApiUrl('mainnet-beta'),
         })
     }
     return service
