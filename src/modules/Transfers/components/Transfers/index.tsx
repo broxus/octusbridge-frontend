@@ -11,9 +11,7 @@ import {
     TextFilter,
     TokenFilter,
 } from '@/components/common/Filters'
-import {
-    Actions, Header, Section, Title,
-} from '@/components/common/Section'
+import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import {
     useDateParam,
