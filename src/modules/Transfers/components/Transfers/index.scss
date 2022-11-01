@@ -1,0 +1,10 @@
+.transfers-filters {
+    display: flex;
+    align-items: center;
+    grid-gap: 12px;
+    justify-content: space-between;
+
+    @media (max-width: 767px) {
+        width: 100%;
+    }
+}

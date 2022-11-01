@@ -38,6 +38,7 @@ import { error } from '@/utils'
 import { Select } from '@/components/common/Select'
 import { Checkbox } from '@/components/common/Checkbox'
 
+import './index.scss'
 
 function TransfersListInner(): JSX.Element {
     const intl = useIntl()
@@ -262,7 +263,7 @@ function TransfersListInner(): JSX.Element {
                     })}
                 </Title>
 
-                <Actions>
+                <div className="transfers-filters">
                     {tonWallet.isReady && (
                         <Checkbox
                             checked={userAddress === tonWallet.address}
@@ -272,6 +273,7 @@ function TransfersListInner(): JSX.Element {
                             onChange={toggleUserTransfers}
                         />
                     )}
+
                     <Filters<TransfersFilters>
                         filters={{
                             fromId,
@@ -423,7 +425,7 @@ function TransfersListInner(): JSX.Element {
                             </>
                         )}
                     </Filters>
-                </Actions>
+                </div>
             </Header>
 
             <div className="card card--flat card--small">
