@@ -1,12 +1,17 @@
 import * as React from 'react'
 
 import { ProposalCreate } from '@/modules/Governance/ProposalCreate'
-import { ProposalCreateStoreProvider } from '@/modules/Governance/providers'
+import { ProposalCreateStoreProvider, UserDataProvider } from '@/modules/Governance/providers'
+import { DaoConfigProvider } from '@/modules/Governance/providers/DaoConfigProvider'
 
 export default function Page(): JSX.Element {
     return (
-        <ProposalCreateStoreProvider>
-            <ProposalCreate />
-        </ProposalCreateStoreProvider>
+        <DaoConfigProvider>
+            <UserDataProvider>
+                <ProposalCreateStoreProvider>
+                    <ProposalCreate />
+                </ProposalCreateStoreProvider>
+            </UserDataProvider>
+        </DaoConfigProvider>
     )
 }

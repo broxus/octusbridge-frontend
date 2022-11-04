@@ -1,14 +1,11 @@
 import * as React from 'react'
 
 import { UserDataStore } from '@/modules/Governance/stores'
-import { useTokensCache } from '@/stores/TokensCacheService'
-import { useEverWallet } from '@/stores/EverWalletService'
+import { TokensCacheService } from '@/stores/TokensCacheService'
+import { EverWalletService } from '@/stores/EverWalletService'
 
-export function useUserData(): UserDataStore {
+export function useUserData(wallet: EverWalletService, tokensCache: TokensCacheService): UserDataStore {
     const ref = React.useRef<UserDataStore>()
-    ref.current = ref.current || new UserDataStore(
-        useEverWallet(),
-        useTokensCache(),
-    )
+    ref.current = ref.current || new UserDataStore(wallet, tokensCache)
     return ref.current
 }

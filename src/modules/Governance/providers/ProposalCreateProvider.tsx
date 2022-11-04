@@ -2,17 +2,21 @@ import * as React from 'react'
 
 import { useProposalCreate } from '@/modules/Governance/hooks'
 import { ProposalCreateStore } from '@/modules/Governance/stores'
+import { useEverWallet } from '@/stores/EverWalletService'
+import { useContext } from '@/hooks'
+import { UserDataContext } from '@/modules/Governance/providers/UserDataProvider'
+import { DaoConfigContext } from '@/modules/Governance/providers/DaoConfigProvider'
 
 export const ProposalCreateContext = React.createContext<ProposalCreateStore | undefined>(undefined)
 
 export function useProposalCreateContext(): ProposalCreateStore {
-    const proposalCreateContext = React.useContext(ProposalCreateContext)
+    const ctx = React.useContext(ProposalCreateContext)
 
-    if (!proposalCreateContext) {
+    if (ctx === undefined) {
         throw new Error('Proposal create context must be defined')
     }
 
-    return proposalCreateContext
+    return ctx
 }
 
 type Props = {
@@ -22,7 +26,10 @@ type Props = {
 export function ProposalCreateStoreProvider({
     children,
 }: Props): JSX.Element {
-    const proposalCreate = useProposalCreate()
+    const wallet = useEverWallet()
+    const userData = useContext(UserDataContext)
+    const config = useContext(DaoConfigContext)
+    const proposalCreate = useProposalCreate(wallet, userData, config)
 
     React.useEffect(() => {
         proposalCreate.init()

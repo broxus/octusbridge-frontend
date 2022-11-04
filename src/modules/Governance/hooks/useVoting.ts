@@ -1,14 +1,10 @@
 import * as React from 'react'
 
-import { VotingStore } from '@/modules/Governance/stores'
-import { useUserData } from '@/modules/Governance/hooks/useUserData'
-import { useEverWallet } from '@/stores/EverWalletService'
+import { UserDataStore, VotingStore } from '@/modules/Governance/stores'
+import { EverWalletService } from '@/stores/EverWalletService'
 
-export function useVoting(): VotingStore {
+export function useVoting(wallet: EverWalletService, userData: UserDataStore): VotingStore {
     const ref = React.useRef<VotingStore>()
-    ref.current = ref.current || new VotingStore(
-        useEverWallet(),
-        useUserData(),
-    )
+    ref.current = ref.current || new VotingStore(wallet, userData)
     return ref.current
 }

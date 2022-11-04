@@ -1,16 +1,14 @@
 import * as React from 'react'
 
-import { ProposalCreateStore } from '@/modules/Governance/stores'
-import { useDaoConfig } from '@/modules/Governance/hooks/useDaoConfig'
-import { useUserData } from '@/modules/Governance/hooks/useUserData'
-import { useEverWallet } from '@/stores/EverWalletService'
+import { DaoConfigStore, ProposalCreateStore, UserDataStore } from '@/modules/Governance/stores'
+import { EverWalletService } from '@/stores/EverWalletService'
 
-export function useProposalCreate(): ProposalCreateStore {
+export function useProposalCreate(
+    wallet: EverWalletService,
+    userData: UserDataStore,
+    daoConfig: DaoConfigStore,
+): ProposalCreateStore {
     const ref = React.useRef<ProposalCreateStore>()
-    ref.current = ref.current || new ProposalCreateStore(
-        useEverWallet(),
-        useUserData(),
-        useDaoConfig(),
-    )
+    ref.current = ref.current || new ProposalCreateStore(wallet, userData, daoConfig)
     return ref.current
 }

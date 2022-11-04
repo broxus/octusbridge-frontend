@@ -2,6 +2,9 @@ import * as React from 'react'
 
 import { useVoting } from '@/modules/Governance/hooks'
 import { VotingStore } from '@/modules/Governance/stores'
+import { useEverWallet } from '@/stores/EverWalletService'
+import { useContext } from '@/hooks'
+import { UserDataContext } from '@/modules/Governance/providers/UserDataProvider'
 
 export const VotingContext = React.createContext<VotingStore | undefined>(undefined)
 
@@ -22,7 +25,9 @@ type Props = {
 export function VotingStoreProvider({
     children,
 }: Props): JSX.Element | null {
-    const voting = useVoting()
+    const wallet = useEverWallet()
+    const userData = useContext(UserDataContext)
+    const voting = useVoting(wallet, userData)
 
     React.useEffect(() => {
         voting.init()
@@ -30,7 +35,7 @@ export function VotingStoreProvider({
         return () => {
             voting.dispose()
         }
-    })
+    }, [])
 
     return (
         <VotingContext.Provider value={voting}>
