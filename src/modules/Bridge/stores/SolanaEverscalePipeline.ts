@@ -244,7 +244,7 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
                 return
             }
 
-            const amount = new BigNumber(deposit.event.data.amount || 0)
+            const amount = new BigNumber(BigInt(deposit.event.data.amount).toString(10) || 0)
                 .shiftedBy(-(this.pipeline?.solanaTokenDecimals ?? 0))
 
             const { blockTime, slot } = txReceipt
@@ -257,7 +257,7 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
             const eventData = await staticRpc.packIntoCell({
                 data: {
                     sender_add: `0x${Buffer.from(deposit.event.data.sender_address).toString('hex')}`,
-                    tokens: deposit.event.data.amount,
+                    tokens: BigInt(deposit.event.data.amount).toString(),
                     receiver_addr: new Address(`${targetWid}:${targetAddress}`),
                 },
                 structure: [
