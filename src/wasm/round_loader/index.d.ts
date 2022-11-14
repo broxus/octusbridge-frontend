@@ -247,104 +247,6 @@ export class Pubkey {
 */
   static findProgramAddress(seeds: any[], program_id: Pubkey): any;
 }
-export class SystemInstruction {
-  free(): void;
-/**
-* @param {Pubkey} from_pubkey
-* @param {Pubkey} to_pubkey
-* @param {bigint} lamports
-* @param {bigint} space
-* @param {Pubkey} owner
-* @returns {Instruction}
-*/
-  static createAccount(from_pubkey: Pubkey, to_pubkey: Pubkey, lamports: bigint, space: bigint, owner: Pubkey): Instruction;
-/**
-* @param {Pubkey} from_pubkey
-* @param {Pubkey} to_pubkey
-* @param {Pubkey} base
-* @param {string} seed
-* @param {bigint} lamports
-* @param {bigint} space
-* @param {Pubkey} owner
-* @returns {Instruction}
-*/
-  static createAccountWithSeed(from_pubkey: Pubkey, to_pubkey: Pubkey, base: Pubkey, seed: string, lamports: bigint, space: bigint, owner: Pubkey): Instruction;
-/**
-* @param {Pubkey} pubkey
-* @param {Pubkey} owner
-* @returns {Instruction}
-*/
-  static assign(pubkey: Pubkey, owner: Pubkey): Instruction;
-/**
-* @param {Pubkey} pubkey
-* @param {Pubkey} base
-* @param {string} seed
-* @param {Pubkey} owner
-* @returns {Instruction}
-*/
-  static assignWithSeed(pubkey: Pubkey, base: Pubkey, seed: string, owner: Pubkey): Instruction;
-/**
-* @param {Pubkey} from_pubkey
-* @param {Pubkey} to_pubkey
-* @param {bigint} lamports
-* @returns {Instruction}
-*/
-  static transfer(from_pubkey: Pubkey, to_pubkey: Pubkey, lamports: bigint): Instruction;
-/**
-* @param {Pubkey} from_pubkey
-* @param {Pubkey} from_base
-* @param {string} from_seed
-* @param {Pubkey} from_owner
-* @param {Pubkey} to_pubkey
-* @param {bigint} lamports
-* @returns {Instruction}
-*/
-  static transferWithSeed(from_pubkey: Pubkey, from_base: Pubkey, from_seed: string, from_owner: Pubkey, to_pubkey: Pubkey, lamports: bigint): Instruction;
-/**
-* @param {Pubkey} pubkey
-* @param {bigint} space
-* @returns {Instruction}
-*/
-  static allocate(pubkey: Pubkey, space: bigint): Instruction;
-/**
-* @param {Pubkey} address
-* @param {Pubkey} base
-* @param {string} seed
-* @param {bigint} space
-* @param {Pubkey} owner
-* @returns {Instruction}
-*/
-  static allocateWithSeed(address: Pubkey, base: Pubkey, seed: string, space: bigint, owner: Pubkey): Instruction;
-/**
-* @param {Pubkey} from_pubkey
-* @param {Pubkey} nonce_pubkey
-* @param {Pubkey} authority
-* @param {bigint} lamports
-* @returns {Array<any>}
-*/
-  static createNonceAccount(from_pubkey: Pubkey, nonce_pubkey: Pubkey, authority: Pubkey, lamports: bigint): Array<any>;
-/**
-* @param {Pubkey} nonce_pubkey
-* @param {Pubkey} authorized_pubkey
-* @returns {Instruction}
-*/
-  static advanceNonceAccount(nonce_pubkey: Pubkey, authorized_pubkey: Pubkey): Instruction;
-/**
-* @param {Pubkey} nonce_pubkey
-* @param {Pubkey} authorized_pubkey
-* @param {Pubkey} to_pubkey
-* @param {bigint} lamports
-* @returns {Instruction}
-*/
-  static withdrawNonceAccount(nonce_pubkey: Pubkey, authorized_pubkey: Pubkey, to_pubkey: Pubkey, lamports: bigint): Instruction;
-/**
-* @param {Pubkey} nonce_pubkey
-* @param {Pubkey} authorized_pubkey
-* @param {Pubkey} new_authority
-* @returns {Instruction}
-*/
-  static authorizeNonceAccount(nonce_pubkey: Pubkey, authorized_pubkey: Pubkey, new_authority: Pubkey): Instruction;
-}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -358,9 +260,11 @@ export interface InitOutput {
   readonly unpackSettings: (a: number, b: number, c: number) => void;
   readonly unpackRelayRound: (a: number, b: number, c: number) => void;
   readonly unpackRelayRoundProposal: (a: number, b: number, c: number) => void;
-  readonly __wbg_instructions_free: (a: number) => void;
-  readonly instructions_constructor: () => number;
-  readonly instructions_push: (a: number, b: number) => void;
+  readonly hash_constructor: (a: number, b: number) => void;
+  readonly hash_toString: (a: number, b: number) => void;
+  readonly hash_equals: (a: number, b: number) => number;
+  readonly hash_toBytes: (a: number, b: number) => void;
+  readonly init: () => void;
   readonly __wbg_pubkey_free: (a: number) => void;
   readonly pubkey_constructor: (a: number, b: number) => void;
   readonly pubkey_toString: (a: number, b: number) => void;
@@ -370,27 +274,25 @@ export interface InitOutput {
   readonly pubkey_createWithSeed: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly pubkey_createProgramAddress: (a: number, b: number, c: number, d: number) => void;
   readonly pubkey_findProgramAddress: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_instructions_free: (a: number) => void;
+  readonly instructions_constructor: () => number;
+  readonly instructions_push: (a: number, b: number) => void;
   readonly __wbg_instruction_free: (a: number) => void;
-  readonly init: () => void;
-  readonly hash_constructor: (a: number, b: number) => void;
-  readonly hash_toString: (a: number, b: number) => void;
-  readonly hash_equals: (a: number, b: number) => number;
-  readonly hash_toBytes: (a: number, b: number) => void;
   readonly __wbg_hash_free: (a: number) => void;
   readonly __wbg_message_free: (a: number) => void;
   readonly __wbg_get_message_recent_blockhash: (a: number) => number;
   readonly __wbg_set_message_recent_blockhash: (a: number, b: number) => void;
-  readonly systeminstruction_createAccount: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly systeminstruction_createAccountWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => number;
+  readonly systeminstruction_createAccount: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly systeminstruction_createAccountWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly systeminstruction_assign: (a: number, b: number) => number;
   readonly systeminstruction_assignWithSeed: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly systeminstruction_transfer: (a: number, b: number, c: number, d: number) => number;
-  readonly systeminstruction_transferWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly systeminstruction_allocate: (a: number, b: number, c: number) => number;
-  readonly systeminstruction_allocateWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly systeminstruction_createNonceAccount: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly systeminstruction_transfer: (a: number, b: number, c: number) => number;
+  readonly systeminstruction_transferWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly systeminstruction_allocate: (a: number, b: number) => number;
+  readonly systeminstruction_allocateWithSeed: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly systeminstruction_createNonceAccount: (a: number, b: number, c: number, d: number) => number;
   readonly systeminstruction_advanceNonceAccount: (a: number, b: number) => number;
-  readonly systeminstruction_withdrawNonceAccount: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly systeminstruction_withdrawNonceAccount: (a: number, b: number, c: number, d: number) => number;
   readonly systeminstruction_authorizeNonceAccount: (a: number, b: number, c: number) => number;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
@@ -399,14 +301,16 @@ export interface InitOutput {
   readonly __wbindgen_exn_store: (a: number) => void;
 }
 
+export type SyncInitInput = BufferSource | WebAssembly.Module;
 /**
-* Synchronously compiles the given `bytes` and instantiates the WebAssembly module.
+* Instantiates the given `module`, which can either be bytes or
+* a precompiled `WebAssembly.Module`.
 *
-* @param {BufferSource} bytes
+* @param {SyncInitInput} module
 *
 * @returns {InitOutput}
 */
-export function initSync(bytes: BufferSource): InitOutput;
+export function initSync(module: SyncInitInput): InitOutput;
 
 /**
 * If `module_or_path` is {RequestInfo} or {URL}, makes a request and
