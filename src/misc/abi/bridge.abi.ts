@@ -726,9 +726,51 @@ export abstract class BridgeAbi {
                 outputs: [],
             },
             {
+                name: 'setFlags',
+                inputs: [
+                    { name: '_flags', type: 'uint64' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'setEventInitialBalance',
+                inputs: [
+                    { name: 'eventInitialBalance', type: 'uint64' },
+                ],
+                outputs: [],
+            },
+            {
                 name: 'deployEvent',
                 inputs: [
-                    { components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'eventVoteData', type: 'tuple' },
+                    {
+                        components: [{ name: 'eventTransaction', type: 'uint256' }, {
+                            name: 'eventIndex',
+                            type: 'uint32',
+                        }, { name: 'eventData', type: 'cell' }, {
+                            name: 'eventBlockNumber',
+                            type: 'uint32',
+                        }, { name: 'eventBlock', type: 'uint256' }],
+                        name: 'eventVoteData',
+                        type: 'tuple',
+                    },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'deployEvents',
+                inputs: [
+                    {
+                        components: [{ name: 'eventTransaction', type: 'uint256' }, {
+                            name: 'eventIndex',
+                            type: 'uint32',
+                        }, { name: 'eventData', type: 'cell' }, {
+                            name: 'eventBlockNumber',
+                            type: 'uint32',
+                        }, { name: 'eventBlock', type: 'uint256' }],
+                        name: 'eventsVoteData',
+                        type: 'tuple[]',
+                    },
+                    { name: 'values', type: 'uint128[]' },
                 ],
                 outputs: [],
             },
@@ -736,7 +778,17 @@ export abstract class BridgeAbi {
                 name: 'deriveEventAddress',
                 inputs: [
                     { name: 'answerId', type: 'uint32' },
-                    { components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'eventVoteData', type: 'tuple' },
+                    {
+                        components: [{ name: 'eventTransaction', type: 'uint256' }, {
+                            name: 'eventIndex',
+                            type: 'uint32',
+                        }, { name: 'eventData', type: 'cell' }, {
+                            name: 'eventBlockNumber',
+                            type: 'uint32',
+                        }, { name: 'eventBlock', type: 'uint256' }],
+                        name: 'eventVoteData',
+                        type: 'tuple',
+                    },
                 ],
                 outputs: [
                     { name: 'eventContract', type: 'address' },
@@ -748,8 +800,28 @@ export abstract class BridgeAbi {
                     { name: 'answerId', type: 'uint32' },
                 ],
                 outputs: [
-                    { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: '_basicConfiguration', type: 'tuple' },
-                    { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: '_networkConfiguration', type: 'tuple' },
+                    {
+                        components: [{ name: 'eventABI', type: 'bytes' }, {
+                            name: 'staking',
+                            type: 'address',
+                        }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }],
+                        name: '_basicConfiguration',
+                        type: 'tuple',
+                    },
+                    {
+                        components: [{ name: 'chainId', type: 'uint32' }, {
+                            name: 'eventEmitter',
+                            type: 'uint160',
+                        }, { name: 'eventBlocksToConfirm', type: 'uint16' }, {
+                            name: 'proxy',
+                            type: 'address',
+                        }, { name: 'startBlockNumber', type: 'uint32' }, {
+                            name: 'endBlockNumber',
+                            type: 'uint32',
+                        }],
+                        name: '_networkConfiguration',
+                        type: 'tuple',
+                    },
                     { name: '_meta', type: 'cell' },
                 ],
             },
@@ -763,9 +835,38 @@ export abstract class BridgeAbi {
                 ],
             },
             {
+                name: 'getFlags',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: '_flags', type: 'uint64' },
+                ],
+            },
+            {
                 name: 'onEventConfirmed',
                 inputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData', type: 'tuple' },
+                    {
+                        components: [{
+                            components: [{
+                                name: 'eventTransaction',
+                                type: 'uint256',
+                            }, { name: 'eventIndex', type: 'uint32' }, {
+                                name: 'eventData',
+                                type: 'cell',
+                            }, { name: 'eventBlockNumber', type: 'uint32' }, {
+                                name: 'eventBlock',
+                                type: 'uint256',
+                            }],
+                            name: 'voteData',
+                            type: 'tuple',
+                        }, { name: 'configuration', type: 'address' }, {
+                            name: 'staking',
+                            type: 'address',
+                        }, { name: 'chainId', type: 'uint32' }],
+                        name: 'eventInitData',
+                        type: 'tuple',
+                    },
                     { name: 'gasBackAddress', type: 'address' },
                 ],
                 outputs: [],
@@ -773,7 +874,27 @@ export abstract class BridgeAbi {
             {
                 name: 'onEventConfirmedExtended',
                 inputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'eventInitData', type: 'tuple' },
+                    {
+                        components: [{
+                            components: [{
+                                name: 'eventTransaction',
+                                type: 'uint256',
+                            }, { name: 'eventIndex', type: 'uint32' }, {
+                                name: 'eventData',
+                                type: 'cell',
+                            }, { name: 'eventBlockNumber', type: 'uint32' }, {
+                                name: 'eventBlock',
+                                type: 'uint256',
+                            }],
+                            name: 'voteData',
+                            type: 'tuple',
+                        }, { name: 'configuration', type: 'address' }, {
+                            name: 'staking',
+                            type: 'address',
+                        }, { name: 'chainId', type: 'uint32' }],
+                        name: 'eventInitData',
+                        type: 'tuple',
+                    },
                     { name: '_meta', type: 'cell' },
                     { name: 'gasBackAddress', type: 'address' },
                 ],
@@ -802,14 +923,41 @@ export abstract class BridgeAbi {
                 name: 'basicConfiguration',
                 inputs: [],
                 outputs: [
-                    { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: 'basicConfiguration', type: 'tuple' },
+                    {
+                        components: [{ name: 'eventABI', type: 'bytes' }, {
+                            name: 'staking',
+                            type: 'address',
+                        }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }],
+                        name: 'basicConfiguration',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
                 name: 'networkConfiguration',
                 inputs: [],
                 outputs: [
-                    { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: 'networkConfiguration', type: 'tuple' },
+                    {
+                        components: [{ name: 'chainId', type: 'uint32' }, {
+                            name: 'eventEmitter',
+                            type: 'uint160',
+                        }, { name: 'eventBlocksToConfirm', type: 'uint16' }, {
+                            name: 'proxy',
+                            type: 'address',
+                        }, { name: 'startBlockNumber', type: 'uint32' }, {
+                            name: 'endBlockNumber',
+                            type: 'uint32',
+                        }],
+                        name: 'networkConfiguration',
+                        type: 'tuple',
+                    },
+                ],
+            },
+            {
+                name: 'flags',
+                inputs: [],
+                outputs: [
+                    { name: 'flags', type: 'uint64' },
                 ],
             },
             {
@@ -822,10 +970,25 @@ export abstract class BridgeAbi {
         ],
         data: [
             {
-                components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], key: 1, name: 'basicConfiguration', type: 'tuple',
+                components: [{ name: 'eventABI', type: 'bytes' }, {
+                    name: 'staking',
+                    type: 'address',
+                }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }],
+                key: 1,
+                name: 'basicConfiguration',
+                type: 'tuple',
             },
             {
-                components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], key: 2, name: 'networkConfiguration', type: 'tuple',
+                components: [{ name: 'chainId', type: 'uint32' }, {
+                    name: 'eventEmitter',
+                    type: 'uint160',
+                }, { name: 'eventBlocksToConfirm', type: 'uint16' }, {
+                    name: 'proxy',
+                    type: 'address',
+                }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }],
+                key: 2,
+                name: 'networkConfiguration',
+                type: 'tuple',
             },
         ],
         events: [
@@ -850,8 +1013,26 @@ export abstract class BridgeAbi {
             { name: '_timestamp', type: 'uint64' },
             { name: '_constructorFlag', type: 'bool' },
             { name: 'owner', type: 'address' },
-            { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: 'basicConfiguration', type: 'tuple' },
-            { components: [{ name: 'chainId', type: 'uint32' }, { name: 'eventEmitter', type: 'uint160' }, { name: 'eventBlocksToConfirm', type: 'uint16' }, { name: 'proxy', type: 'address' }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }], name: 'networkConfiguration', type: 'tuple' },
+            {
+                components: [{ name: 'eventABI', type: 'bytes' }, {
+                    name: 'staking',
+                    type: 'address',
+                }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }],
+                name: 'basicConfiguration',
+                type: 'tuple',
+            },
+            {
+                components: [{ name: 'chainId', type: 'uint32' }, {
+                    name: 'eventEmitter',
+                    type: 'uint160',
+                }, { name: 'eventBlocksToConfirm', type: 'uint16' }, {
+                    name: 'proxy',
+                    type: 'address',
+                }, { name: 'startBlockNumber', type: 'uint32' }, { name: 'endBlockNumber', type: 'uint32' }],
+                name: 'networkConfiguration',
+                type: 'tuple',
+            },
+            { name: 'flags', type: 'uint64' },
             { name: 'meta', type: 'cell' },
         ],
     } as const
@@ -882,6 +1063,22 @@ export abstract class BridgeAbi {
                 name: 'setEndTimestamp',
                 inputs: [
                     { name: 'endTimestamp', type: 'uint32' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setFlags',
+                inputs: [
+                    { name: '_flags', type: 'uint64' },
+                ],
+                outputs: [
+                ],
+            },
+            {
+                name: 'setEventInitialBalance',
+                inputs: [
+                    { name: 'eventInitialBalance', type: 'uint64' },
                 ],
                 outputs: [
                 ],
@@ -922,6 +1119,15 @@ export abstract class BridgeAbi {
                 ],
                 outputs: [
                     { name: '_type', type: 'uint8' },
+                ],
+            },
+            {
+                name: 'getFlags',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                ],
+                outputs: [
+                    { name: '_flags', type: 'uint64' },
                 ],
             },
             {
@@ -971,6 +1177,14 @@ export abstract class BridgeAbi {
                     { name: 'meta', type: 'cell' },
                 ],
             },
+            {
+                name: 'flags',
+                inputs: [
+                ],
+                outputs: [
+                    { name: 'flags', type: 'uint64' },
+                ],
+            },
         ],
         data: [
             {
@@ -1007,6 +1221,7 @@ export abstract class BridgeAbi {
             { components: [{ name: 'eventABI', type: 'bytes' }, { name: 'staking', type: 'address' }, { name: 'eventInitialBalance', type: 'uint64' }, { name: 'eventCode', type: 'cell' }], name: 'basicConfiguration', type: 'tuple' },
             { components: [{ name: 'eventEmitter', type: 'address' }, { name: 'proxy', type: 'uint160' }, { name: 'startTimestamp', type: 'uint32' }, { name: 'endTimestamp', type: 'uint32' }], name: 'networkConfiguration', type: 'tuple' },
             { name: 'meta', type: 'cell' },
+            { name: 'flags', type: 'uint64' },
         ],
     } as const
 

@@ -163,6 +163,20 @@ export function everscaleEventNativeContract(
     return new provider.Contract(MultiVaultAbi.EverscaleEventNative, resolveEverscaleAddress(address))
 }
 
+export function legacyEverscaleEventAlienContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof MultiVaultAbi.LegacyEverscaleEventAlien> {
+    return new provider.Contract(MultiVaultAbi.LegacyEverscaleEventAlien, resolveEverscaleAddress(address))
+}
+
+export function legacyEverscaleEventNativeContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof MultiVaultAbi.LegacyEverscaleEventNative> {
+    return new provider.Contract(MultiVaultAbi.LegacyEverscaleEventNative, resolveEverscaleAddress(address))
+}
+
 export function solanaTokenTransferProxyContract(
     address: Address | string,
     provider = staticRpc,

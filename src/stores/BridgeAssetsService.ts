@@ -1053,7 +1053,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                 debug('> EVM token address fetched by MultiVault => ', sliceAddress(pipeline.evmTokenAddress))
                             }
                             catch (e) {
-                                error('> EVM token address fetched by MultiVault with error, e')
+                                error('> EVM token address fetched by MultiVault with error', e)
                                 return undefined
                             }
                         }
