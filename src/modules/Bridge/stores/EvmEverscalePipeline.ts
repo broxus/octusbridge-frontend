@@ -158,16 +158,6 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
             }
             else {
                 this.setState('isCheckingTransaction', false)
-            }
-        }
-        catch (e) {
-            error('Check transaction error', e)
-            this.setState('isCheckingTransaction', false)
-            return
-        }
-
-        if (!this.state.isCheckingTransaction) {
-            try {
                 switch (true) {
                     case this.transferState?.status === 'confirmed' && this.prepareState?.status !== 'confirmed':
                         await this.runPrepareUpdater()
@@ -177,9 +167,11 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                         await this.resolve()
                 }
             }
-            catch (e) {
-                error('Resolve error', e)
-            }
+        }
+        catch (e) {
+            error('Check transaction error', e)
+            this.setState('isCheckingTransaction', false)
+
         }
     }
 
@@ -225,7 +217,11 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                 return
             }
 
+            debug('Deposit Transfer Logs', depositLog)
+
             if (userDepositLogs.length > 0) {
+                debug('User Deposit Logs', userDepositLogs)
+
                 const pendingWithdrawals: PendingWithdrawal[] = []
                 userDepositLogs.forEach(item => {
                     if (item.events[4].value !== '0x0000000000000000000000000000000000000000') {
@@ -244,8 +240,14 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
 
             let token: BridgeAsset | undefined
 
+            const depositAmount = depositLog.events.find(i => i.name === 'amount')?.value ?? '0'
+            const depositFee = depositLog.events.find(i => i.name === 'fee')?.value ?? '0'
+
             if (alienTransfer != null) {
-                const root = `0x${new BigNumber(alienTransfer.events[1].value).toString(16).padStart(40, '0')}`.toLowerCase()
+                debug('Alien Transfer Logs', alienTransfer)
+                const root = `0x${new BigNumber(alienTransfer.events.find(
+                    value => value.name === 'base_token',
+                )?.value)?.toString(16).padStart(40, '0')}`.toLowerCase()
                 const { chainId, type } = this.leftNetwork
                 token = this.bridgeAssets.get(type, chainId, root)
 
@@ -297,28 +299,29 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     this.setData('pipeline', pipeline ? new Pipeline(pipeline) : undefined)
                 }
 
-                if (depositLog.events[5].value !== '0') {
+                if (depositAmount !== '0') {
                     this.pipeline?.setData(
                         'depositFee',
-                        new BigNumber(depositLog.events[6].value || 0)
-                            .div(depositLog.events[5].value || 0)
+                        new BigNumber(depositFee ?? 0)
+                            .div(depositAmount || 1)
                             .multipliedBy(10000)
                             .dp(0, BigNumber.ROUND_DOWN)
                             .toFixed(),
                     )
                 }
 
-                const targetWid = alienTransfer.events[6].value
-                const targetAddress = alienTransfer.events[7].value
+                const targetWid = alienTransfer.events.find(i => i.name === 'recipient_wid')?.value
+                const targetAddress = alienTransfer.events.find(i => i.name === 'recipient_addr')?.value
 
                 this.setData({
-                    amount: new BigNumber(depositLog.events[5].value || 0).shiftedBy(-token.decimals).toFixed(),
+                    amount: new BigNumber(depositAmount || 0).shiftedBy(-token.decimals).toFixed(),
                     leftAddress: txReceipt.from.toLowerCase(),
                     rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
                 })
             }
             else if (nativeTransfer) {
-                const root = depositLog.events[2].value.toLowerCase()
+                debug('Native Transfer Logs', nativeTransfer)
+                const root = depositLog.events.find(i => i.name === 'token')?.value.toLowerCase()
                 const { chainId, type } = this.leftNetwork
                 token = this.bridgeAssets.get(type, chainId, root)
 
@@ -343,7 +346,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                         }
                     }
                     catch (e) {
-                        //
+                        error(e)
                     }
                 }
 
@@ -370,22 +373,26 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
                 }
 
-                if (depositLog.events[5].value !== '0') {
+                if (depositAmount !== '0') {
                     this.pipeline?.setData(
                         'depositFee',
-                        new BigNumber(depositLog.events[6].value || 0)
-                            .div(depositLog.events[5].value || 0)
+                        new BigNumber(depositFee || 0)
+                            .div(depositAmount || 0)
                             .multipliedBy(10000)
                             .dp(0, BigNumber.ROUND_DOWN)
                             .toFixed(),
                     )
                 }
 
-                const targetWid = nativeTransfer.events[3].value
-                const targetAddress = nativeTransfer.events[4].value
+                const targetWid = nativeTransfer.events.find(
+                    i => ['recipient_wid', 'wid'].includes(i.name),
+                )?.value
+                const targetAddress = nativeTransfer.events.find(
+                    i => ['recipient_addr', 'addr'].includes(i.name),
+                )?.value
 
                 this.setData({
-                    amount: new BigNumber(depositLog.events[5].value || 0).shiftedBy(-token.decimals).toFixed(),
+                    amount: new BigNumber(depositAmount || 0).shiftedBy(-token.decimals).toFixed(),
                     leftAddress: txReceipt.from.toLowerCase(),
                     rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
                 })
@@ -419,11 +426,15 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
                 }
 
-                const targetWid = depositLog.events[1].value
-                const targetAddress = depositLog.events[2].value
+                const targetWid = depositLog.events.find(
+                    i => ['recipient_wid', 'wid'].includes(i.name),
+                )?.value
+                const targetAddress = depositLog.events.find(
+                    i => ['recipient_addr', 'addr'].includes(i.name),
+                )?.value
 
                 this.setData({
-                    amount: new BigNumber(depositLog.events[0].value || 0).shiftedBy(-token.decimals).toFixed(),
+                    amount: new BigNumber(depositAmount || 0).shiftedBy(-token.decimals).toFixed(),
                     leftAddress: txReceipt.from.toLowerCase(),
                     rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
                 })
@@ -607,13 +618,24 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     log => log !== undefined && log.name === 'NativeTransfer',
                 )]
 
+                debug(depositLog, alienTransferLog, nativeTransferLog)
+
                 if (depositLog?.data == null || this.pipeline?.ethereumConfiguration === undefined) {
                     return
                 }
 
-                const ethConfigDetails = await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
-                    .methods.getDetails({ answerId: 0 })
-                    .call()
+                const ethereumEventConfigurationContractState = await getFullContractState(
+                    this.pipeline.ethereumConfiguration,
+                )
+                const [ethConfigDetails, flags] = await Promise.all([
+                    ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
+                        .methods.getDetails({ answerId: 0 })
+                        .call({ cachedState: ethereumEventConfigurationContractState }),
+                    (await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
+                        .methods.getFlags({ answerId: 0 })
+                        .call({ cachedState: ethereumEventConfigurationContractState })
+                        .catch(() => ({ _flags: '0' })))._flags,
+                ])
 
                 let eventData: string | undefined
 
@@ -646,6 +668,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     eventData = mapEthBytesIntoTonCell(
                         Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                         alienTransferLog.data,
+                        flags,
                     )
                     eventVoteData.eventIndex = alienTransferLog.logIndex.toString()
                 }
@@ -653,6 +676,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     eventData = mapEthBytesIntoTonCell(
                         Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                         nativeTransferLog.data,
+                        flags,
                     )
                     eventVoteData.eventIndex = nativeTransferLog.logIndex.toString()
                 }
@@ -660,6 +684,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     eventData = mapEthBytesIntoTonCell(
                         Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                         depositLog.data,
+                        flags,
                     )
                     eventVoteData.eventIndex = depositLog.logIndex.toString()
                 }
@@ -716,118 +741,123 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
         this.stopPrepareUpdater();
 
         (async () => {
-            if (this.rightNetwork === undefined || this.prepareState?.isDeploying === true) {
-                return
-            }
-
-            if (this.deriveEventAddress === undefined) {
-                if (this.prepareState?.status !== 'pending') {
-                    this.setState('prepareState', this.prepareState)
-                }
-                return
-            }
-
-            const isFirstIteration = this.prepareState?.isDeployed === undefined
-
-            if (isFirstIteration) {
-                this.setState('prepareState', {
-                    ...this.prepareState,
-                    status: 'pending',
-                })
-            }
-
-            const cachedState = await getFullContractState(this.deriveEventAddress)
-
-            if (cachedState === undefined || !cachedState?.isDeployed) {
-                if (isFirstIteration) {
-                    this.setState('prepareState', {
-                        ...this.prepareState,
-                        isDeployed: false,
-                        status: 'disabled',
-                    })
+            try {
+                if (this.rightNetwork === undefined || this.prepareState?.isDeploying === true) {
                     return
                 }
 
-                if (this.prepareState?.status !== 'pending') {
-                    this.setState('prepareState', this.prepareState)
+                if (this.deriveEventAddress === undefined) {
+                    if (this.prepareState?.status !== 'pending') {
+                        this.setState('prepareState', this.prepareState)
+                    }
+                    return
                 }
-            }
 
-            const eventDetails = await tokenTransferEthereumEventContract(this.deriveEventAddress)
-                .methods.getDetails({ answerId: 0 })
-                .call({ cachedState })
+                const isFirstIteration = this.prepareState?.isDeployed === undefined
 
-            const eventState: EvmEverscalePipelineState['eventState'] = {
-                confirmations: eventDetails._confirms.length,
-                requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
-                status: 'pending',
-            }
+                if (isFirstIteration) {
+                    this.setState('prepareState', {
+                        ...this.prepareState,
+                        status: 'pending',
+                    })
+                }
 
-            if (eventDetails._status === '2') {
-                eventState.status = 'confirmed'
-            }
-            else if (eventDetails._status === '3') {
-                eventState.status = 'rejected'
-            }
+                const cachedState = await getFullContractState(this.deriveEventAddress)
 
-            if (this.prepareState?.status !== 'confirmed') {
-                this.setState('prepareState', {
-                    ...this.prepareState,
-                    isDeployed: true,
-                    status: 'confirmed',
-                })
-            }
+                if (cachedState === undefined || !cachedState?.isDeployed) {
+                    if (isFirstIteration) {
+                        this.setState('prepareState', {
+                            ...this.prepareState,
+                            isDeployed: false,
+                            status: 'disabled',
+                        })
+                        return
+                    }
 
-            this.setState('eventState', eventState)
-
-            const { chainId, type } = this.rightNetwork
-            const root = this.pipeline?.everscaleTokenAddress?.toString().toLowerCase()
-            const key = `${type}-${chainId}-${root}`
-
-            if (
-                this.pipeline?.isMultiVault
-                && root !== undefined
-                && isEverscaleAddressValid(root)
-            ) {
-                try {
-                    const data = await TokenWallet.getTokenFullDetails(root)
-
-                    if (data?.decimals !== undefined && data?.symbol) {
-                        const asset: EverscaleTokenData = {
-                            address: new Address(root),
-                            chainId,
-                            decimals: data.decimals,
-                            name: data.name,
-                            root,
-                            symbol: data.symbol,
-                        }
-
-                        try {
-                            const meta = await BridgeUtils.getAlienTokenRootMeta(root)
-                            const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
-                            const evmToken = this.bridgeAssets.get('evm', meta.base_chainId, evmTokenAddress)
-                            asset.logoURI = evmToken?.icon
-                        }
-                        catch (e) {}
-
-                        this.bridgeAssets.add(new EverscaleToken<BridgeAssetUniqueKey>({
-                            ...asset,
-                            key,
-                        }))
-
-                        const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
-
-                        importedAssets[key] = {
-                            ...asset,
-                            // eslint-disable-next-line no-void
-                            address: void 0,
-                            key,
-                        }
-
-                        storage.set('imported_assets', JSON.stringify(importedAssets))
+                    if (this.prepareState?.status !== 'pending') {
+                        this.setState('prepareState', this.prepareState)
                     }
                 }
-                catch (e) {}
+
+                const eventDetails = await tokenTransferEthereumEventContract(this.deriveEventAddress)
+                    .methods.getDetails({ answerId: 0 })
+                    .call({ cachedState })
+
+                const eventState: EvmEverscalePipelineState['eventState'] = {
+                    confirmations: eventDetails._confirms.length,
+                    requiredConfirmations: parseInt(eventDetails._requiredVotes, 10),
+                    status: 'pending',
+                }
+
+                if (eventDetails._status === '2') {
+                    eventState.status = 'confirmed'
+                }
+                else if (eventDetails._status === '3') {
+                    eventState.status = 'rejected'
+                }
+
+                if (this.prepareState?.status !== 'confirmed') {
+                    this.setState('prepareState', {
+                        ...this.prepareState,
+                        isDeployed: true,
+                        status: 'confirmed',
+                    })
+                }
+
+                this.setState('eventState', eventState)
+
+                const { chainId, type } = this.rightNetwork
+                const root = this.pipeline?.everscaleTokenAddress?.toString().toLowerCase()
+                const key = `${type}-${chainId}-${root}`
+
+                if (
+                    this.pipeline?.isMultiVault
+                    && root !== undefined
+                    && isEverscaleAddressValid(root)
+                ) {
+                    try {
+                        const data = await TokenWallet.getTokenFullDetails(root)
+
+                        if (data?.decimals !== undefined && data?.symbol) {
+                            const asset: EverscaleTokenData = {
+                                address: new Address(root),
+                                chainId,
+                                decimals: data.decimals,
+                                name: data.name,
+                                root,
+                                symbol: data.symbol,
+                            }
+
+                            try {
+                                const meta = await BridgeUtils.getAlienTokenRootMeta(root)
+                                const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
+                                const evmToken = this.bridgeAssets.get('evm', meta.base_chainId, evmTokenAddress)
+                                asset.logoURI = evmToken?.icon
+                            }
+                            catch (e) {}
+
+                            this.bridgeAssets.add(new EverscaleToken<BridgeAssetUniqueKey>({
+                                ...asset,
+                                key,
+                            }))
+
+                            const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                            importedAssets[key] = {
+                                ...asset,
+                                // eslint-disable-next-line no-void
+                                address: void 0,
+                                key,
+                            }
+
+                            storage.set('imported_assets', JSON.stringify(importedAssets))
+                        }
+                    }
+                    catch (e) {}
+                }
+            }
+            catch (e) {
+
             }
         })().finally(() => {
             if (this.eventState?.status !== 'confirmed' && this.eventState?.status !== 'rejected') {

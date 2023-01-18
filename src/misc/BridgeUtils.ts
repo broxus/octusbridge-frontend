@@ -70,7 +70,7 @@ export abstract class BridgeUtils {
         rpcUrl: string,
     ): Promise<string> {
         const [nativeWid, nativeAddress] = tokenAddress.toString().split(':')
-        return evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken(nativeWid, `0x${nativeAddress}`).call()
+        return evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
     }
 
     /**

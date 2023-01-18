@@ -874,13 +874,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.pipeline.vaultAddress.toString(),
                 )
 
-                const r = vaultContract.methods.deposit(
-                    [target[0], `0x${target[1]}`],
-                    this.pipeline.evmTokenAddress,
-                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                const r = vaultContract.methods.deposit([
+                    /* recipient */ [target[0], `0x${target[1]}`],
+                    /* token */ this.pipeline.evmTokenAddress,
+                    /* amount */ this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
                         .dp(0, BigNumber.ROUND_DOWN)
                         .toFixed(),
-                )
+                    /* expected_evers */ 0,
+                    /* payload */ [], // '0xb5ee9c72010101010006000008deadbeaf',
+                ])
 
                 if (r !== undefined) {
                     const gas = await r.estimateGas({
@@ -998,10 +1000,24 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 data: {
                     addr: this.rightAddress,
                     chainId: this.rightNetwork.chainId,
+                    callback: {
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        payload: '',
+                        strict:  false,
+                    },
                 },
                 structure: [
                     { name: 'addr', type: 'uint160' },
                     { name: 'chainId', type: 'uint256' },
+                    {
+                        name: 'callback',
+                        type: 'tuple',
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                    },
                 ] as const,
             })
 
@@ -1051,8 +1067,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             .methods.prefixes(root.toLowerCase())
                             .call()
 
-                        name = `${activation === '0' ? 'Octus ' : namePrefix}${this.token.name}`
-                        symbol = `${activation === '0' ? 'oct' : symbolPrefix}${this.token.symbol}`
+                        name = `${activation === '0' ? '' : namePrefix}${this.token.name}`
+                        symbol = `${activation === '0' ? '' : symbolPrefix}${this.token.symbol}`
                     }
 
                     const asset = {
@@ -1169,9 +1185,23 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const operationPayload = await staticRpc.packIntoCell({
                     data: {
                         addr: this.rightAddress,
+                        callback: {
+                            recipient: '0x0000000000000000000000000000000000000000',
+                            payload: '',
+                            strict:  false,
+                        },
                     },
                     structure: [
                         { name: 'addr', type: 'uint160' },
+                        {
+                            name: 'callback',
+                            type: 'tuple',
+                            components: [
+                                { name: 'recipient', type: 'uint160' },
+                                { name: 'payload', type: 'cell' },
+                                { name: 'strict', type: 'bool' },
+                            ] as const,
+                        },
                     ] as const,
                 })
 
@@ -1205,9 +1235,23 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const data = await staticRpc.packIntoCell({
                     data: {
                         addr: this.rightAddress,
+                        callback: {
+                            recipient: '0x0000000000000000000000000000000000000000',
+                            payload: '',
+                            strict:  false,
+                        },
                     },
                     structure: [
                         { name: 'addr', type: 'uint160' },
+                        {
+                            name: 'callback',
+                            type: 'tuple',
+                            components: [
+                                { name: 'recipient', type: 'uint160' },
+                                { name: 'payload', type: 'cell' },
+                                { name: 'strict', type: 'bool' },
+                            ] as const,
+                        },
                     ] as const,
                 })
 

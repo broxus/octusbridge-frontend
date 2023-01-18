@@ -14,14 +14,14 @@ import Web3 from 'web3'
 import { BridgeAbi, EthAbi, TokenWallet } from '@/misc'
 import { BridgeUtils } from '@/misc/BridgeUtils'
 import {
-    alienProxyContract,
     ethereumTokenTransferProxyContract,
     everscaleEventAlienContract,
     everscaleEventConfigurationContract,
     everscaleEventNativeContract,
     everscaleTokenTransferProxyContract,
     getFullContractState,
-    nativeProxyContract,
+    legacyEverscaleEventAlienContract,
+    legacyEverscaleEventNativeContract,
     tokenTransferEverscaleEventContract,
 } from '@/misc/contracts'
 import { evmBridgeContract, evmMultiVaultContract, evmVaultContract } from '@/misc/eth-contracts'
@@ -157,28 +157,19 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
         try {
             const state = await getFullContractState(this.contractAddress)
 
-            if (!state?.isDeployed) {
+            if (state?.isDeployed) {
+                await this.resolve()
+                this.setState('isCheckingContract', false)
+            }
+            else {
                 setTimeout(async () => {
                     await this.checkContract(true)
                 }, 5000)
-            }
-            else {
-                this.setState('isCheckingContract', false)
             }
         }
         catch (e) {
             error('Check contract error', e)
             this.setState('isCheckingContract', false)
-            return
-        }
-
-        if (!this.state.isCheckingContract) {
-            try {
-                await this.resolve()
-            }
-            catch (e) {
-                error('Resolve error', e)
-            }
         }
     }
 
@@ -199,14 +190,23 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
         const pipelineType = this.bridgeAssets.getPipelineType(proxyAddress.toString())
 
         if (pipelineType === 'multi_everscale_evm') {
-            const eventData = await everscaleEventNativeContract(this.contractAddress)
-                .methods.getDecodedData({ answerId: 0 })
-                .call()
+            let eventData
+
+            try {
+                eventData = await everscaleEventNativeContract(this.contractAddress)
+                    .methods.getDecodedData({ answerId: 0 })
+                    .call()
+            }
+            catch (e) {
+                eventData = await legacyEverscaleEventNativeContract(this.contractAddress)
+                    .methods.getDecodedData({ answerId: 0 })
+                    .call()
+            }
 
             const {
                 chainId_: chainId,
-                recipient_: ethereum_address,
-                remainingGasTo_: owner_address,
+                recipient_: ethereumAddress,
+                remainingGasTo_: ownerAddress,
                 amount_: tokens,
                 token_: tokenAddress,
             } = eventData
@@ -242,8 +242,8 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                 return
             }
 
-            const leftAddress = owner_address.toString()
-            const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
+            const leftAddress = ownerAddress.toString()
+            const rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
 
             this.setData({
                 amount: new BigNumber(tokens || 0).shiftedBy(-token.decimals).toFixed(),
@@ -289,9 +289,18 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
             this.runEventUpdater()
         }
         else if (pipelineType === 'multi_evm_everscale') {
-            const eventData = await everscaleEventAlienContract(this.contractAddress)
-                .methods.getDecodedData({ answerId: 0 })
-                .call()
+            let eventData
+
+            try {
+                eventData = await everscaleEventAlienContract(this.contractAddress)
+                    .methods.getDecodedData({ answerId: 0 })
+                    .call()
+            }
+            catch (e) {
+                eventData = await legacyEverscaleEventAlienContract(this.contractAddress)
+                    .methods.getDecodedData({ answerId: 0 })
+                    .call()
+            }
 
             const {
                 recipient_: ethereum_address,
@@ -725,7 +734,10 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
             }
 
             const eventContract = tokenTransferEverscaleEventContract(this.contractAddress)
-            const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call()
+            const eventContractState = await getFullContractState(this.contractAddress)
+            const eventDetails = await eventContract.methods.getDetails({ answerId: 0 }).call({
+                cachedState: eventContractState,
+            })
 
             let status: EventStateStatus = 'pending'
 
@@ -755,23 +767,30 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
             const pipelineType = this.bridgeAssets.getPipelineType(this.pipeline.proxyAddress.toString())
 
             if (pipelineType === 'multi_everscale_evm') {
-                const configs = (await nativeProxyContract(eventDetails._initializer)
-                    .methods.getConfiguration({ answerId: 0 })
-                    .call())
-                    .value0
+                const everscaleConfiguration = eventDetails._eventInitData.configuration
+                this.pipeline.setData('everscaleConfiguration', everscaleConfiguration)
 
-                this.pipeline.setData('everscaleConfiguration', configs.everscaleConfiguration)
+                const everscaleEventConfigurationContractState = await getFullContractState(everscaleConfiguration)
 
-                const eventConfigDetails = await everscaleEventConfigurationContract(configs.everscaleConfiguration)
-                    .methods.getDetails({ answerId: 0 })
-                    .call()
+                const [eventConfigDetails, flags] = await Promise.all([
+                    everscaleEventConfigurationContract(everscaleConfiguration)
+                        .methods.getDetails({ answerId: 0 })
+                        .call({ cachedState: everscaleEventConfigurationContractState }),
+                    (await everscaleEventConfigurationContract(everscaleConfiguration)
+                        .methods.getFlags({ answerId: 0 })
+                        .call({ cachedState: everscaleEventConfigurationContractState })
+                        .catch(() => ({ _flags: '0' })))._flags,
+                ])
 
                 const eventDataEncoded = mapTonCellIntoEthBytes(
                     Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                     eventDetails._eventInitData.voteData.eventData,
+                    flags,
                 )
 
-                const roundNumber = (await eventContract.methods.round_number({}).call()).round_number
+                const roundNumber = (await eventContract.methods.round_number({}).call({
+                    cachedState: eventContractState,
+                })).round_number
 
                 this.setState('eventState', {
                     ...this.eventState,
@@ -794,8 +813,8 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                     eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                     eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                     eventData: eventDataEncoded,
-                    configurationWid: configs.everscaleConfiguration.toString().split(':')[0],
-                    configurationAddress: `0x${configs.everscaleConfiguration.toString().split(':')[1]}`,
+                    configurationWid: everscaleConfiguration.toString().split(':')[0],
+                    configurationAddress: `0x${everscaleConfiguration.toString().split(':')[1]}`,
                     eventContractWid: this.contractAddress.toString().split(':')[0],
                     eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                     proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -813,20 +832,25 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                 }
             }
             else if (pipelineType === 'multi_evm_everscale') {
-                const configs = (await alienProxyContract(eventDetails._initializer)
-                    .methods.getConfiguration({ answerId: 0 })
-                    .call())
-                    .value0
+                const everscaleConfiguration = eventDetails._eventInitData.configuration
+                this.pipeline.setData('everscaleConfiguration', everscaleConfiguration)
 
-                this.pipeline.setData('everscaleConfiguration', configs.everscaleConfiguration)
+                const everscaleEventConfigurationContractState = await getFullContractState(everscaleConfiguration)
 
-                const eventConfigDetails = await everscaleEventConfigurationContract(configs.everscaleConfiguration)
-                    .methods.getDetails({ answerId: 0 })
-                    .call()
+                const [eventConfigDetails, flags] = await Promise.all([
+                    everscaleEventConfigurationContract(everscaleConfiguration)
+                        .methods.getDetails({ answerId: 0 })
+                        .call({ cachedState: everscaleEventConfigurationContractState }),
+                    (await everscaleEventConfigurationContract(everscaleConfiguration)
+                        .methods.getFlags({ answerId: 0 })
+                        .call({ cachedState: everscaleEventConfigurationContractState })
+                        .catch(() => ({ _flags: '0' })))._flags,
+                ])
 
                 const eventDataEncoded = mapTonCellIntoEthBytes(
                     Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                     eventDetails._eventInitData.voteData.eventData,
+                    flags,
                 )
 
                 const roundNumber = (await eventContract.methods.round_number({}).call()).round_number
@@ -852,8 +876,8 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                     eventTransactionLt: eventDetails._eventInitData.voteData.eventTransactionLt,
                     eventTimestamp: eventDetails._eventInitData.voteData.eventTimestamp,
                     eventData: eventDataEncoded,
-                    configurationWid: configs.everscaleConfiguration.toString().split(':')[0],
-                    configurationAddress: `0x${configs.everscaleConfiguration.toString().split(':')[1]}`,
+                    configurationWid: everscaleConfiguration.toString().split(':')[0],
+                    configurationAddress: `0x${everscaleConfiguration.toString().split(':')[1]}`,
                     eventContractWid: this.contractAddress.toString().split(':')[0],
                     eventContractAddress: `0x${this.contractAddress.toString().split(':')[1]}`,
                     proxy: `0x${new BigNumber(eventConfigDetails._networkConfiguration.proxy).toString(16).padStart(40, '0')}`,
@@ -916,6 +940,7 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                 const eventDataEncoded = mapTonCellIntoEthBytes(
                     Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                     eventDetails._eventInitData.voteData.eventData,
+                    '0',
                 )
 
                 const roundNumber = (await eventContract.methods.round_number({}).call()).round_number
@@ -1230,7 +1255,9 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
     public get isInsufficientVaultBalance(): boolean {
         return new BigNumber(this.pipeline?.vaultBalance ?? 0)
             .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
-            .lt(this.amountNumber.shiftedBy(-(this.token?.decimals ?? 0)))
+            .lt(this.amountNumber
+                .shiftedBy(this.token?.decimals ?? 0)
+                .shiftedBy(-(this.token?.decimals ?? 0)))
     }
 
     public get isEverscaleBasedToken(): boolean {

@@ -717,6 +717,7 @@ export class EvmEvmHiddenBridgePipeline extends EvmEverscaleCreditPipeline<
             const eventDataEncoded = mapTonCellIntoEthBytes(
                 Buffer.from(eventConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                 eventDetails._eventInitData.voteData.eventData,
+                '0',
             )
 
             const roundNumber = (await eventContract.methods.round_number({}).call()).round_number

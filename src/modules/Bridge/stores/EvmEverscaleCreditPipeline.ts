@@ -226,6 +226,12 @@ export class EvmEverscaleCreditPipeline<
             const decodedLogs = decodeLogs(txReceipt.logs ?? [])
             const factoryDepositLog = decodedLogs.find(log => log?.name === 'FactoryDeposit')
 
+            if (factoryDepositLog == null) {
+                return
+            }
+
+            debug('Factory Deposit Log', factoryDepositLog)
+
             const token = this.bridgeAssets.findTokenByVaultAndChain(
                 factoryDepositLog!.address.toLowerCase(),
                 this.leftNetwork.chainId,
@@ -261,12 +267,15 @@ export class EvmEverscaleCreditPipeline<
             const ethConfigDetails = await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
                 .methods.getDetails({ answerId: 0 })
                 .call()
+
             const { eventBlocksToConfirm } = ethConfigDetails._networkConfiguration
-            const targetWid = factoryDepositLog!.events[1].value
-            const targetAddress = factoryDepositLog!.events[4].value
+
+            const amount = factoryDepositLog.events.find(i => i.name === 'amount')?.value ?? '0'
+            const targetWid = factoryDepositLog.events.find(i => i.name === 'wid')?.value
+            const targetAddress = factoryDepositLog.events.find(i => i.name === 'recipient').value
 
             this.setData({
-                amount: new BigNumber(factoryDepositLog!.events[0].value || 0).shiftedBy(-token.decimals).toFixed(),
+                amount: new BigNumber(amount || 0).shiftedBy(-token.decimals).toFixed(),
                 leftAddress: txReceipt.from.toLowerCase(),
                 rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
             })
@@ -680,12 +689,24 @@ export class EvmEverscaleCreditPipeline<
                 }
 
                 const ethConfigContract = ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
+                const ethereumEventConfigurationContractState = await getFullContractState(
+                    this.pipeline.ethereumConfiguration,
+                )
 
-                const ethConfigDetails = await ethConfigContract.methods.getDetails({ answerId: 0 }).call()
+                const [ethConfigDetails, flags] = await Promise.all([
+                    ethConfigContract
+                        .methods.getDetails({ answerId: 0 })
+                        .call({ cachedState: ethereumEventConfigurationContractState }),
+                    (await ethConfigContract
+                        .methods.getFlags({ answerId: 0 })
+                        .call({ cachedState: ethereumEventConfigurationContractState })
+                        .catch(() => ({ _flags: '0' })))._flags,
+                ])
 
                 const eventData = mapEthBytesIntoTonCell(
                     Buffer.from(ethConfigDetails._basicConfiguration.eventABI, 'base64').toString(),
                     log.data,
+                    flags,
                 )
 
                 const eventVoteData: EvmEventVoteData = {
