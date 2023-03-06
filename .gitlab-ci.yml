@@ -17,6 +17,7 @@ cloudbuild:image:dev:
     - tags
   extends: .cloudbuild:common
   before_script:
+    - !reference [.image_branch, before_script]
     - rm -rf src/config.ts && cp config/dev.ts src/config.ts
 
 deploy:dev:
@@ -46,6 +47,7 @@ cloudbuild:image:master:
     - tags
   extends: .cloudbuild:common
   before_script:
+    - !reference [.image_branch, before_script]
     - rm -rf src/config.ts && cp config/stage.ts src/config.ts
 
 deploy:master:
@@ -74,6 +76,7 @@ cloudbuild:image:prod:
     - tags
   extends: .cloudbuild:common
   before_script:
+    - !reference [.image_branch, before_script]
     - rm -rf src/config.ts && cp config/prod.ts src/config.ts
 
 deploy:prod:
@@ -100,6 +103,7 @@ cloudbuild:image:review:
   only:
     - merge_requests
   before_script:
+    - !reference [.image_branch, before_script]
     - rm -rf src/config.ts && cp config/review.ts src/config.ts
 
 deploy:review:
