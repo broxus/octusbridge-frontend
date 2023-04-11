@@ -12,16 +12,21 @@ import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/util
 import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import {
-    EventVoteData, RelayConfig, StackingDetails, UserDetails,
+    EventVoteData,
+    RelayConfig,
+    StackingDetails,
+    UserDetails,
 } from '@/misc/types'
 import {
-    BridgeAbi,
-    EthAbi, EventConfigDetails, UserDataAbi,
+    EthAbi,
+    EventConfigDetails,
+    UserDataAbi,
 } from '@/misc'
 import { Web3Url } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
 import { TokenCache } from '@/types'
+import { ethereumEventConfigurationContract } from '@/misc/contracts'
 
 export class StakingDataStore {
 
@@ -106,15 +111,13 @@ export class StakingDataStore {
         stackingDetails: StackingDetails,
     ): Promise<EventConfigDetails | undefined> {
         try {
-            const eventConfigContract = rpc.createContract(
-                BridgeAbi.EthereumEventConfiguration,
+            const eventConfigContract = ethereumEventConfigurationContract(
                 stackingDetails.bridge_event_config_eth_ton,
+                rpc,
             )
-            const eventConfigDetails = await eventConfigContract.methods.getDetails({
+            return eventConfigContract.methods.getDetails({
                 answerId: 0,
             }).call()
-
-            return eventConfigDetails
         }
         catch (e) {
             error(e)
@@ -126,6 +129,7 @@ export class StakingDataStore {
     protected async getEventVoteData(
         userDetails: UserDetails,
         eventConfigDetails: EventConfigDetails,
+        stackingDetails: StackingDetails,
     ): Promise<EventVoteData | undefined> {
         try {
             const eventEmitterBN = new BigNumber(eventConfigDetails._networkConfiguration.eventEmitter)
@@ -155,9 +159,14 @@ export class StakingDataStore {
                 )
 
                 if (networkBlockNumber - event.blockNumber >= eventBlocksToConfirm) {
+                    const flags = (await ethereumEventConfigurationContract(stackingDetails.bridge_event_config_eth_ton)
+                        .methods.getFlags({ answerId: 0 })
+                        .call()
+                        .catch(() => ({ _flags: '0' })))._flags
                     const eventData = mapEthBytesIntoTonCell(
                         atob(eventConfigDetails._basicConfiguration.eventABI),
                         event.data,
+                        flags,
                     )
 
                     return {
@@ -186,9 +195,9 @@ export class StakingDataStore {
         eventVoteData: EventVoteData,
     ): Promise<FullContractState | undefined> {
         try {
-            const eventConfigContract = rpc.createContract(
-                BridgeAbi.EthereumEventConfiguration,
+            const eventConfigContract = ethereumEventConfigurationContract(
                 stackingDetails.bridge_event_config_eth_ton,
+                rpc,
             )
             const eventAddress = await eventConfigContract.methods.deriveEventAddress({
                 eventVoteData,
@@ -219,8 +228,8 @@ export class StakingDataStore {
             const eventConfigDetails = stackingDetails
                 ? await StakingDataStore.getEventConfigDetails(stackingDetails)
                 : undefined
-            const eventVoteData = userDetails && eventConfigDetails
-                ? await this.getEventVoteData(userDetails, eventConfigDetails)
+            const eventVoteData = userDetails && eventConfigDetails && stackingDetails
+                ? await this.getEventVoteData(userDetails, eventConfigDetails, stackingDetails)
                 : undefined
             const eventState = stackingDetails && eventVoteData
                 ? await StakingDataStore.getEventState(stackingDetails, eventVoteData)
