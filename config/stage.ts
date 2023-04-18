@@ -133,7 +133,7 @@ export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-
 
 export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
 
-export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
+export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/18e51ff53f9c1f43761dfea4e821efc01c77d15d/manifest.json'
 
 export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/everscale-assets-upgrade/master/main.json'
 
