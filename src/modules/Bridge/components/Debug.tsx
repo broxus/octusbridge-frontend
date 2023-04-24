@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 
-import { useBridge } from '@/modules/Bridge/providers'
+import { useBridge, useSummary } from '@/modules/Bridge/providers'
 import {
     findNetwork, formattedTokenAmount,
     getEverscaleMainNetwork,
@@ -11,7 +11,8 @@ import {
 } from '@/utils'
 
 export function Debug(): JSX.Element {
-    const { bridge, summary } = useBridge()
+    const bridge = useBridge()
+    const summary = useSummary()
     const { current: everscaleMainnet } = React.useRef(getEverscaleMainNetwork())
 
     return (

@@ -2,13 +2,13 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { useBridge } from '@/modules/Bridge/providers'
+import { useSummary } from '@/modules/Bridge/providers'
 import { formattedTokenAmount } from '@/utils'
 
 
 export function TokenAmountDetails(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const summary = useSummary()
 
     return (
         <Observer>

@@ -33,15 +33,14 @@ export class UserDataStore {
     }
 
     public init(): void {
-        if (!this.syncDisposer) {
-            this.syncDisposer = reaction(
-                () => this.isConnected,
-                isConnected => (isConnected ? this.sync() : this.reset()),
-                {
-                    fireImmediately: true,
-                },
-            )
-        }
+        this.syncDisposer?.()
+        this.syncDisposer = reaction(
+            () => this.isConnected,
+            isConnected => (isConnected ? this.sync() : this.reset()),
+            {
+                fireImmediately: true,
+            },
+        )
     }
 
     public dispose(): void {
@@ -121,7 +120,7 @@ export class UserDataStore {
             if (!this.data.stakingDetails?.tokenRoot) {
                 throwException('Staking details must be defined in data')
             }
-            await this.tokensCache.syncToken(this.data.stakingDetails.tokenRoot.toString())
+            await this.tokensCache.syncCustomToken(this.data.stakingDetails.tokenRoot.toString())
         }
         catch (e) {
             error(e)
@@ -180,7 +179,7 @@ export class UserDataStore {
     }
 
     public get isConnected(): boolean {
-        return this.tokensCache.isReady && this.tonWallet.isConnected
+        return this.tokensCache.isReady && !!this.tonWallet.address
     }
 
     public get token(): TokenCache | undefined {

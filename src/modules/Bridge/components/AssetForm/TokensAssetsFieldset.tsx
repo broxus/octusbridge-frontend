@@ -5,47 +5,48 @@ import { useIntl } from 'react-intl'
 
 import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
-import { BaseSelectRef, Select } from '@/components/common/Select'
+import { type BaseSelectRef, Select } from '@/components/common/Select'
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { TokenWallet } from '@/misc'
 import { TokenImportPopup } from '@/modules/Bridge/components/TokenImportPopup'
 import { useBridge } from '@/modules/Bridge/providers'
 import {
+    error,
     findNetwork,
     isEverscaleAddressValid,
     isEvmAddressValid,
     sliceAddress,
     storage,
 } from '@/utils'
-import { EverscaleToken, EvmToken, EvmTokenData } from '@/models'
-import { BridgeAsset } from '@/stores/BridgeAssetsService'
+import { EverscaleToken, EvmToken, type EvmTokenData } from '@/models'
+import { type BridgeAsset } from '@/stores/BridgeAssetsService'
 import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
 import { BridgeUtils } from '@/misc/BridgeUtils'
 
 
 export function TokensAssetsFieldset(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const bridgeAssets = bridge.useBridgeAssets
 
     const selectRef = React.useRef<BaseSelectRef>(null)
     const [token, setToken] = React.useState<BridgeAsset>()
     const [isImporting, setImporting] = React.useState(false)
 
-    const onChangeToken = (value?: string) => {
-        bridge.setData('selectedToken', value)
+    const onChangeToken = async (value: string): Promise<void> => {
+        await bridge.changeToken(value)
     }
 
-    const onClear = () => {
+    const onClear: VoidFunction = () => {
         setToken(undefined)
         bridge.setData('selectedToken', undefined)
     }
 
-    const onImport = () => {
+    const onImport: VoidFunction = () => {
         setImporting(true)
     }
 
-    const onConfirmImport = () => {
+    const onConfirmImport: VoidFunction = () => {
         if (token === undefined) {
             return
         }
@@ -63,20 +64,20 @@ export function TokensAssetsFieldset(): JSX.Element {
 
         storage.set('imported_assets', JSON.stringify(importedAssets))
         bridgeAssets.add(token)
-        bridge.setData('selectedToken', token.root)
         setImporting(false)
+        setToken(undefined)
+        bridge.changeToken(token.root).catch(error)
+    }
+
+    const onCloseImportPopup: VoidFunction = () => {
+        setImporting(false)
+    }
+
+    const onInputKeyDown: VoidFunction = () => {
         setToken(undefined)
     }
 
-    const onCloseImportPopup = () => {
-        setImporting(false)
-    }
-
-    const onInputKeyDown = () => {
-        setToken(undefined)
-    }
-
-    const onSearch = async (value: string) => {
+    const onSearch = async (value: string): Promise<void> => {
         if (bridge.leftNetwork?.type === undefined || bridge.leftNetwork.chainId === undefined) {
             return
         }
@@ -148,7 +149,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                         )
                         const result = await vaultContract.methods.natives(root).call()
                         const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
-                        const everscaleToken = bridgeAssets.get('everscale', '1', everscaleAddress)
+                        const everscaleToken = bridgeAssets.get('tvm', '42', everscaleAddress)
                         asset.logoURI = everscaleToken?.icon
                     }
                 }
@@ -253,7 +254,7 @@ export function TokensAssetsFieldset(): JSX.Element {
 
                     <Observer>
                         {() => (
-                            <>
+                            <React.Fragment key="blacklisted">
                                 {bridge.pipeline?.isBlacklisted && (
                                     <Alert
                                         className="margin-top"
@@ -269,7 +270,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                         type="danger"
                                     />
                                 )}
-                            </>
+                            </React.Fragment>
                         )}
                     </Observer>
                 </div>

@@ -4,62 +4,57 @@ import BigNumber from 'bignumber.js'
 import bs58 from 'bs58'
 import { Address } from 'everscale-inpage-provider'
 import isEqual from 'lodash.isequal'
+import { action, computed, makeObservable, reaction, type IReactionDisposer } from 'mobx'
 import * as uuid from 'uuid'
-import {
-    action,
-    computed,
-    makeObservable,
-    reaction,
-    toJS,
-} from 'mobx'
-import type { IReactionDisposer } from 'mobx'
 
 import initBridge, { depositSol } from '@/wasm/bridge'
 import {
-    CreditBody,
-    CreditFactoryAddress,
-    DepositToFactoryMaxSlippage,
-    DepositToFactoryMinSlippageDenominator,
-    DepositToFactoryMinSlippageNumerator,
-    EmptyWalletMinEversAmount,
-    HiddenBridgeStrategyFactory,
-    HiddenBridgeStrategyGas,
+    Compounder,
+    EventCloser,
     networks,
+    EverSafeAmount,
+    WEVEREvmRoots,
     WEVERRootAddress,
+    WEVERVaultAddress,
+    Unwrapper,
 } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
-import { Dex, DexConstants, EthAbi } from '@/misc'
+import { BridgeUtils, EthAbi } from '@/misc'
 import { erc20TokenContract, evmVaultContract } from '@/misc/eth-contracts'
 import {
-    creditFactoryContract,
-    dexPairContract,
+    ethereumEventConfigurationContract,
     everscaleEventConfigurationContract,
     everSolEventConfigurationContract,
     getFullContractState,
-    hiddenBridgeFactoryContract,
-    hiddenBridgeStrategyContract,
     tokenWalletContract,
+    wrappedCoinVaultContract,
 } from '@/misc/contracts'
-import { EverscaleToken, EvmToken, Pipeline } from '@/models'
-import type {
-    CrosschainBridgeStoreData,
-    CrosschainBridgeStoreState,
-    NetworkFields,
-    PendingWithdrawal,
+import { type EverscaleToken, EvmToken, Pipeline } from '@/models'
+import {
+    type CrosschainBridgeStoreData,
+    type CrosschainBridgeStoreState,
+    type NetworkFields,
+    type PendingWithdrawal,
 } from '@/modules/Bridge/types'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
-import { findAssociatedTokenAddress, ixFromRust, unshiftedAmountWithSlippage } from '@/modules/Bridge/utils'
+import {
+    findAssociatedTokenAddress,
+    getPrice,
+    getUnwrapPayload,
+    ixFromRust,
+    type Tickers,
+} from '@/modules/Bridge/utils'
 import { BaseStore } from '@/stores/BaseStore'
-import { BridgeAsset, BridgeAssetsService } from '@/stores/BridgeAssetsService'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { EvmWalletService } from '@/stores/EvmWalletService'
-import { SolanaWalletService } from '@/stores/SolanaWalletService'
-import type { NetworkShape } from '@/types'
+import { type BridgeAsset, type BridgeAssetsService } from '@/stores/BridgeAssetsService'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type EvmWalletService } from '@/stores/EvmWalletService'
+import { type SolanaWalletService } from '@/stores/SolanaWalletService'
+import { type NetworkShape } from '@/types'
 import {
     debug,
     error,
     findNetwork,
-    getEverscaleMainNetwork,
+    getEverscaleMainNetwork, getRandomUint,
     isEverscaleAddressValid,
     isEvmAddressValid,
     isGoodBignumber,
@@ -67,16 +62,12 @@ import {
     storage,
     throwException,
     validateMaxValue,
-    validateMinValue,
 } from '@/utils'
-
 
 export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_DATA: CrosschainBridgeStoreData = {
     amount: '',
-    depositType: 'default',
     leftAddress: '',
     rightAddress: '',
-    swapType: '0',
 }
 
 export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState = {
@@ -94,6 +85,11 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState =
 
 export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, CrosschainBridgeStoreState> {
 
+    /*
+     * Public actions. Useful in UI
+     * ----------------------------------------------------------------------------------
+     */
+
     constructor(
         protected readonly evmWallet: EvmWalletService,
         protected readonly everWallet: EverWalletService,
@@ -106,37 +102,33 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
         makeObservable<
             CrosschainBridge,
-            | 'debt'
-            | 'handleChangeToken'
             | 'handleEvmWalletConnection'
             | 'handleEverWalletConnection'
             | 'handleEverWalletBalance'
             | 'handleEvmPendingWithdrawal'
             | 'handleSolanaWalletConnection'
         >(this, {
-            handleChangeToken: action.bound,
             handleEvmWalletConnection: action.bound,
             handleEverWalletConnection: action.bound,
             handleEverWalletBalance: action.bound,
             handleEvmPendingWithdrawal: action.bound,
             handleSolanaWalletConnection: action.bound,
             amount: computed,
-            maxTokenAmount: computed,
             maxEversAmount: computed,
+            everscaleEvmCost: computed,
+            evmEverscaleCost: computed,
             maxTransferFee: computed,
-            minAmount: computed,
             minEversAmount: computed,
             minTransferFee: computed,
-            tokenAmount: computed,
             eversAmount: computed,
-            depositType: computed,
-            minReceiveTokens: computed,
+            gasPrice: computed,
             leftAddress: computed,
             leftNetwork: computed,
             pipeline: computed,
             rightAddress: computed,
             rightNetwork: computed,
             txHash: computed,
+            txPrice: computed,
             approvalStrategy: computed,
             isCalculating: computed,
             isFetching: computed,
@@ -150,19 +142,16 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             balance: computed,
             balanceNumber: computed,
             decimals: computed,
-            minAmountNumber: computed,
-            minReceiveTokensNumber: computed,
             isAmountVaultLimitExceed: computed,
-            isAmountMinValueValid: computed,
             isAmountMaxValueValid: computed,
             isAmountValid: computed,
-            isTokensAmountValid: computed,
             isEversAmountValid: computed,
             isAssetValid: computed,
             isRouteValid: computed,
-            isCreditAvailable: computed,
-            isInsufficientEverBalance: computed,
             isInsufficientVaultBalance: computed,
+            isEnoughWeverBalance: computed,
+            isEnoughEverBalance: computed,
+            isEnoughComboBalance: computed,
             isEverscaleBasedToken: computed,
             isEvmToEvm: computed,
             isEvmToEverscale: computed,
@@ -171,15 +160,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isFromSolana: computed,
             isEverscaleToEvm: computed,
             isEverscaleToSolana: computed,
+            isNativeEverscaleCurrency: computed,
+            isNativeEvmCurrency: computed,
             rightNetworks: computed,
             token: computed,
             vaultBalance: computed,
             vaultBalanceDecimals: computed,
             vaultLimitNumber: computed,
             tokens: computed,
-            tokenAmountNumber: computed,
             eversAmountNumber: computed,
-            debt: computed,
             useEverWallet: computed,
             useEvmWallet: computed,
             useBridgeAssets: computed,
@@ -187,525 +176,575 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         })
     }
 
+    public get everscaleEvmCost(): CrosschainBridgeStoreData['everscaleEvmCost'] {
+        return this.data.everscaleEvmCost
+    }
+
+    public get evmEverscaleCost(): CrosschainBridgeStoreData['evmEverscaleCost'] {
+        return this.data.evmEverscaleCost
+    }
+
+    public get gasPrice(): CrosschainBridgeStoreData['gasPrice'] {
+        return this.data.gasPrice
+    }
+
+    public get txPrice(): CrosschainBridgeStoreData['txPrice'] {
+        return this.data.txPrice
+    }
+
+    public get approvalStrategy(): CrosschainBridgeStoreState['approvalStrategy'] {
+        return this.state.approvalStrategy
+    }
+
+    public get isSwapEnabled(): CrosschainBridgeStoreState['isSwapEnabled'] {
+        return this.state.isSwapEnabled
+    }
+
+    /**
+     * Returns token balance in EVM token vault for `EVM to` direction.
+     * Otherwise, Everscale token balance
+     */
+    public get balance(): string | undefined {
+        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
+            if (this.isNativeEvmCurrency && this.leftNetwork?.chainId === this.evmWallet.chainId) {
+                return this.evmWallet.balance
+            }
+            return this.pipeline?.evmTokenBalance
+        }
+        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
+            return this.pipeline?.solanaTokenBalance
+        }
+        if (this.isFromEverscale && this.isNativeEverscaleCurrency) {
+            return this.pipeline?.everscaleTokenBalance
+        }
+        return this.token?.balance
+    }
+
+    /**
+     * Returns token decimals from EVM token vault for `EVM to` direction.
+     * Otherwise, Everscale token decimals
+     */
+    public get decimals(): number | undefined {
+        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
+            if (this.isNativeEvmCurrency) {
+                return this.evmWallet.coin.decimals
+            }
+            return this.pipeline?.evmTokenDecimals
+        }
+        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
+            return this.pipeline?.solanaTokenDecimals
+        }
+        if (this.isFromEverscale && this.isNativeEverscaleCurrency) {
+            return this.everWallet.coin.decimals
+        }
+        return this.token?.decimals
+    }
+
+    public get isAmountMaxValueValid(): boolean {
+        if (this.isFromEverscale && this.isNativeEverscaleCurrency) {
+            return (
+                this.isEnoughWeverBalance
+                || this.isEnoughEverBalance
+                || this.isEnoughComboBalance
+            )
+        }
+        if (this.amount.length > 0 && isGoodBignumber(this.amountNumber)) {
+            return validateMaxValue(
+                this.balanceNumber.toFixed(),
+                this.amountNumber.toFixed(),
+            )
+        }
+        return true
+    }
+
+    public get isAmountValid(): boolean {
+        if (this.amount.length === 0) {
+            return true
+        }
+
+        return (
+            this.isAmountMaxValueValid
+            && (this.isEvmToEverscale ? !this.isAmountVaultLimitExceed : true)
+        )
+    }
+
+    public get isEversAmountValid(): boolean {
+        return this.eversAmountNumber.shiftedBy(this.everWallet.coin.decimals)
+        .lte(this.maxEversAmount || 0)
+    }
+
+    public get isAssetValid(): boolean {
+        return (
+            this.everWallet.isConnected
+            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
+            && this.data.selectedToken !== undefined
+            && this.amount.length > 0
+            && isGoodBignumber(this.amountNumber)
+            && !this.pipeline?.isBlacklisted
+            && (this.isSwapEnabled
+                ? (this.isAmountValid && this.isEversAmountValid)
+                : this.isAmountValid)
+        )
+    }
+
+    public get isInsufficientEverBalance(): boolean {
+        return new BigNumber(this.everWallet.balance || 0).lt(EverSafeAmount)
+    }
+
+    public get isInsufficientVaultBalance(): boolean {
+        if (this.isEverscaleToSolana) {
+            return new BigNumber(this.pipeline?.vaultBalance ?? 0)
+                .shiftedBy(-(this.pipeline?.solanaTokenDecimals ?? 0))
+                .lt(this.amountNumber)
+        }
+        if (this.isEvmToEvm) {
+            return new BigNumber(this.hiddenBridgePipeline?.vaultBalance ?? 0)
+                .shiftedBy(-(this.hiddenBridgePipeline?.evmTokenDecimals ?? 0))
+                .lt(this.amountNumber)
+        }
+        return new BigNumber(this.pipeline?.vaultBalance ?? 0)
+            .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
+            .lt(this.amountNumber)
+    }
+
+    public get isEnoughWeverBalance(): boolean {
+        return new BigNumber(this.token?.balance || 0)
+            .shiftedBy(-this.everWallet.coin.decimals)
+            .gte(this.amountNumber)
+    }
+
+    public get isEnoughEverBalance(): boolean {
+        return new BigNumber(this.everWallet.balance || 0)
+            .minus(this.isSwapEnabled ? this.minEversAmount ?? EverSafeAmount : EverSafeAmount)
+            .shiftedBy(-this.everWallet.coin.decimals)
+            .gte(this.amountNumber)
+    }
+
+    public get isEnoughComboBalance(): boolean {
+        return new BigNumber(this.token?.balance || 0)
+            .plus(this.everWallet.balance || 0)
+            .minus(this.isSwapEnabled ? this.minEversAmount ?? EverSafeAmount : EverSafeAmount)
+            .shiftedBy(-this.everWallet.coin.decimals)
+            .gte(this.amountNumber)
+    }
+
+    public get evmTokenDecimals(): number | undefined {
+        if (this.isFromEverscale && !this.pipeline?.isNative) {
+            return this.token?.decimals
+        }
+        return this.isEvmToEvm
+            ? this.hiddenBridgePipeline?.evmTokenDecimals
+            : this.pipeline?.evmTokenDecimals
+    }
+
 
     /*
-     * Public actions. Useful in UI
+     * Reactions handlers
+     * ----------------------------------------------------------------------------------
+     */
+
+    public get isEverscaleBasedToken(): boolean {
+        return this.pipeline?.tokenBase === 'tvm'
+    }
+
+    public get isNativeEverscaleCurrency(): boolean {
+        if (this.data.selectedToken) {
+            return [...WEVEREvmRoots, WEVERRootAddress.toString()].includes(this.data.selectedToken)
+        }
+        return false
+    }
+
+    public get isNativeEvmCurrency(): boolean {
+        if (!this.isNativeEverscaleCurrency && this.data.selectedToken) {
+            return this.bridgeAssets.isNativeCurrency(this.data.selectedToken)
+        }
+        return false
+    }
+
+    public get isEvmToEverscale(): boolean {
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'tvm'
+    }
+
+    public get amount(): CrosschainBridgeStoreData['amount'] {
+        return this.data.amount
+    }
+
+
+    /*
+     * Internal utilities methods
+     * ----------------------------------------------------------------------------------
+     */
+
+    public get maxEversAmount(): CrosschainBridgeStoreData['maxEversAmount'] {
+        return this.data.maxEversAmount
+    }
+
+    public get maxTransferFee(): CrosschainBridgeStoreData['maxTransferFee'] {
+        return this.data.maxTransferFee
+    }
+
+
+    /*
+     * Memoized store data values
      * ----------------------------------------------------------------------------------
      */
 
     /**
-     * Change network by the given key and value.
-     * @template {string} K
-     * @param {K extends keyof NetworkFields} key
-     * @param {NetworkShape} [value]
+     * Returns non-shifted minimum receive EVER`s amount
      */
-    public changeNetwork<K extends keyof NetworkFields>(key: K, value?: NetworkShape): void {
-        if (value === undefined) {
-            return
-        }
+    public get minEversAmount(): CrosschainBridgeStoreData['minEversAmount'] {
+        return this.data.minEversAmount
+    }
 
-        if (key === 'leftNetwork') {
-            const { leftAddress } = this
-            if (value.type === 'everscale') {
-                this.setData('leftAddress', this.everWallet.address || '')
-            }
-            else if (value.type === 'evm') {
-                this.setData('leftAddress', this.evmWallet.address || '')
-                if (this.rightNetwork?.type === 'solana') {
-                    this.setData('rightNetwork', undefined)
-                }
-            }
-            else if (value.type === 'solana') {
-                this.setData('leftAddress', this.solanaWallet.address || '')
-            }
+    public get minTransferFee(): CrosschainBridgeStoreData['minTransferFee'] {
+        return this.data.minTransferFee
+    }
 
-            if (value.id === this.rightNetwork?.id) {
-                this.setData({
-                    rightNetwork: this.leftNetwork,
-                    rightAddress: leftAddress,
-                })
-            }
-        }
-        else if (key === 'rightNetwork') {
-            if (value.type === 'everscale') {
-                this.setData('rightAddress', this.everWallet.address || '')
-            }
-            else if (value.type === 'evm') {
-                this.setData('rightAddress', this.evmWallet.address || '')
-            }
-            else if (value.type === 'solana') {
-                this.setData('rightAddress', this.solanaWallet.address || '')
-            }
+    public get isFromEverscale(): boolean {
+        return this.leftNetwork?.type === 'tvm'
+    }
 
-            if (value.id === this.leftNetwork?.id) {
-                if (this.rightNetwork?.type === 'everscale') {
-                    this.setData('leftAddress', this.everWallet.address || '')
-                }
-                else if (this.rightNetwork?.type === 'evm') {
-                    this.setData('leftAddress', this.evmWallet.address || '')
-                }
-                else if (this.rightNetwork?.type === 'solana') {
-                    this.setData('leftAddress', this.solanaWallet.address || '')
-                }
-
-                this.setData({
-                    leftNetwork: this.rightNetwork,
-                })
-            }
-        }
-
-        this.resetAsset()
-        this.setData(key, value)
-        this.setData('depositType', this.isEvmToEvm ? 'credit' : 'default')
+    public get isEverscaleToEvm(): boolean {
+        return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'evm'
     }
 
     /**
-     * Manually initiate store.
-     * Run all necessary reaction subscribers.
+     * Returns non-shifted receive EVER`s amount
      */
-    public init(): void {
-        this.#evmWalletDisposer = reaction(() => this.evmWallet.isConnected, this.handleEvmWalletConnection)
-        this.#swapDisposer = reaction(() => this.isSwapEnabled, async isEnabled => {
-            this.setData('depositType', isEnabled ? 'credit' : 'default')
-            if (isEnabled) {
-                await this.syncMinAmount()
-            }
-            else {
-                this.setData('minAmount', '')
-            }
-        })
-        this.#tokenDisposer = reaction(() => this.data.selectedToken, this.handleChangeToken)
-        this.#everWalletDisposer = reaction(() => this.everWallet.isConnected, this.handleEverWalletConnection)
-        this.#everWalletBalanceDisposer = reaction(
-            () => [this.everWallet.balance, this.everWallet.isContractUpdating],
-            this.handleEverWalletBalance,
-        )
-        this.#solanaWalletDisposer = reaction(() => this.solanaWallet.isConnected, this.handleSolanaWalletConnection)
+    public get eversAmount(): CrosschainBridgeStoreData['eversAmount'] {
+        return this.data.eversAmount
     }
 
-    /**
-     * Manually dispose of all reaction subscribers.
-     * Reset all data to their defaults.
-     */
-    public dispose(): void {
-        this.#evmWalletDisposer?.()
-        this.#swapDisposer?.()
-        this.#everWalletDisposer?.()
-        this.#everWalletBalanceDisposer?.()
-        this.#tokenDisposer?.()
-        this.#solanaWalletDisposer?.()
-        this.reset()
+    public get isEverscaleToSolana(): boolean {
+        return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'solana'
     }
 
-    /**
-     * Approve amount, using approval strategies:
-     * - `infinity` - approve once and never ask again, otherwise
-     * - `fixed` - only for current transaction.
-     */
-    public async approveAmount(): Promise<void> {
-        let tries = 0
-
-        const send = async (transactionType?: string) => {
-            if (
-                tries >= 2
-                || this.evmWallet.web3 === undefined
-                || this.token === undefined
-                || this.leftNetwork === undefined
-                || this.rightNetwork === undefined
-                || this.pipeline?.chainId === undefined
-                || this.pipeline.evmTokenDecimals === undefined
-                || this.pipeline.evmTokenAddress === undefined
-            ) {
-                return
-            }
-
-            this.setState('isPendingApproval', true)
-
-            try {
-                tries += 1
-
-                let r
-
-                const tokenContract = new this.evmWallet.web3.eth.Contract(EthAbi.ERC20, this.pipeline.evmTokenAddress)
-
-                if (this.approvalStrategy === 'infinity') {
-                    r = tokenContract.methods.approve(
-                        this.pipeline.vaultAddress.toString(),
-                        '340282366920938463426481119284349108225',
-                    )
-                }
-                else {
-                    r = tokenContract.methods.approve(
-                        this.pipeline.vaultAddress.toString(),
-                        this.amountNumber
-                            .shiftedBy(this.pipeline.evmTokenDecimals)
-                            .dp(0, BigNumber.ROUND_DOWN)
-                            .toFixed(),
-                    )
-                }
-
-                if (r !== undefined) {
-                    const gas = await r.estimateGas({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                    })
-                    await r.send({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                        gas,
-                    })
-                    this.setState('step', CrosschainBridgeStep.TRANSFER)
-                }
-            }
-            catch (e: any) {
-                if (
-                    /eip-1559/g.test(e.message.toLowerCase())
-                    && transactionType !== undefined && transactionType !== '0x0'
-                ) {
-                    error('Approve error. Try with transaction type 0x0', e)
-                    await send('0x0')
-                }
-                else {
-                    error('Approve error', e)
-                }
-            }
-            finally {
-                this.setState('isPendingApproval', false)
-            }
-        }
-
-        await send(this.leftNetwork?.transactionType)
+    public get leftAddress(): CrosschainBridgeStoreData['leftAddress'] {
+        return this.data.leftAddress
     }
 
-    /**
-     * Check allowance.
-     * If the given `approvalDelta` less than 0 - we should display approval
-     * amount step, otherwise step with transfer form.
-     */
-    public async checkAllowance(): Promise<void> {
-        if (
-            this.token === undefined
-            || this.pipeline?.chainId === undefined
-            || this.pipeline.evmTokenAddress === undefined
-            || this.pipeline.evmTokenDecimals === undefined
-        ) {
-            return
-        }
+    public get leftNetwork(): CrosschainBridgeStoreData['leftNetwork'] {
+        return this.data.leftNetwork
+    }
 
-        const network = findNetwork(this.pipeline.chainId, 'evm')
+    public get pipeline(): CrosschainBridgeStoreData['pipeline'] {
+        return this.data.pipeline
+    }
 
-        if (network === undefined) {
-            return
-        }
+    public get hiddenBridgePipeline(): CrosschainBridgeStoreData['hiddenBridgePipeline'] {
+        return this.data.hiddenBridgePipeline
+    }
 
-        this.setState('isPendingAllowance', true)
+    public get rightAddress(): CrosschainBridgeStoreData['rightAddress'] {
+        return this.data.rightAddress
+    }
 
-        try {
-            const allowance = await erc20TokenContract(this.pipeline.evmTokenAddress, network.rpcUrl)
-                .methods.allowance(
-                    this.evmWallet.address,
-                    this.pipeline.vaultAddress,
-                )
-                .call()
+    public get rightNetwork(): CrosschainBridgeStoreData['rightNetwork'] {
+        return this.data.rightNetwork
+    }
 
-            const approvalDelta = new BigNumber(allowance).minus(
-                this.amountNumber
-                    .shiftedBy(this.pipeline.evmTokenDecimals)
-                    .dp(0, BigNumber.ROUND_DOWN),
+    public get txHash(): CrosschainBridgeStoreData['txHash'] {
+        return this.data.txHash
+    }
+
+    public get isSolanaToEverscale(): boolean {
+        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'tvm'
+    }
+
+    public get rightNetworks(): NetworkShape[] {
+        if (this.leftNetwork?.type === 'evm') {
+            return networks.filter(
+                network => (
+                    this.rightNetwork === undefined
+                        ? network.id !== this.leftNetwork?.id && network.type !== 'solana'
+                        : true
+                ),
             )
+        }
+        return networks
+    }
 
-            if (approvalDelta.lt(0)) {
-                this.setState('step', CrosschainBridgeStep.SELECT_APPROVAL_STRATEGY)
-            }
-            else {
-                this.setState('step', CrosschainBridgeStep.TRANSFER)
-            }
-        }
-        catch (e) {
-            error('Check allowance error', e)
-        }
-        finally {
-            this.setState('isPendingAllowance', false)
-        }
+    public get isCalculating(): CrosschainBridgeStoreState['isCalculating'] {
+        return this.state.isCalculating
+    }
+
+    public get isFetching(): CrosschainBridgeStoreState['isFetching'] {
+        return this.state.isFetching
+    }
+
+
+    /*
+     * Memoized store state values
+     * ----------------------------------------------------------------------------------
+     */
+
+    public get isLocked(): CrosschainBridgeStoreState['isLocked'] {
+        return this.state.isLocked
+    }
+
+    public get isPendingAllowance(): CrosschainBridgeStoreState['isPendingAllowance'] {
+        return this.state.isPendingAllowance
+    }
+
+    public get isPendingApproval(): CrosschainBridgeStoreState['isPendingApproval'] {
+        return this.state.isPendingApproval
+    }
+
+    public get isTokenChainSameToTargetChain(): CrosschainBridgeStoreState['isTokenChainSameToTargetChain'] {
+        return this.state.isTokenChainSameToTargetChain
+    }
+
+    public get vaultLimitNumber(): BigNumber {
+        return new BigNumber(this.pipeline?.vaultLimit || 0)
+        .shiftedBy(this.pipeline?.evmTokenDecimals === undefined
+            ? 0
+            : -this.pipeline.evmTokenDecimals)
+        .shiftedBy(this.amountMinDecimals)
+        .dp(0, BigNumber.ROUND_DOWN)
+    }
+
+    public get step(): CrosschainBridgeStoreState['step'] {
+        return this.state.step
+    }
+
+    public get evmPendingWithdrawal(): CrosschainBridgeStoreState['evmPendingWithdrawal'] {
+        return this.state.evmPendingWithdrawal
     }
 
     /**
-     * Common transfer tokens from EVM to Everscale.
-     * @param {() => void} reject
+     * Returns non-shifted amount field BigNumber instance
      */
-    public async transfer(reject?: (e: any) => void): Promise<void> {
-        let tries = 0
+    public get amountNumber(): BigNumber {
+        return new BigNumber(this.amount || 0)
+    }
 
-        const send = async (transactionType?: string) => {
-            if (
-                tries >= 2
-                || this.evmWallet.address === undefined
-                || this.evmWallet.web3 === undefined
-                || this.token === undefined
-                || this.pipeline?.evmTokenDecimals === undefined
-            ) {
-                return
-            }
+    /**
+     * Returns min value of decimals between Everscale token and EVM token vault decimals
+     */
+    public get amountMinDecimals(): number {
+        if (this.token === undefined || this.pipeline?.evmTokenDecimals === undefined) {
+            return 0
+        }
+        return Math.min(this.token.decimals, this.pipeline.evmTokenDecimals)
+    }
 
-            this.setState('isProcessing', true)
+    public get tokens(): BridgeAsset[] {
+        const leftChainId = this.leftNetwork?.chainId
+        const rightChainId = this.rightNetwork?.chainId
 
-            try {
-                tries += 1
-
-                const target = this.rightAddress.split(':')
-
-                let r
-
-                const vaultContract = new this.evmWallet.web3.eth.Contract(
-                    EthAbi.Vault,
-                    this.pipeline.vaultAddress.toString(),
-                )
-
-                if (this.pendingWithdrawalsBounty && this.pendingWithdrawals) {
-                    r = vaultContract.methods.deposit(
-                        [target[0], `0x${target[1]}`],
-                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                            .dp(0, BigNumber.ROUND_DOWN)
-                            .toFixed(),
-                        this.pendingWithdrawalsBounty,
-                        this.pendingWithdrawals.map(item => ({
-                            recipient: item.recipient,
-                            id: item.id,
-                        })),
+        if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
+            return this.bridgeAssets.tokens.filter(
+                token => {
+                    const assetRoot = this.bridgeAssets.findAssetRootByTokenAndChain(
+                        token.root,
+                        leftChainId,
                     )
-                }
-                else {
-                    r = vaultContract.methods.deposit(
-                        [target[0], `0x${target[1]}`],
-                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                            .dp(0, BigNumber.ROUND_DOWN)
-                            .toFixed(),
+                    const assets = this.bridgeAssets.assets[assetRoot ?? token.root]
+                    return (
+                        isEvmAddressValid(token.root)
+                        && token.chainId === leftChainId
+                        && Object.entries({ ...assets }).some(([key, asset]) => {
+                            const [tokenBase] = key.split('_')
+                            return (
+                                asset.vaults.some(vault => (
+                                    vault.chainId === leftChainId
+                                    && vault.depositType === 'credit'
+                                    && tokenBase === 'evm'
+                                ))
+                            )
+                        })
+                        && Object.entries({ ...assets }).some(([key, asset]) => {
+                            const [tokenBase] = key.split('_')
+                            return (
+                                asset.vaults.some(vault => (
+                                    vault.chainId === rightChainId
+                                    && vault.depositType === 'default'
+                                    && tokenBase === 'evm'
+                                ))
+                            )
+                        })
                     )
-                }
-
-                if (r !== undefined) {
-                    const gas = await r.estimateGas({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                    })
-                    await r.send({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                        gas,
-                    }).once('transactionHash', (transactionHash: string) => {
-                        this.setData('txHash', transactionHash)
-                    })
-                }
-            }
-            catch (e: any) {
-                if (
-                    /eip-1559/g.test(e.message.toLowerCase())
-                    && transactionType !== undefined && transactionType !== '0x0'
-                ) {
-                    error('Transfer deposit error. Try with transaction type 0x0', e)
-                    await send('0x0')
-                }
-                else {
-                    reject?.(e)
-                    error('Transfer deposit error', e)
-                }
-            }
-            finally {
-                this.setState('isProcessing', false)
-            }
+                },
+            )
         }
 
-        await send(this.leftNetwork?.transactionType)
+        if (this.isFromEvm && leftChainId !== undefined) {
+            return this.bridgeAssets.tokens.filter(
+                token => isEvmAddressValid(token.root) && token.chainId === leftChainId,
+            )
+        }
+
+        if (this.isEverscaleToSolana) {
+            return this.bridgeAssets.tokens.filter(
+                token => {
+                    const assets = this.bridgeAssets.assets[token.root]
+                    return Object.keys({ ...assets }).some(key => key.split('_')[0] === 'solana')
+                },
+            )
+        }
+
+        if (this.isFromEverscale && leftChainId !== undefined) {
+            return this.bridgeAssets.tokens.filter(
+                token => isEverscaleAddressValid(token.root) && token.chainId === leftChainId,
+            )
+        }
+
+        if (this.isFromSolana && leftChainId !== undefined) {
+            return this.bridgeAssets.tokens.filter(
+                token => isSolanaAddressValid(token.root) && token.chainId === leftChainId,
+            )
+        }
+
+        return this.bridgeAssets.tokens
     }
 
-    /**
-     * Transfer from EVM to Everscale with swap tokens between selected token and EVERs.
-     * @param {() => void} reject
+
+    /*
+     * Computed states and values
+     * ----------------------------------------------------------------------------------
      */
-    public async transferWithSwap(reject?: (e: any) => void): Promise<void> {
-        let tries = 0
 
-        const send = async (transactionType?: string) => {
-            if (
-                tries >= 2
-                || this.evmWallet.address === undefined
-                || this.evmWallet.web3 === undefined
-                || this.token === undefined
-                || this.pipeline?.evmTokenDecimals === undefined
-            ) {
-                return
-            }
-
-            this.setState('isProcessing', true)
-
-            const target = this.rightAddress.split(':')
-            const creditFactoryTarget = CreditFactoryAddress.toString().split(':')
-
-            try {
-                tries += 1
-
-                const vaultContract = new this.evmWallet.web3.eth.Contract(
-                    EthAbi.Vault,
-                    this.pipeline.vaultAddress.toString(),
-                )
-
-                const r = vaultContract.methods.depositToFactory(
-                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                        .dp(0, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                    '0',
-                    `0x${target[1]}`,
-                    `0x${creditFactoryTarget[1]}`,
-                    `0x${target[1]}`,
-                    this.minReceiveTokensNumber.toFixed(),
-                    this.eversAmountNumber.shiftedBy(DexConstants.CoinDecimals).toFixed(),
-                    this.data.swapType,
-                    DepositToFactoryMinSlippageNumerator,
-                    DepositToFactoryMinSlippageDenominator,
-                    `0x${Buffer.from('te6ccgEBAQEAAgAAAA==', 'base64').toString('hex')}`,
-                )
-
-                if (r !== undefined) {
-                    const gas = await r.estimateGas({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                    })
-                    await r.send({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                        gas,
-                    }).once('transactionHash', (transactionHash: string) => {
-                        this.setData('txHash', transactionHash)
-                    })
-                }
-            }
-            catch (e: any) {
-                if (
-                    /eip-1559/g.test(e.message.toLowerCase())
-                    && transactionType !== undefined && transactionType !== '0x0'
-                ) {
-                    error('Transfer deposit to factory error. Try with transaction type 0x0', e)
-                    await send('0x0')
-                }
-                else {
-                    reject?.(e)
-                    error('Transfer deposit to factory error', e)
-                }
-            }
-            finally {
-                this.setState('isProcessing', false)
-            }
-        }
-
-        await send(this.leftNetwork?.transactionType)
+    /**
+     * Returns shifted token balance BigNumber instance
+     */
+    public get balanceNumber(): BigNumber {
+        return new BigNumber(this.balance || 0).shiftedBy(this.decimals ? -this.decimals : 0)
     }
 
-    /**
-     * Transfer from EVM to EVM with the Hidden Bridge strategy.
-     * @param {() => void} reject
-     */
-    public async transferWithHiddenSwap(reject?: (e: any) => void): Promise<void> {
-        let tries = 0
+    public get pendingWithdrawalsMinAmount(): string | undefined {
+        if (!this.pendingWithdrawalsAmount || !this.evmTokenDecimals) {
+            return undefined
+        }
+        return new BigNumber(this.pendingWithdrawalsAmount)
+        .shiftedBy(-this.evmTokenDecimals)
+        .shiftedBy(this.amountMinDecimals)
+        .dp(0, BigNumber.ROUND_DOWN)
+        .toFixed()
+    }
 
-        const send = async (transactionType?: string) => {
-            if (
-                tries >= 2
-                || this.everWallet.address === undefined
-                || this.evmWallet.web3 === undefined
-                || this.token === undefined
-                || this.rightNetwork === undefined
-                || this.pipeline?.evmTokenDecimals === undefined
-                || this.pipeline.everscaleTokenAddress === undefined
-            ) {
-                return
-            }
+    public get depositFee(): string {
+        if (this.isFromEvm) {
+            return this.amountNumber.shiftedBy(this.pipeline?.evmTokenDecimals || 0)
+            .times(this.pipeline?.depositFee ?? 0)
+            .div(10000)
+            .dp(0, BigNumber.ROUND_UP)
+            .shiftedBy(-(this.pipeline?.evmTokenDecimals || 0))
+            .toFixed()
+        }
+        return '0'
+    }
 
-            const target = this.everWallet.address.split(':')
-            const creditFactoryTarget = CreditFactoryAddress.toString().split(':')
+    public get withdrawFee(): string {
+        if (this.isFromEverscale) {
+            return this.amountNumber.shiftedBy(this.token?.decimals || 0)
+            .times(this.pipeline?.withdrawFee ?? 0)
+            .div(10000)
+            .dp(0, BigNumber.ROUND_UP)
+            .shiftedBy(-(this.token?.decimals || 0))
+            .toFixed()
+        }
+        return '0'
+    }
 
-            this.setState('isProcessing', true)
+    public get isAmountVaultLimitExceed(): boolean {
+        return isGoodBignumber(this.vaultLimitNumber) && !validateMaxValue(
+            this.vaultLimitNumber.shiftedBy(-this.amountMinDecimals).toFixed(),
+            this.amountNumber.toFixed(),
+        )
+    }
 
-            try {
-                tries += 1
+    public get isRouteValid(): boolean {
+        let isValid = (
+            this.everWallet.isConnected
+            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
+            && this.leftNetwork !== undefined
+            && this.leftAddress.length > 0
+            && this.rightNetwork !== undefined
+            && this.rightAddress.length > 0
+            && this.bridgeAssets.isReady
+        )
 
-                const recipient = (await hiddenBridgeFactoryContract(HiddenBridgeStrategyFactory)
-                    .methods.getStrategyAddress({
-                        answerId: 0,
-                        tokenRoot: this.pipeline.everscaleTokenAddress,
-                    })
-                    .call())
-                    .value0
-
-                const processingId = new BigNumber(
-                    Math.floor(
-                        Math.random() * (Number.MAX_SAFE_INTEGER - 1),
-                    ) + 1,
-                ).toFixed()
-
-                const payload = (await hiddenBridgeStrategyContract(recipient)
-                    .methods.buildLayer3({
-                        chainId: this.rightNetwork.chainId,
-                        evmAddress: this.rightAddress,
-                        id: processingId,
-                        proxy: this.pipeline.proxyAddress,
-                    })
-                    .call())
-                    .value0
-
-                const vaultContract = new this.evmWallet.web3.eth.Contract(
-                    EthAbi.Vault,
-                    this.pipeline.vaultAddress.toString(),
-                )
-
-                const r = vaultContract.methods.depositToFactory(
-                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                        .dp(0, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                    '0',
-                    `0x${target[1]}`,
-                    `0x${creditFactoryTarget[1]}`,
-                    `0x${recipient.toString().split(':')[1]}`,
-                    this.minReceiveTokensNumber.toFixed(),
-                    HiddenBridgeStrategyGas,
-                    this.data.swapType,
-                    DepositToFactoryMinSlippageNumerator,
-                    DepositToFactoryMinSlippageDenominator,
-                    `0x${Buffer.from(payload, 'base64').toString('hex')}`,
-                )
-
-                if (r !== undefined) {
-                    const gas = await r.estimateGas({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                    })
-                    await r.send({
-                        from: this.evmWallet.address,
-                        type: transactionType,
-                        gas,
-                    }).once('transactionHash', (transactionHash: string) => {
-                        this.setData('txHash', transactionHash)
-                    })
-                }
-            }
-            catch (e: any) {
-                if (
-                    /eip-1559/g.test(e.message.toLowerCase())
-                    && transactionType !== undefined && transactionType !== '0x0'
-                ) {
-                    error('Transfer deposit to factory error. Try with transaction type 0x0', e)
-                    await send('0x0')
-                }
-                else {
-                    reject?.(e)
-                    error('Transfer deposit to factory error', e)
-                }
-            }
-            finally {
-                this.setState('isProcessing', false)
-            }
+        if (this.isFromEvm) {
+            isValid = (
+                isValid
+                && isEqual(this.leftNetwork?.chainId, this.evmWallet.chainId)
+                && isEvmAddressValid(this.leftAddress)
+            )
         }
 
-        await send(this.leftNetwork?.transactionType)
+        if (this.isEvmToEvm) {
+            isValid = isValid && isEvmAddressValid(this.rightAddress)
+        }
+        else if (this.isEvmToEverscale) {
+            isValid = isValid && isEverscaleAddressValid(this.rightAddress)
+        }
+        else if (this.isEverscaleToEvm) {
+            isValid = (
+                isValid
+                && isEqual(this.rightNetwork?.chainId, this.evmWallet.chainId)
+                && isEverscaleAddressValid(this.leftAddress)
+                && isEvmAddressValid(this.rightAddress)
+            )
+        }
+
+        return isValid
+    }
+
+    public get isEvmToEvm(): boolean {
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
+    }
+
+    public get isFromEvm(): boolean {
+        return this.leftNetwork?.type === 'evm'
+    }
+
+    public get isFromSolana(): boolean {
+        return this.leftNetwork?.type === 'solana'
+    }
+
+    public get token(): BridgeAsset | undefined {
+        if (
+            this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.data.selectedToken === undefined
+        ) {
+            return undefined
+        }
+
+        return this.bridgeAssets.get(
+            this.leftNetwork.type,
+            this.leftNetwork.chainId,
+            this.data.selectedToken.toLowerCase(),
+        )
+    }
+
+    public get vaultBalance(): string | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.vaultBalance
+        }
+        return this.pipeline?.vaultBalance
+    }
+
+    public get vaultBalanceDecimals(): number | undefined {
+        if (this.isEvmToEvm) {
+            return this.hiddenBridgePipeline?.evmTokenDecimals
+        }
+        if (this.isEverscaleToSolana) {
+            return this.pipeline?.solanaTokenDecimals
+        }
+        return this.pipeline?.evmTokenDecimals
+    }
+
+    public get pendingWithdrawalsAmount(): string | undefined {
+        return this.pendingWithdrawals
+        ?.reduce((acc, item) => acc.plus(item.amount), new BigNumber(0))
+        .toFixed()
+    }
+
+    public get pendingWithdrawalsBounty(): string | undefined {
+        return this.pendingWithdrawals
+        ?.reduce((acc, item) => acc.plus(item.bounty), new BigNumber(0))
+        .toFixed()
     }
 
     /**
@@ -805,10 +844,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         remainingGasTo: this.everWallet.account.address,
                     })
                     .send({
-                        amount: '6000000000',
-                        bounce: true,
-                        from: new Address(this.leftAddress),
-                    })
+                    amount: '6000000000',
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
             }
             else {
                 debug('Burn EVM-based token to proxy')
@@ -841,14 +880,425 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     /**
-     *
+     * Change network by the given key and value.
+     * @template {string} K
+     * @param {K extends keyof NetworkFields} key
+     * @param {NetworkShape} [value]
      */
-    public async transferAlienMultiToken(reject?: (e: any) => void): Promise<void> {
-        let tries = 0
+    public changeNetwork<K extends keyof NetworkFields>(key: K, value?: NetworkShape): void {
+        if (value === undefined) {
+            return
+        }
 
-        const send = async (transactionType?: string) => {
+        if (key === 'leftNetwork') {
+            const { leftAddress } = this
+            if (value.type === 'tvm') {
+                this.setData('leftAddress', this.everWallet.address || '')
+            }
+            else if (value.type === 'evm') {
+                this.setData('leftAddress', this.evmWallet.address || '')
+                if (this.rightNetwork?.type === 'solana') {
+                    this.setData('rightNetwork', undefined)
+                }
+            }
+
+            if (value.id === this.rightNetwork?.id) {
+                this.setData({
+                    rightNetwork: this.leftNetwork,
+                    rightAddress: leftAddress,
+                })
+            }
+        }
+        else if (key === 'rightNetwork') {
+            if (value.type === 'tvm') {
+                this.setData('rightAddress', this.everWallet.address || '')
+            }
+            else if (value.type === 'evm') {
+                this.setData('rightAddress', this.evmWallet.address || '')
+            }
+
+            if (value.id === this.leftNetwork?.id) {
+                if (this.rightNetwork?.type === 'tvm') {
+                    this.setData('leftAddress', this.everWallet.address || '')
+                }
+                else if (this.rightNetwork?.type === 'evm') {
+                    this.setData('leftAddress', this.evmWallet.address || '')
+                }
+
+                this.setData('leftNetwork', this.rightNetwork)
+            }
+        }
+
+        this.setData(key, value)
+    }
+
+    public async changeToken(address: string): Promise<void> {
+        this.setData('selectedToken', address)
+
+        this.resetAsset()
+
+        if (
+            this.token?.root === undefined
+            || this.leftNetwork?.type === undefined
+            || this.leftNetwork?.chainId === undefined
+            || this.rightNetwork?.type === undefined
+            || this.rightNetwork?.chainId === undefined
+        ) {
+            return
+        }
+        const everscaleMainNetwork = getEverscaleMainNetwork()
+
+        try {
+            this.setState('isFetching', true)
+            const pipeline = await this.bridgeAssets.pipeline(
+                this.token.root,
+                `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
+                this.isEvmToEvm
+                    ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
+                    : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
+            )
+
+            if (pipeline === undefined) {
+                this.setState('isLocked', true)
+                return
+            }
+
+            this.setData('pipeline', new Pipeline(pipeline))
+        }
+        catch (e) {
+            error(e)
+            this.setState('isLocked', true)
+        }
+        finally {
+            this.setState('isFetching', false)
+            debug('Current pipeline', this.pipeline, this.hiddenBridgePipeline)
+        }
+
+        if (this.isFromEvm && this.isNativeEvmCurrency) {
+            if (this.leftNetwork.chainId === this.evmWallet.chainId) {
+                (this.token as EvmToken)?.setData('balance', this.evmWallet.balance)
+                this.pipeline?.setData('evmTokenBalance', this.evmWallet.balance)
+                this.pipeline?.setData('evmTokenDecimals', this.evmWallet.coin.decimals)
+            }
+        }
+        else if (this.isFromEverscale && this.isNativeEverscaleCurrency) {
+            this.pipeline?.setData(
+                'everscaleTokenBalance',
+                new BigNumber(this.everWallet.balance || 0).plus(this.token?.balance ?? 0)
+                .toFixed(),
+            )
+            this.pipeline?.setData('everscaleTokenDecimals', this.everWallet.coin.decimals)
+        }
+
+        if (this.isEverscaleToEvm) {
+            this.setState(
+                'isTokenChainSameToTargetChain',
+                this.pipeline?.mergePoolAddress !== undefined
+                    ? true
+                    : this.pipeline?.baseChainId === this.rightNetwork?.chainId,
+            )
+        }
+
+        await this.checkForceCreditSwap()
+
+        await this.switchToCredit()
+    }
+
+    public async switchToCredit(): Promise<void> {
+        this.setState('isSwapEnabled', true)
+
+        try {
+            this.setState('isCalculating', true)
+
+            let eventInitialBalance = '6000000000'
+
+            if (this.pipeline?.ethereumConfiguration !== undefined) {
+                try {
+                    eventInitialBalance = (await ethereumEventConfigurationContract(
+                        this.pipeline.ethereumConfiguration,
+                    ).methods.getDetails({
+                        answerId: 0,
+                    }).call())._basicConfiguration.eventInitialBalance
+                }
+                catch (e) {
+                }
+            }
+
+            let rate = '0'
+
+            if (this.isFromEvm) {
+                rate = (await getPrice(this.leftNetwork!.currencySymbol.toUpperCase() as Tickers)).price
+            }
+            else if (this.isFromEverscale) {
+                rate = (await getPrice(this.rightNetwork!.currencySymbol.toUpperCase() as Tickers)).price
+            }
+
+            let gasUsage = 1500000
+
+            // if token exists in evm
+            if (this.pipeline?.evmTokenAddress) {
+                if (this.pipeline.isNative) {
+                    try {
+                        const network = findNetwork(this.pipeline.chainId, 'evm')
+                        if (network) {
+                            await BridgeUtils.getEvmTokenSymbol(
+                                this.pipeline.evmTokenAddress,
+                                network.rpcUrl,
+                            )
+                            gasUsage = 200000
+                        }
+                    }
+                    catch (e) {
+                        debug('Token not deployed => gas usage is ', gasUsage)
+                    }
+                }
+                else {
+                    gasUsage = 300000
+                }
+            }
+
+            const gasPrice = await this.evmWallet.web3?.eth.getGasPrice().catch(() => '0') ?? '0'
+            const gasPriceNumber = new BigNumber(gasPrice || 0).times(gasUsage).shiftedBy(-18)
+
+            const minEversAmount = new BigNumber(eventInitialBalance || 0)
+                .plus(gasPriceNumber
+                .times(rate)
+                .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                .shiftedBy(this.everWallet.coin.decimals))
+
+            this.setData({
+                eventInitialBalance,
+                everscaleEvmCost: minEversAmount.shiftedBy(-this.everWallet.coin.decimals).toFixed(),
+                evmEverscaleCost: minEversAmount
+                    .shiftedBy(-this.everWallet.coin.decimals)
+                    .div(rate)
+                    .dp(this.evmWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                    .shiftedBy(this.evmWallet.coin.decimals)
+                    .toFixed(),
+                gasPrice: gasPriceNumber.toFixed(),
+                minEversAmount: minEversAmount.toFixed(),
+            })
+
+            if (this.isFromEvm) {
+                const maxEversAmount = this.evmWallet.balanceNumber
+                    .minus(gasPriceNumber)
+                    .times(rate)
+                    .shiftedBy(this.everWallet.coin.decimals)
+                    .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                    .dp(0, BigNumber.ROUND_UP)
+                    .toFixed()
+                this.setData(
+                    'maxEversAmount',
+                    isGoodBignumber(maxEversAmount) ? maxEversAmount : '0',
+                )
+            }
+        }
+        catch (e) {
+            this.setState('isLocked', true)
+        }
+        finally {
+            this.setState('isCalculating', false)
+        }
+    }
+
+    public async switchToDefault(): Promise<void> {
+        this.setState('isSwapEnabled', false)
+        this.setData({
+            eversAmount: undefined,
+            maxEversAmount: undefined,
+            minEversAmount: undefined,
+        })
+    }
+
+    /**
+     * Manually initiate store.
+     * Run all necessary reaction subscribers.
+     */
+    public init(): VoidFunction {
+        this.#everWalletDisposer = reaction(
+            () => this.everWallet.isConnected,
+            this.handleEverWalletConnection,
+            { fireImmediately: true },
+        )
+        this.#evmWalletDisposer = reaction(
+            () => this.evmWallet.isConnected,
+            this.handleEvmWalletConnection,
+            { fireImmediately: true },
+        )
+        this.#solanaWalletDisposer = reaction(
+            () => this.solanaWallet.isConnected,
+            this.handleSolanaWalletConnection,
+        )
+        this.#everWalletBalanceDisposer = reaction(
+            () => [this.everWallet.balance, this.everWallet.isContractUpdating],
+            this.handleEverWalletBalance,
+        )
+
+        return () => this.dispose()
+    }
+
+    /**
+     * Manually dispose of all reaction subscribers.
+     * Reset all data to their defaults.
+     */
+    public dispose(): void {
+        this.#evmWalletDisposer?.()
+        this.#everWalletDisposer?.()
+        this.#everWalletBalanceDisposer?.()
+        this.#solanaWalletDisposer?.()
+        this.reset()
+    }
+
+    /**
+     * Approve amount, using approval strategies:
+     * - `infinity` - approve once and never ask again, otherwise
+     * - `fixed` - only for current transaction.
+     */
+    public async approveAmount(): Promise<void> {
+        let attempts = 0
+
+        const send = async (transactionType?: string): Promise<void> => {
             if (
-                tries >= 2
+                attempts >= 2
+                || this.evmWallet.web3 === undefined
+                || this.token === undefined
+                || this.leftNetwork === undefined
+                || this.rightNetwork === undefined
+                || this.pipeline?.chainId === undefined
+                || this.pipeline.evmTokenDecimals === undefined
+                || this.pipeline.evmTokenAddress === undefined
+            ) {
+                return
+            }
+
+            this.setState('isPendingApproval', true)
+
+            try {
+                attempts += 1
+
+                const tokenContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.ERC20,
+                    this.pipeline.evmTokenAddress,
+                )
+
+                let r
+
+                if (this.approvalStrategy === 'infinity') {
+                    r = tokenContract.methods.approve(
+                        this.pipeline.vaultAddress.toString(),
+                        '340282366920938463426481119284349108225',
+                    )
+                }
+                else {
+                    r = tokenContract.methods.approve(
+                        this.pipeline.vaultAddress.toString(),
+                        this.amountNumber
+                        .shiftedBy(this.pipeline.evmTokenDecimals)
+                        .dp(0, BigNumber.ROUND_DOWN)
+                        .toFixed(),
+                    )
+                }
+
+                if (r !== undefined) {
+                    const gas = await r.estimateGas({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                    await r.send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        gas,
+                    })
+                    this.setState('step', CrosschainBridgeStep.TRANSFER)
+                }
+            }
+            catch (e: any) {
+                if (
+                    /eip-1559/g.test(e.message.toLowerCase())
+                    && transactionType !== undefined && transactionType !== '0x0'
+                ) {
+                    error('Approve error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    error('Approve error', e)
+                }
+            }
+            finally {
+                this.setState('isPendingApproval', false)
+            }
+        }
+
+        await send(this.leftNetwork?.transactionType)
+    }
+
+    /**
+     * Check allowance.
+     * If the given `approvalDelta` less than 0 - we should display approval
+     * amount step, otherwise step with transfer form.
+     */
+    public async checkAllowance(): Promise<void> {
+        if (
+            this.token === undefined
+            || this.pipeline?.chainId === undefined
+            || this.pipeline.evmTokenAddress === undefined
+            || this.pipeline.evmTokenDecimals === undefined
+        ) {
+            return
+        }
+
+        const network = findNetwork(this.pipeline.chainId, 'evm')
+
+        if (network === undefined) {
+            return
+        }
+
+        this.setState('isPendingAllowance', true)
+
+        try {
+            const allowance = await erc20TokenContract(
+                this.pipeline.evmTokenAddress,
+                network.rpcUrl,
+            )
+            .methods.allowance(
+                this.evmWallet.address,
+                this.pipeline.vaultAddress,
+            )
+            .call()
+
+            const approvalDelta = new BigNumber(allowance).minus(
+                this.amountNumber
+                .shiftedBy(this.pipeline.evmTokenDecimals)
+                .dp(0, BigNumber.ROUND_DOWN),
+            )
+
+            if (approvalDelta.lt(0)) {
+                this.setState('step', CrosschainBridgeStep.SELECT_APPROVAL_STRATEGY)
+            }
+            else {
+                this.setState('step', CrosschainBridgeStep.TRANSFER)
+            }
+        }
+        catch (e) {
+            error('Check allowance error', e)
+        }
+        finally {
+            this.setState('isPendingAllowance', false)
+        }
+    }
+
+    /**
+     * Common transfer tokens from EVM to Everscale.
+     * @param {() => void} reject
+     * @deprecated
+     */
+    public async transfer(reject?: (e: any) => void): Promise<void> {
+        let attempts = 0
+
+        const send = async (transactionType?: string): Promise<void> => {
+            if (
+                attempts >= 2
+                || this.evmWallet.address === undefined
                 || this.evmWallet.web3 === undefined
                 || this.token === undefined
                 || this.pipeline?.evmTokenDecimals === undefined
@@ -856,33 +1306,41 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 return
             }
 
-            const network = findNetwork(this.pipeline.chainId, 'evm')
-
-            if (network === undefined) {
-                return
-            }
-
             this.setState('isProcessing', true)
 
             try {
-                tries += 1
+                attempts += 1
 
                 const target = this.rightAddress.split(':')
 
+                let r
+
                 const vaultContract = new this.evmWallet.web3.eth.Contract(
-                    EthAbi.MultiVault,
+                    EthAbi.Vault,
                     this.pipeline.vaultAddress.toString(),
                 )
 
-                const r = vaultContract.methods.deposit([
-                    /* recipient */ [target[0], `0x${target[1]}`],
-                    /* token */ this.pipeline.evmTokenAddress,
-                    /* amount */ this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
-                        .dp(0, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                    /* expected_evers */ 0,
-                    /* payload */ [], // '0xb5ee9c72010101010006000008deadbeaf',
-                ])
+                if (this.pendingWithdrawalsBounty && this.pendingWithdrawals) {
+                    r = vaultContract.methods.deposit(
+                        [target[0], `0x${target[1]}`],
+                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed(),
+                        this.pendingWithdrawalsBounty,
+                        this.pendingWithdrawals.map(item => ({
+                            recipient: item.recipient,
+                            id: item.id,
+                        })),
+                    )
+                }
+                else {
+                    r = vaultContract.methods.deposit(
+                        [target[0], `0x${target[1]}`],
+                        this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                            .dp(0, BigNumber.ROUND_DOWN)
+                            .toFixed(),
+                    )
+                }
 
                 if (r !== undefined) {
                     const gas = await r.estimateGas({
@@ -908,7 +1366,384 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 else {
                     reject?.(e)
-                    error('Transfer Alien MultiToken error', e)
+                    error('Transfer deposit error', e)
+                }
+            }
+            finally {
+                this.setState('isProcessing', false)
+            }
+        }
+
+        await send(this.leftNetwork?.transactionType)
+    }
+
+    /**
+     * Transfer
+     * @param {(e: any) => void} reject
+     * @returns {Promise<void>}
+     */
+    public async depositWithMultiSwap(reject?: (e: any) => void): Promise<void> {
+        let attempts = 0
+
+        const send = async (transactionType?: string): Promise<void> => {
+            if (
+                attempts >= 2
+                || this.evmWallet.web3 === undefined
+                || this.token === undefined
+                || this.pipeline?.evmTokenDecimals === undefined
+                || this.everWallet.address === undefined
+            ) {
+                return
+            }
+
+            const network = findNetwork(this.pipeline.chainId, 'evm')
+
+            if (network === undefined) {
+                return
+            }
+
+            this.setState('isProcessing', true)
+
+            try {
+                attempts += 1
+
+                let target = this.rightAddress.split(':')
+
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.MultiVault,
+                    this.pipeline.vaultAddress.toString(),
+                )
+
+                let eventInitialBalance = '6000000000'
+
+                if (this.pipeline?.ethereumConfiguration !== undefined) {
+                    try {
+                        eventInitialBalance = (await ethereumEventConfigurationContract(
+                            this.pipeline.ethereumConfiguration,
+                        ).methods.getDetails({
+                            answerId: 0,
+                        }).call())._basicConfiguration.eventInitialBalance
+                    }
+                    catch (e) {
+                    }
+                }
+
+                const expectedEvers = this.eversAmountNumber
+                    .shiftedBy(this.everWallet.coin.decimals)
+                    .plus(eventInitialBalance ?? 0)
+
+                const amount = this.amountNumber
+                    .shiftedBy(this.pipeline.evmTokenDecimals)
+                    .dp(0, BigNumber.ROUND_DOWN)
+                    .toFixed()
+                let payload: string | undefined
+
+                if (this.isNativeEverscaleCurrency) {
+                    const response = await getUnwrapPayload({
+                        amount,
+                        destination: this.rightAddress,
+                        remainingGasTo: this.everWallet.address,
+                    })
+
+                    target = response.sendTo.split(':')
+                    payload = Buffer.from(response.tokensTransferPayload, 'base64').toString('hex')
+                }
+
+                console.log([
+                    /* recipient */
+                    [target[0], `0x${target[1]}`],
+                    /* token */
+                    this.pipeline.evmTokenAddress,
+                    /* amount */
+                    amount,
+                    /* expected_evers */
+                    expectedEvers.toFixed(),
+                    /* payload */
+                    payload === undefined ? [] : `0x${payload}`, // '0xb5ee9c72010101010006000008deadbeaf',
+                ])
+
+                const r = vaultContract.methods.deposit([
+                    /* recipient */
+                    [target[0], `0x${target[1]}`],
+                    /* token */
+                    this.pipeline.evmTokenAddress,
+                    /* amount */
+                    amount,
+                    /* expected_evers */
+                    expectedEvers.toFixed(),
+                    /* payload */
+                    payload === undefined ? [] : `0x${payload}`, // '0xb5ee9c72010101010006000008deadbeaf',
+                ])
+
+                const rate = (await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as Tickers)).price as string
+                const value = expectedEvers
+                    .shiftedBy(-this.everWallet.coin.decimals)
+                    .div(rate)
+                    .times(1.2)
+                    .times(1e18)
+                    .dp(0, BigNumber.ROUND_DOWN)
+
+                if (r !== undefined) {
+                    const gas = await r.estimateGas({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        value: value.toFixed(),
+                    })
+                    await r.send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        gas,
+                        value: value.toFixed(),
+                    }).once('transactionHash', (transactionHash: string) => {
+                        this.setData('txHash', transactionHash)
+                    })
+                }
+            }
+            catch (e: any) {
+                if (
+                    /eip-1559/g.test(e.message.toLowerCase())
+                    && transactionType !== undefined && transactionType !== '0x0'
+                ) {
+                    error('Transfer deposit error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.(e)
+                    error('Deposit with MultiSwap error', e)
+                }
+            }
+            finally {
+                this.setState('isProcessing', false)
+            }
+        }
+
+        await send(this.leftNetwork?.transactionType)
+    }
+
+    public async depositNative(reject?: (e: any) => void): Promise<void> {
+        let attempts = 0
+
+        const send = async (transactionType?: string): Promise<void> => {
+            if (
+                attempts >= 2
+                || this.evmWallet.web3 === undefined
+                || this.token === undefined
+                || this.pipeline?.evmTokenDecimals === undefined
+            ) {
+                return
+            }
+
+            const network = findNetwork(this.pipeline.chainId, 'evm')
+
+            if (network === undefined) {
+                return
+            }
+
+            this.setState('isProcessing', true)
+
+            try {
+                attempts += 1
+
+                const target = this.rightAddress.split(':')
+
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.MultiVault,
+                    this.pipeline.vaultAddress.toString(),
+                )
+
+                let eventInitialBalance = '6000000000'
+
+                if (this.pipeline?.ethereumConfiguration !== undefined) {
+                    try {
+                        eventInitialBalance = (await ethereumEventConfigurationContract(
+                            this.pipeline.ethereumConfiguration,
+                        ).methods.getDetails({
+                            answerId: 0,
+                        }).call())._basicConfiguration.eventInitialBalance
+                    }
+                    catch (e) {
+                    }
+                }
+
+                const expectedEvers = this.eversAmountNumber
+                    .shiftedBy(this.everWallet.coin.decimals)
+                    .plus(eventInitialBalance ?? 0)
+
+                const r = vaultContract.methods.depositByNativeToken([
+                    /* recipient */
+                    [target[0], `0x${target[1]}`],
+                    /* amount */
+                    this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                    .dp(0, BigNumber.ROUND_DOWN)
+                    .toFixed(),
+                    /* expected_evers */
+                    this.isSwapEnabled ? expectedEvers.toFixed() : 0,
+                    /* payload */
+                    [], // '0xb5ee9c72010101010006000008deadbeaf',
+                ])
+
+                let value = this.amountNumber.shiftedBy(this.evmWallet.coin.decimals)
+
+                if (this.isSwapEnabled) {
+                    const rate = (
+                        await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as Tickers)
+                    ).price as string
+
+                    value = value.plus(
+                        expectedEvers
+                            .shiftedBy(-this.everWallet.coin.decimals)
+                            .div(rate)
+                            .times(1.2)
+                            .times(1e18)
+                            .dp(0, BigNumber.ROUND_DOWN),
+                    )
+                }
+
+                if (r !== undefined) {
+                    const gas = await r.estimateGas({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        value: value.toFixed(),
+                    })
+
+                    await r.send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        gas,
+                        value: value.toFixed(),
+                    }).once('transactionHash', (transactionHash: string) => {
+                        this.setData('txHash', transactionHash)
+                    })
+                }
+            }
+            catch (e: any) {
+                if (
+                    /eip-1559/g.test(e.message.toLowerCase())
+                    && transactionType !== undefined && transactionType !== '0x0'
+                ) {
+                    error('Deposit native currency error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.(e)
+                    error('Deposit native currency error', e)
+                }
+            }
+            finally {
+                this.setState('isProcessing', false)
+            }
+        }
+
+        await send(this.leftNetwork?.transactionType)
+    }
+
+    /**
+     *
+     */
+    public async depositAlienMultiToken(reject?: (e: any) => void): Promise<void> {
+        let attempts = 0
+
+        const send = async (transactionType?: string): Promise<void> => {
+            if (
+                attempts >= 2
+                || this.evmWallet.web3 === undefined
+                || this.token === undefined
+                || this.pipeline?.evmTokenDecimals === undefined
+                || this.everWallet.address === undefined
+            ) {
+                return
+            }
+
+            const network = findNetwork(this.pipeline.chainId, 'evm')
+
+            if (network === undefined) {
+                return
+            }
+
+            this.setState('isProcessing', true)
+
+            try {
+                attempts += 1
+
+                let target = this.rightAddress.split(':')
+
+                const vaultContract = new this.evmWallet.web3.eth.Contract(
+                    EthAbi.MultiVault,
+                    this.pipeline.vaultAddress.toString(),
+                )
+
+                const amount = this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals)
+                    .dp(0, BigNumber.ROUND_DOWN)
+                    .toFixed()
+                let payload: string | undefined,
+                    { evmTokenAddress } = this.pipeline
+
+                if (this.isNativeEverscaleCurrency) {
+                    try {
+                        const meta = await BridgeUtils.getEvmMultiVaultTokenMeta(
+                            this.pipeline.vaultAddress.toString(),
+                            evmTokenAddress!,
+                            network.rpcUrl,
+                        )
+                        if (meta.custom === '0x0000000000000000000000000000000000000000') {
+                            evmTokenAddress = await BridgeUtils.getEvmMultiVaultNativeToken(
+                                this.pipeline.vaultAddress.toString(),
+                                this.pipeline.everscaleTokenAddress!,
+                                network.rpcUrl,
+                            )
+                        }
+                    }
+                    catch (e) {
+                        error('Can not fetch custom token meta', e)
+                    }
+                    const response = await getUnwrapPayload({
+                        amount,
+                        destination: this.rightAddress,
+                        remainingGasTo: this.everWallet.address,
+                    })
+
+                    target = response.sendTo.split(':')
+                    payload = Buffer.from(response.tokensTransferPayload, 'base64').toString('hex')
+                }
+
+                const r = vaultContract.methods.deposit([
+                    /* recipient */
+                    [target[0], `0x${target[1]}`],
+                    /* token */
+                    evmTokenAddress,
+                    /* amount */
+                    amount,
+                    /* expected_evers */
+                    0,
+                    /* payload */
+                    payload === undefined ? [] : `0x${payload}`, // '0xb5ee9c72010101010006000008deadbeaf',
+                ])
+
+                if (r !== undefined) {
+                    const gas = await r.estimateGas({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                    })
+                    await r.send({
+                        from: this.evmWallet.address,
+                        type: transactionType,
+                        gas,
+                    }).once('transactionHash', (transactionHash: string) => {
+                        this.setData('txHash', transactionHash)
+                    })
+                }
+            }
+            catch (e: any) {
+                if (
+                    /eip-1559/g.test(e.message.toLowerCase())
+                    && transactionType !== undefined && transactionType !== '0x0'
+                ) {
+                    error('Deposit Alien Token error. Try with transaction type 0x0', e)
+                    await send('0x0')
+                }
+                else {
+                    reject?.(e)
+                    error('Deposit Alien Token error', e)
                 }
             }
             finally {
@@ -966,6 +1801,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             allowPartial: true,
                             boc: eventData,
                             structure: [
+                                { name: 'nonce', type: 'uint32' },
                                 { name: 'proxy', type: 'address' },
                                 { name: 'tokenWallet', type: 'address' },
                                 { name: 'token', type: 'address' },
@@ -978,15 +1814,18 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
 
                         if (
-                            event.data.remainingGasTo.toString().toLowerCase() === this.leftAddress.toLowerCase()
-                        && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                            [
+                                EventCloser.toString().toLowerCase(),
+                                this.leftAddress!.toLowerCase(),
+                            ].includes(event.data.remainingGasTo.toString().toLowerCase())
+                            && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
                         ) {
                             const eventAddress = await everscaleConfigContract
-                                .methods.deriveEventAddress({
-                                    answerId: 0,
-                                    eventVoteData: decodedTx.input.eventVoteData,
-                                })
-                                .call()
+                            .methods.deriveEventAddress({
+                                answerId: 0,
+                                eventVoteData: decodedTx.input.eventVoteData,
+                            })
+                            .call()
 
                             return eventAddress.eventContract
                         }
@@ -996,14 +1835,14 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 })
                 .first()
 
-            const data = await staticRpc.packIntoCell({
+            const transferPayload = await staticRpc.packIntoCell({
                 data: {
                     addr: this.rightAddress,
                     chainId: this.rightNetwork.chainId,
                     callback: {
                         recipient: '0x0000000000000000000000000000000000000000',
                         payload: '',
-                        strict:  false,
+                        strict: false,
                     },
                 },
                 structure: [
@@ -1021,6 +1860,69 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 ] as const,
             })
 
+            const data = await staticRpc.packIntoCell({
+                data: {
+                    nonce: getRandomUint(),
+                    network: 1,
+                    transferPayload: transferPayload.boc,
+                },
+                structure: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'network', type: 'uint8' },
+                    { name: 'transferPayload', type: 'cell' },
+                ] as const,
+            })
+
+            let attachedAmount = '6000000000'
+
+            if (this.isSwapEnabled) {
+                const rate = (await getPrice(
+                    this.rightNetwork.currencySymbol.toLowerCase() as Tickers,
+                )).price
+
+                let gasUsage = 1500000
+
+                // if token exists in evm
+                if (this.pipeline.evmTokenAddress) {
+                    try {
+                        await BridgeUtils.getEvmTokenSymbol(
+                            this.pipeline.evmTokenAddress,
+                            network.rpcUrl,
+                        )
+                        gasUsage = 200000
+                    }
+                    catch (e) {
+                        debug('Token not deployed => gas usage is ', gasUsage)
+                    }
+                }
+
+                const gasPrice = await this.evmWallet.web3?.eth.getGasPrice()
+                .catch(() => '0') ?? '0'
+                const gasPriceNumber = new BigNumber(gasPrice || 0).times(gasUsage).shiftedBy(-18)
+
+                if (this.pipeline?.ethereumConfiguration !== undefined) {
+                    try {
+                        attachedAmount = (await ethereumEventConfigurationContract(
+                            this.pipeline.ethereumConfiguration,
+                        ).methods.getDetails({
+                            answerId: 0,
+                        }).call())._basicConfiguration.eventInitialBalance
+                    }
+                    catch (e) {
+                    }
+                }
+
+                attachedAmount = new BigNumber(attachedAmount || 0).plus(
+                    gasPriceNumber
+                    .times(rate)
+                    .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                    .shiftedBy(this.everWallet.coin.decimals),
+                )
+                .toFixed()
+            }
+
+            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.everWallet.account.address
+
             await walletContract
                 .methods.transfer({
                     amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
@@ -1028,15 +1930,261 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     notify: true,
                     payload: data.boc,
                     recipient: this.pipeline.proxyAddress,
-                    remainingGasTo: this.everWallet.account.address,
+                    remainingGasTo,
                 })
                 .send({
-                    amount: '6000000000',
+                    amount: attachedAmount,
                     bounce: true,
                     from: new Address(this.leftAddress),
                 })
 
-            if (this.pipeline.isMultiVault && this.token !== undefined) {
+            if (this.token !== undefined) {
+                try {
+                    const { chainId, type } = this.rightNetwork
+
+                    const vaultAddress = this.pipeline.vaultAddress.toString()
+
+                    const [wid, addr] = this.token.root.split(':')
+                    const root = (await evmVaultContract(vaultAddress, network.rpcUrl)
+                        .methods.getNativeToken(wid, `0x${addr}`)
+                        .call())
+                        .toLowerCase()
+                    const key = `${type}-${chainId}-${root}`
+
+                    let name,
+                        symbol
+
+                    try {
+                        [name, symbol] = await Promise.all([
+                            erc20TokenContract(root, network.rpcUrl).methods.name().call(),
+                            erc20TokenContract(root, network.rpcUrl).methods.symbol().call(),
+                        ])
+                    }
+                    catch (e) {
+                        const [
+                            activation,
+                            namePrefix,
+                            symbolPrefix,
+                        ] = await evmVaultContract(vaultAddress, network.rpcUrl)
+                        .methods.prefixes(root.toLowerCase())
+                        .call()
+
+                        name = `${activation === '0' ? '' : namePrefix}${this.token.name}`
+                        symbol = `${activation === '0' ? '' : symbolPrefix}${this.token.symbol}`
+                    }
+
+                    const asset = {
+                        root,
+                        decimals: this.token.decimals,
+                        name,
+                        symbol,
+                        key,
+                        chainId,
+                        icon: this.token.icon,
+                    }
+
+                    this.bridgeAssets.add(new EvmToken(asset))
+
+                    const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                    importedAssets[key] = asset
+
+                    storage.set('imported_assets', JSON.stringify(importedAssets))
+                }
+                catch (e) {
+                    //
+                }
+            }
+
+            const eventAddress = await eventStream
+
+            this.setData('txHash', eventAddress.toString())
+        }
+        catch (e) {
+            reject?.(e)
+            error('Transfer Native MultiToken error', e)
+            await subscriber.unsubscribe()
+        }
+        finally {
+            this.setState('isProcessing', false)
+        }
+    }
+
+    public async transferNative(reject?: (e: any) => void): Promise<void> {
+        if (
+            this.everWallet.address === undefined
+            || this.rightNetwork?.chainId === undefined
+            || this.token === undefined
+            || this.pipeline?.everscaleConfiguration === undefined
+            || this.everWallet.account?.address === undefined
+        ) {
+            return
+        }
+
+        const network = findNetwork(this.pipeline.chainId, 'evm')
+
+        if (network === undefined) {
+            return
+        }
+
+        this.setState('isProcessing', true)
+
+        const walletContract = tokenWalletContract((this.token as EverscaleToken).wallet as Address)
+        const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
+
+        const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
+        const startLt = everscaleConfigState?.lastTransactionId?.lt
+
+        const subscriber = new staticRpc.Subscriber()
+
+        try {
+            const eventStream = subscriber.transactions(everscaleConfigContract.address)
+                .flatMap(item => item.transactions)
+                .filter(tx => !startLt || tx.id.lt > startLt)
+                .filterMap(async tx => {
+                    const decodedTx = await everscaleConfigContract.decodeTransaction({
+                        methods: ['deployEvent'],
+                        transaction: tx,
+                    })
+
+                    if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                        const { eventData } = decodedTx.input.eventVoteData
+                        const event = await staticRpc.unpackFromCell({
+                            allowPartial: true,
+                            boc: eventData,
+                            structure: [
+                                { name: 'nonce', type: 'uint32' },
+                                { name: 'proxy', type: 'address' },
+                                { name: 'tokenWallet', type: 'address' },
+                                { name: 'token', type: 'address' },
+                                { name: 'remainingGasTo', type: 'address' },
+                                { name: 'amount', type: 'uint128' },
+                                { name: 'recipient', type: 'uint160' },
+                                { name: 'chainId', type: 'uint256' },
+                            ] as const,
+                        })
+                        const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
+
+                        if (
+                            [
+                                EventCloser.toString().toLowerCase(),
+                                Compounder.toString().toLowerCase(),
+                                this.leftAddress!.toLowerCase(),
+                            ].includes(event.data.remainingGasTo.toString().toLowerCase())
+                            && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                        ) {
+                            const eventAddress = await everscaleConfigContract
+                                .methods.deriveEventAddress({
+                                    answerId: 0,
+                                    eventVoteData: decodedTx.input.eventVoteData,
+                                })
+                                .call()
+
+                            return eventAddress.eventContract
+                        }
+                        return undefined
+                    }
+                    return undefined
+                })
+                .first()
+
+            const transferPayload = await staticRpc.packIntoCell({
+                data: {
+                    addr: this.rightAddress,
+                    chainId: this.rightNetwork.chainId,
+                    callback: {
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        payload: '',
+                        strict: false,
+                    },
+                },
+                structure: [
+                    { name: 'addr', type: 'uint160' },
+                    { name: 'chainId', type: 'uint256' },
+                    {
+                        name: 'callback',
+                        type: 'tuple',
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                    },
+                ] as const,
+            })
+
+            const data = await staticRpc.packIntoCell({
+                data: {
+                    nonce: getRandomUint(),
+                    network: 1,
+                    transferPayload: transferPayload.boc,
+                },
+                structure: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'network', type: 'uint8' },
+                    { name: 'transferPayload', type: 'cell' },
+                ] as const,
+            })
+
+            const remainingGasTo = this.isSwapEnabled
+                ? EventCloser
+                : this.everWallet.account.address
+
+            const compounderPayload = await staticRpc.packIntoCell({
+                data: {
+                    to: this.pipeline.proxyAddress,
+                    amount: this.amountNumber.shiftedBy(this.everWallet.coin.decimals).toFixed(),
+                    remainingGasTo,
+                    payload: data.boc,
+                },
+                structure: [
+                    { name: 'to', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            let attachedAmount = new BigNumber(6000000000)
+
+            if (this.isSwapEnabled) {
+                const rate = (await getPrice(
+                    this.rightNetwork.currencySymbol.toLowerCase() as Tickers,
+                )).price
+
+                const gasPrice = await this.evmWallet.web3?.eth.getGasPrice()
+                .catch(() => '0') ?? '0'
+                const gasPriceNumber = new BigNumber(gasPrice || 0).times(1500000).shiftedBy(-18)
+
+                attachedAmount = attachedAmount.plus(
+                    gasPriceNumber
+                    .times(rate)
+                    .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                    .shiftedBy(this.everWallet.coin.decimals),
+                )
+            }
+
+            const delta = this.amountNumber
+                .shiftedBy(this.everWallet.coin.decimals)
+                .minus(this.token.balance ?? 0)
+                .toFixed()
+
+            await walletContract
+                .methods.transfer({
+                    amount: this.token.balance ?? '0',
+                    deployWalletValue: '200000000',
+                    notify: true,
+                    payload: compounderPayload.boc,
+                    recipient: Compounder,
+                    remainingGasTo,
+                })
+                .send({
+                    amount: attachedAmount.plus(delta).toFixed(),
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
+
+            if (this.token !== undefined) {
                 try {
                     const { chainId, type } = this.rightNetwork
 
@@ -1108,11 +2256,278 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
     }
 
+    public async wrapNative(reject?: (e: any) => void): Promise<void> {
+        if (
+            this.everWallet.address === undefined
+            || this.rightNetwork?.chainId === undefined
+            || this.token === undefined
+            || this.pipeline?.everscaleConfiguration === undefined
+            || this.everWallet.account?.address === undefined
+        ) {
+            return
+        }
+
+        const network = findNetwork(this.pipeline.chainId, 'evm')
+
+        if (network === undefined) {
+            return
+        }
+
+        this.setState('isProcessing', true)
+
+        const WEVERVault = wrappedCoinVaultContract(WEVERVaultAddress)
+        const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
+
+        const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
+        const startLt = everscaleConfigState?.lastTransactionId?.lt
+
+        const subscriber = new staticRpc.Subscriber()
+
+        try {
+            const eventStream = subscriber.transactions(everscaleConfigContract.address)
+                .flatMap(item => item.transactions)
+                .filter(tx => !startLt || tx.id.lt > startLt)
+                .filterMap(async tx => {
+                    const decodedTx = await everscaleConfigContract.decodeTransaction({
+                        methods: ['deployEvent'],
+                        transaction: tx,
+                    })
+
+                    if (decodedTx?.method === 'deployEvent' && decodedTx.input) {
+                        const { eventData } = decodedTx.input.eventVoteData
+                        const event = await staticRpc.unpackFromCell({
+                            allowPartial: true,
+                            boc: eventData,
+                            structure: [
+                                { name: 'nonce', type: 'uint32' },
+                                { name: 'proxy', type: 'address' },
+                                { name: 'tokenWallet', type: 'address' },
+                                { name: 'token', type: 'address' },
+                                { name: 'remainingGasTo', type: 'address' },
+                                { name: 'amount', type: 'uint128' },
+                                { name: 'recipient', type: 'uint160' },
+                                { name: 'chainId', type: 'uint256' },
+                            ] as const,
+                        })
+                        const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
+
+                        if (
+                            [
+                                EventCloser.toString().toLowerCase(),
+                                Compounder.toString().toLowerCase(),
+                                this.leftAddress!.toLowerCase(),
+                            ].includes(event.data.remainingGasTo.toString().toLowerCase())
+                            && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                        ) {
+                            const eventAddress = await everscaleConfigContract
+                                .methods.deriveEventAddress({
+                                    answerId: 0,
+                                    eventVoteData: decodedTx.input.eventVoteData,
+                                })
+                                .call()
+
+                            return eventAddress.eventContract
+                        }
+                        return undefined
+                    }
+                    return undefined
+                })
+                .first()
+
+            const transferPayload = await staticRpc.packIntoCell({
+                data: {
+                    addr: this.rightAddress,
+                    chainId: this.rightNetwork.chainId,
+                    callback: {
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        payload: '',
+                        strict: false,
+                    },
+                },
+                structure: [
+                    { name: 'addr', type: 'uint160' },
+                    { name: 'chainId', type: 'uint256' },
+                    {
+                        name: 'callback',
+                        type: 'tuple',
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                    },
+                ] as const,
+            })
+
+            const data = await staticRpc.packIntoCell({
+                data: {
+                    nonce: getRandomUint(),
+                    network: 1,
+                    transferPayload: transferPayload.boc,
+                },
+                structure: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'network', type: 'uint8' },
+                    { name: 'transferPayload', type: 'cell' },
+                ] as const,
+            })
+
+            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.everWallet.account.address
+
+            const compounderPayload = await staticRpc.packIntoCell({
+                data: {
+                    to: this.pipeline.proxyAddress,
+                    amount: this.amountNumber.shiftedBy(this.everWallet.coin.decimals).toFixed(),
+                    remainingGasTo,
+                    payload: data.boc,
+                },
+                structure: [
+                    { name: 'to', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            let eventInitialBalance = '6000000000'
+
+            if (this.pipeline?.ethereumConfiguration !== undefined) {
+                try {
+                    eventInitialBalance = (await ethereumEventConfigurationContract(
+                        this.pipeline.ethereumConfiguration,
+                    ).methods.getDetails({
+                        answerId: 0,
+                    }).call())._basicConfiguration.eventInitialBalance
+                }
+                catch (e) {}
+            }
+
+            let attachedAmount = '0'
+
+            if (this.isSwapEnabled) {
+                const rate = (await getPrice(
+                    this.rightNetwork.currencySymbol.toLowerCase() as Tickers,
+                )).price
+
+                let gasUsage = 1500000
+
+                // if token exists in evm
+                if (this.pipeline.evmTokenAddress) {
+                    try {
+                        await BridgeUtils.getEvmTokenSymbol(
+                            this.pipeline.evmTokenAddress,
+                            network.rpcUrl,
+                        )
+                        gasUsage = 200000
+                    }
+                    catch (e) {
+                        debug('Token not deployed => gas usage is ', gasUsage)
+                    }
+                }
+
+                const gasPrice = await this.evmWallet.web3?.eth.getGasPrice()
+                .catch(() => '0') ?? '0'
+                const gasPriceNumber = new BigNumber(gasPrice || 0).times(gasUsage).shiftedBy(-18)
+
+                attachedAmount = gasPriceNumber
+                .times(rate)
+                .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                .shiftedBy(this.everWallet.coin.decimals)
+                .toFixed()
+            }
+
+            await WEVERVault.methods.wrap({
+                tokens: this.amountNumber.shiftedBy(this.everWallet.coin.decimals).toFixed(),
+                owner_address: Compounder,
+                gas_back_address: remainingGasTo,
+                payload: compounderPayload.boc,
+            }).send({
+                amount: this.amountNumber
+                    .shiftedBy(this.everWallet.coin.decimals)
+                    .plus(attachedAmount)
+                    .plus(eventInitialBalance)
+                    .toFixed(),
+                bounce: true,
+                from: new Address(this.leftAddress),
+            })
+
+            if (this.token !== undefined) {
+                try {
+                    const { chainId, type } = this.rightNetwork
+
+                    const vaultAddress = this.pipeline.vaultAddress.toString()
+
+                    const [wid, addr] = this.token.root.split(':')
+                    const root = (await evmVaultContract(vaultAddress, network.rpcUrl)
+                    .methods.getNativeToken(wid, `0x${addr}`)
+                        .call())
+                        .toLowerCase()
+                    const key = `${type}-${chainId}-${root}`
+
+                    let name,
+                        symbol
+
+                    try {
+                        [name, symbol] = await Promise.all([
+                            erc20TokenContract(root, network.rpcUrl).methods.name().call(),
+                            erc20TokenContract(root, network.rpcUrl).methods.symbol().call(),
+                        ])
+                    }
+                    catch (e) {
+                        const [
+                            activation,
+                            namePrefix,
+                            symbolPrefix,
+                        ] = await evmVaultContract(vaultAddress, network.rpcUrl)
+                            .methods.prefixes(root.toLowerCase())
+                            .call()
+
+                        name = `${activation === '0' ? '' : namePrefix}${this.token.name}`
+                        symbol = `${activation === '0' ? '' : symbolPrefix}${this.token.symbol}`
+                    }
+
+                    const asset = {
+                        root,
+                        decimals: this.token.decimals,
+                        name,
+                        symbol,
+                        key,
+                        chainId,
+                        icon: this.token.icon,
+                    }
+
+                    this.bridgeAssets.add(new EvmToken(asset))
+
+                    const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+
+                    importedAssets[key] = asset
+
+                    storage.set('imported_assets', JSON.stringify(importedAssets))
+                }
+                catch (e) {
+                    //
+                }
+            }
+
+            const eventAddress = await eventStream
+
+            this.setData('txHash', eventAddress.toString())
+        }
+        catch (e) {
+            reject?.(e)
+            error('Transfer Native MultiToken error', e)
+            await subscriber.unsubscribe()
+        }
+        finally {
+            this.setState('isProcessing', false)
+        }
+    }
+
     /**
-     *
+     * Burn Alien (to Everscale) token via Alien Proxy from Everscale to EVM
      * @param reject
      */
-    public async burnViaAlienProxy(reject?: (e: any) => void): Promise<void> {
+    public async burnAlienToken(reject?: (e: any) => void): Promise<void> {
         if (
             this.everWallet.account?.address === undefined
             || this.rightNetwork?.chainId === undefined
@@ -1149,19 +2564,36 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             allowPartial: true,
                             boc: eventData,
                             structure: [
+                                { name: 'nonce', type: 'uint32' },
                                 { name: 'proxy', type: 'address' },
                                 { name: 'token', type: 'address' },
                                 { name: 'remainingGasTo', type: 'address' },
                                 { name: 'amount', type: 'uint128' },
                                 { name: 'recipient', type: 'uint160' },
+                                { name: 'callback_recipient', type: 'uint160' },
+                                { name: 'callback_payload', type: 'bytes' },
+                                { name: 'callback_strict', type: 'bool' },
                             ] as const,
                         })
 
-                        const checkEvmAddress = `0x${new BigNumber(event.data.recipient).toString(16).padStart(40, '0')}`
+                        const checkEvmAddress = `0x${new BigNumber(event.data.recipient)
+                            .toString(16)
+                            .padStart(40, '0')}`
+
+                        const addr = `0x${new BigNumber(`0x${Buffer.from(
+                            event.data.callback_payload,
+                            'base64',
+                        ).toString('hex')}`).toString(16)}`
 
                         if (
-                            event.data.remainingGasTo.toString().toLowerCase() === this.leftAddress.toLowerCase()
-                            && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                            [
+                                EventCloser.toString().toLowerCase(),
+                                this.leftAddress!.toLowerCase(),
+                            ].includes(event.data.remainingGasTo.toString().toLowerCase())
+                            && (
+                                checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
+                                || addr.toLowerCase() === this.rightAddress.toLowerCase()
+                            )
                         ) {
                             const eventAddress = await everscaleConfigContract
                                 .methods.deriveEventAddress({
@@ -1178,6 +2610,38 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 })
                 .first()
 
+            let attachedAmount = '6000000000'
+
+            if (this.pipeline?.ethereumConfiguration !== undefined) {
+                try {
+                    attachedAmount = (await ethereumEventConfigurationContract(
+                        this.pipeline.ethereumConfiguration,
+                    ).methods.getDetails({
+                        answerId: 0,
+                    }).call())._basicConfiguration.eventInitialBalance
+                }
+                catch (e) {}
+            }
+
+            if (this.isSwapEnabled) {
+                const rate = (await getPrice(
+                    this.rightNetwork.currencySymbol.toLowerCase() as Tickers,
+                )).price
+
+                const gasUsage = 300000
+                const gasPrice = await this.evmWallet.web3?.eth.getGasPrice().catch(() => '0') ?? '0'
+                const gasPriceNumber = new BigNumber(gasPrice || 0).times(gasUsage).shiftedBy(-18)
+
+                attachedAmount = new BigNumber(attachedAmount).plus(
+                    gasPriceNumber
+                        .times(rate)
+                        .dp(this.everWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                        .shiftedBy(this.everWallet.coin.decimals),
+                ).toFixed()
+            }
+
+            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.everWallet.account.address
+
             if (
                 this.pipeline.mergePoolAddress !== undefined
                 && this.pipeline.mergeEverscaleTokenAddress !== undefined
@@ -1188,7 +2652,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         callback: {
                             recipient: '0x0000000000000000000000000000000000000000',
                             payload: '',
-                            strict:  false,
+                            strict: false,
                         },
                     },
                     structure: [
@@ -1205,13 +2669,26 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     ] as const,
                 })
 
-                const data = await staticRpc.packIntoCell({
+                const payload = await staticRpc.packIntoCell({
                     data: {
-                        type: 0,
-                        targetToken: this.pipeline.mergeEverscaleTokenAddress,
-                        operationPayload: operationPayload.boc,
+                        network: 1,
+                        withdrawPayload: operationPayload.boc,
                     },
                     structure: [
+                        { name: 'network', type: 'uint8' },
+                        { name: 'withdrawPayload', type: 'cell' },
+                    ] as const,
+                })
+
+                const data = await staticRpc.packIntoCell({
+                    data: {
+                        nonce: getRandomUint(),
+                        type: 0,
+                        targetToken: this.pipeline.mergeEverscaleTokenAddress,
+                        operationPayload: payload.boc,
+                    },
+                    structure: [
+                        { name: 'nonce', type: 'uint32' },
                         { name: 'type', type: 'uint8' },
                         { name: 'targetToken', type: 'address' },
                         { name: 'operationPayload', type: 'cell' },
@@ -1222,23 +2699,76 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .methods.burn({
                         callbackTo: this.pipeline.mergePoolAddress,
                         payload: data.boc,
-                        remainingGasTo: this.everWallet.account.address,
+                        remainingGasTo,
                         amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                     })
                     .send({
-                        amount: '6000000000',
+                        amount: attachedAmount,
                         bounce: true,
                         from: new Address(this.leftAddress),
                     })
             }
-            else {
+            else if (this.token.root && this.bridgeAssets.isNativeCurrency(this.token.root)) {
+                const burnPayload = await staticRpc.packIntoCell({
+                    data: {
+                        addr: Unwrapper,
+                        callback: {
+                            recipient: Unwrapper,
+                            payload: this.evmWallet.web3?.eth.abi.encodeParameters(
+                                ['address'],
+                                [this.rightAddress],
+                            ) ?? '',
+                            strict: false,
+                        },
+                    },
+                    structure: [
+                        { name: 'addr', type: 'uint160' },
+                        {
+                            name: 'callback',
+                            type: 'tuple',
+                            components: [
+                                { name: 'recipient', type: 'uint160' },
+                                { name: 'payload', type: 'bytes' },
+                                { name: 'strict', type: 'bool' },
+                            ] as const,
+                        },
+                    ] as const,
+                })
+
                 const data = await staticRpc.packIntoCell({
+                    data: {
+                        nonce: getRandomUint(),
+                        network: 1,
+                        burnPayload: burnPayload.boc,
+                    },
+                    structure: [
+                        { name: 'nonce', type: 'uint32' },
+                        { name: 'network', type: 'uint8' },
+                        { name: 'burnPayload', type: 'cell' },
+                    ] as const,
+                })
+
+                await walletContract
+                    .methods.burn({
+                        callbackTo: this.pipeline.proxyAddress,
+                        payload: data.boc,
+                        remainingGasTo,
+                        amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                    })
+                    .send({
+                    amount: attachedAmount,
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
+            }
+            else {
+                const burnPayload = await staticRpc.packIntoCell({
                     data: {
                         addr: this.rightAddress,
                         callback: {
                             recipient: '0x0000000000000000000000000000000000000000',
                             payload: '',
-                            strict:  false,
+                            strict: false,
                         },
                     },
                     structure: [
@@ -1255,18 +2785,31 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     ] as const,
                 })
 
+                const data = await staticRpc.packIntoCell({
+                    data: {
+                        nonce: getRandomUint(),
+                        network: 1,
+                        burnPayload: burnPayload.boc,
+                    },
+                    structure: [
+                        { name: 'nonce', type: 'uint32' },
+                        { name: 'network', type: 'uint8' },
+                        { name: 'burnPayload', type: 'cell' },
+                    ] as const,
+                })
+
                 await walletContract
                     .methods.burn({
                         callbackTo: this.pipeline.proxyAddress,
                         payload: data.boc,
-                        remainingGasTo: this.everWallet.account.address,
+                        remainingGasTo,
                         amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                     })
                     .send({
-                        amount: '6000000000',
-                        bounce: true,
-                        from: new Address(this.leftAddress),
-                    })
+                    amount: attachedAmount,
+                    bounce: true,
+                    from: new Address(this.leftAddress),
+                })
             }
 
             const eventAddress = await eventStream
@@ -1337,19 +2880,23 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         })
 
                         const targetAddress = bs58.encode(
-                            Buffer.from(new BigNumber(event.data.solanaOwnerAddress).toString(16), 'hex'),
+                            Buffer.from(
+                                new BigNumber(event.data.solanaOwnerAddress).toString(16),
+                                'hex',
+                            ),
                         )
 
                         if (
-                            event.data.senderAddress.toString().toLowerCase() === this.leftAddress.toLowerCase()
+                            event.data.senderAddress.toString()
+                            .toLowerCase() === this.leftAddress.toLowerCase()
                             && targetAddress.toLowerCase() === this.rightAddress.toLowerCase()
                         ) {
                             const eventAddress = await everscaleConfigContract
-                                .methods.deriveEventAddress({
-                                    answerId: 0,
-                                    eventVoteData: decodedTx.input.eventVoteData,
-                                })
-                                .call()
+                            .methods.deriveEventAddress({
+                                answerId: 0,
+                                eventVoteData: decodedTx.input.eventVoteData,
+                            })
+                            .call()
 
                             return eventAddress.eventContract
                         }
@@ -1439,7 +2986,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     },
                 ] as const,
                 data: {
-                    solanaOwnerAddress: `0x${Buffer.from(rightAddressKey.toBuffer()).toString('hex')}`,
+                    solanaOwnerAddress: `0x${Buffer.from(rightAddressKey.toBuffer())
+                    .toString('hex')}`,
                     executeAccounts,
                 },
             })
@@ -1529,7 +3077,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             )
 
             const transaction = new Transaction().add(ixFromRust(instruction))
-            const signature = await this.solanaWallet.adapter.sendTransaction(transaction, this.solanaWallet.connection)
+            const signature = await this.solanaWallet.adapter.sendTransaction(
+                transaction,
+                this.solanaWallet.connection,
+            )
 
             const latestBlockHash = await this.solanaWallet.connection.getLatestBlockhash()
 
@@ -1551,579 +3102,28 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     /**
-     * Should be called after manually change amount field value for EVM-Everscale or EVM-EVM modes.
-     * - EVM-EVM check min receive tokens
-     * - EVM-Everscale (swap mode) sync max EVERs amount, sync min receive and tokens amounts.
-     */
-    public async onChangeAmount(): Promise<void> {
-        if (this.isEvmToEvm) {
-            this.checkMinReceiveTokens()
-            return
-        }
-
-        if (!this.isSwapEnabled) {
-            return
-        }
-
-        try {
-            this.setState('isCalculating', true)
-
-            await this.syncMaxEversAmount()
-
-            if (!this.amount || this.amountNumber.isZero()) {
-                this.setData({
-                    eversAmount: this.isInsufficientEverBalance
-                        ? new BigNumber(EmptyWalletMinEversAmount).shiftedBy(-DexConstants.CoinDecimals).toFixed()
-                        : this.eversAmount,
-                    maxTokenAmount: '',
-                    minReceiveTokens: '',
-                    tokenAmount: '',
-                })
-                return
-            }
-
-            await this.syncMinReceiveTokens()
-
-            if (isGoodBignumber(this.minReceiveTokensNumber)) {
-                await this.syncTokensAmount()
-            }
-        }
-        catch (e) {
-            error('Change amount recalculate error', e)
-        }
-        finally {
-            this.setState('isCalculating', false)
-        }
-    }
-
-    /**
-     *
-     */
-    public async onChangeTokensAmount(): Promise<void> {
-        if (
-            !this.isSwapEnabled
-            || this.token === undefined
-            || this.pipeline?.everscaleTokenAddress === undefined
-            || this.decimals === undefined
-            || this.data.pairAddress === undefined
-        ) {
-            return
-        }
-
-        try {
-            this.setState('isCalculating', true)
-
-            const maxTotalEversAmount = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedExchange({
-                    answerId: 0,
-                    amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
-                    spent_token_root: this.pipeline.everscaleTokenAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const maxEversAmountNumber = new BigNumber(maxTotalEversAmount || 0)
-                .times(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                .div(100)
-                .dp(0, BigNumber.ROUND_DOWN)
-                .shiftedBy(-DexConstants.CoinDecimals)
-                .minus(this.debt)
-                .dp(DexConstants.CoinDecimals, BigNumber.ROUND_DOWN)
-
-            if (this.tokenAmountNumber.isZero()) {
-                const data: Partial<CrosschainBridgeStoreData> = {
-                    minReceiveTokens: '',
-                    tokenAmount: '0',
-                    swapType: '1',
-                }
-
-                if (isGoodBignumber(maxEversAmountNumber)) {
-                    data.eversAmount = maxEversAmountNumber.toFixed()
-                }
-
-                this.setData(data as CrosschainBridgeStoreData)
-            }
-            else {
-                const minSpentTokensNumber = this.amountNumber.minus(this.tokenAmountNumber)
-
-                const toExchangeAmount = (await dexPairContract(this.data.pairAddress)
-                    .methods.expectedExchange({
-                        answerId: 0,
-                        amount: minSpentTokensNumber
-                            .shiftedBy(this.token.decimals)
-                            .dp(0, BigNumber.ROUND_DOWN)
-                            .toFixed(),
-                        spent_token_root: this.pipeline.everscaleTokenAddress,
-                    })
-                    .call({
-                        cachedState: toJS(this.data.pairState),
-                    })).expected_amount
-
-                const eversAmountNumber = new BigNumber(toExchangeAmount || 0)
-                    .times(new BigNumber(100).minus(
-                        new BigNumber(DepositToFactoryMinSlippageNumerator)
-                            .div(DepositToFactoryMinSlippageDenominator)
-                            .toFixed(),
-                    ))
-                    .div(100)
-                    .dp(0, BigNumber.ROUND_DOWN)
-                    .shiftedBy(-DexConstants.CoinDecimals)
-                    .minus(this.debt)
-                    .dp(DexConstants.CoinDecimals, BigNumber.ROUND_DOWN)
-
-                this.setData('swapType', '0')
-
-                const maxSpendTokens = (await dexPairContract(this.data.pairAddress)
-                    .methods.expectedSpendAmount({
-                        answerId: 0,
-                        receive_amount: this.debt
-                            .plus(eversAmountNumber)
-                            .times(100)
-                            .div(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                            .shiftedBy(DexConstants.CoinDecimals)
-                            .dp(0, BigNumber.ROUND_UP)
-                            .toFixed(),
-                        receive_token_root: WEVERRootAddress,
-                    })
-                    .call({
-                        cachedState: toJS(this.data.pairState),
-                    }))
-                    .expected_amount
-
-                const minTokensAmountNumber = this.amountNumber.shiftedBy(this.token.decimals).minus(maxSpendTokens)
-
-                if (isGoodBignumber(minTokensAmountNumber)) {
-                    this.setData('minReceiveTokens', minTokensAmountNumber.toFixed())
-
-                    if (isGoodBignumber(eversAmountNumber) || eversAmountNumber.isZero()) {
-                        this.setData('eversAmount', eversAmountNumber.toFixed())
-                        this.checkSwapCredit()
-                        this.checkMinEvers()
-                    }
-                }
-                else {
-                    this.setData({
-                        minReceiveTokens: '0',
-                        swapType: '1',
-                        tokenAmount: '0',
-                    })
-
-                    if (isGoodBignumber(maxEversAmountNumber)) {
-                        this.setData('eversAmount', maxEversAmountNumber.toFixed())
-                        this.checkSwapCredit()
-                        this.checkMinEvers()
-                    }
-                }
-            }
-        }
-        catch (e) {
-            error('Change tokens amount recalculate error', e)
-        }
-        finally {
-            this.setState('isCalculating', false)
-        }
-    }
-
-    /**
-     *
-     */
-    public async onChangeEversAmount(): Promise<void> {
-        if (
-            !this.isSwapEnabled
-            || this.data.pairAddress === undefined
-            || this.decimals === undefined
-            || this.token === undefined
-        ) {
-            return
-        }
-
-        try {
-            this.setState('isCalculating', true)
-
-            const maxSpendTokens = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedSpendAmount({
-                    answerId: 0,
-                    receive_amount: this.debt
-                        .plus(this.eversAmountNumber)
-                        .times(100)
-                        .div(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                        .shiftedBy(DexConstants.CoinDecimals)
-                        .dp(0, BigNumber.ROUND_UP)
-                        .toFixed(),
-                    receive_token_root: WEVERRootAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const minTokensAmountNumber = this.amountNumber.shiftedBy(this.amountMinDecimals).minus(maxSpendTokens || 0)
-
-            if (isGoodBignumber(minTokensAmountNumber)) {
-                this.setData({
-                    minReceiveTokens: minTokensAmountNumber.toFixed(),
-                    swapType: '0',
-                })
-            }
-            else {
-                this.setData({
-                    minReceiveTokens: '',
-                    tokenAmount: '',
-                })
-                return
-            }
-
-            const minSpendTokens = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedSpendAmount({
-                    answerId: 0,
-                    receive_amount: this.debt
-                        .plus(this.eversAmountNumber)
-                        .times(100)
-                        .div(new BigNumber(100).minus(
-                            new BigNumber(DepositToFactoryMinSlippageNumerator)
-                                .div(DepositToFactoryMinSlippageDenominator)
-                                .toFixed(),
-                        ))
-                        .shiftedBy(DexConstants.CoinDecimals)
-                        .dp(0, BigNumber.ROUND_UP)
-                        .toFixed(),
-                    receive_token_root: WEVERRootAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const tokensAmountNumber = this.amountNumber
-                .shiftedBy(this.amountMinDecimals)
-                .minus(minSpendTokens || 0)
-                .shiftedBy(-this.token.decimals)
-
-            if (isGoodBignumber(tokensAmountNumber)) {
-                this.setData({
-                    swapType: '0',
-                    tokenAmount: tokensAmountNumber.toFixed(),
-                })
-            }
-        }
-        catch (e) {
-            error('Change evers amount recalculate error', e)
-        }
-        finally {
-            this.setState('isCalculating', false)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    public async onSwapToggle(): Promise<void> {
-        this.setState('isFetching', true)
-        if (
-            this.token?.root !== undefined
-            && this.leftNetwork?.type !== undefined
-            && this.leftNetwork?.chainId !== undefined
-            && this.rightNetwork?.type !== undefined
-            && this.rightNetwork?.chainId !== undefined
-        ) {
-            const pipeline = await this.bridgeAssets.pipeline(
-                this.token.root,
-                `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-                `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-                this.depositType,
-            )
-
-            this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
-        }
-
-        if (!this.isSwapEnabled) {
-            this.setData({
-                eversAmount: '',
-                minAmount: '',
-                tokenAmount: '',
-            })
-            this.setState('isFetching', false)
-            return
-        }
-
-        this.checkSwapCredit()
-        this.checkMinEvers()
-
-        if (isGoodBignumber(this.amountNumber)) {
-            await this.onChangeAmount()
-        }
-        this.setState('isFetching', false)
-    }
-
-    /**
      *
      */
     public resetAsset(): void {
         this.setData({
             amount: '',
             bridgeFee: undefined,
-            depositType: this.isEvmToEvm ? 'credit' : 'default',
             eversAmount: undefined,
             hiddenBridgePipeline: undefined,
-            maxTokenAmount: undefined,
             maxEversAmount: undefined,
-            minAmount: undefined,
             minEversAmount: undefined,
-            minReceiveTokens: undefined,
             minTransferFee: undefined,
-            pairAddress: undefined,
-            pairState: undefined,
             pipeline: undefined,
-            tokenAmount: undefined,
+            txPrice: undefined,
         })
         this.setState({
             isCalculating: false,
             isFetching: false,
             isLocked: false,
+            isSwapEnabled: false,
             isPendingAllowance: false,
             isTokenChainSameToTargetChain: false,
         })
-    }
-
-
-    /*
-     * Reactions handlers
-     * ----------------------------------------------------------------------------------
-     */
-
-    protected async handleEvmPendingWithdrawal(): Promise<void> {
-        if (!this.evmPendingWithdrawal || this.pipeline?.vaultAddress === undefined) {
-            return
-        }
-
-        const network = findNetwork(this.pipeline.chainId, 'evm')
-
-        if (network === undefined) {
-            return
-        }
-
-        const { withdrawalIds } = this.evmPendingWithdrawal
-
-        const vaultContract = evmVaultContract(this.pipeline.vaultAddress.toString(), network.rpcUrl)
-
-        try {
-            const pendingWithdrawals = (
-                await Promise.all(
-                    withdrawalIds.map(item => (
-                        vaultContract
-                            .methods.pendingWithdrawals(item.recipient, item.id)
-                            .call()
-                    )),
-                )
-            )
-                .map((item, idx) => ({
-                    amount: item.amount,
-                    bounty: item.bounty,
-                    timestamp: item.timestamp,
-                    approveStatus: item.approveStatus,
-                    recipient: withdrawalIds[idx].recipient,
-                    id: withdrawalIds[idx].id,
-                }))
-
-            this.setData('pendingWithdrawals', pendingWithdrawals)
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    /**
-     *
-     * @param selectedToken
-     * @protected
-     */
-    protected async handleChangeToken(selectedToken?: string): Promise<void> {
-        debug('handleChangeToken', selectedToken)
-
-        if (
-            this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || selectedToken === undefined
-        ) {
-            return
-        }
-
-        this.resetAsset()
-
-        try {
-            this.setState('isFetching', true)
-
-            if (
-                this.token?.root !== undefined
-                && this.leftNetwork?.type !== undefined
-                && this.leftNetwork?.chainId !== undefined
-                && this.rightNetwork?.type !== undefined
-                && this.rightNetwork?.chainId !== undefined
-            ) {
-                const everscaleMainNetwork = getEverscaleMainNetwork()
-
-                const pipeline = await this.bridgeAssets.pipeline(
-                    this.token.root,
-                    `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
-                    this.isEvmToEvm
-                        ? `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`
-                        : `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-                    this.depositType,
-                )
-
-                if (pipeline === undefined) {
-                    this.setState('isLocked', true)
-                    return
-                }
-
-                this.setData('pipeline', new Pipeline(pipeline))
-
-                if (this.isEvmToEvm && pipeline?.everscaleTokenAddress !== undefined) {
-                    const hiddenBridgePipeline = await this.bridgeAssets.pipeline(
-                        pipeline.everscaleTokenAddress.toString(),
-                        `${everscaleMainNetwork?.type}-${everscaleMainNetwork?.chainId}`,
-                        `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-                        'default',
-                    )
-
-                    if (hiddenBridgePipeline === undefined) {
-                        this.setState('isLocked', true)
-                        return
-                    }
-
-                    this.setData('hiddenBridgePipeline', new Pipeline(hiddenBridgePipeline))
-                }
-            }
-
-            if (this.isEverscaleToEvm) {
-                this.setState(
-                    'isTokenChainSameToTargetChain',
-                    this.pipeline?.mergePoolAddress !== undefined
-                        ? true
-                        : this.pipeline?.baseChainId === this.rightNetwork?.chainId,
-                )
-            }
-
-            if (this.isFromEvm && this.isCreditAvailable) {
-                if (this.isEvmToEvm) {
-                    await Promise.all([
-                        this.everWallet.isConnected ? this.syncPair() : undefined,
-                        this.syncCreditFactoryFee(),
-                    ])
-                    await this.syncTransferFees()
-                    return
-                }
-
-                this.checkSwapCredit()
-                this.checkMinEvers()
-
-                await this.syncCreditFactoryFee()
-
-                if (this.everWallet.isConnected) {
-                    await this.syncPair()
-                    if (this.isSwapEnabled) {
-                        await this.syncMinAmount()
-                    }
-                }
-
-                await this.handleEvmPendingWithdrawal()
-            }
-        }
-        catch (e) {
-            error(e)
-            this.setState('isLocked', true)
-        }
-        finally {
-            this.setState('isFetching', false)
-            debug('Current pipeline', this.pipeline, this.hiddenBridgePipeline)
-        }
-    }
-
-    /**
-     *
-     * @param connected
-     * @protected
-     */
-    protected handleEvmWalletConnection(connected?: boolean): void {
-        debug('handleEvmWalletConnection')
-
-        if (this.state.isProcessing) {
-            return
-        }
-
-        if (connected) {
-            if (this.leftNetwork?.type === 'evm') {
-                this.setData('leftAddress', this.evmWallet.address ?? '')
-            }
-            if (this.rightNetwork?.type === 'evm' && !this.rightAddress) {
-                this.setData('rightAddress', this.evmWallet.address ?? '')
-            }
-        }
-        else {
-            this.resetAsset()
-            this.setData('selectedToken', undefined)
-            this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected handleEverWalletBalance(): void {
-        debug('handleEverWalletBalance')
-
-        if (this.isFromEvm && this.isCreditAvailable) {
-            this.checkSwapCredit()
-            this.checkMinEvers()
-        }
-    }
-
-    /**
-     *
-     * @param connected
-     * @protected
-     */
-    protected async handleEverWalletConnection(connected?: boolean): Promise<void> {
-        debug('handleEverWalletConnection')
-
-        if (this.state.isProcessing) {
-            return
-        }
-
-        if (connected) {
-            const everscaleNetwork = getEverscaleMainNetwork()
-            if (this.isFromEvm && !this.rightAddress) {
-                this.setData({
-                    rightAddress: this.everWallet.address ?? '',
-                    rightNetwork: everscaleNetwork,
-                })
-            }
-            else if (this.isFromEverscale) {
-                this.setData({
-                    leftAddress: this.everWallet.address ?? '',
-                    leftNetwork: everscaleNetwork,
-                })
-            }
-
-            if (this.isFromEvm) {
-                this.checkSwapCredit()
-                this.checkMinEvers()
-                await this.syncPair()
-                if (this.isSwapEnabled) {
-                    await this.syncMinAmount()
-                }
-                await this.onChangeAmount()
-            }
-        }
-        else {
-            this.resetAsset()
-            this.setData('selectedToken', undefined)
-            this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
-        }
     }
 
     /**
@@ -2132,8 +3132,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @protected
      */
     protected async handleSolanaWalletConnection(connected?: boolean): Promise<void> {
-        debug('handleSolanaWalletConnection')
-
         if (this.state.isProcessing) {
             return
         }
@@ -2148,405 +3146,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         }
         else {
             this.resetAsset()
-            this.setData('selectedToken', undefined)
             this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
-        }
-    }
-
-
-    /*
-     * Internal utilities methods
-     * ----------------------------------------------------------------------------------
-     */
-
-    /**
-     *
-     * @protected
-     */
-    protected checkMinEvers(): void {
-        if (this.isInsufficientEverBalance && this.isSwapEnabled && !this.everWallet.isContractUpdating) {
-            const isEnoughEversAmount = this.eversAmountNumber
-                .shiftedBy(DexConstants.CoinDecimals)
-                .gte(this.minEversAmount || 0)
-
-            if (!isEnoughEversAmount) {
-                this.setData(
-                    'eversAmount',
-                    new BigNumber(this.minEversAmount || 0)
-                        .shiftedBy(-DexConstants.CoinDecimals)
-                        .toFixed(),
-                )
-            }
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected checkSwapCredit(): void {
-        if (this.everWallet.isConnected && !this.everWallet.isContractUpdating && this.isInsufficientEverBalance) {
-            if (this.step === CrosschainBridgeStep.SELECT_ASSET) {
-                this.setData({
-                    depositType: this.isCreditAvailable ? 'credit' : this.depositType,
-                    minEversAmount: EmptyWalletMinEversAmount,
-                })
-            }
-        }
-        else {
-            this.setData('minEversAmount', '0')
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected checkMinReceiveTokens(): void {
-        if (!isGoodBignumber(this.amountNumber)) {
-            this.setData({
-                minReceiveTokens: '',
-                tokenAmount: '',
-            })
-        }
-
-        if (
-            this.token === undefined
-            || this.decimals === undefined
-            || this.pipeline?.evmTokenDecimals === undefined
-        ) {
-            return
-        }
-
-        const minReceiveTokensNumber = this.amountNumber.shiftedBy(this.amountMinDecimals)
-            .minus(new BigNumber(this.data.maxTransferFee || 0).shiftedBy(this.token.decimals))
-            // .minus(0) // Bridge fee. 0 now
-
-        if (isGoodBignumber(minReceiveTokensNumber)) {
-            this.setData({
-                // For send int transaction
-                minReceiveTokens: minReceiveTokensNumber
-                    .dp(this.pipeline.evmTokenDecimals, BigNumber.ROUND_DOWN)
-                    .toFixed(),
-                // For display in field
-                tokenAmount: minReceiveTokensNumber
-                    .shiftedBy(-this.amountMinDecimals)
-                    .dp(this.pipeline.evmTokenDecimals, BigNumber.ROUND_DOWN)
-                    .toFixed(),
-            })
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncMinReceiveTokens(): Promise<void> {
-        if (this.data.pairAddress === undefined || this.token === undefined) {
-            return
-        }
-
-        try {
-            const minReceiveTokens = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedSpendAmount({
-                    answerId: 0,
-                    receive_amount: unshiftedAmountWithSlippage(
-                        this.debt.plus(this.eversAmountNumber),
-                        DepositToFactoryMaxSlippage,
-                    ).toFixed(),
-                    receive_token_root: WEVERRootAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const minReceiveTokensNumber = this.amountNumber
-                .shiftedBy(this.token.decimals)
-                .minus(minReceiveTokens || 0)
-                .dp(0, BigNumber.ROUND_DOWN)
-
-            if (isGoodBignumber(minReceiveTokensNumber)) {
-                this.setData('minReceiveTokens', minReceiveTokensNumber.toFixed())
-            }
-            else {
-                this.setData({
-                    maxTokenAmount: '',
-                    minReceiveTokens: '',
-                    tokenAmount: '',
-                })
-            }
-        }
-        catch (e) {
-            error('Sync min receive tokens amount error', e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncTokensAmount(): Promise<void> {
-        if (this.data.pairAddress === undefined || this.token === undefined || this.decimals === undefined) {
-            return
-        }
-
-        try {
-            const tokensAmount = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedSpendAmount({
-                    answerId: 0,
-                    receive_amount: unshiftedAmountWithSlippage(
-                        this.debt.plus(this.eversAmountNumber),
-                        new BigNumber(DepositToFactoryMinSlippageNumerator)
-                            .div(DepositToFactoryMinSlippageDenominator)
-                            .toFixed(),
-                    ).toFixed(),
-                    receive_token_root: WEVERRootAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const tokensAmountNumber = this.amountNumber.shiftedBy(this.token.decimals)
-                .minus(tokensAmount || 0)
-
-            if (isGoodBignumber(tokensAmountNumber)) {
-
-                this.setData({
-                    maxTokenAmount: tokensAmountNumber.toFixed(),
-                    tokenAmount: tokensAmountNumber
-                        .shiftedBy(-this.token.decimals)
-                        .dp(this.token.decimals, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                })
-            }
-            else {
-                this.setData({
-                    maxTokenAmount: '',
-                    tokenAmount: '',
-                })
-            }
-        }
-        catch (e) {
-            error('Sync tokens amount error', e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncMaxEversAmount(): Promise<void> {
-        if (
-            this.data.pairAddress === undefined
-            || this.token === undefined
-            || this.pipeline?.everscaleTokenAddress === undefined
-        ) {
-            return
-        }
-
-        try {
-            const eversAmount = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedExchange({
-                    answerId: 0,
-                    amount: this.amountNumber
-                        .shiftedBy(this.token.decimals)
-                        .dp(0, BigNumber.ROUND_DOWN)
-                        .toFixed(),
-                    spent_token_root: this.pipeline.everscaleTokenAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const eversAmountNumber = new BigNumber(eversAmount || 0)
-                .times(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                .div(100)
-                .dp(0, BigNumber.ROUND_DOWN)
-                .minus(this.debt.shiftedBy(DexConstants.CoinDecimals))
-                .dp(DexConstants.CoinDecimals, BigNumber.ROUND_DOWN)
-
-            if (isGoodBignumber(eversAmountNumber)) {
-                this.setData('maxEversAmount', eversAmountNumber.toFixed())
-            }
-            else {
-                this.setData('maxEversAmount', '0')
-            }
-        }
-        catch (e) {
-            error('Sync EVERs max amount error', e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncMinAmount(): Promise<void> {
-        if (!this.everWallet.isConnected) {
-            this.setData('minAmount', undefined)
-            return
-        }
-
-        if (
-            this.data.pairAddress === undefined
-            || this.token === undefined
-            || this.decimals === undefined
-        ) {
-            return
-        }
-
-        try {
-            const minAmount = (await dexPairContract(this.data.pairAddress)
-                .methods.expectedSpendAmount({
-                    answerId: 0,
-                    receive_amount: this.debt.shiftedBy(DexConstants.CoinDecimals)
-                        .plus(this.minEversAmount || 0)
-                        .times(100)
-                        .div(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                        .dp(0, BigNumber.ROUND_UP)
-                        .toFixed(),
-                    receive_token_root: WEVERRootAddress,
-                })
-                .call({
-                    cachedState: toJS(this.data.pairState),
-                }))
-                .expected_amount
-
-            const minAmountNumber = new BigNumber(minAmount || 0)
-                .plus(1)
-                .shiftedBy(-this.token.decimals)
-                .shiftedBy(this.amountMinDecimals)
-                .dp(0, BigNumber.ROUND_DOWN)
-
-            if (isGoodBignumber(minAmountNumber)) {
-                this.setData('minAmount', minAmountNumber.toFixed())
-            }
-            else {
-                this.setData('minAmount', '')
-            }
-        }
-        catch (e) {
-            error(e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncCreditFactoryFee(): Promise<void> {
-        try {
-            const { fee } = (await creditFactoryContract(CreditFactoryAddress)
-                .methods.getDetails({
-                    answerId: 0,
-                })
-                .call())
-                .value0
-
-            this.setData('creditFactoryFee', fee)
-        }
-        catch (e) {
-            this.setData('creditFactoryFee', '')
-            error('Sync fee error', e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncTransferFees(): Promise<void> {
-        if (this.data.pairAddress === undefined || this.token === undefined) {
-            return
-        }
-
-        try {
-            const results = await Promise.allSettled([
-                dexPairContract(this.data.pairAddress)
-                    .methods.expectedSpendAmount({
-                        answerId: 0,
-                        receive_amount: this.debt
-                            .shiftedBy(DexConstants.CoinDecimals)
-                            .plus(HiddenBridgeStrategyGas)
-                            .times(100)
-                            .div(new BigNumber(100).minus(
-                                new BigNumber(DepositToFactoryMinSlippageNumerator)
-                                    .div(DepositToFactoryMinSlippageDenominator)
-                                    .toFixed(),
-                            ))
-                            .dp(0, BigNumber.ROUND_UP)
-                            .toFixed(),
-                        receive_token_root: WEVERRootAddress,
-                    })
-                    .call({
-                        cachedState: toJS(this.data.pairState),
-                    }),
-                dexPairContract(this.data.pairAddress)
-                    .methods.expectedSpendAmount({
-                        answerId: 0,
-                        receive_amount: this.debt
-                            .shiftedBy(DexConstants.CoinDecimals)
-                            .plus(HiddenBridgeStrategyGas)
-                            .times(100)
-                            .div(new BigNumber(100).minus(DepositToFactoryMaxSlippage))
-                            .dp(0, BigNumber.ROUND_UP)
-                            .toFixed(),
-                        receive_token_root: WEVERRootAddress,
-                    })
-                    .call({
-                        cachedState: toJS(this.data.pairState),
-                    }),
-            ]).then(r => r.map(i => (i.status === 'fulfilled' ? i.value : undefined)))
-
-            this.setData({
-                maxTransferFee: new BigNumber(results[1]?.expected_amount || 0)
-                    .shiftedBy(-this.token.decimals)
-                    .toFixed(),
-                minTransferFee: new BigNumber(results[0]?.expected_amount || 0)
-                    .shiftedBy(-this.token.decimals)
-                    .toFixed(),
-                minAmount: new BigNumber(results[1]?.expected_amount || 0).plus(1).toFixed(),
-            })
-            this.checkMinReceiveTokens()
-        }
-        catch (e) {
-            error('Sync transfers fee error', e)
-        }
-    }
-
-    /**
-     *
-     * @protected
-     */
-    protected async syncPair(): Promise<void> {
-        if (this.pipeline?.everscaleTokenAddress === undefined) {
-            return
-        }
-
-        try {
-            const pairAddress = await Dex.checkPair(
-                WEVERRootAddress,
-                this.pipeline.everscaleTokenAddress,
-            )
-
-            if (pairAddress === undefined) {
-                return
-            }
-
-            const pairState = (await getFullContractState(pairAddress))
-
-            debug('Sync pair successfully')
-
-            this.setData({
-                pairAddress,
-                pairState,
-            })
-        }
-        catch (e) {
-            error('Sync pair error', e)
         }
     }
 
@@ -2559,556 +3159,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         this.setState(() => DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE)
     }
 
-
-    /*
-     * Memoized store data values
-     * ----------------------------------------------------------------------------------
-     */
-
-    public get amount(): CrosschainBridgeStoreData['amount'] {
-        return this.data.amount
-    }
-
-    public get maxTokenAmount(): CrosschainBridgeStoreData['maxTokenAmount'] {
-        return this.data.maxTokenAmount
-    }
-
-    public get maxEversAmount(): CrosschainBridgeStoreData['maxEversAmount'] {
-        return this.data.maxEversAmount
-    }
-
-    public get maxTransferFee(): CrosschainBridgeStoreData['maxTransferFee'] {
-        return this.data.maxTransferFee
-    }
-
-    /**
-     * Returns non-shifted minimum amount to spend
-     */
-    public get minAmount(): CrosschainBridgeStoreData['minAmount'] {
-        return this.pendingWithdrawalsMinAmount ?? this.data.minAmount
-    }
-
-    /**
-     * Returns non-shifted minimum receive EVER`s amount
-     */
-    public get minEversAmount(): CrosschainBridgeStoreData['minEversAmount'] {
-        return this.data.minEversAmount
-    }
-
-    public get minTransferFee(): CrosschainBridgeStoreData['minTransferFee'] {
-        return this.data.minTransferFee
-    }
-
-    /**
-     * Returns non-shifted receive tokens amount
-     */
-    public get tokenAmount(): CrosschainBridgeStoreData['tokenAmount'] {
-        return this.data.tokenAmount
-    }
-
-    /**
-     * Returns non-shifted receive EVER`s amount
-     */
-    public get eversAmount(): CrosschainBridgeStoreData['eversAmount'] {
-        return this.data.eversAmount
-    }
-
-    public get depositType(): CrosschainBridgeStoreData['depositType'] {
-        return this.data.depositType
-    }
-
-    public get minReceiveTokens(): CrosschainBridgeStoreData['minReceiveTokens'] {
-        return this.data.minReceiveTokens
-    }
-
-    public get leftAddress(): CrosschainBridgeStoreData['leftAddress'] {
-        return this.data.leftAddress
-    }
-
-    public get leftNetwork(): CrosschainBridgeStoreData['leftNetwork'] {
-        return this.data.leftNetwork
-    }
-
-    public get pipeline(): CrosschainBridgeStoreData['pipeline'] {
-        return this.data.pipeline
-    }
-
-    public get hiddenBridgePipeline(): CrosschainBridgeStoreData['hiddenBridgePipeline'] {
-        return this.data.hiddenBridgePipeline
-    }
-
-    public get rightAddress(): CrosschainBridgeStoreData['rightAddress'] {
-        return this.data.rightAddress
-    }
-
-    public get rightNetwork(): CrosschainBridgeStoreData['rightNetwork'] {
-        return this.data.rightNetwork
-    }
-
-    public get txHash(): CrosschainBridgeStoreData['txHash'] {
-        return this.data.txHash
-    }
-
-
-    /*
-     * Memoized store state values
-     * ----------------------------------------------------------------------------------
-     */
-
-    public get approvalStrategy(): CrosschainBridgeStoreState['approvalStrategy'] {
-        return this.state.approvalStrategy
-    }
-
-    public get isCalculating(): CrosschainBridgeStoreState['isCalculating'] {
-        return this.state.isCalculating
-    }
-
-    public get isFetching(): CrosschainBridgeStoreState['isFetching'] {
-        return this.state.isFetching
-    }
-
-    public get isLocked(): CrosschainBridgeStoreState['isLocked'] {
-        return this.state.isLocked
-    }
-
-    public get isPendingAllowance(): CrosschainBridgeStoreState['isPendingAllowance'] {
-        return this.state.isPendingAllowance
-    }
-
-    public get isPendingApproval(): CrosschainBridgeStoreState['isPendingApproval'] {
-        return this.state.isPendingApproval
-    }
-
-    public get isTokenChainSameToTargetChain(): CrosschainBridgeStoreState['isTokenChainSameToTargetChain'] {
-        return this.state.isTokenChainSameToTargetChain
-    }
-
-    public get step(): CrosschainBridgeStoreState['step'] {
-        return this.state.step
-    }
-
-    public get evmPendingWithdrawal(): CrosschainBridgeStoreState['evmPendingWithdrawal'] {
-        return this.state.evmPendingWithdrawal
-    }
-
-    /*
-     * Computed states and values
-     * ----------------------------------------------------------------------------------
-     */
-
-    /**
-     * Returns non-shifted amount field BigNumber instance
-     */
-    public get amountNumber(): BigNumber {
-        return new BigNumber(this.amount || 0)
-    }
-
-    /**
-     * Returns min value of decimals between Everscale token and EVM token vault decimals
-     */
-    public get amountMinDecimals(): number {
-        if (this.token === undefined || this.pipeline?.evmTokenDecimals === undefined) {
-            return 0
-        }
-        return Math.min(this.token.decimals, this.pipeline.evmTokenDecimals)
-    }
-
-    /**
-     * Returns token balance in EVM token vault for `EVM to` direction.
-     * Otherwise, Everscale token balance
-     */
-    public get balance(): string | undefined {
-        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
-            return this.pipeline?.evmTokenBalance
-        }
-        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
-            return this.pipeline?.solanaTokenBalance
-        }
-        return this.token?.balance
-    }
-
-    /**
-     * Returns shifted token balance BigNumber instance
-     */
-    public get balanceNumber(): BigNumber {
-        return new BigNumber(this.balance || 0).shiftedBy(this.decimals ? -this.decimals : 0)
-    }
-
-    /**
-     * Returns token decimals from EVM token vault for `EVM to` direction.
-     * Otherwise, Everscale token decimals
-     */
-    public get decimals(): number | undefined {
-        if (this.isFromEvm || isEvmAddressValid(this.token?.root)) {
-            return this.pipeline?.evmTokenDecimals
-        }
-        if (this.isFromSolana || isSolanaAddressValid(this.token?.root)) {
-            return this.pipeline?.solanaTokenDecimals
-        }
-        return this.token?.decimals
-    }
-
-    /**
-     * Returns non-shifted min amount BigNumber instance
-     */
-    public get minAmountNumber(): BigNumber {
-        return new BigNumber(this.minAmount || 0)
-    }
-
-    /**
-     * Returns non-shifted min receive tokens BigNumber instance
-     */
-    public get minReceiveTokensNumber(): BigNumber {
-        return new BigNumber(this.minReceiveTokens || 0)
-    }
-
-    public get depositFee(): string {
-        if (this.pipeline?.isMultiVault && this.isFromEvm) {
-            return this.amountNumber.shiftedBy(this.pipeline.evmTokenDecimals || 0)
-                .times(this.pipeline?.depositFee ?? 0)
-                .div(10000)
-                .dp(0, BigNumber.ROUND_UP)
-                .shiftedBy(-(this.pipeline.evmTokenDecimals || 0))
-                .toFixed()
-        }
-        return '0'
-    }
-
-    public get withdrawFee(): string {
-        if (this.pipeline?.isMultiVault && this.isFromEverscale) {
-            return this.amountNumber.shiftedBy(this.token?.decimals || 0)
-                .times(this.pipeline?.withdrawFee ?? 0)
-                .div(10000)
-                .dp(0, BigNumber.ROUND_UP)
-                .shiftedBy(-(this.token?.decimals || 0))
-                .toFixed()
-        }
-        return '0'
-    }
-
-    public get isAmountVaultLimitExceed(): boolean {
-        return isGoodBignumber(this.vaultLimitNumber) && !validateMaxValue(
-            this.vaultLimitNumber.shiftedBy(-this.amountMinDecimals).toFixed(),
-            this.amountNumber.toFixed(),
-        )
-    }
-
-    public get isAmountMinValueValid(): boolean {
-        if (this.amount.length > 0 && isGoodBignumber(this.amountNumber)) {
-            return validateMinValue(
-                this.minAmountNumber.shiftedBy(-this.amountMinDecimals).toFixed(),
-                this.amountNumber.toFixed(),
-            )
-        }
-        return true
-    }
-
-    public get isAmountMaxValueValid(): boolean {
-        if (this.amount.length > 0 && isGoodBignumber(this.amountNumber)) {
-            return validateMaxValue(
-                this.balanceNumber.toFixed(),
-                this.amountNumber.toFixed(),
-            )
-        }
-        return true
-    }
-
-    public get isAmountValid(): boolean {
-        if (this.amount.length === 0) {
-            return true
-        }
-
-        return (
-            this.isAmountMinValueValid
-            && this.isAmountMaxValueValid
-            && (this.isEvmToEverscale ? !this.isAmountVaultLimitExceed : true)
-        )
-    }
-
-    public get isTokensAmountValid(): boolean {
-        if (this.tokenAmount && this.tokenAmount.length > 0 && isGoodBignumber(this.tokenAmountNumber, false)) {
-            return (
-                validateMinValue('0', this.tokenAmount, this.token?.decimals)
-                && validateMaxValue(this.maxTokenAmount, this.tokenAmount, this.token?.decimals)
-            )
-        }
-        return isGoodBignumber(this.tokenAmountNumber, false)
-    }
-
-    public get isEversAmountValid(): boolean {
-        if (this.isInsufficientEverBalance) {
-            return (
-                validateMinValue(this.minEversAmount, this.eversAmount, DexConstants.CoinDecimals)
-                && validateMaxValue(this.maxEversAmount, this.eversAmount, DexConstants.CoinDecimals)
-            )
-        }
-        if (this.eversAmount && this.eversAmount.length > 0 && isGoodBignumber(this.eversAmountNumber)) {
-            return (
-                validateMinValue('0', this.eversAmount, DexConstants.CoinDecimals)
-                && validateMaxValue(this.maxEversAmount, this.eversAmount, DexConstants.CoinDecimals)
-            )
-        }
-        return isGoodBignumber(this.eversAmountNumber, false)
-    }
-
-    public get isAssetValid(): boolean {
-        return (
-            this.everWallet.isConnected
-            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
-            && this.data.selectedToken !== undefined
-            && this.amount.length > 0
-            && isGoodBignumber(this.amountNumber)
-            && (this.pipeline?.isMultiVault ? !this.pipeline?.isBlacklisted : true)
-            && (this.isSwapEnabled
-                ? (this.isAmountValid && this.isTokensAmountValid && this.isEversAmountValid)
-                : this.isAmountValid)
-        )
-    }
-
-    public get isRouteValid(): boolean {
-        let isValid = (
-            this.everWallet.isConnected
-            && (this.evmWallet.isConnected || this.solanaWallet.isConnected)
-            && this.leftNetwork !== undefined
-            && this.leftAddress.length > 0
-            && this.rightNetwork !== undefined
-            && this.rightAddress.length > 0
-            && this.bridgeAssets.isReady
-        )
-
-        if (this.isFromEvm) {
-            isValid = (
-                isValid
-                && isEqual(this.leftNetwork?.chainId, this.evmWallet.chainId)
-                && isEvmAddressValid(this.leftAddress)
-            )
-        }
-
-        if (this.isEvmToEvm) {
-            isValid = isValid && isEvmAddressValid(this.rightAddress)
-        }
-        else if (this.isEvmToEverscale) {
-            isValid = isValid && isEverscaleAddressValid(this.rightAddress)
-        }
-        else if (this.isEverscaleToEvm) {
-            isValid = (
-                isValid
-                && isEqual(this.rightNetwork?.chainId, this.evmWallet.chainId)
-                && isEverscaleAddressValid(this.leftAddress)
-                && isEvmAddressValid(this.rightAddress)
-            )
-        }
-
-        return isValid
-    }
-
-    public get isCreditAvailable(): boolean {
-        if (this.token?.root === undefined || this.leftNetwork?.chainId === undefined) {
-            return false
-        }
-        return this.bridgeAssets.isCreditAvailable(this.token.root, this.leftNetwork.chainId)
-    }
-
-    public get isSwapEnabled(): boolean {
-        return this.depositType === 'credit'
-    }
-
-    public get isInsufficientEverBalance(): boolean {
-        return new BigNumber(this.everWallet.balance || 0).lt(EmptyWalletMinEversAmount)
-    }
-
-    public get isInsufficientVaultBalance(): boolean {
-        if (this.isEverscaleToSolana) {
-            return new BigNumber(this.pipeline?.vaultBalance ?? 0)
-                .shiftedBy(-(this.pipeline?.solanaTokenDecimals ?? 0))
-                .lt(this.amountNumber)
-        }
-        if (this.isEvmToEvm) {
-            return new BigNumber(this.hiddenBridgePipeline?.vaultBalance ?? 0)
-                .shiftedBy(-(this.hiddenBridgePipeline?.evmTokenDecimals ?? 0))
-                .lt(this.amountNumber)
-        }
-        return new BigNumber(this.pipeline?.vaultBalance ?? 0)
-            .shiftedBy(-(this.pipeline?.evmTokenDecimals ?? 0))
-            .lt(this.amountNumber)
-    }
-
-    public get evmTokenDecimals(): number | undefined {
-        if (this.isFromEverscale && this.pipeline?.isMultiVault && !this.pipeline.isNative) {
-            return this.token?.decimals
-        }
-        return this.isEvmToEvm ? this.hiddenBridgePipeline?.evmTokenDecimals : this.pipeline?.evmTokenDecimals
-    }
-
-    public get isEverscaleBasedToken(): boolean {
-        return this.pipeline?.tokenBase === 'everscale'
-    }
-
-    public get isEvmToEvm(): boolean {
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
-    }
-
-    public get isEvmToEverscale(): boolean {
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'everscale'
-    }
-
-    public get isFromEvm(): boolean {
-        return this.leftNetwork?.type === 'evm'
-    }
-
-    public get isFromEverscale(): boolean {
-        return this.leftNetwork?.type === 'everscale'
-    }
-
-    public get isFromSolana(): boolean {
-        return this.leftNetwork?.type === 'solana'
-    }
-
-    public get isEverscaleToEvm(): boolean {
-        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
-    }
-
-    public get isEverscaleToSolana(): boolean {
-        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'solana'
-    }
-
-    public get isSolanaToEverscale(): boolean {
-        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'everscale'
-    }
-
-    public get rightNetworks(): NetworkShape[] {
-        if (this.leftNetwork?.type === 'solana') {
-            const network = getEverscaleMainNetwork()
-            return network ? [network] : []
-        }
-        if (this.leftNetwork?.type === 'evm') {
-            return networks.filter(network => network.id !== this.leftNetwork?.id && network.type !== 'solana')
-        }
-        if (process.env.NODE_ENV !== 'production') {
-            return networks
-        }
-        return networks.filter(network => network.id !== this.leftNetwork?.id)
-    }
-
-    public get token(): BridgeAsset | undefined {
-        if (
-            this.leftNetwork?.type === undefined
-            || this.leftNetwork?.chainId === undefined
-            || this.data.selectedToken === undefined
-        ) {
-            return undefined
-        }
-
-        return this.bridgeAssets.get(
-            this.leftNetwork.type,
-            this.leftNetwork.chainId,
-            this.data.selectedToken.toLowerCase(),
-        )
-    }
-
-    public get vaultBalance(): string | undefined {
-        if (this.isEvmToEvm) {
-            return this.hiddenBridgePipeline?.vaultBalance
-        }
-        return this.pipeline?.vaultBalance
-    }
-
-    public get vaultBalanceDecimals(): number | undefined {
-        if (this.isEvmToEvm) {
-            return this.hiddenBridgePipeline?.evmTokenDecimals
-        }
-        if (this.isEverscaleToSolana) {
-            return this.pipeline?.solanaTokenDecimals
-        }
-        return this.pipeline?.evmTokenDecimals
-    }
-
-    public get vaultLimitNumber(): BigNumber {
-        return new BigNumber(this.pipeline?.vaultLimit || 0)
-            .shiftedBy(this.pipeline?.evmTokenDecimals === undefined ? 0 : -this.pipeline.evmTokenDecimals)
-            .shiftedBy(this.amountMinDecimals)
-            .dp(0, BigNumber.ROUND_DOWN)
-    }
-
-    public get tokens(): BridgeAsset[] {
-        const leftChainId = this.leftNetwork?.chainId
-        const rightChainId = this.rightNetwork?.chainId
-
-        if (this.isEvmToEvm && leftChainId !== undefined && rightChainId !== undefined) {
-            return this.bridgeAssets.tokens.filter(
-                token => {
-                    const assetRoot = this.bridgeAssets.findAssetRootByTokenAndChain(token.root, leftChainId)
-                    const assets = this.bridgeAssets.assets[assetRoot ?? token.root]
-                    return (
-                        isEvmAddressValid(token.root)
-                        && token.chainId === leftChainId
-                        && Object.entries({ ...assets }).some(([key, asset]) => {
-                            const [tokenBase] = key.split('_')
-                            return (
-                                asset.vaults.some(vault => (
-                                    vault.chainId === leftChainId
-                                    && vault.depositType === 'credit'
-                                    && tokenBase === 'evm'
-                                ))
-                            )
-                        })
-                        && Object.entries({ ...assets }).some(([key, asset]) => {
-                            const [tokenBase] = key.split('_')
-                            return (
-                                asset.vaults.some(vault => (
-                                    vault.chainId === rightChainId
-                                    && vault.depositType === 'default'
-                                    && tokenBase === 'evm'
-                                ))
-                            )
-                        })
-                    )
-                },
-            )
-        }
-
-        if (this.isFromEvm && leftChainId !== undefined) {
-            return this.bridgeAssets.tokens.filter(
-                token => isEvmAddressValid(token.root) && token.chainId === leftChainId,
-            )
-        }
-
-        if (this.isEverscaleToSolana) {
-            return this.bridgeAssets.tokens.filter(
-                token => {
-                    const assets = this.bridgeAssets.assets[token.root]
-                    return Object.keys({ ...assets }).some(key => key.split('_')[0] === 'solana')
-                },
-            )
-        }
-
-        if (this.isFromEverscale && leftChainId !== undefined) {
-            return this.bridgeAssets.tokens.filter(
-                token => isEverscaleAddressValid(token.root) && token.chainId === leftChainId,
-            )
-        }
-
-        if (this.isFromSolana && leftChainId !== undefined) {
-            return this.bridgeAssets.tokens.filter(
-                token => isSolanaAddressValid(token.root) && token.chainId === leftChainId,
-            )
-        }
-
-        return this.bridgeAssets.tokens
-    }
-
-    public get tokenAmountNumber(): BigNumber {
-        return new BigNumber(this.tokenAmount || 0)
-    }
-
     public get eversAmountNumber(): BigNumber {
         return new BigNumber(this.eversAmount || 0)
-    }
-
-    protected get debt(): BigNumber {
-        return new BigNumber(CreditBody)
-            .plus(new BigNumber(this.data.creditFactoryFee || 0))
-            .shiftedBy(-DexConstants.CoinDecimals)
     }
 
     public get useEverWallet(): EverWalletService {
@@ -3139,27 +3191,121 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         })
     }
 
-    public get pendingWithdrawalsAmount(): string | undefined {
-        return this.pendingWithdrawals
-            ?.reduce((acc, item) => acc.plus(item.amount), new BigNumber(0))
-            .toFixed()
-    }
-
-    public get pendingWithdrawalsBounty(): string | undefined {
-        return this.pendingWithdrawals
-            ?.reduce((acc, item) => acc.plus(item.bounty), new BigNumber(0))
-            .toFixed()
-    }
-
-    public get pendingWithdrawalsMinAmount(): string | undefined {
-        if (!this.pendingWithdrawalsAmount || !this.evmTokenDecimals) {
-            return undefined
+    protected async handleEvmPendingWithdrawal(): Promise<void> {
+        if (!this.evmPendingWithdrawal || this.pipeline?.vaultAddress === undefined) {
+            return
         }
-        return new BigNumber(this.pendingWithdrawalsAmount)
-            .shiftedBy(-this.evmTokenDecimals)
-            .shiftedBy(this.amountMinDecimals)
-            .dp(0, BigNumber.ROUND_DOWN)
-            .toFixed()
+
+        const network = findNetwork(this.pipeline.chainId, 'evm')
+
+        if (network === undefined) {
+            return
+        }
+
+        const { withdrawalIds } = this.evmPendingWithdrawal
+
+        const vaultContract = evmVaultContract(
+            this.pipeline.vaultAddress.toString(),
+            network.rpcUrl,
+        )
+
+        try {
+            const pendingWithdrawals = (
+                await Promise.all(
+                    withdrawalIds.map(item => (
+                        vaultContract
+                        .methods.pendingWithdrawals(item.recipient, item.id)
+                        .call()
+                    )),
+                )
+            )
+                .map((item, idx) => ({
+                    amount: item.amount,
+                    bounty: item.bounty,
+                    timestamp: item.timestamp,
+                    approveStatus: item.approveStatus,
+                    recipient: withdrawalIds[idx].recipient,
+                    id: withdrawalIds[idx].id,
+                }))
+
+            this.setData('pendingWithdrawals', pendingWithdrawals)
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    /**
+     *
+     * @param connected
+     * @protected
+     */
+    protected async handleEvmWalletConnection(connected?: boolean): Promise<void> {
+        if (this.state.isProcessing) {
+            return
+        }
+
+        if (connected) {
+            if (this.isEvmToEverscale) {
+                this.setData({
+                    leftAddress: this.evmWallet.address ?? '',
+                    rightAddress: this.everWallet.address ?? '',
+                })
+            }
+            else if (this.isEverscaleToEvm) {
+                this.setData({
+                    leftAddress: this.everWallet.address ?? '',
+                    rightAddress: this.evmWallet.address ?? '',
+                })
+            }
+        }
+        else {
+            this.resetAsset()
+            this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        }
+    }
+
+    /**
+     *
+     * @protected
+     */
+    protected async handleEverWalletBalance(): Promise<void> {
+        await this.checkForceCreditSwap()
+    }
+
+    /**
+     *
+     * @param connected
+     * @protected
+     */
+    protected async handleEverWalletConnection(connected?: boolean): Promise<void> {
+        if (this.state.isProcessing) {
+            return
+        }
+
+        if (connected) {
+            if (this.isEvmToEverscale) {
+                this.setData({
+                    leftAddress: this.evmWallet.address ?? '',
+                    rightAddress: this.everWallet.address ?? '',
+                })
+            }
+            else if (this.isEverscaleToEvm) {
+                this.setData({
+                    leftAddress: this.everWallet.address ?? '',
+                    rightAddress: this.evmWallet.address ?? '',
+                })
+            }
+            if (this.data.selectedToken) {
+                await this.changeToken(this.data.selectedToken).catch(error)
+            }
+        }
+        else {
+            // @ts-ignore
+            this.token?.setData('balance', undefined)
+            this.resetAsset()
+            this.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
+        }
     }
 
     #everWalletBalanceDisposer: IReactionDisposer | undefined
@@ -3170,8 +3316,26 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     #solanaWalletDisposer: IReactionDisposer | undefined
 
-    #swapDisposer: IReactionDisposer | undefined
+    /**
+     *
+     * @protected
+     */
+    protected async checkForceCreditSwap(): Promise<void> {
+        if (!this.isInsufficientEverBalance) {
+            return
+        }
 
-    #tokenDisposer: IReactionDisposer | undefined
+        const { isConnected, isContractUpdating } = this.everWallet
+
+        if (isConnected && !isContractUpdating) {
+            switch (true) {
+                case this.isEverscaleToEvm || this.isEvmToEverscale:
+                    await this.switchToCredit()
+                    break
+
+                default:
+            }
+        }
+    }
 
 }

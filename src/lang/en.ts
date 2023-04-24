@@ -1,6 +1,6 @@
 export default {
-    OPEN_IN_EXPLORER: 'Open in EVER Scan',
-    OPEN_IN_ETHERSCAN: 'Open in Etherscan',
+    OPEN_IN_EXPLORER: 'Open in EVERScan',
+    OPEN_IN_ETHERSCAN: 'Open in {explorerLabel}',
     BEFORE_UNLOAD_ALERT: 'Are you sure you want to leave?',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
@@ -122,7 +122,7 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TOKENS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT: 'Minimum for exchange: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT: 'Maximum for exchange: {value} {symbol}',
-    CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE: 'Currently, the maximum amount for instant transfers is<br>{value} {symbol}',
+    CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TITLE: 'Currently, the maximum amount for instant transfers is {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_EXCEED_VAULT_BALANCE_TEXT: '<p>If you need to make a larger withdrawal, you can request additional liquidity by setting a reward for the liquidity provider on the opposite side of the bridge to fulfill your transfer.</p><p>You can cancel or amend it later.</p>',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE: 'Transfer not available',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT: 'The <b>{symbol}</b> token is blacklisted and its further transfer to the <b>{blockchain}</b> blockchain is unavailable.',
@@ -131,13 +131,14 @@ export default {
 
     CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing EVERs to pay gas fees?',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',
+    CROSSCHAIN_TRANSFER_MULTIVAULT_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} coins',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE: 'We recommend using the auto exchange if your wallet balance is insufficient to pay gas fees for the transaction.',
-    CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into EVER, pay for your transfer and send the change to the target address.',
+    CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into {symbol}, pay for your transfer and send the change to the target address.',
     CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT: 'Minimum receive: {value} {symbol}',
-    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your EVER Wallet address is not deployed',
-    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in EVER.</p><p>Your balance is sufficient, but cannot be used until the wallet is deployed. Would you please go to EVER Wallet and click the «Deploy» button to proceed?</p><p>If you don’t want to deploy your wallet, you can still pay the gas by converting part of your tokens into EVERs with the form below.</p>',
-    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TITLE: 'Insufficient EVER balance to perform transfer',
-    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in EVER.</p><p>Top up your wallet for at least {minTons} EVER or convert part of your tokens into EVER using the form below.</p>',
+    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your {symbol} Wallet address is not deployed',
+    CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in {symbol}.</p><p>Your balance is sufficient, but cannot be used until the wallet is deployed. Would you please go to EVER Wallet and click the «Deploy» button to proceed?</p><p>If you don’t want to deploy your wallet, you can still pay the gas by converting part of your tokens into EVERs with the form below.</p>',
+    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TITLE: 'Insufficient {symbol} balance to perform transfer',
+    CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in {symbol}.</p><p>Top up your wallet for at least {minEvers} {symbol} or convert part of your tokens into EVER using the form below.</p>',
 
     CROSSCHAIN_TRANSFER_STEP_3_HINT: 'Step 3',
     CROSSCHAIN_TRANSFER_STEP_3_TITLE: 'Approve the amount to spend from your wallet',

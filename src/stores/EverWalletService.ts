@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
 import {
     Address,
-    AssetType,
-    ContractState,
-    FullContractState,
+    type AssetType,
+    type ContractState,
+    type FullContractState,
     hasEverscaleProvider,
-    Permissions,
-    Subscription,
+    type Permissions,
+    type Subscription,
 } from 'everscale-inpage-provider'
 import {
     action,
@@ -19,7 +19,7 @@ import rpc from '@/hooks/useRpcClient'
 import { DexConstants } from '@/misc'
 import { BaseStore } from '@/stores/BaseStore'
 import { debug, error } from '@/utils'
-import type { WalletNativeCoin } from '@/types'
+import { type WalletNativeCoin } from '@/types'
 
 
 export type Account = Permissions['accountInteraction']
@@ -28,6 +28,7 @@ export type EverWalletData = {
     account?: Account;
     balance: string;
     contract?: ContractState | FullContractState;
+    networkId?: string;
     version?: string;
 }
 
@@ -272,6 +273,10 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
         return this.data.contract
     }
 
+    public get networkId(): EverWalletData['networkId'] {
+        return this.data.networkId
+    }
+
     /**
      * Returns `true` if provider is available.
      * That means extension is installed and activated, else `false`
@@ -422,7 +427,9 @@ export class EverWalletService extends BaseStore<EverWalletData, EverWalletState
             return
         }
 
-        this.setData('version', currentProviderState.version)
+        this.setData({
+            version: currentProviderState.version,
+        })
 
         await connectToWallet()
 

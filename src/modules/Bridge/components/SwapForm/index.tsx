@@ -4,13 +4,12 @@ import { useIntl } from 'react-intl'
 
 import { useBridge } from '@/modules/Bridge/providers'
 import { SwapSwitcherFieldset } from '@/modules/Bridge/components/SwapForm/SwapSwitcherFieldset'
-import { TokensAmountFieldset } from '@/modules/Bridge/components/SwapForm/TokensAmountFieldset'
 import { EversAmountFieldset } from '@/modules/Bridge/components/SwapForm/EversAmountFieldset'
 
 
 export function SwapForm(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
@@ -23,14 +22,11 @@ export function SwapForm(): JSX.Element {
                 <SwapSwitcherFieldset />
                 <Observer>
                     {() => (
-                        <>
-                            {bridge.isSwapEnabled ? (
-                                <>
-                                    <TokensAmountFieldset />
-                                    <EversAmountFieldset />
-                                </>
+                        <React.Fragment key="evers-amount">
+                            {bridge.isEvmToEverscale && bridge.isSwapEnabled ? (
+                                <EversAmountFieldset />
                             ) : null}
-                        </>
+                        </React.Fragment>
                     )}
                 </Observer>
             </form>

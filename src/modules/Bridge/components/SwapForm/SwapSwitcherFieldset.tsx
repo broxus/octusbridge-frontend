@@ -1,27 +1,27 @@
 import * as React from 'react'
-import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
 import { OptionSwitcher } from '@/components/common/OptionSwitcher'
-import { EmptyWalletMinEversAmount } from '@/config'
-import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
+import { formattedTokenAmount } from '@/utils'
+import { Skeleton } from '@/components/common/Skeleton'
 
 
 export function SwapSwitcherFieldset(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const everWallet = bridge.useEverWallet
+    const evmWallet = bridge.useEvmWallet
 
-    const onSwitch = async () => {
-        if (bridge.isInsufficientEverBalance) {
-            return
+    const onSwitch = async (): Promise<void> => {
+        if (bridge.isSwapEnabled) {
+            await bridge.switchToDefault()
         }
-        bridge.setData('depositType', bridge.isSwapEnabled ? 'default' : 'credit')
-        await bridge.onSwapToggle()
+        else {
+            await bridge.switchToCredit()
+        }
     }
 
     return (
@@ -31,14 +31,58 @@ export function SwapSwitcherFieldset(): JSX.Element {
                     <Observer>
                         {() => (
                             <OptionSwitcher
+                                annotation={bridge.isSwapEnabled ? (
+                                    <div className="text-sm">
+                                        <span className="text-muted">Transaction cost</span>
+                                        &nbsp;
+                                        &nbsp;
+                                        <span>
+                                            {bridge.isCalculating ? (
+                                                <Skeleton width={60} />
+                                            ) : `${formattedTokenAmount(
+                                                bridge.isFromEverscale
+                                                    ? bridge.everscaleEvmCost
+                                                    : bridge.evmEverscaleCost,
+                                                bridge.isFromEverscale
+                                                    ? everWallet.coin.decimals
+                                                    : evmWallet.coin.decimals,
+                                            )} ${bridge.isFromEverscale
+                                                ? everWallet.coin.symbol
+                                                : evmWallet.coin.symbol}`}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm">
+                                        <span className="text-muted">Your balance</span>
+                                        &nbsp;
+                                        &nbsp;
+                                        <span>
+                                            {bridge.isFetching ? (
+                                                <Skeleton width={60} />
+                                            ) : `${
+                                                bridge.isFromEverscale
+                                                    ? `${formattedTokenAmount(
+                                                        everWallet.balance ?? 0,
+                                                        everWallet.coin.decimals,
+                                                    )} ${everWallet.coin.symbol}`
+                                                    : `${formattedTokenAmount(
+                                                        evmWallet.balance ?? 0,
+                                                        evmWallet.coin.decimals,
+                                                    )} ${evmWallet.coin.symbol}`
+                                            }`}
+                                        </span>
+                                    </div>
+                                )}
                                 checked={bridge.isSwapEnabled}
                                 id="gas-fees"
-                                disabled={bridge.isFetching || bridge.isInsufficientEverBalance
-                                    || bridge.evmPendingWithdrawal !== undefined}
+                                disabled={(
+                                    bridge.isFetching
+                                    || bridge.evmPendingWithdrawal !== undefined
+                                )}
                                 label={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL',
+                                    id: 'CROSSCHAIN_TRANSFER_MULTIVAULT_SWAP_OPTION_LABEL',
                                 }, {
-                                    symbol: bridge.token?.symbol,
+                                    symbol: bridge.leftNetwork?.currencySymbol,
                                 })}
                                 onChange={bridge.isFetching ? undefined : onSwitch}
                             />
@@ -68,55 +112,6 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                     )
                                 }
 
-                                case (
-                                    everWallet.isConnected
-                                    && !everWallet.isContractUpdating
-                                    && (
-                                        everWallet.contract === undefined
-                                        || !everWallet.contract?.isDeployed
-                                    )
-                                ): {
-                                    return (
-                                        <Alert
-                                            className="margin-top"
-                                            text={intl.formatMessage({
-                                                id: 'CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT',
-                                            })}
-                                            title={intl.formatMessage({
-                                                id: 'CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE',
-                                            })}
-                                            type="warning"
-                                        />
-                                    )
-                                }
-
-                                case (
-                                    everWallet.isConnected
-                                    && !everWallet.isContractUpdating
-                                    && bridge.isInsufficientEverBalance
-                                ): {
-                                    return (
-                                        <Alert
-                                            className="margin-top"
-                                            text={intl.formatMessage({
-                                                id: 'CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TEXT',
-                                            }, {
-                                                minTons: (
-                                                    new BigNumber(EmptyWalletMinEversAmount)
-                                                        .shiftedBy(-DexConstants.CoinDecimals)
-                                                        .toFixed()
-                                                ),
-                                            }, {
-                                                ignoreTag: true,
-                                            })}
-                                            title={intl.formatMessage({
-                                                id: 'CROSSCHAIN_TRANSFER_SWAP_INSUFFICIENT_BALANCE_ALERT_TITLE',
-                                            })}
-                                            type="warning"
-                                        />
-                                    )
-                                }
-
                                 default:
                                     return (
                                         <div className="text-sm text-muted margin-top">
@@ -124,6 +119,8 @@ export function SwapSwitcherFieldset(): JSX.Element {
                                                 id: bridge.isSwapEnabled
                                                     ? 'CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE'
                                                     : 'CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE',
+                                            }, {
+                                                symbol: bridge.rightNetwork?.currencySymbol,
                                             })}
                                         </div>
                                     )

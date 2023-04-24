@@ -3,28 +3,20 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
-import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
-import { Pipeline } from '@/models'
-import { useBridge } from '@/modules/Bridge/providers'
-import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
+import { Skeleton } from '@/components/common/Skeleton'
+import { erc20TokenContract } from '@/misc/eth-contracts'
+import { type Pipeline } from '@/models'
+import { EverAsset } from '@/modules/Bridge/components/Summary/components/EverAsset'
+import { useBridge, useSummary } from '@/modules/Bridge/providers'
 import { findNetwork, sliceAddress } from '@/utils'
 
 
 export function Tokens(): JSX.Element {
     const intl = useIntl()
-    const { bridge, summary } = useBridge()
-    const everWallet = bridge.useEverWallet
+    const bridge = useBridge()
+    const summary = useSummary()
     const evmWallet = bridge.useEvmWallet
     const bridgeAssets = bridge.useBridgeAssets
-
-    const addToEverAsset = (root: string) => async () => {
-        try {
-            await everWallet.addAsset(root)
-        }
-        catch (e) {
-
-        }
-    }
 
     const addToEvmAsset = (address: string, pipeline?: Pipeline) => async () => {
         if (summary.token === undefined || pipeline?.chainId === undefined) {
@@ -42,11 +34,7 @@ export function Tokens(): JSX.Element {
                 symbol = await erc20TokenContract(address, network.rpcUrl).methods.symbol().call()
             }
             catch (e) {
-                const vaultAddress = pipeline.vaultAddress.toString()
-                const [activation, , symbolPrefix] = await evmMultiVaultContract(vaultAddress, network.rpcUrl)
-                    .methods.prefixes(address.toLowerCase())
-                    .call()
-                symbol = `${activation === '0' ? 'oct' : symbolPrefix}${summary.token.symbol}`
+               symbol = summary.token.symbol
             }
 
             await evmWallet.addAsset({
@@ -70,8 +58,8 @@ export function Tokens(): JSX.Element {
                     return null
                 }
 
-                const isLeftEverscale = summary.leftNetwork?.type === 'everscale'
-                const isRightEverscale = summary.rightNetwork?.type === 'everscale'
+                const isLeftEverscale = summary.leftNetwork?.type === 'tvm'
+                const isRightEverscale = summary.rightNetwork?.type === 'tvm'
                 const isLeftEvm = summary.leftNetwork?.type === 'evm'
                 const isRightEvm = summary.rightNetwork?.type === 'evm'
                 const isLeftSolana = summary.leftNetwork?.type === 'solana'
@@ -81,116 +69,187 @@ export function Tokens(): JSX.Element {
 
                 return (
                     <>
-                        <li key="min-max-transfer-fees-divider" className="divider" />
+                        <li key="tokens-divider" className="divider" />
 
-                        <li key="min-max-transfer-fees-header" className="header">
+                        <li key="tokens-header" className="header">
                             {intl.formatMessage({
                                 id: 'CROSSCHAIN_TRANSFER_SUMMARY_TOKENS',
                             }, { symbol: summary.token?.symbol })}
                         </li>
 
-                        <li>
-                            <div className="text-muted">
-                                {summary.leftNetwork?.name}
-                            </div>
+                        {(() => {
+                            switch (true) {
+                                // eslint-disable-next-line max-len
+                                case isLeftEvm && !summary.isNativeEvmCurrency:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.leftNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!evmTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <BlockScanAddressLink
+                                                        key="token-link"
+                                                        addAsset
+                                                        address={summary.token?.root ?? evmTokenAddress}
+                                                        className="text-regular"
+                                                        baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                                        explorerLabel={summary.leftNetwork.explorerLabel}
+                                                        onAddAsset={addToEvmAsset(
+                                                            summary.token?.root ?? evmTokenAddress,
+                                                            summary.pipeline,
+                                                        )}
+                                                    >
+                                                        {sliceAddress(summary.token?.root ?? evmTokenAddress)}
+                                                    </BlockScanAddressLink>
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
 
-                            {/* eslint-disable-next-line no-nested-ternary */}
-                            {(isLeftEvm && evmTokenAddress !== undefined) ? (
-                                <div>
-                                    <BlockScanAddressLink
-                                        key="token-link"
-                                        addAsset
-                                        address={evmTokenAddress}
-                                        className="text-regular"
-                                        baseUrl={summary.leftNetwork.explorerBaseUrl}
-                                        onAddAsset={addToEvmAsset(evmTokenAddress, summary.pipeline)}
-                                    >
-                                        {sliceAddress(evmTokenAddress)}
-                                    </BlockScanAddressLink>
-                                </div>
-                            /* eslint-disable-next-line no-nested-ternary */
-                            ) : (isLeftEverscale && everscaleTokenAddress !== undefined) ? (
-                                <div>
-                                    <EverscanAccountLink
-                                        key="token-link"
-                                        addAsset
-                                        address={everscaleTokenAddress.toString()}
-                                        className="text-regular"
-                                        onAddAsset={addToEverAsset(everscaleTokenAddress.toString())}
-                                    >
-                                        {sliceAddress(everscaleTokenAddress.toString())}
-                                    </EverscanAccountLink>
-                                </div>
-                            ) : (isLeftSolana && solanaTokenAddress !== undefined) ? (
-                                <div>
-                                    <BlockScanAddressLink
-                                        key="token-link"
-                                        address={solanaTokenAddress.toBase58()}
-                                        className="text-regular"
-                                        copy
-                                        baseUrl={summary.leftNetwork.explorerBaseUrl}
-                                    >
-                                        {sliceAddress(solanaTokenAddress.toBase58())}
-                                    </BlockScanAddressLink>
-                                </div>
-                            ) : <div>-</div>}
-                        </li>
+                                // eslint-disable-next-line max-len
+                                case isLeftEverscale && !summary.isNativeEverscaleCurrency:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.leftNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!everscaleTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <EverAsset
+                                                        key="token-link"
+                                                        address={everscaleTokenAddress.toString()}
+                                                    />
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
 
-                        <li>
-                            <div className="text-muted">
-                                {summary.rightNetwork?.name}
-                            </div>
+                                case isLeftSolana:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.leftNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!solanaTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <BlockScanAddressLink
+                                                        key="token-link"
+                                                        address={solanaTokenAddress.toBase58()}
+                                                        className="text-regular"
+                                                        copy
+                                                        baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                                        explorerLabel={summary.leftNetwork.explorerLabel}
+                                                    >
+                                                        {sliceAddress(
+                                                            solanaTokenAddress.toBase58(),
+                                                        )}
+                                                    </BlockScanAddressLink>
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
 
-                            {/* eslint-disable-next-line no-nested-ternary */}
-                            {(isRightEvm && evmTokenAddress !== undefined) ? (
-                                <div>
-                                    <BlockScanAddressLink
-                                        key="token-link"
-                                        className="text-regular"
-                                        addAsset
-                                        address={summary.isEvmToEvm
-                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
-                                            : evmTokenAddress}
-                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
-                                        onAddAsset={addToEvmAsset(
-                                            evmTokenAddress,
-                                            summary.isEvmToEvm
-                                                ? summary.hiddenBridgePipeline
-                                                : summary.pipeline,
-                                        )}
-                                    >
-                                        {sliceAddress(summary.isEvmToEvm
-                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
-                                            : evmTokenAddress)}
-                                    </BlockScanAddressLink>
-                                </div>
-                            /* eslint-disable-next-line no-nested-ternary */
-                            ) : (isRightEverscale && everscaleTokenAddress !== undefined) ? (
-                                <div>
-                                    <EverscanAccountLink
-                                        key="token-link"
-                                        addAsset
-                                        address={everscaleTokenAddress.toString()}
-                                        className="text-regular"
-                                        onAddAsset={addToEverAsset(everscaleTokenAddress.toString())}
-                                    >
-                                        {sliceAddress(everscaleTokenAddress.toString())}
-                                    </EverscanAccountLink>
-                                </div>
-                            ) : (isRightSolana && solanaTokenAddress !== undefined) ? (
-                                <div>
-                                    <BlockScanAddressLink
-                                        key="token-link"
-                                        address={solanaTokenAddress.toBase58()}
-                                        className="text-regular"
-                                        copy
-                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
-                                    >
-                                        {sliceAddress(solanaTokenAddress.toBase58())}
-                                    </BlockScanAddressLink>
-                                </div>
-                            ) : <div>-</div>}
-                        </li>
+                                default:
+                                    return null
+                            }
+                        })()}
+
+                        {(() => {
+                            switch (true) {
+                                // eslint-disable-next-line max-len
+                                case isRightEvm && !summary.isNativeEvmCurrency:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.rightNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!evmTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <BlockScanAddressLink
+                                                        key="token-link"
+                                                        className="text-regular"
+                                                        addAsset
+                                                        address={(summary.isEvmToEvm
+                                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
+                                                            : evmTokenAddress)}
+                                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                                        explorerLabel={summary.rightNetwork.explorerLabel}
+                                                        onAddAsset={addToEvmAsset(
+                                                            evmTokenAddress,
+                                                            summary.isEvmToEvm
+                                                                ? summary.hiddenBridgePipeline
+                                                                : summary.pipeline,
+                                                        )}
+                                                    >
+                                                        {sliceAddress(summary.isEvmToEvm
+                                                            ? summary.hiddenBridgePipeline?.evmTokenAddress as string
+                                                            : evmTokenAddress)}
+                                                    </BlockScanAddressLink>
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
+
+                                // eslint-disable-next-line max-len
+                                case isRightEverscale && !summary.isNativeEverscaleCurrency:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.rightNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!everscaleTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <EverAsset
+                                                        key="token-link"
+                                                        address={everscaleTokenAddress.toString()}
+                                                    />
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
+
+                                case isRightSolana:
+                                    return (
+                                        <li>
+                                            <div className="text-muted">
+                                                {summary.rightNetwork?.label}
+                                            </div>
+                                            <div>
+                                                {!solanaTokenAddress ? (
+                                                    <Skeleton width={60} />
+                                                ) : (
+                                                    <BlockScanAddressLink
+                                                        key="token-link"
+                                                        address={solanaTokenAddress.toBase58()}
+                                                        className="text-regular"
+                                                        copy
+                                                        baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                                        explorerLabel={summary.rightNetwork.explorerLabel}
+                                                    >
+                                                        {sliceAddress(
+                                                            solanaTokenAddress.toBase58(),
+                                                        )}
+                                                    </BlockScanAddressLink>
+                                                )}
+                                            </div>
+                                        </li>
+                                    )
+
+                                default:
+                                    return null
+                            }
+                        })()}
                     </>
                 )
             }}

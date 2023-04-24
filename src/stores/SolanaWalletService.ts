@@ -425,7 +425,7 @@ export function useSolanaWallet(): SolanaWalletService {
             adapters: [
                 new PhantomWalletAdapter(),
             ],
-            autoConnect: true,
+            // autoConnect: true,
             connectionConfig: { commitment: 'confirmed' },
             endpoint: network?.rpcUrl || clusterApiUrl('mainnet-beta'),
         })

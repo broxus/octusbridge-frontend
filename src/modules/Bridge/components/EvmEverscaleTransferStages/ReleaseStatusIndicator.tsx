@@ -5,10 +5,9 @@ import { useIntl } from 'react-intl'
 import { ReleaseStatus } from '@/modules/Bridge/components/Statuses'
 import { useBridge, useEvmEverscalePipelineContext } from '@/modules/Bridge/providers'
 
-
-function ReleaseStatusIndicatorInner(): JSX.Element {
+export const ReleaseStatusIndicator = observer(() => {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEvmEverscalePipelineContext()
 
     const status = transfer.eventState?.status || 'disabled'
@@ -24,6 +23,4 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
             status={status}
         />
     )
-}
-
-export const ReleaseStatusIndicator = observer(ReleaseStatusIndicatorInner)
+})

@@ -1,12 +1,12 @@
 import { DateTime } from 'luxon'
 import {
-    AreaSeriesPartialOptions,
-    BarPrice,
-    CandlestickSeriesPartialOptions,
-    ChartOptions,
-    DeepPartial,
-    HistogramSeriesPartialOptions,
-    UTCTimestamp,
+    type AreaSeriesPartialOptions,
+    type BarPrice,
+    type CandlestickSeriesPartialOptions,
+    type ChartOptions,
+    type DeepPartial,
+    type HistogramSeriesPartialOptions,
+    type UTCTimestamp,
 } from 'lightweight-charts'
 
 import { abbrNumber } from '@/utils'
@@ -31,7 +31,9 @@ export const chartOptions: DeepPartial<ChartOptions> = {
         },
     },
     layout: {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
+        background: {
+            color: 'rgba(0, 0, 0, 0)',
+        },
         textColor: 'rgba(255,255,255,0.32)',
         fontSize: 12,
     },

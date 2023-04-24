@@ -8,7 +8,7 @@ import { getStakingContract } from '@/modules/Staking/utils'
 import { error, throwException } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 import { EverWalletService } from '@/stores/EverWalletService'
-import { BridgeAbi } from '@/misc'
+import { ethereumEventConfigurationContract } from '@/misc/contracts'
 
 export class RelayerBroadcastStore {
 
@@ -53,9 +53,9 @@ export class RelayerBroadcastStore {
                 throwException('eventInitialBalance must be defined in staking data')
             }
 
-            const eventConfigContract = rpc.createContract(
-                BridgeAbi.EthereumEventConfiguration,
+            const eventConfigContract = ethereumEventConfigurationContract(
                 this.stakingData.bridgeEventConfigEthTon,
+                rpc,
             )
 
             await eventConfigContract.methods.deployEvent({

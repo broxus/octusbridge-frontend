@@ -1,29 +1,23 @@
 import BigNumber from 'bignumber.js'
 
 
-export function splitAmount(value?: string | number, decimals?: number): string[] {
-    let val = new BigNumber(value ?? 0)
-
-    if (decimals !== undefined) {
-        val = val.shiftedBy(-decimals)
-    }
-
-    if (val.isNaN() || !val.isFinite()) {
-        return ['0']
-    }
-
-    return val.toFixed().split('.')
-}
-
-export function formatDigits(value?: string | number, separator: string = ' '): string | undefined {
-    return value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator)
-}
-
 export type FormattedAmountOptions = {
-    /** Truncate fractional part to this value */
-    truncate?: number;
-    /** Preserve all decimals after dot */
+    /**
+     * Which symbol should be placed between digits. By default, is space.
+     */
+    digitsSeparator?: string;
+    /**
+     *  Precision of the values below than `1e-3` (currency) or `1e-8` (token)
+     */
+    precision?: number;
+    /** Preserve all decimals after point */
     preserve?: boolean;
+    /**
+     * Rounding mode, integer, 0 to 8.
+     *
+     * Default: BigNumber.ROUND_DOWN
+     */
+    roundingMode?: BigNumber.RoundingMode;
     /**
      * Round the amount if the value is greater than or equal
      * to the value passed in this option (`1e3`, `1e6`, `1e9` etc.).
@@ -36,139 +30,100 @@ export type FormattedAmountOptions = {
      * Default: true
      */
     roundOn?: number | boolean;
-    /**
-     * Which symbol should be placed between digits. By default, is space.
-     */
-    digitsSeparator?: string;
+    /** Truncate fractional part to this value */
+    truncate?: number;
+}
+
+export const defaultBigNumberFormat: BigNumber.Format = {
+    decimalSeparator: '.',
+    groupSeparator: ' ',
+    groupSize: 3,
 }
 
 export function formattedAmount(
     value?: string | number,
     decimals?: number,
-    options: FormattedAmountOptions = { roundOn: true },
+    options?: FormattedAmountOptions,
 ): string {
-    const parts = splitAmount(value, decimals)
-    const digits = [formatDigits(parts[0], options.digitsSeparator)]
-    const integerNumber = new BigNumber(parts[0] || 0)
+    let amount = new BigNumber(value ?? 0)
 
-    let fractionalPartNumber = new BigNumber(`0.${parts[1] || 0}`)
-    const roundOn = typeof options?.roundOn === 'boolean' ? (options.roundOn && 1e3) : (options?.roundOn ?? 1e3)
+    const opts: FormattedAmountOptions = {
+        digitsSeparator: defaultBigNumberFormat.groupSeparator,
+        roundOn: true,
+        ...options,
+    }
+    const roundingMode = options?.roundingMode ?? BigNumber.ROUND_DOWN
 
-    if (options?.preserve) {
-        if (roundOn && integerNumber.gte(roundOn)) {
-            return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
-        }
-        digits.push(fractionalPartNumber.toFixed().split('.')[1])
-        return digits.filter(Boolean).join('.')
+    if (decimals !== undefined && decimals >= 0) {
+        amount = (amount.decimalPlaces() ?? 0) > 0
+            ? amount.dp(decimals, roundingMode)
+            : amount.shiftedBy(-decimals)
     }
 
-    if (options?.truncate !== undefined) {
-        if (roundOn && integerNumber.gte(roundOn)) {
-            return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
+    const roundOn = typeof opts?.roundOn === 'boolean' ? (opts.roundOn && 1e3) : (opts?.roundOn ?? 1e3)
+
+    if (opts?.preserve) {
+        if (roundOn && amount.gte(roundOn)) {
+            return amount.toFormat(0, roundingMode, {
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
         }
-        fractionalPartNumber = fractionalPartNumber.dp(options?.truncate, BigNumber.ROUND_DOWN)
-        digits.push(fractionalPartNumber.toFixed().split('.')[1])
-        return digits.filter(Boolean).join('.')
+        const decimalPlaces = amount.dp(decimals ?? amount.decimalPlaces() ?? 0, roundingMode).decimalPlaces() ?? 0
+        return amount.toFormat(decimalPlaces, roundingMode, {
+            ...defaultBigNumberFormat,
+            groupSeparator: opts.digitsSeparator,
+        })
     }
 
-    if (roundOn && integerNumber.gte(roundOn)) {
-        return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
+    if (opts?.truncate !== undefined) {
+        if (roundOn && amount.gte(roundOn)) {
+            return amount.toFormat(0, roundingMode, {
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
+        }
+        const decimalPlaces = amount.dp(opts?.truncate ?? 0, roundingMode).decimalPlaces() ?? 0
+        return amount.toFormat(decimalPlaces, roundingMode, {
+            ...defaultBigNumberFormat,
+            groupSeparator: opts.digitsSeparator,
+        })
+    }
+
+    if (roundOn && amount.gte(roundOn)) {
+        return amount.toFormat(0, roundingMode, {
+            ...defaultBigNumberFormat,
+            groupSeparator: opts.digitsSeparator,
+        })
     }
 
     switch (true) {
-        case roundOn && integerNumber.gte(roundOn):
-            fractionalPartNumber = fractionalPartNumber.dp(0, BigNumber.ROUND_DOWN)
-            break
+        case amount.lte(1e-3):
+            return amount.precision(opts.precision ?? 4, roundingMode).toFormat({
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
 
-        case integerNumber.isZero() && fractionalPartNumber.lte(1e-3):
-            fractionalPartNumber = fractionalPartNumber.precision(4, BigNumber.ROUND_DOWN)
-            break
+        case amount.lte(1e-2):
+            return amount.precision(3, roundingMode).toFormat({
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
 
-        case integerNumber.gt(0) && roundOn && integerNumber.lt(roundOn):
-            fractionalPartNumber = fractionalPartNumber.dp(2, BigNumber.ROUND_DOWN)
-            break
-
-        case integerNumber.isZero() && fractionalPartNumber.lte(1e-2):
-            fractionalPartNumber = fractionalPartNumber.dp(3, BigNumber.ROUND_DOWN)
-            break
-
-        default:
-            fractionalPartNumber = fractionalPartNumber.dp(4, BigNumber.ROUND_DOWN)
-    }
-
-    digits.push(fractionalPartNumber.toFixed().split('.')[1] ?? '')
-
-    return digits.filter(Boolean).join('.')
-}
-
-export function formattedTokenAmount(
-    value?: string | number,
-    decimals?: number,
-    options: FormattedAmountOptions = { roundOn: true },
-): string {
-    const parts = splitAmount(value, decimals)
-    const digits = [formatDigits(parts[0], options.digitsSeparator)]
-    const integerNumber = new BigNumber(parts[0] || 0)
-
-    let fractionalPartNumber = new BigNumber(`0.${parts[1] || 0}`)
-    const roundOn = typeof options?.roundOn === 'boolean' ? (options.roundOn && 1e3) : (options?.roundOn ?? 1e3)
-
-    if (options?.preserve) {
-        if (roundOn && integerNumber.gte(roundOn)) {
-            return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
+        case amount.gte(1) && roundOn && amount.lt(roundOn): {
+            const decimalPlaces = amount.dp(2, roundingMode).decimalPlaces() ?? 2
+            return amount.toFormat(decimalPlaces, roundingMode, {
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
         }
-        digits.push(fractionalPartNumber.toFixed().split('.')[1])
-        return digits.filter(Boolean).join('.')
-    }
 
-    if (options?.truncate !== undefined && options.truncate >= 0) {
-        if (roundOn && integerNumber.gte(roundOn)) {
-            return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
+        default: {
+            const decimalPlaces = amount.dp(4, roundingMode).decimalPlaces() ?? 4
+            return amount.toFormat(decimalPlaces, roundingMode, {
+                ...defaultBigNumberFormat,
+                groupSeparator: opts.digitsSeparator,
+            })
         }
-        fractionalPartNumber = fractionalPartNumber.dp(options?.truncate, BigNumber.ROUND_DOWN)
-        digits.push(fractionalPartNumber.toFixed().split('.')[1])
-        return digits.filter(Boolean).join('.')
     }
-
-    if (roundOn && integerNumber.gte(roundOn)) {
-        return formatDigits(integerNumber.toFixed(), options.digitsSeparator) ?? ''
-    }
-
-    switch (true) {
-        case fractionalPartNumber.lte(1e-8):
-            fractionalPartNumber = fractionalPartNumber.precision(4, BigNumber.ROUND_DOWN)
-            break
-
-        case integerNumber.lt(1):
-            fractionalPartNumber = fractionalPartNumber.dp(8, BigNumber.ROUND_DOWN)
-            break
-
-        case integerNumber.lt(1e3):
-            fractionalPartNumber = fractionalPartNumber.dp(4, BigNumber.ROUND_DOWN)
-            break
-
-        default:
-            fractionalPartNumber = fractionalPartNumber.dp(0, BigNumber.ROUND_DOWN)
-    }
-
-    digits.push(fractionalPartNumber.toFixed().split('.')[1])
-
-    return digits.filter(Boolean).join('.')
-}
-
-
-export function shareAmount(
-    walletLpBalance: string,
-    poolTokenBalance: string,
-    poolLpBalance: string,
-    tokenDecimals: number,
-): string {
-    return poolLpBalance !== '0'
-        ? new BigNumber(walletLpBalance)
-            .times(new BigNumber(poolTokenBalance))
-            .dividedBy(new BigNumber(poolLpBalance))
-            .decimalPlaces(0, BigNumber.ROUND_DOWN)
-            .shiftedBy(-tokenDecimals)
-            .toFixed()
-        : '0'
 }

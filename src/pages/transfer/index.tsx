@@ -7,12 +7,8 @@ import {
     EverscaleSolanaPipelineProvider,
     EverscaleToEvm,
     EverscaleToSolana,
-    EvmEverscaleCreditPipelineProvider,
     EvmEverscalePipelineProvider,
-    EvmEvmHiddenBridgePipelineProvider,
     EvmToEverscale,
-    EvmToEverscaleSwap,
-    EvmToEvmHiddenSwap,
     SolanaEverscalePipelineProvider,
     SolanaToEverscale,
 } from '@/modules/Bridge'
@@ -21,14 +17,18 @@ import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useSolanaWallet } from '@/stores/SolanaWalletService'
+import { getAssociatedNetwork } from '@/utils'
 
 
 export default function Page(): JSX.Element | null {
     const intl = useIntl()
     const params = useParams<TransferUrlBaseParams>()
 
-    switch (`${params.fromType}-${params.toType}`) {
-        case 'everscale-evm':
+    const fromType = getAssociatedNetwork(params.fromType)
+    const toType = getAssociatedNetwork(params.toType)
+
+    switch (`${fromType}-${toType}`) {
+        case 'tvm-evm':
             return (
                 <div className="container container--large">
                     <header className="page-header">
@@ -49,7 +49,7 @@ export default function Page(): JSX.Element | null {
                 </div>
             )
 
-        case 'evm-everscale':
+        case 'evm-tvm':
             return (
                 <div className="container container--large">
                     <header className="page-header">
@@ -60,48 +60,17 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    {params.depositType === 'credit' ? (
-                        <EvmEverscaleCreditPipelineProvider
-                            evmWallet={useEvmWallet()}
-                            everWallet={useEverWallet()}
-                            bridgeAssets={useBridgeAssets()}
-                        >
-                            <EvmToEverscaleSwap />
-                        </EvmEverscaleCreditPipelineProvider>
-                    ) : (
-                        <EvmEverscalePipelineProvider
-                            evmWallet={useEvmWallet()}
-                            everWallet={useEverWallet()}
-                            bridgeAssets={useBridgeAssets()}
-                        >
-                            <EvmToEverscale />
-                        </EvmEverscalePipelineProvider>
-                    )}
-                </div>
-            )
-
-        case 'evm-evm':
-            return (
-                <div className="container container--large">
-                    <header className="page-header">
-                        <h1 className="page-title">
-                            {intl.formatMessage({
-                                id: 'CROSSCHAIN_TRANSFER_HEADER_TITLE',
-                            })}
-                        </h1>
-                    </header>
-
-                    <EvmEvmHiddenBridgePipelineProvider
+                    <EvmEverscalePipelineProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
                         bridgeAssets={useBridgeAssets()}
                     >
-                        <EvmToEvmHiddenSwap />
-                    </EvmEvmHiddenBridgePipelineProvider>
+                        <EvmToEverscale />
+                    </EvmEverscalePipelineProvider>
                 </div>
             )
 
-        case 'everscale-solana':
+        case 'tvm-solana':
             return (
                 <div className="container container--large">
                     <header className="page-header">
@@ -122,7 +91,7 @@ export default function Page(): JSX.Element | null {
                 </div>
             )
 
-        case 'solana-everscale':
+        case 'solana-tvm':
             return (
                 <div className="container container--large">
                     <header className="page-header">

@@ -12,7 +12,7 @@ import { isEverscaleAddressValid } from '@/utils'
 
 function ReleaseStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEverscaleSolanaPipelineContext()
 
     const isTransferPage = (

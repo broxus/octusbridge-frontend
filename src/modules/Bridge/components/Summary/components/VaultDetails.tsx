@@ -2,29 +2,35 @@ import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { useBridge } from '@/modules/Bridge/providers'
-import { formattedTokenAmount } from '@/utils'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
+import { useSummary } from '@/modules/Bridge/providers'
+import { formattedTokenAmount } from '@/utils'
 
 
 export function VaultDetails(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const summary = useSummary()
 
     return (
         <Observer>
             {() => {
                 let baseUrl = summary.rightNetwork?.explorerBaseUrl as string,
-                    vaultAddress = summary.pipeline?.vaultAddress as string
+                    vaultAddress = summary.pipeline?.vaultAddress as string,
+                    explorerLabel
                 if (summary.isEvmToEvm) {
                     baseUrl = summary.rightNetwork?.explorerBaseUrl as string
+                    explorerLabel = summary.leftNetwork?.explorerLabel
                     vaultAddress = summary.hiddenBridgePipeline?.vaultAddress as string
                 }
                 else if (summary.isFromEvm || summary.isSolanaToEverscale) {
+                    explorerLabel = summary.leftNetwork?.explorerLabel
                     baseUrl = summary.leftNetwork?.explorerBaseUrl as string
                 }
+                else if (summary.isEverscaleToEvm) {
+                    explorerLabel = summary.rightNetwork?.explorerLabel
+                }
                 return (
-                    <>
+                    <React.Fragment key="vault-balance">
                         {(!summary.isEverscaleBasedToken && summary.vaultBalance !== undefined) && (
                             <li key="vault-balance">
                                 <div className="text-muted">
@@ -37,6 +43,7 @@ export function VaultDetails(): JSX.Element {
                                 <BlockScanAddressLink
                                     address={vaultAddress}
                                     baseUrl={baseUrl}
+                                    explorerLabel={explorerLabel ?? ''}
                                     external
                                 >
                                     {formattedTokenAmount(
@@ -46,7 +53,7 @@ export function VaultDetails(): JSX.Element {
                                 </BlockScanAddressLink>
                             </li>
                         )}
-                    </>
+                    </React.Fragment>
                 )
             }}
         </Observer>

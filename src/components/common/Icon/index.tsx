@@ -19,7 +19,7 @@ export interface IconProps<
 }
 
 
-export function Icon<T = DefaultLibraryType>(props: IconProps<T>): JSX.Element | null {
+export function Icon<T extends DefaultLibraryType | { [key in string]: any }>(props: IconProps<T>): JSX.Element | null {
     const {
         className,
         component: Component = 'span',

@@ -6,8 +6,6 @@ import {
     AssetStep,
     EverscaleEvmStagesStep,
     EverscaleSolanaStagesStep,
-    EvmEverscaleCreditStagesStep,
-    EvmEverscaleHiddenBridgeStagesStep,
     EvmEverscaleStagesStep,
     RouteStep,
     SolanaEverscaleStagesStep,
@@ -15,7 +13,7 @@ import {
 } from '@/modules/Bridge/components'
 import { Debug } from '@/modules/Bridge/components/Debug'
 import { useBridge } from '@/modules/Bridge/providers'
-import { CrosschainBridgeStep, EvmPendingWithdrawal } from '@/modules/Bridge/types'
+import { CrosschainBridgeStep, type EvmPendingWithdrawal } from '@/modules/Bridge/types'
 
 import './index.scss'
 
@@ -25,7 +23,7 @@ type Props = {
 }
 
 export function Bridge({ evmPendingWithdrawal }: Props): JSX.Element {
-    const { bridge } = useBridge()
+    const bridge = useBridge()
 
     React.useEffect(() => {
         bridge.setState('evmPendingWithdrawal', evmPendingWithdrawal)
@@ -51,13 +49,7 @@ export function Bridge({ evmPendingWithdrawal }: Props): JSX.Element {
                                     }
 
                                     if (bridge.isEvmToEverscale) {
-                                        return bridge.isSwapEnabled
-                                            ? <EvmEverscaleCreditStagesStep key="evm-swap-transfer" />
-                                            : <EvmEverscaleStagesStep key="evm-transfer" />
-                                    }
-
-                                    if (bridge.isEvmToEvm) {
-                                        return <EvmEverscaleHiddenBridgeStagesStep key="evm-hidden-swap-transfer" />
+                                        return <EvmEverscaleStagesStep key="evm-transfer" />
                                     }
 
                                     if (bridge.isEverscaleToSolana) {

@@ -5,7 +5,7 @@ import {
     TransactionsApiRequest, TransactionsApiResponse,
 } from '@/modules/Staking/types'
 import { StackingAbi, StackingContract } from '@/misc'
-import { IndexerApiBaseUrl, StakingAccountAddress, TonSwapIndexerApiBaseUrl } from '@/config'
+import { DexIndexerApiBaseUrl, IndexerApiBaseUrl, StakingAccountAddress } from '@/config'
 import { handleApi } from '@/utils'
 import rpc from '@/hooks/useRpcClient'
 
@@ -50,7 +50,7 @@ export async function handleAprApi(data: GraphRequest): Promise<GraphResponse> {
 }
 
 export async function handleCurrency(address: string): Promise<CurrencyResponse> {
-    const url = `${TonSwapIndexerApiBaseUrl}/currencies/${address}`
+    const url = `${DexIndexerApiBaseUrl}/currencies/${address}`
     const result = await handleApi<CurrencyResponse>({ url })
     return result
 }

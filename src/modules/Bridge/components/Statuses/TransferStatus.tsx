@@ -4,8 +4,8 @@ import { useIntl } from 'react-intl'
 import { BlockScanTxLink } from '@/components/common/BlockScanTxLink'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { BeforeUnloadAlert } from '@/modules/Bridge/components/BeforeUnloadAlert'
-import { TransferStateStatus } from '@/modules/Bridge/types'
-import { NetworkShape } from '@/types'
+import { type TransferStateStatus } from '@/modules/Bridge/types'
+import { type NetworkShape } from '@/types'
 import { sliceAddress } from '@/utils'
 
 
@@ -107,6 +107,7 @@ export function TransferStatus({
                         <BlockScanTxLink
                             key="tx-link"
                             baseUrl={network.explorerBaseUrl}
+                            explorerLabel={network.explorerLabel}
                             className="text-muted"
                             copy
                             hash={txHash}

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import classNames from 'classnames'
 import CopyToClipboard from 'react-copy-to-clipboard'
-import ReactTooltip from 'react-tooltip'
+import { Tooltip } from 'react-tooltip'
 
 import './index.scss'
 
@@ -20,22 +20,16 @@ export function Copy({
     children,
     className,
     id,
-    place = 'top',
+    place = 'left',
     text,
 }: Props): JSX.Element {
     const [isCopied, setCopied] = React.useState(false)
 
-    React.useEffect(() => {
-        ReactTooltip.rebuild()
-    }, [isCopied])
-
     const onCopy = () => {
-        ReactTooltip.rebuild()
         setCopied(true)
     }
 
     const onMouseLeave = () => {
-        ReactTooltip.rebuild()
         setCopied(false)
     }
 
@@ -47,19 +41,18 @@ export function Copy({
             >
                 <span
                     className={classNames('copy', className)}
-                    data-tip=""
-                    data-for={id}
+                    data-tooltip-content={isCopied ? 'Copied!' : 'Click to copy'}
+                    id={id}
                     onMouseLeave={onMouseLeave}
                 >
                     {children || text}
                 </span>
             </CopyToClipboard>
-            <ReactTooltip
-                id={id}
-                type="dark"
-                effect="solid"
+            <Tooltip
+                anchorId={id}
+                className="tooltip-common"
+                noArrow
                 place={place}
-                getContent={() => (isCopied ? 'Copied!' : 'Click to copy')}
             />
         </>
     )

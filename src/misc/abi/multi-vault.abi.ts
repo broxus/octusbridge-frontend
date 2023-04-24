@@ -3,23 +3,124 @@ export abstract class MultiVaultAbi {
     static AlienProxy = {
         'ABI version': 2,
         version: '2.2',
-        header: ['pubkey', 'time', 'expire'],
+        header: ['pubkey', 'time'],
         functions: [
             {
                 name: 'constructor',
-                inputs: [
-                    { name: 'owner_', type: 'address' },
-                ],
+                inputs: [{ name: 'owner_', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'apiVersion',
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint8' }],
+            },
+            {
+                name: 'upgrade',
+                inputs: [{ name: 'code', type: 'cell' }],
+                outputs: [],
+            },
+            {
+                name: 'deriveMergeRouter',
                 inputs: [
                     { name: 'answerId', type: 'uint32' },
+                    { name: 'token', type: 'address' },
                 ],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
+                outputs: [{ name: 'router', type: 'address' }],
+            },
+            {
+                name: 'deployMergeRouter',
+                inputs: [{ name: 'token', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'setMergeRouter',
+                inputs: [{ name: '_mergeRouter', type: 'cell' }],
+                outputs: [],
+            },
+            {
+                name: 'deriveMergePool',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'nonce', type: 'uint256' },
                 ],
+                outputs: [{ name: 'pool', type: 'address' }],
+            },
+            {
+                name: 'deployMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'tokens', type: 'address[]' },
+                    { name: 'canonId', type: 'uint256' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'mintTokensByMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payload', type: 'cell' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'withdrawTokensToEVMByMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'uint160' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'bytes' },
+                            { name: 'strict', type: 'bool' },
+                        ],
+                        name: 'callback',
+                        type: 'tuple',
+                    },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'withdrawTokensToSolanaByMergePool',
+                inputs: [
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'uint256' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    {
+                        components: [
+                            { name: 'account', type: 'uint256' },
+                            { name: 'readOnly', type: 'bool' },
+                            { name: 'isSigner', type: 'bool' },
+                        ],
+                        name: 'executeAccounts',
+                        type: 'tuple[]',
+                    },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'upgradeMergePool',
+                inputs: [{ name: 'pool', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'setMergePoolPlatform',
+                inputs: [{ name: '_mergePoolPlatform', type: 'cell' }],
+                outputs: [],
+            },
+            {
+                name: 'setMergePool',
+                inputs: [{ name: '_mergePool', type: 'cell' }],
+                outputs: [],
             },
             {
                 name: 'onAcceptTokensBurn',
@@ -33,155 +134,60 @@ export abstract class MultiVaultAbi {
                 outputs: [],
             },
             {
-                name: 'withdrawTokensByMergePool',
-                inputs: [
-                    { name: 'nonce', type: 'uint256' },
-                    { name: 'token', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'recipient', type: 'uint160' },
-                    { name: 'remainingGasTo', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
                 name: 'onEventConfirmedExtended',
                 inputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransaction',
+                                        type: 'uint256',
+                                    },
+                                    { name: 'eventIndex', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                    { name: 'eventBlockNumber', type: 'uint32' },
+                                    { name: 'eventBlock', type: 'uint256' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                            { name: 'chainId', type: 'uint32' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
                     { name: 'meta', type: 'cell' },
                     { name: 'remainingGasTo', type: 'address' },
                 ],
                 outputs: [],
             },
             {
-                name: 'mintTokensByMergePool',
+                name: 'onSolanaEventConfirmedExtended',
                 inputs: [
-                    { name: 'nonce', type: 'uint256' },
-                    { name: 'token', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'recipient', type: 'address' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'accountSeed', type: 'uint128' },
+                                    { name: 'slot', type: 'uint64' },
+                                    { name: 'blockTime', type: 'uint64' },
+                                    { name: 'txSignature', type: 'string' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
+                    { name: 'meta', type: 'cell' },
                     { name: 'remainingGasTo', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'deriveAlienTokenRoot',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                    { name: 'chainId', type: 'uint256' },
-                    { name: 'token', type: 'uint160' },
-                    { name: 'name', type: 'string' },
-                    { name: 'symbol', type: 'string' },
-                    { name: 'decimals', type: 'uint8' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'deployAlienToken',
-                inputs: [
-                    { name: 'chainId', type: 'uint256' },
-                    { name: 'token', type: 'uint160' },
-                    { name: 'name', type: 'string' },
-                    { name: 'symbol', type: 'string' },
-                    { name: 'decimals', type: 'uint8' },
-                    { name: 'remainingGasTo', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'deriveMergeRouter',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                    { name: 'token', type: 'address' },
-                ],
-                outputs: [
-                    { name: 'router', type: 'address' },
-                ],
-            },
-            {
-                name: 'deployMergeRouter',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'deriveMergePool',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                    { name: 'nonce', type: 'uint256' },
-                ],
-                outputs: [
-                    { name: 'pool', type: 'address' },
-                ],
-            },
-            {
-                name: 'upgradeMergePool',
-                inputs: [
-                    { name: 'pool', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'deployMergePool',
-                inputs: [
-                    { name: 'nonce', type: 'uint256' },
-                    { name: 'tokens', type: 'address[]' },
-                    { name: 'canonId', type: 'uint256' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'sendMessage',
-                inputs: [
-                    { name: 'recipient', type: 'address' },
-                    { name: 'message', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'getConfiguration',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }, { name: 'alienTokenRootCode', type: 'cell' }, { name: 'alienTokenWalletCode', type: 'cell' }, { name: 'alienTokenWalletPlatformCode', type: 'cell' }], name: 'value0', type: 'tuple' },
-                ],
-            },
-            {
-                name: 'setConfiguration',
-                inputs: [
-                    { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }, { name: 'alienTokenRootCode', type: 'cell' }, { name: 'alienTokenWalletCode', type: 'cell' }, { name: 'alienTokenWalletPlatformCode', type: 'cell' }], name: '_config', type: 'tuple' },
-                    { name: 'remainingGasTo', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setManager',
-                inputs: [
-                    { name: '_manager', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setMergePool',
-                inputs: [
-                    { name: '_mergePool', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setMergeRouter',
-                inputs: [
-                    { name: '_mergeRouter', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setMergePoolPlatform',
-                inputs: [
-                    { name: '_mergePoolPlatform', type: 'cell' },
                 ],
                 outputs: [],
             },
@@ -191,6 +197,7 @@ export abstract class MultiVaultAbi {
                     { name: 'token', type: 'address' },
                     { name: 'amount', type: 'uint128' },
                     { name: 'recipient', type: 'address' },
+                    { name: 'payload', type: 'cell' },
                 ],
                 outputs: [],
             },
@@ -204,17 +211,131 @@ export abstract class MultiVaultAbi {
                 outputs: [],
             },
             {
-                name: 'upgrade',
+                name: 'deployEVMAlienToken',
                 inputs: [
-                    { name: 'code', type: 'cell' },
+                    { name: 'chainId', type: 'uint256' },
+                    { name: 'token', type: 'uint160' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'deploySolanaAlienToken',
+                inputs: [
+                    { name: 'token', type: 'uint256' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'deriveEVMAlienTokenRoot',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'chainId', type: 'uint256' },
+                    { name: 'token', type: 'uint160' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                ],
+                outputs: [{ name: 'value0', type: 'address' }],
+            },
+            {
+                name: 'deriveSolanaAlienTokenRoot',
+                inputs: [
+                    { name: 'answerId', type: 'uint32' },
+                    { name: 'token', type: 'uint256' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                ],
+                outputs: [{ name: 'value0', type: 'address' }],
+            },
+            {
+                name: 'getConfiguration',
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'evmConfigurations', type: 'address[]' },
+                            { name: 'alienTokenRootCode', type: 'cell' },
+                            { name: 'alienTokenWalletCode', type: 'cell' },
+                            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'solanaConfiguration', type: 'address' },
+                            { name: 'alienTokenRootCode', type: 'cell' },
+                            { name: 'alienTokenWalletCode', type: 'cell' },
+                            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                        ],
+                        name: 'value1',
+                        type: 'tuple',
+                    },
+                ],
+            },
+            {
+                name: 'setEVMConfiguration',
+                inputs: [
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'evmConfigurations', type: 'address[]' },
+                            { name: 'alienTokenRootCode', type: 'cell' },
+                            { name: 'alienTokenWalletCode', type: 'cell' },
+                            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                        ],
+                        name: '_config',
+                        type: 'tuple',
+                    },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'setSolanaConfiguration',
+                inputs: [
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'solanaConfiguration', type: 'address' },
+                            { name: 'alienTokenRootCode', type: 'cell' },
+                            { name: 'alienTokenWalletCode', type: 'cell' },
+                            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                        ],
+                        name: '_config',
+                        type: 'tuple',
+                    },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'setManager',
+                inputs: [{ name: '_manager', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'sendMessage',
+                inputs: [
+                    { name: 'recipient', type: 'address' },
+                    { name: 'message', type: 'cell' },
                 ],
                 outputs: [],
             },
             {
                 name: 'transferOwnership',
-                inputs: [
-                    { name: 'newOwner', type: 'address' },
-                ],
+                inputs: [{ name: 'newOwner', type: 'address' }],
                 outputs: [],
             },
             {
@@ -225,44 +346,73 @@ export abstract class MultiVaultAbi {
             {
                 name: 'owner',
                 inputs: [],
-                outputs: [
-                    { name: 'owner', type: 'address' },
-                ],
-            },
-            {
-                name: '_randomNonce',
-                inputs: [],
-                outputs: [
-                    { name: '_randomNonce', type: 'uint256' },
-                ],
+                outputs: [{ name: 'owner', type: 'address' }],
             },
             {
                 name: 'manager',
                 inputs: [],
-                outputs: [
-                    { name: 'manager', type: 'address' },
-                ],
+                outputs: [{ name: 'manager', type: 'address' }],
             },
-        ],
-        data: [
-            { key: 1, name: '_randomNonce', type: 'uint256' },
-        ],
-        events: [
             {
-                name: 'AlienTransfer',
-                inputs: [
-                    { name: 'token', type: 'uint160' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'recipient', type: 'uint160' },
-                    { name: 'chainId', type: 'uint256' },
-                ],
-                outputs: [],
+                name: 'mergeRouter',
+                inputs: [],
+                outputs: [{ name: 'mergeRouter', type: 'cell' }],
             },
+            {
+                name: 'mergePool',
+                inputs: [],
+                outputs: [{ name: 'mergePool', type: 'cell' }],
+            },
+            {
+                name: 'mergePoolPlatform',
+                inputs: [],
+                outputs: [{ name: 'mergePoolPlatform', type: 'cell' }],
+            },
+            {
+                name: 'mergePoolVersion',
+                inputs: [],
+                outputs: [{ name: 'mergePoolVersion', type: 'uint8' }],
+            },
+            {
+                name: '_randomNonce',
+                inputs: [],
+                outputs: [{ name: '_randomNonce', type: 'uint256' }],
+            },
+        ],
+        data: [{ key: 1, name: '_randomNonce', type: 'uint256' }],
+        events: [
             {
                 name: 'OwnershipTransferred',
                 inputs: [
                     { name: 'previousOwner', type: 'address' },
                     { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'SolanaAlienTransfer',
+                inputs: [
+                    { name: 'base_token', type: 'uint256' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'sol_amount', type: 'uint64' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'payload', type: 'bytes' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'EVMAlienTransfer',
+                inputs: [
+                    { name: 'token', type: 'uint160' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'recipient', type: 'uint160' },
+                    { name: 'chainId', type: 'uint256' },
+                    { name: 'callback_recipient', type: 'uint160' },
+                    { name: 'callback_payload', type: 'bytes' },
+                    { name: 'callback_strict', type: 'bool' },
                 ],
                 outputs: [],
             },
@@ -272,18 +422,39 @@ export abstract class MultiVaultAbi {
             { name: '_timestamp', type: 'uint64' },
             { name: '_constructorFlag', type: 'bool' },
             { name: 'owner', type: 'address' },
-            { name: '_randomNonce', type: 'uint256' },
-            { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }, { name: 'alienTokenRootCode', type: 'cell' }, { name: 'alienTokenWalletCode', type: 'cell' }, { name: 'alienTokenWalletPlatformCode', type: 'cell' }], name: 'config', type: 'tuple' },
+            {
+                components: [
+                    { name: 'everscaleConfiguration', type: 'address' },
+                    { name: 'solanaConfiguration', type: 'address' },
+                    { name: 'alienTokenRootCode', type: 'cell' },
+                    { name: 'alienTokenWalletCode', type: 'cell' },
+                    { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                ],
+                name: 'solanaConfiguration',
+                type: 'tuple',
+            },
+            {
+                components: [
+                    { name: 'everscaleConfiguration', type: 'address' },
+                    { name: 'evmConfigurations', type: 'address[]' },
+                    { name: 'alienTokenRootCode', type: 'cell' },
+                    { name: 'alienTokenWalletCode', type: 'cell' },
+                    { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+                ],
+                name: 'evmConfiguration',
+                type: 'tuple',
+            },
             { name: 'api_version', type: 'uint8' },
             { name: 'manager', type: 'address' },
             { name: 'mergeRouter', type: 'cell' },
             { name: 'mergePool', type: 'cell' },
             { name: 'mergePoolPlatform', type: 'cell' },
             { name: 'mergePoolVersion', type: 'uint8' },
+            { name: '_randomNonce', type: 'uint256' },
         ],
     } as const
 
-    static EverscaleEventAlien = {
+    static EverscaleEVMEventAlien = {
         'ABI version': 2,
         version: '2.2',
         header: ['pubkey', 'time', 'expire'],
@@ -294,8 +465,7 @@ export abstract class MultiVaultAbi {
                     { name: '_initializer', type: 'address' },
                     { name: '_meta', type: 'cell' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'receiveTokenMeta',
@@ -306,40 +476,59 @@ export abstract class MultiVaultAbi {
                     { name: 'symbol', type: 'string' },
                     { name: 'decimals', type: 'uint8' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'receiveAlienTokenRoot',
-                inputs: [
-                    { name: 'token_', type: 'address' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'token_', type: 'address' }],
+                outputs: [],
             },
             {
                 name: 'getDecodedData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'proxy_', type: 'address' },
                     { name: 'token_', type: 'address' },
                     { name: 'remainingGasTo_', type: 'address' },
                     { name: 'amount_', type: 'uint128' },
                     { name: 'recipient_', type: 'uint160' },
-                    { components: [{ name: 'recipient', type: 'uint160' }, { name: 'payload', type: 'bytes' }, { name: 'strict', type: 'bool' }], name: 'callback', type: 'tuple' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'bytes' },
+                            { name: 'strict', type: 'bool' },
+                        ],
+                        name: 'callback',
+                        type: 'tuple',
+                    },
                     { name: 'base_chainId_', type: 'uint256' },
                     { name: 'base_token_', type: 'uint160' },
                 ],
             },
             {
                 name: 'getEventInitData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransactionLt',
+                                        type: 'uint64',
+                                    },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
@@ -348,31 +537,42 @@ export abstract class MultiVaultAbi {
                     { name: 'signature', type: 'bytes' },
                     { name: 'voteReceiver', type: 'address' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'reject',
-                inputs: [
-                    { name: 'voteReceiver', type: 'address' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'voteReceiver', type: 'address' }],
+                outputs: [],
             },
             {
                 name: 'close',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'getDetails',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: '_eventInitData', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransactionLt',
+                                        type: 'uint64',
+                                    },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: '_eventInitData',
+                        type: 'tuple',
+                    },
                     { name: '_status', type: 'uint8' },
                     { name: '_confirms', type: 'uint256[]' },
                     { name: '_rejects', type: 'uint256[]' },
@@ -386,11 +586,8 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'status',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'receiveRoundAddress',
@@ -398,16 +595,12 @@ export abstract class MultiVaultAbi {
                     { name: 'roundContract', type: 'address' },
                     { name: 'roundNum', type: 'uint32' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'receiveRoundRelays',
-                inputs: [
-                    { name: 'keys', type: 'uint256[]' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'keys', type: 'uint256[]' }],
+                outputs: [],
             },
             {
                 name: 'getVoters',
@@ -415,9 +608,7 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'vote', type: 'uint8' },
                 ],
-                outputs: [
-                    { name: 'voters', type: 'uint256[]' },
-                ],
+                outputs: [{ name: 'voters', type: 'uint256[]' }],
             },
             {
                 name: 'getVote',
@@ -425,103 +616,82 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'voter', type: 'uint256' },
                 ],
-                outputs: [
-                    { name: 'vote', type: 'optional(uint8)' },
-                ],
+                outputs: [{ name: 'vote', type: 'optional(uint8)' }],
             },
             {
                 name: 'getApiVersion',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint32' }],
             },
             {
                 name: 'votes',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'votes', type: 'map(uint256,uint8)' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'votes', type: 'map(uint256,uint8)' }],
             },
             {
                 name: 'initializer',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'initializer', type: 'address' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'initializer', type: 'address' }],
             },
             {
                 name: 'meta',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'meta', type: 'cell' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'meta', type: 'cell' }],
             },
             {
                 name: 'requiredVotes',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'requiredVotes', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'requiredVotes', type: 'uint32' }],
             },
             {
                 name: 'confirms',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'confirms', type: 'uint16' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'confirms', type: 'uint16' }],
             },
             {
                 name: 'rejects',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'rejects', type: 'uint16' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'rejects', type: 'uint16' }],
             },
             {
                 name: 'relay_round',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'relay_round', type: 'address' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'relay_round', type: 'address' }],
             },
             {
                 name: 'round_number',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'round_number', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'round_number', type: 'uint32' }],
             },
             {
                 name: 'createdAt',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'createdAt', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'createdAt', type: 'uint32' }],
             },
             {
                 name: 'signatures',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'signatures', type: 'map(uint256,bytes)' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'signatures', type: 'map(uint256,bytes)' }],
             },
         ],
         data: [
             {
-                components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], key: 1, name: 'eventInitData', type: 'tuple',
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                key: 1,
+                name: 'eventInitData',
+                type: 'tuple',
             },
         ],
         events: [
@@ -531,38 +701,27 @@ export abstract class MultiVaultAbi {
                     { name: 'relay', type: 'uint256' },
                     { name: 'signature', type: 'bytes' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'relay', type: 'uint256' }],
+                outputs: [],
             },
             {
                 name: 'Closed',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'Confirmed',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'Rejected',
-                inputs: [
-                    { name: 'reason', type: 'uint32' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'reason', type: 'uint32' }],
+                outputs: [],
             },
         ],
         fields: [
@@ -578,7 +737,23 @@ export abstract class MultiVaultAbi {
             { name: 'relay_round', type: 'address' },
             { name: 'round_number', type: 'uint32' },
             { name: 'createdAt', type: 'uint32' },
-            { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'eventInitData', type: 'tuple' },
+            {
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                name: 'eventInitData',
+                type: 'tuple',
+            },
             { name: 'signatures', type: 'map(uint256,bytes)' },
             { name: 'proxy', type: 'address' },
             { name: 'token', type: 'address' },
@@ -594,7 +769,7 @@ export abstract class MultiVaultAbi {
         ],
     } as const
 
-    static EverscaleEventNative = {
+    static EverscaleEVMEventNative = {
         'ABI version': 2,
         version: '2.2',
         header: ['pubkey', 'time', 'expire'],
@@ -605,46 +780,31 @@ export abstract class MultiVaultAbi {
                     { name: '_initializer', type: 'address' },
                     { name: '_meta', type: 'cell' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'receiveTokenName',
-                inputs: [
-                    { name: 'name_', type: 'string' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'name_', type: 'string' }],
+                outputs: [],
             },
             {
                 name: 'receiveTokenSymbol',
-                inputs: [
-                    { name: 'symbol_', type: 'string' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'symbol_', type: 'string' }],
+                outputs: [],
             },
             {
                 name: 'receiveTokenDecimals',
-                inputs: [
-                    { name: 'decimals_', type: 'uint8' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'decimals_', type: 'uint8' }],
+                outputs: [],
             },
             {
                 name: 'receiveProxyTokenWallet',
-                inputs: [
-                    { name: 'tokenWallet_', type: 'address' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'tokenWallet_', type: 'address' }],
+                outputs: [],
             },
             {
                 name: 'getDecodedData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'proxy_', type: 'address' },
                     { name: 'tokenWallet_', type: 'address' },
@@ -653,7 +813,15 @@ export abstract class MultiVaultAbi {
                     { name: 'amount_', type: 'uint128' },
                     { name: 'recipient_', type: 'uint160' },
                     { name: 'chainId_', type: 'uint256' },
-                    { components: [{ name: 'recipient', type: 'uint160' }, { name: 'payload', type: 'bytes' }, { name: 'strict', type: 'bool' }], name: 'callback', type: 'tuple' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'bytes' },
+                            { name: 'strict', type: 'bool' },
+                        ],
+                        name: 'callback',
+                        type: 'tuple',
+                    },
                     { name: 'name_', type: 'string' },
                     { name: 'symbol_', type: 'string' },
                     { name: 'decimals_', type: 'uint8' },
@@ -661,11 +829,28 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getEventInitData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransactionLt',
+                                        type: 'uint64',
+                                    },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
@@ -674,31 +859,42 @@ export abstract class MultiVaultAbi {
                     { name: 'signature', type: 'bytes' },
                     { name: 'voteReceiver', type: 'address' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'reject',
-                inputs: [
-                    { name: 'voteReceiver', type: 'address' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'voteReceiver', type: 'address' }],
+                outputs: [],
             },
             {
                 name: 'close',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'getDetails',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: '_eventInitData', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransactionLt',
+                                        type: 'uint64',
+                                    },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: '_eventInitData',
+                        type: 'tuple',
+                    },
                     { name: '_status', type: 'uint8' },
                     { name: '_confirms', type: 'uint256[]' },
                     { name: '_rejects', type: 'uint256[]' },
@@ -712,11 +908,8 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'status',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'receiveRoundAddress',
@@ -724,16 +917,12 @@ export abstract class MultiVaultAbi {
                     { name: 'roundContract', type: 'address' },
                     { name: 'roundNum', type: 'uint32' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'receiveRoundRelays',
-                inputs: [
-                    { name: 'keys', type: 'uint256[]' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'keys', type: 'uint256[]' }],
+                outputs: [],
             },
             {
                 name: 'getVoters',
@@ -741,9 +930,7 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'vote', type: 'uint8' },
                 ],
-                outputs: [
-                    { name: 'voters', type: 'uint256[]' },
-                ],
+                outputs: [{ name: 'voters', type: 'uint256[]' }],
             },
             {
                 name: 'getVote',
@@ -751,103 +938,82 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'voter', type: 'uint256' },
                 ],
-                outputs: [
-                    { name: 'vote', type: 'optional(uint8)' },
-                ],
+                outputs: [{ name: 'vote', type: 'optional(uint8)' }],
             },
             {
                 name: 'getApiVersion',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint32' }],
             },
             {
                 name: 'votes',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'votes', type: 'map(uint256,uint8)' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'votes', type: 'map(uint256,uint8)' }],
             },
             {
                 name: 'initializer',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'initializer', type: 'address' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'initializer', type: 'address' }],
             },
             {
                 name: 'meta',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'meta', type: 'cell' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'meta', type: 'cell' }],
             },
             {
                 name: 'requiredVotes',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'requiredVotes', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'requiredVotes', type: 'uint32' }],
             },
             {
                 name: 'confirms',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'confirms', type: 'uint16' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'confirms', type: 'uint16' }],
             },
             {
                 name: 'rejects',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'rejects', type: 'uint16' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'rejects', type: 'uint16' }],
             },
             {
                 name: 'relay_round',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'relay_round', type: 'address' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'relay_round', type: 'address' }],
             },
             {
                 name: 'round_number',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'round_number', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'round_number', type: 'uint32' }],
             },
             {
                 name: 'createdAt',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'createdAt', type: 'uint32' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'createdAt', type: 'uint32' }],
             },
             {
                 name: 'signatures',
-                inputs: [
-                ],
-                outputs: [
-                    { name: 'signatures', type: 'map(uint256,bytes)' },
-                ],
+                inputs: [],
+                outputs: [{ name: 'signatures', type: 'map(uint256,bytes)' }],
             },
         ],
         data: [
             {
-                components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], key: 1, name: 'eventInitData', type: 'tuple',
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                key: 1,
+                name: 'eventInitData',
+                type: 'tuple',
             },
         ],
         events: [
@@ -857,38 +1023,27 @@ export abstract class MultiVaultAbi {
                     { name: 'relay', type: 'uint256' },
                     { name: 'signature', type: 'bytes' },
                 ],
-                outputs: [
-                ],
+                outputs: [],
             },
             {
                 name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'relay', type: 'uint256' }],
+                outputs: [],
             },
             {
                 name: 'Closed',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'Confirmed',
-                inputs: [
-                ],
-                outputs: [
-                ],
+                inputs: [],
+                outputs: [],
             },
             {
                 name: 'Rejected',
-                inputs: [
-                    { name: 'reason', type: 'uint32' },
-                ],
-                outputs: [
-                ],
+                inputs: [{ name: 'reason', type: 'uint32' }],
+                outputs: [],
             },
         ],
         fields: [
@@ -904,7 +1059,23 @@ export abstract class MultiVaultAbi {
             { name: 'relay_round', type: 'address' },
             { name: 'round_number', type: 'uint32' },
             { name: 'createdAt', type: 'uint32' },
-            { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'eventInitData', type: 'tuple' },
+            {
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                name: 'eventInitData',
+                type: 'tuple',
+            },
             { name: 'signatures', type: 'map(uint256,bytes)' },
             { name: 'proxy', type: 'address' },
             { name: 'tokenWallet', type: 'address' },
@@ -949,16 +1120,12 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'receiveAlienTokenRoot',
-                inputs: [
-                    { name: 'token_', type: 'address' },
-                ],
+                inputs: [{ name: 'token_', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'getDecodedData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'proxy_', type: 'address' },
                     { name: 'token_', type: 'address' },
@@ -971,11 +1138,25 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getEventInitData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'eventTransactionLt', type: 'uint64' },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
@@ -988,9 +1169,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'reject',
-                inputs: [
-                    { name: 'voteReceiver', type: 'address' },
-                ],
+                inputs: [{ name: 'voteReceiver', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1000,11 +1179,25 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getDetails',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: '_eventInitData', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'eventTransactionLt', type: 'uint64' },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: '_eventInitData',
+                        type: 'tuple',
+                    },
                     { name: '_status', type: 'uint8' },
                     { name: '_confirms', type: 'uint256[]' },
                     { name: '_rejects', type: 'uint256[]' },
@@ -1019,9 +1212,7 @@ export abstract class MultiVaultAbi {
             {
                 name: 'status',
                 inputs: [],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'receiveRoundAddress',
@@ -1033,9 +1224,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'receiveRoundRelays',
-                inputs: [
-                    { name: 'keys', type: 'uint256[]' },
-                ],
+                inputs: [{ name: 'keys', type: 'uint256[]' }],
                 outputs: [],
             },
             {
@@ -1044,9 +1233,7 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'vote', type: 'uint8' },
                 ],
-                outputs: [
-                    { name: 'voters', type: 'uint256[]' },
-                ],
+                outputs: [{ name: 'voters', type: 'uint256[]' }],
             },
             {
                 name: 'getVote',
@@ -1054,93 +1241,82 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'voter', type: 'uint256' },
                 ],
-                outputs: [
-                    { name: 'vote', type: 'optional(uint8)' },
-                ],
+                outputs: [{ name: 'vote', type: 'optional(uint8)' }],
             },
             {
                 name: 'getApiVersion',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint32' }],
             },
             {
                 name: 'votes',
                 inputs: [],
-                outputs: [
-                    { name: 'votes', type: 'map(uint256,uint8)' },
-                ],
+                outputs: [{ name: 'votes', type: 'map(uint256,uint8)' }],
             },
             {
                 name: 'initializer',
                 inputs: [],
-                outputs: [
-                    { name: 'initializer', type: 'address' },
-                ],
+                outputs: [{ name: 'initializer', type: 'address' }],
             },
             {
                 name: 'meta',
                 inputs: [],
-                outputs: [
-                    { name: 'meta', type: 'cell' },
-                ],
+                outputs: [{ name: 'meta', type: 'cell' }],
             },
             {
                 name: 'requiredVotes',
                 inputs: [],
-                outputs: [
-                    { name: 'requiredVotes', type: 'uint32' },
-                ],
+                outputs: [{ name: 'requiredVotes', type: 'uint32' }],
             },
             {
                 name: 'confirms',
                 inputs: [],
-                outputs: [
-                    { name: 'confirms', type: 'uint16' },
-                ],
+                outputs: [{ name: 'confirms', type: 'uint16' }],
             },
             {
                 name: 'rejects',
                 inputs: [],
-                outputs: [
-                    { name: 'rejects', type: 'uint16' },
-                ],
+                outputs: [{ name: 'rejects', type: 'uint16' }],
             },
             {
                 name: 'relay_round',
                 inputs: [],
-                outputs: [
-                    { name: 'relay_round', type: 'address' },
-                ],
+                outputs: [{ name: 'relay_round', type: 'address' }],
             },
             {
                 name: 'round_number',
                 inputs: [],
-                outputs: [
-                    { name: 'round_number', type: 'uint32' },
-                ],
+                outputs: [{ name: 'round_number', type: 'uint32' }],
             },
             {
                 name: 'createdAt',
                 inputs: [],
-                outputs: [
-                    { name: 'createdAt', type: 'uint32' },
-                ],
+                outputs: [{ name: 'createdAt', type: 'uint32' }],
             },
             {
                 name: 'signatures',
                 inputs: [],
-                outputs: [
-                    { name: 'signatures', type: 'map(uint256,bytes)' },
-                ],
+                outputs: [{ name: 'signatures', type: 'map(uint256,bytes)' }],
             },
         ],
         data: [
             {
-                components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], key: 1, name: 'eventInitData', type: 'tuple',
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                key: 1,
+                name: 'eventInitData',
+                type: 'tuple',
             },
         ],
         events: [
@@ -1154,9 +1330,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
+                inputs: [{ name: 'relay', type: 'uint256' }],
                 outputs: [],
             },
             {
@@ -1171,9 +1345,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'Rejected',
-                inputs: [
-                    { name: 'reason', type: 'uint32' },
-                ],
+                inputs: [{ name: 'reason', type: 'uint32' }],
                 outputs: [],
             },
         ],
@@ -1190,7 +1362,23 @@ export abstract class MultiVaultAbi {
             { name: 'relay_round', type: 'address' },
             { name: 'round_number', type: 'uint32' },
             { name: 'createdAt', type: 'uint32' },
-            { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'eventInitData', type: 'tuple' },
+            {
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                name: 'eventInitData',
+                type: 'tuple',
+            },
             { name: 'signatures', type: 'map(uint256,bytes)' },
             { name: 'proxy', type: 'address' },
             { name: 'token', type: 'address' },
@@ -1218,37 +1406,27 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'receiveTokenName',
-                inputs: [
-                    { name: 'name_', type: 'string' },
-                ],
+                inputs: [{ name: 'name_', type: 'string' }],
                 outputs: [],
             },
             {
                 name: 'receiveTokenSymbol',
-                inputs: [
-                    { name: 'symbol_', type: 'string' },
-                ],
+                inputs: [{ name: 'symbol_', type: 'string' }],
                 outputs: [],
             },
             {
                 name: 'receiveTokenDecimals',
-                inputs: [
-                    { name: 'decimals_', type: 'uint8' },
-                ],
+                inputs: [{ name: 'decimals_', type: 'uint8' }],
                 outputs: [],
             },
             {
                 name: 'receiveProxyTokenWallet',
-                inputs: [
-                    { name: 'tokenWallet_', type: 'address' },
-                ],
+                inputs: [{ name: 'tokenWallet_', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'getDecodedData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'proxy_', type: 'address' },
                     { name: 'tokenWallet_', type: 'address' },
@@ -1264,11 +1442,25 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getEventInitData',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'eventTransactionLt', type: 'uint64' },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
@@ -1281,9 +1473,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'reject',
-                inputs: [
-                    { name: 'voteReceiver', type: 'address' },
-                ],
+                inputs: [{ name: 'voteReceiver', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1293,11 +1483,25 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getDetails',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: '_eventInitData', type: 'tuple' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'eventTransactionLt', type: 'uint64' },
+                                    { name: 'eventTimestamp', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: '_eventInitData',
+                        type: 'tuple',
+                    },
                     { name: '_status', type: 'uint8' },
                     { name: '_confirms', type: 'uint256[]' },
                     { name: '_rejects', type: 'uint256[]' },
@@ -1312,9 +1516,7 @@ export abstract class MultiVaultAbi {
             {
                 name: 'status',
                 inputs: [],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'receiveRoundAddress',
@@ -1326,9 +1528,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'receiveRoundRelays',
-                inputs: [
-                    { name: 'keys', type: 'uint256[]' },
-                ],
+                inputs: [{ name: 'keys', type: 'uint256[]' }],
                 outputs: [],
             },
             {
@@ -1337,9 +1537,7 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'vote', type: 'uint8' },
                 ],
-                outputs: [
-                    { name: 'voters', type: 'uint256[]' },
-                ],
+                outputs: [{ name: 'voters', type: 'uint256[]' }],
             },
             {
                 name: 'getVote',
@@ -1347,93 +1545,82 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'voter', type: 'uint256' },
                 ],
-                outputs: [
-                    { name: 'vote', type: 'optional(uint8)' },
-                ],
+                outputs: [{ name: 'vote', type: 'optional(uint8)' }],
             },
             {
                 name: 'getApiVersion',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint32' }],
             },
             {
                 name: 'votes',
                 inputs: [],
-                outputs: [
-                    { name: 'votes', type: 'map(uint256,uint8)' },
-                ],
+                outputs: [{ name: 'votes', type: 'map(uint256,uint8)' }],
             },
             {
                 name: 'initializer',
                 inputs: [],
-                outputs: [
-                    { name: 'initializer', type: 'address' },
-                ],
+                outputs: [{ name: 'initializer', type: 'address' }],
             },
             {
                 name: 'meta',
                 inputs: [],
-                outputs: [
-                    { name: 'meta', type: 'cell' },
-                ],
+                outputs: [{ name: 'meta', type: 'cell' }],
             },
             {
                 name: 'requiredVotes',
                 inputs: [],
-                outputs: [
-                    { name: 'requiredVotes', type: 'uint32' },
-                ],
+                outputs: [{ name: 'requiredVotes', type: 'uint32' }],
             },
             {
                 name: 'confirms',
                 inputs: [],
-                outputs: [
-                    { name: 'confirms', type: 'uint16' },
-                ],
+                outputs: [{ name: 'confirms', type: 'uint16' }],
             },
             {
                 name: 'rejects',
                 inputs: [],
-                outputs: [
-                    { name: 'rejects', type: 'uint16' },
-                ],
+                outputs: [{ name: 'rejects', type: 'uint16' }],
             },
             {
                 name: 'relay_round',
                 inputs: [],
-                outputs: [
-                    { name: 'relay_round', type: 'address' },
-                ],
+                outputs: [{ name: 'relay_round', type: 'address' }],
             },
             {
                 name: 'round_number',
                 inputs: [],
-                outputs: [
-                    { name: 'round_number', type: 'uint32' },
-                ],
+                outputs: [{ name: 'round_number', type: 'uint32' }],
             },
             {
                 name: 'createdAt',
                 inputs: [],
-                outputs: [
-                    { name: 'createdAt', type: 'uint32' },
-                ],
+                outputs: [{ name: 'createdAt', type: 'uint32' }],
             },
             {
                 name: 'signatures',
                 inputs: [],
-                outputs: [
-                    { name: 'signatures', type: 'map(uint256,bytes)' },
-                ],
+                outputs: [{ name: 'signatures', type: 'map(uint256,bytes)' }],
             },
         ],
         data: [
             {
-                components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], key: 1, name: 'eventInitData', type: 'tuple',
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                key: 1,
+                name: 'eventInitData',
+                type: 'tuple',
             },
         ],
         events: [
@@ -1447,9 +1634,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'Reject',
-                inputs: [
-                    { name: 'relay', type: 'uint256' },
-                ],
+                inputs: [{ name: 'relay', type: 'uint256' }],
                 outputs: [],
             },
             {
@@ -1464,9 +1649,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'Rejected',
-                inputs: [
-                    { name: 'reason', type: 'uint32' },
-                ],
+                inputs: [{ name: 'reason', type: 'uint32' }],
                 outputs: [],
             },
         ],
@@ -1483,7 +1666,23 @@ export abstract class MultiVaultAbi {
             { name: 'relay_round', type: 'address' },
             { name: 'round_number', type: 'uint32' },
             { name: 'createdAt', type: 'uint32' },
-            { components: [{ components: [{ name: 'eventTransactionLt', type: 'uint64' }, { name: 'eventTimestamp', type: 'uint32' }, { name: 'eventData', type: 'cell' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }], name: 'eventInitData', type: 'tuple' },
+            {
+                components: [
+                    {
+                        components: [
+                            { name: 'eventTransactionLt', type: 'uint64' },
+                            { name: 'eventTimestamp', type: 'uint32' },
+                            { name: 'eventData', type: 'cell' },
+                        ],
+                        name: 'voteData',
+                        type: 'tuple',
+                    },
+                    { name: 'configuration', type: 'address' },
+                    { name: 'staking', type: 'address' },
+                ],
+                name: 'eventInitData',
+                type: 'tuple',
+            },
             { name: 'signatures', type: 'map(uint256,bytes)' },
             { name: 'proxy', type: 'address' },
             { name: 'tokenWallet', type: 'address' },
@@ -1519,44 +1718,32 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'receiveTokenDecimals',
-                inputs: [
-                    { name: 'decimals', type: 'uint8' },
-                ],
+                inputs: [{ name: 'decimals', type: 'uint8' }],
                 outputs: [],
             },
             {
                 name: 'setManager',
-                inputs: [
-                    { name: '_manager', type: 'address' },
-                ],
+                inputs: [{ name: '_manager', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'removeToken',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
+                inputs: [{ name: 'token', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'addToken',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
+                inputs: [{ name: 'token', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'setCanon',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
+                inputs: [{ name: 'token', type: 'address' }],
                 outputs: [],
             },
             {
                 name: 'enableToken',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
+                inputs: [{ name: 'token', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1566,9 +1753,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'disableToken',
-                inputs: [
-                    { name: 'token', type: 'address' },
-                ],
+                inputs: [{ name: 'token', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1578,21 +1763,31 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'getCanon',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'value0', type: 'address' },
-                    { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: 'value1', type: 'tuple' },
+                    {
+                        components: [
+                            { name: 'decimals', type: 'uint8' },
+                            { name: 'enabled', type: 'bool' },
+                        ],
+                        name: 'value1',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
                 name: 'getTokens',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: '_tokens', type: 'map(address,tuple)' },
+                    {
+                        components: [
+                            { name: 'decimals', type: 'uint8' },
+                            { name: 'enabled', type: 'bool' },
+                        ],
+                        name: '_tokens',
+                        type: 'map(address,tuple)',
+                    },
                     { name: '_canon', type: 'address' },
                 ],
             },
@@ -1609,9 +1804,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'transferOwnership',
-                inputs: [
-                    { name: 'newOwner', type: 'address' },
-                ],
+                inputs: [{ name: 'newOwner', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1622,30 +1815,22 @@ export abstract class MultiVaultAbi {
             {
                 name: 'owner',
                 inputs: [],
-                outputs: [
-                    { name: 'owner', type: 'address' },
-                ],
+                outputs: [{ name: 'owner', type: 'address' }],
             },
             {
                 name: '_randomNonce',
                 inputs: [],
-                outputs: [
-                    { name: '_randomNonce', type: 'uint256' },
-                ],
+                outputs: [{ name: '_randomNonce', type: 'uint256' }],
             },
             {
                 name: 'version',
                 inputs: [],
-                outputs: [
-                    { name: 'version', type: 'uint8' },
-                ],
+                outputs: [{ name: 'version', type: 'uint8' }],
             },
             {
                 name: 'manager',
                 inputs: [],
-                outputs: [
-                    { name: 'manager', type: 'address' },
-                ],
+                outputs: [{ name: 'manager', type: 'address' }],
             },
         ],
         data: [
@@ -1670,7 +1855,14 @@ export abstract class MultiVaultAbi {
             { name: '_randomNonce', type: 'uint256' },
             { name: 'proxy', type: 'address' },
             { name: 'version', type: 'uint8' },
-            { components: [{ name: 'decimals', type: 'uint8' }, { name: 'enabled', type: 'bool' }], name: 'tokens', type: 'map(address,tuple)' },
+            {
+                components: [
+                    { name: 'decimals', type: 'uint8' },
+                    { name: 'enabled', type: 'bool' },
+                ],
+                name: 'tokens',
+                type: 'map(address,tuple)',
+            },
             { name: 'manager', type: 'address' },
             { name: 'canon', type: 'address' },
         ],
@@ -1678,129 +1870,261 @@ export abstract class MultiVaultAbi {
 
     static MergeRouter = {
         'ABI version': 2,
-        version: '2.2',
-        header: ['pubkey', 'time'],
-        functions: [
-            {
-                name: 'constructor',
-                inputs: [
-                    { name: '_owner', type: 'address' },
-                    { name: '_manager', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setPool',
-                inputs: [
-                    { name: 'pool_', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setManager',
-                inputs: [
-                    { name: '_manager', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'disablePool',
-                inputs: [],
-                outputs: [],
-            },
-            {
-                name: 'getPool',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
-            },
-            {
-                name: 'getDetails',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: '_proxy', type: 'address' },
-                    { name: '_token', type: 'address' },
-                    { name: '_pool', type: 'address' },
-                ],
-            },
-            {
-                name: 'transferOwnership',
-                inputs: [
-                    { name: 'newOwner', type: 'address' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'renounceOwnership',
-                inputs: [],
-                outputs: [],
-            },
-            {
-                name: 'owner',
-                inputs: [],
-                outputs: [
-                    { name: 'owner', type: 'address' },
-                ],
-            },
-            {
-                name: 'manager',
-                inputs: [],
-                outputs: [
-                    { name: 'manager', type: 'address' },
-                ],
-            },
-        ],
         data: [
-            { key: 1, name: 'proxy', type: 'address' },
-            { key: 2, name: 'token', type: 'address' },
+            {
+                key: 1,
+                name: 'proxy',
+                type: 'address',
+            },
+            {
+                key: 2,
+                name: 'token',
+                type: 'address',
+            },
         ],
         events: [
             {
-                name: 'OwnershipTransferred',
                 inputs: [
-                    { name: 'previousOwner', type: 'address' },
-                    { name: 'newOwner', type: 'address' },
+                    {
+                        name: 'previousOwner',
+                        type: 'address',
+                    },
+                    {
+                        name: 'newOwner',
+                        type: 'address',
+                    },
                 ],
+                name: 'OwnershipTransferred',
                 outputs: [],
             },
         ],
         fields: [
-            { name: '_pubkey', type: 'uint256' },
-            { name: '_timestamp', type: 'uint64' },
-            { name: '_constructorFlag', type: 'bool' },
-            { name: 'owner', type: 'address' },
-            { name: 'proxy', type: 'address' },
-            { name: 'token', type: 'address' },
-            { name: 'pool', type: 'address' },
-            { name: 'manager', type: 'address' },
+            {
+                name: '_pubkey',
+                type: 'uint256',
+            },
+            {
+                name: '_timestamp',
+                type: 'uint64',
+            },
+            {
+                name: '_constructorFlag',
+                type: 'bool',
+            },
+            {
+                name: 'owner',
+                type: 'address',
+            },
+            {
+                name: 'proxy',
+                type: 'address',
+            },
+            {
+                name: 'token',
+                type: 'address',
+            },
+            {
+                name: 'pool',
+                type: 'address',
+            },
+            {
+                name: 'manager',
+                type: 'address',
+            },
         ],
+        functions: [
+            {
+                inputs: [
+                    {
+                        name: '_owner',
+                        type: 'address',
+                    },
+                    {
+                        name: '_manager',
+                        type: 'address',
+                    },
+                ],
+                name: 'constructor',
+                outputs: [],
+            },
+            {
+                inputs: [
+                    {
+                        name: 'pool_',
+                        type: 'address',
+                    },
+                ],
+                name: 'setPool',
+                outputs: [],
+            },
+            {
+                inputs: [
+                    {
+                        name: '_manager',
+                        type: 'address',
+                    },
+                ],
+                name: 'setManager',
+                outputs: [],
+            },
+            {
+                inputs: [],
+                name: 'disablePool',
+                outputs: [],
+            },
+            {
+                inputs: [
+                    {
+                        name: 'answerId',
+                        type: 'uint32',
+                    },
+                ],
+                name: 'getPool',
+                outputs: [
+                    {
+                        name: 'value0',
+                        type: 'address',
+                    },
+                ],
+            },
+            {
+                inputs: [
+                    {
+                        name: 'answerId',
+                        type: 'uint32',
+                    },
+                ],
+                name: 'getDetails',
+                outputs: [
+                    {
+                        name: '_proxy',
+                        type: 'address',
+                    },
+                    {
+                        name: '_token',
+                        type: 'address',
+                    },
+                    {
+                        name: '_pool',
+                        type: 'address',
+                    },
+                ],
+            },
+            {
+                inputs: [
+                    {
+                        name: 'newOwner',
+                        type: 'address',
+                    },
+                ],
+                name: 'transferOwnership',
+                outputs: [],
+            },
+            {
+                inputs: [],
+                name: 'renounceOwnership',
+                outputs: [],
+            },
+            {
+                inputs: [],
+                name: 'owner',
+                outputs: [
+                    {
+                        name: 'owner',
+                        type: 'address',
+                    },
+                ],
+            },
+            {
+                inputs: [],
+                name: 'manager',
+                outputs: [
+                    {
+                        name: 'manager',
+                        type: 'address',
+                    },
+                ],
+            },
+        ],
+        header: [
+            'pubkey',
+            'time',
+        ],
+        version: '2.2',
     } as const
 
     static NativeProxy = {
         'ABI version': 2,
         version: '2.2',
-        header: ['pubkey', 'time', 'expire'],
+        header: ['time'],
         functions: [
             {
                 name: 'constructor',
+                inputs: [{ name: 'owner_', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'upgrade',
+                inputs: [{ name: 'code', type: 'cell' }],
+                outputs: [],
+            },
+            {
+                name: 'onEventConfirmedExtended',
                 inputs: [
-                    { name: 'owner_', type: 'address' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    {
+                                        name: 'eventTransaction',
+                                        type: 'uint256',
+                                    },
+                                    { name: 'eventIndex', type: 'uint32' },
+                                    { name: 'eventData', type: 'cell' },
+                                    { name: 'eventBlockNumber', type: 'uint32' },
+                                    { name: 'eventBlock', type: 'uint256' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                            { name: 'chainId', type: 'uint32' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
+                    { name: 'meta', type: 'cell' },
+                    { name: 'remainingGasTo', type: 'address' },
                 ],
                 outputs: [],
             },
             {
-                name: 'apiVersion',
+                name: 'onSolanaEventConfirmedExtended',
                 inputs: [
-                    { name: 'answerId', type: 'uint32' },
+                    {
+                        components: [
+                            {
+                                components: [
+                                    { name: 'accountSeed', type: 'uint128' },
+                                    { name: 'slot', type: 'uint64' },
+                                    { name: 'blockTime', type: 'uint64' },
+                                    { name: 'txSignature', type: 'string' },
+                                    { name: 'eventData', type: 'cell' },
+                                ],
+                                name: 'voteData',
+                                type: 'tuple',
+                            },
+                            { name: 'configuration', type: 'address' },
+                            { name: 'staking', type: 'address' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
+                    { name: 'meta', type: 'cell' },
+                    { name: 'remainingGasTo', type: 'address' },
                 ],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                outputs: [],
             },
             {
                 name: 'onAcceptTokensTransfer',
@@ -1810,48 +2134,78 @@ export abstract class MultiVaultAbi {
                     { name: 'value2', type: 'address' },
                     { name: 'value3', type: 'address' },
                     { name: 'remainingGasTo', type: 'address' },
-                    { name: 'payload', type: 'cell' },
+                    { name: 'transferPayload', type: 'cell' },
                 ],
                 outputs: [],
             },
             {
-                name: 'onEventConfirmedExtended',
-                inputs: [
-                    { components: [{ components: [{ name: 'eventTransaction', type: 'uint256' }, { name: 'eventIndex', type: 'uint32' }, { name: 'eventData', type: 'cell' }, { name: 'eventBlockNumber', type: 'uint32' }, { name: 'eventBlock', type: 'uint256' }], name: 'voteData', type: 'tuple' }, { name: 'configuration', type: 'address' }, { name: 'staking', type: 'address' }, { name: 'chainId', type: 'uint32' }], name: 'value0', type: 'tuple' },
-                    { name: 'meta', type: 'cell' },
-                    { name: 'remainingGasTo', type: 'address' },
-                ],
-                outputs: [],
+                name: 'apiVersion',
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'getConfiguration',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
-                    { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }], name: 'value0', type: 'tuple' },
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'evmConfigurations', type: 'address[]' },
+                        ],
+                        name: 'value0',
+                        type: 'tuple',
+                    },
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'solanaConfiguration', type: 'address' },
+                        ],
+                        name: 'value1',
+                        type: 'tuple',
+                    },
                 ],
             },
             {
-                name: 'setConfiguration',
+                name: 'setEVMConfiguration',
                 inputs: [
-                    { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }], name: '_config', type: 'tuple' },
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'evmConfigurations', type: 'address[]' },
+                        ],
+                        name: '_config',
+                        type: 'tuple',
+                    },
                     { name: 'remainingGasTo', type: 'address' },
                 ],
                 outputs: [],
             },
             {
-                name: 'upgrade',
+                name: 'setSolanaConfiguration',
                 inputs: [
-                    { name: 'code', type: 'cell' },
+                    {
+                        components: [
+                            { name: 'everscaleConfiguration', type: 'address' },
+                            { name: 'solanaConfiguration', type: 'address' },
+                        ],
+                        name: '_config',
+                        type: 'tuple',
+                    },
+                    { name: 'remainingGasTo', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'sendMessage',
+                inputs: [
+                    { name: 'recipient', type: 'address' },
+                    { name: 'message', type: 'cell' },
                 ],
                 outputs: [],
             },
             {
                 name: 'transferOwnership',
-                inputs: [
-                    { name: 'newOwner', type: 'address' },
-                ],
+                inputs: [{ name: 'newOwner', type: 'address' }],
                 outputs: [],
             },
             {
@@ -1862,24 +2216,40 @@ export abstract class MultiVaultAbi {
             {
                 name: 'owner',
                 inputs: [],
-                outputs: [
-                    { name: 'owner', type: 'address' },
-                ],
+                outputs: [{ name: 'owner', type: 'address' }],
             },
             {
                 name: '_randomNonce',
                 inputs: [],
-                outputs: [
-                    { name: '_randomNonce', type: 'uint256' },
-                ],
+                outputs: [{ name: '_randomNonce', type: 'uint256' }],
             },
         ],
-        data: [
-            { key: 1, name: '_randomNonce', type: 'uint256' },
-        ],
+        data: [{ key: 1, name: '_randomNonce', type: 'uint256' }],
         events: [
             {
-                name: 'NativeTransfer',
+                name: 'OwnershipTransferred',
+                inputs: [
+                    { name: 'previousOwner', type: 'address' },
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'SolanaNativeTransfer',
+                inputs: [
+                    { name: 'base_token', type: 'uint256' },
+                    { name: 'name', type: 'string' },
+                    { name: 'symbol', type: 'string' },
+                    { name: 'decimals', type: 'uint8' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'sol_amount', type: 'uint64' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'payload', type: 'bytes' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'EVMNativeTransfer',
                 inputs: [
                     { name: 'token_wid', type: 'int8' },
                     { name: 'token_addr', type: 'uint256' },
@@ -1892,23 +2262,30 @@ export abstract class MultiVaultAbi {
                 ],
                 outputs: [],
             },
-            {
-                name: 'OwnershipTransferred',
-                inputs: [
-                    { name: 'previousOwner', type: 'address' },
-                    { name: 'newOwner', type: 'address' },
-                ],
-                outputs: [],
-            },
         ],
         fields: [
             { name: '_pubkey', type: 'uint256' },
             { name: '_timestamp', type: 'uint64' },
             { name: '_constructorFlag', type: 'bool' },
             { name: 'owner', type: 'address' },
-            { name: '_randomNonce', type: 'uint256' },
-            { components: [{ name: 'everscaleConfiguration', type: 'address' }, { name: 'evmConfigurations', type: 'address[]' }, { name: 'deployWalletValue', type: 'uint128' }], name: 'config', type: 'tuple' },
+            {
+                components: [
+                    { name: 'everscaleConfiguration', type: 'address' },
+                    { name: 'evmConfigurations', type: 'address[]' },
+                ],
+                name: 'evmConfiguration',
+                type: 'tuple',
+            },
+            {
+                components: [
+                    { name: 'everscaleConfiguration', type: 'address' },
+                    { name: 'solanaConfiguration', type: 'address' },
+                ],
+                name: 'solanaConfiguration',
+                type: 'tuple',
+            },
             { name: 'api_version', type: 'uint8' },
+            { name: '_randomNonce', type: 'uint256' },
         ],
     } as const
 
@@ -1932,9 +2309,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'meta',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
                 outputs: [
                     { name: 'base_chainId', type: 'uint256' },
                     { name: 'base_token', type: 'uint160' },
@@ -1949,27 +2324,17 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'interfaceID', type: 'uint32' },
                 ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'walletVersion',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint32' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint32' }],
             },
             {
                 name: 'platformCode',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'cell' }],
             },
             {
                 name: 'requestUpgradeWallet',
@@ -1982,35 +2347,23 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'setWalletCode',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
+                inputs: [{ name: 'code', type: 'cell' }],
                 outputs: [],
             },
             {
                 name: 'upgrade',
-                inputs: [
-                    { name: 'code', type: 'cell' },
-                ],
+                inputs: [{ name: 'code', type: 'cell' }],
                 outputs: [],
             },
             {
                 name: 'disableMint',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'mintDisabled',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'burnTokens',
@@ -2025,30 +2378,18 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'disableBurnByRoot',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'burnByRootDisabled',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'burnPaused',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'setBurnPaused',
@@ -2056,72 +2397,53 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'paused', type: 'bool' },
                 ],
-                outputs: [
-                    { name: 'value0', type: 'bool' },
-                ],
+                outputs: [{ name: 'value0', type: 'bool' }],
             },
             {
                 name: 'transferOwnership',
                 inputs: [
                     { name: 'newOwner', type: 'address' },
                     { name: 'remainingGasTo', type: 'address' },
-                    { components: [{ name: 'value', type: 'uint128' }, { name: 'payload', type: 'cell' }], name: 'callbacks', type: 'map(address,tuple)' },
+                    {
+                        components: [
+                            { name: 'value', type: 'uint128' },
+                            { name: 'payload', type: 'cell' },
+                        ],
+                        name: 'callbacks',
+                        type: 'map(address,tuple)',
+                    },
                 ],
                 outputs: [],
             },
             {
                 name: 'name',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'string' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'string' }],
             },
             {
                 name: 'symbol',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'string' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'string' }],
             },
             {
                 name: 'decimals',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint8' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint8' }],
             },
             {
                 name: 'totalSupply',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'uint128' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'uint128' }],
             },
             {
                 name: 'walletCode',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'cell' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'cell' }],
             },
             {
                 name: 'rootOwner',
-                inputs: [
-                    { name: 'answerId', type: 'uint32' },
-                ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
+                inputs: [{ name: 'answerId', type: 'uint32' }],
+                outputs: [{ name: 'value0', type: 'address' }],
             },
             {
                 name: 'walletOf',
@@ -2129,9 +2451,7 @@ export abstract class MultiVaultAbi {
                     { name: 'answerId', type: 'uint32' },
                     { name: 'walletOwner', type: 'address' },
                 ],
-                outputs: [
-                    { name: 'value0', type: 'address' },
-                ],
+                outputs: [{ name: 'value0', type: 'address' }],
             },
             {
                 name: 'deployWallet',
@@ -2140,9 +2460,7 @@ export abstract class MultiVaultAbi {
                     { name: 'walletOwner', type: 'address' },
                     { name: 'deployWalletValue', type: 'uint128' },
                 ],
-                outputs: [
-                    { name: 'tokenWallet', type: 'address' },
-                ],
+                outputs: [{ name: 'tokenWallet', type: 'address' }],
             },
             {
                 name: 'mint',
@@ -2170,9 +2488,7 @@ export abstract class MultiVaultAbi {
             },
             {
                 name: 'sendSurplusGas',
-                inputs: [
-                    { name: 'to', type: 'address' },
-                ],
+                inputs: [{ name: 'to', type: 'address' }],
                 outputs: [],
             },
         ],

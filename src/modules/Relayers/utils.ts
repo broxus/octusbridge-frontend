@@ -4,15 +4,15 @@ import { ETH_ADDRESS_REGEXP, TON_PUBLIC_KEY_REGEXP } from '@/modules/Relayers/co
 import { IndexerApiBaseUrl, networks } from '@/config'
 import { handleApi } from '@/utils'
 import {
-    AllRelayRoundsInfoRequest, AllRelayRoundsInfoResponse, GlobalRelayersEventsParams,
-    RelayersEventsParams, RelayersEventsResponse, RelayersEventsTransferKind,
-    RelayersSearchParams, RelayersSearchResponse, RelayInfoParams,
-    RelayInfoResponse, RelayRoundInfoParams, RelayRoundInfoResponse,
-    RelayRoundsInfoRequest, RelayRoundsInfoResponse, RelaysRoundInfoRequest,
-    RelaysRoundInfoResponse, RoundInfoParams, RoundInfoResponse,
-    RoundsCalendarParams, RoundsCalendarResponse, RoundStatus,
+    type AllRelayRoundsInfoRequest, type AllRelayRoundsInfoResponse, type GlobalRelayersEventsParams,
+    type RelayersEventsParams, type RelayersEventsResponse, type RelayersEventsTransferKind,
+    type RelayersSearchParams, type RelayersSearchResponse, type RelayInfoParams,
+    type RelayInfoResponse, type RelayRoundInfoParams, type RelayRoundInfoResponse,
+    type RelayRoundsInfoRequest, type RelayRoundsInfoResponse, type RelaysRoundInfoRequest,
+    type RelaysRoundInfoResponse, type RoundInfoParams, type RoundInfoResponse,
+    type RoundsCalendarParams, type RoundsCalendarResponse, type RoundStatus,
 } from '@/modules/Relayers/types'
-import { NetworkShape } from '@/types'
+import { type NetworkShape } from '@/types'
 import { RatioStatus } from '@/components/common/Ratio'
 
 function normalizeKey(pattern: RegExp, value: string): string {
@@ -126,19 +126,19 @@ const evmNetworks = networks
     }), {})
 
 const tonNetworks = networks
-    .filter(item => item.type === 'everscale')
+    .filter(item => item.type === 'tvm')
     .reduce<{[k: string]: NetworkShape | undefined}>((acc, item) => ({
         ...acc,
         [item.chainId]: item,
     }), {})
 
 function getEvmName(chainId: number): string | undefined {
-    return evmNetworks[chainId]?.currencySymbol
+    return evmNetworks[chainId]?.label
 }
 
 export function getEventFromName(transferKind: RelayersEventsTransferKind, chainId: number): string | undefined {
     if (transferKind === 'tontoeth') {
-        return tonNetworks[1]?.currencySymbol
+        return tonNetworks[42]?.label
     }
     if (transferKind === 'ethtoton' || transferKind === 'creditethtoton') {
         return getEvmName(chainId)
@@ -148,7 +148,7 @@ export function getEventFromName(transferKind: RelayersEventsTransferKind, chain
 
 export function getEventToName(transferKind: RelayersEventsTransferKind, chainId: number): string | undefined {
     if (transferKind === 'ethtoton' || transferKind === 'creditethtoton') {
-        return tonNetworks[1]?.currencySymbol
+        return tonNetworks[42]?.label
     }
     if (transferKind === 'tontoeth') {
         return getEvmName(chainId)

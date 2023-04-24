@@ -7,13 +7,13 @@ import { Button } from '@/components/common/Button'
 import { TransferStatus } from '@/modules/Bridge/components/Statuses'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
 import { useBridge, useEvmEverscalePipelineContext } from '@/modules/Bridge/providers'
-import { TransferStateStatus } from '@/modules/Bridge/types'
+import { type TransferStateStatus } from '@/modules/Bridge/types'
 import { isEvmTxHashValid } from '@/utils'
 
 
-function TransferStatusIndicatorInner(): JSX.Element {
+export const TransferStatusIndicator = observer(() => {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEvmEverscalePipelineContext()
 
     const [transferStatus, setTransferStatus] = React.useState<TransferStateStatus>('disabled')
@@ -39,20 +39,25 @@ function TransferStatusIndicatorInner(): JSX.Element {
         && !isPending
     )
 
-    const onTransfer = async () => {
+    const onTransfer = async (): Promise<void> => {
         if (isTransferPage || transferStatus === 'pending') {
             return
         }
 
         try {
             setTransferStatus('pending')
-            if (bridge.pipeline?.isMultiVault) {
-                await bridge.transferAlienMultiToken(() => {
+            if (bridge.isNativeEvmCurrency) {
+                await bridge.depositNative(() => {
+                    setTransferStatus('disabled')
+                })
+            }
+            else if (bridge.isSwapEnabled) {
+                await bridge.depositWithMultiSwap(() => {
                     setTransferStatus('disabled')
                 })
             }
             else {
-                await bridge.transfer(() => {
+                await bridge.depositAlienMultiToken(() => {
                     setTransferStatus('disabled')
                 })
             }
@@ -71,7 +76,7 @@ function TransferStatusIndicatorInner(): JSX.Element {
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
             }, {
-                network: leftNetwork?.label || '',
+                network: leftNetwork?.name || '',
             })}
             status={status}
             txHash={transfer.txHash}
@@ -125,6 +130,4 @@ function TransferStatusIndicatorInner(): JSX.Element {
             })()}
         </TransferStatus>
     )
-}
-
-export const TransferStatusIndicator = observer(TransferStatusIndicatorInner)
+})
