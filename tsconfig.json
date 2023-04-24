@@ -1,45 +1,25 @@
 {
+    "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
         "allowJs": true,
-        "alwaysStrict": true,
-        "allowSyntheticDefaultImports": true,
         "baseUrl": ".",
-        "declaration": false,
+        "downlevelIteration": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
         "jsx": "react",
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "esnext"
-        ],
-        "moduleResolution": "node",
-        "noEmit": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "moduleResolution": "Node",
+        "newLine": "lf",
         "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUnusedParameters": true,
+        "noUnusedParameters": false,
         "paths": {
-            "*": ["node_modules/@types", "types/*"],
             "@/*": ["src/*"]
         },
-        "resolveJsonModule": true,
         "skipLibCheck": true,
         "strict": true,
-        "strictFunctionTypes": true,
-        "strictNullChecks": true,
-        "target": "esnext"
+        "target": "ESNext"
     },
-    "exclude": [
-        "webpack.config.ts",
-        "node_modules"
-    ],
-    "include": [
-        "src/**/*.d.ts",
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "node_modules/@types/node/globals.d.ts"
-    ]
+    "include": ["src/**/*"],
+    "exclude": ["dist", "node_modules", "webpack.config.ts"]
 }

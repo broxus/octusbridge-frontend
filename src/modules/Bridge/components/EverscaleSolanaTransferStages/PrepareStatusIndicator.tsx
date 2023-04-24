@@ -11,7 +11,7 @@ import { isEverscaleAddressValid } from '@/utils'
 
 function PrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEverscaleSolanaPipelineContext()
 
     const [prepareStatus, setPrepareStatus] = React.useState<PrepareStateStatus>('disabled')
@@ -98,4 +98,3 @@ function PrepareStatusIndicatorInner(): JSX.Element {
 }
 
 export const PrepareStatusIndicator = observer(PrepareStatusIndicatorInner)
-

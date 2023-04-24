@@ -24,14 +24,14 @@ import {
 import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
 import {
-    TransferKindFilter,
-    TransfersFilters,
-    TransfersOrdering,
-    TransfersRequestStatus,
-    TransferType,
+    type TransferKindFilter,
+    type TransfersFilters,
+    type TransfersOrdering,
+    type TransfersRequestStatus,
+    type TransferType,
 } from '@/modules/Transfers/types'
 import { useEverWallet } from '@/stores/EverWalletService'
-import { BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
+import { type BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { error } from '@/utils'
 import { Select } from '@/components/common/Select'
 import { Checkbox } from '@/components/common/Checkbox'
@@ -91,10 +91,10 @@ function TransfersListInner(): JSX.Element {
         if (from && to && from.type === 'evm' && to.type === 'evm') {
             return ['Transit']
         }
-        if (from && to && from.type === 'evm' && to.type === 'everscale') {
+        if (from && to && from.type === 'evm' && to.type === 'tvm') {
             return ['Default', 'Credit']
         }
-        if (from && to && from.type === 'everscale' && to.type === 'evm') {
+        if (from && to && from.type === 'tvm' && to.type === 'evm') {
             return ['Default']
         }
         if (from && from.type === 'evm') {
@@ -103,10 +103,10 @@ function TransfersListInner(): JSX.Element {
         if (to && to.type === 'evm') {
             return ['Default', 'Transit']
         }
-        if (from && from.type === 'everscale') {
+        if (from && from.type === 'tvm') {
             return ['Default']
         }
-        if (to && to.type === 'everscale') {
+        if (to && to.type === 'tvm') {
             return ['Credit', 'Default']
         }
         return ['Default', 'Credit', 'Transit'] as TransferType[]
@@ -139,14 +139,14 @@ function TransfersListInner(): JSX.Element {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = ['ethtoeth']
         }
-        else if (from && to && from.type === 'evm' && to.type === 'everscale') {
+        else if (from && to && from.type === 'evm' && to.type === 'tvm') {
             const validKinds = ['ethtoton', 'creditethtoton'] as TransferKindFilter[]
             const selected = selectedKinds.filter(item => validKinds.includes(item))
 
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = selected.length ? selected : validKinds
         }
-        else if (from && to && from.type === 'everscale' && to.type === 'evm') {
+        else if (from && to && from.type === 'tvm' && to.type === 'evm') {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = ['tontoeth']
         }
@@ -164,10 +164,10 @@ function TransfersListInner(): JSX.Element {
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = selected.length ? selected : []
         }
-        else if (from && from.type === 'everscale') {
+        else if (from && from.type === 'tvm') {
             transferKinds = ['tontoeth']
         }
-        else if (to && to.type === 'everscale') {
+        else if (to && to.type === 'tvm') {
             const validKinds = ['creditethtoton', 'ethtoton'] as TransferKindFilter[]
             const selected = selectedKinds.filter(item => validKinds.includes(item))
 

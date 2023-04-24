@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { RelayersEvent } from '@/modules/Relayers/types'
+import { type RelayersEvent } from '@/modules/Relayers/types'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { networks } from '@/config'
@@ -27,9 +27,10 @@ export function FromAddress({
     }
 
     if (item.transferKind === 'ethtoton' && item.from) {
-        const baseUrl = networks.find(network => (
-            network.type === 'evm' && network.chainId === item.chainId.toString()
-        ))?.explorerBaseUrl
+        const network = networks.find(i => (
+            i.type === 'evm' && i.chainId === item.chainId.toString()
+        ))
+        const baseUrl = network?.explorerBaseUrl
 
         if (baseUrl) {
             return (
@@ -37,6 +38,7 @@ export function FromAddress({
                     copy
                     address={item.from}
                     baseUrl={baseUrl}
+                    explorerLabel={network.explorerLabel ?? ''}
                 />
             )
         }

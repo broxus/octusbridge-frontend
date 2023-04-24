@@ -15,9 +15,9 @@ export type RelayConfig = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'ge
 
 export type RelayRoundsDetails = DecodedAbiFunctionOutputs<typeof StackingAbi.Root, 'getRelayRoundsDetails'>['value0']
 
-export type EventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
+export type EventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEverscaleEventConfiguration, 'deployEvent'>['eventVoteData']
 
-export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof BridgeAbi.EthereumEventConfiguration, 'getDetails'>
+export type EventConfigDetails = DecodedAbiFunctionOutputs<typeof BridgeAbi.EthereumEverscaleEventConfiguration, 'getDetails'>
 
 export type StackingContract = Contract<typeof StackingAbi.Root>
 

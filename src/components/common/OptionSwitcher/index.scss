@@ -9,6 +9,7 @@
     }
 
     &__label {
+        align-items: flex-start;
         cursor: pointer;
         display: block;
     }
@@ -20,5 +21,9 @@
 
     &.disabled &__label {
         cursor: not-allowed;
+    }
+
+    &__annotation {
+        margin-top: 4px;
     }
 }

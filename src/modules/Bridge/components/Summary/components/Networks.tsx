@@ -4,12 +4,12 @@ import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
-import { useBridge } from '@/modules/Bridge/providers'
+import { useSummary } from '@/modules/Bridge/providers'
 
 
 export function Networks(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const summary = useSummary()
 
     return (
         <>
@@ -25,14 +25,14 @@ export function Networks(): JSX.Element {
                                             ? 'CROSSCHAIN_TRANSFER_SUMMARY_FROM_BLOCKCHAIN'
                                             : 'CROSSCHAIN_TRANSFER_SUMMARY_FROM',
                                     }, {
-                                        abbr: parts => `<abbr title="${summary.leftNetwork?.label}">${parts.join('')}</abbr>`,
-                                        blockchainName: summary.leftNetwork?.name || '',
+                                        abbr: parts => `<abbr title="${summary.leftNetwork?.name}">${parts.join('')}</abbr>`,
+                                        blockchainName: summary.leftNetwork?.label || '',
                                     }),
                                 }}
                             />
                             {(summary.leftNetwork?.name !== undefined && summary.leftAddress !== undefined) ? (
                                 <div>
-                                    {summary.leftNetwork?.type === 'everscale' && (
+                                    {summary.leftNetwork?.type === 'tvm' && (
                                         <EverscanAccountLink
                                             key="everscale-address"
                                             address={summary.leftAddress}
@@ -45,6 +45,7 @@ export function Networks(): JSX.Element {
                                             address={summary.leftAddress}
                                             baseUrl={summary.leftNetwork.explorerBaseUrl}
                                             copy
+                                            explorerLabel={summary.leftNetwork.explorerLabel}
                                         />
                                     )}
                                     {summary.leftNetwork?.type === 'solana' && (
@@ -53,6 +54,7 @@ export function Networks(): JSX.Element {
                                             address={summary.leftAddress}
                                             baseUrl={summary.leftNetwork.explorerBaseUrl}
                                             copy
+                                            explorerLabel={summary.leftNetwork.explorerLabel}
                                         />
                                     )}
                                 </div>
@@ -75,14 +77,14 @@ export function Networks(): JSX.Element {
                                             ? 'CROSSCHAIN_TRANSFER_SUMMARY_TO_BLOCKCHAIN'
                                             : 'CROSSCHAIN_TRANSFER_SUMMARY_TO',
                                     }, {
-                                        abbr: parts => `<abbr title="${summary.rightNetwork?.label}">${parts.join('')}</abbr>`,
-                                        blockchainName: summary.rightNetwork?.name || '',
+                                        abbr: parts => `<abbr title="${summary.rightNetwork?.name}">${parts.join('')}</abbr>`,
+                                        blockchainName: summary.rightNetwork?.label || '',
                                     }),
                                 }}
                             />
                             {(summary.rightNetwork?.name !== undefined && summary.rightAddress !== undefined) ? (
                                 <div>
-                                    {summary.rightNetwork?.type === 'everscale' && (
+                                    {summary.rightNetwork?.type === 'tvm' && (
                                         <EverscanAccountLink
                                             key="everscale-address"
                                             address={summary.rightAddress}
@@ -95,6 +97,7 @@ export function Networks(): JSX.Element {
                                             address={summary.rightAddress}
                                             baseUrl={summary.rightNetwork.explorerBaseUrl}
                                             copy
+                                            explorerLabel={summary.rightNetwork.explorerLabel}
                                         />
                                     )}
                                     {summary.rightNetwork?.type === 'solana' && (
@@ -102,6 +105,7 @@ export function Networks(): JSX.Element {
                                             key="solana-address"
                                             address={summary.rightAddress}
                                             baseUrl={summary.rightNetwork.explorerBaseUrl}
+                                            explorerLabel={summary.rightNetwork.explorerLabel}
                                             copy
                                         />
                                     )}

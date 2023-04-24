@@ -5,14 +5,12 @@ import { PrepareStatusIndicator } from '@/modules/Bridge/components/EverscaleEvm
 import { ReleaseStatusIndicator } from '@/modules/Bridge/components/EverscaleEvmTransferStages/ReleaseStatusIndicator'
 
 
-export function EverscaleEvmTransferStages(): JSX.Element {
-    return (
-        <div className="card card--flat card--small crosschain-transfer">
-            <div className="crosschain-transfer__statuses">
-                <PrepareStatusIndicator />
-                <EventStatusIndicator />
-                <ReleaseStatusIndicator />
-            </div>
+export const EverscaleEvmTransferStages = React.memo(() => (
+    <div className="card card--flat card--small crosschain-transfer">
+        <div className="crosschain-transfer__statuses">
+            <PrepareStatusIndicator />
+            <EventStatusIndicator />
+            <ReleaseStatusIndicator />
         </div>
-    )
-}
+    </div>
+    ))

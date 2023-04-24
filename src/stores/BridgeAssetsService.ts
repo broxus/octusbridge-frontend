@@ -6,30 +6,28 @@ import { PublicKey } from '@solana/web3.js'
 import {
     AlienTokenListURI,
     BridgeAssetsURI,
-    TokenAssetsURI,
+    CurrenciesListURI,
     TokenListURI,
 } from '@/config'
 import {
     alienProxyContract,
-    ethereumTokenTransferProxyContract,
-    everscaleTokenTransferProxyContract,
-    nativeProxyContract, solanaTokenTransferProxyContract,
+    nativeProxyContract,
 } from '@/misc/contracts'
-import { BridgeUtils, MergedTokenDetails } from '@/misc/BridgeUtils'
-import { EverscaleToken, EvmToken, PipelineData } from '@/models'
+import { BridgeUtils, type MergedTokenDetails } from '@/misc/BridgeUtils'
+import { EverscaleToken, EvmToken, type PipelineData } from '@/models'
 import { BaseStore } from '@/stores/BaseStore'
-import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
-import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
-import type { NetworkShape, TokenRaw, TokensListManifest } from '@/types'
+import { type EverWalletService, useEverWallet } from '@/stores/EverWalletService'
+import { type EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
+import { type SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
+import { type NetworkShape, type TokenRaw, type TokensListManifest } from '@/types'
 import {
     debug,
     error,
     findNetwork,
-    getEverscaleMainNetwork,
     isEverscaleAddressValid,
     isEvmAddressValid,
-    isGoodBignumber, isSolanaAddressValid,
+    isGoodBignumber,
+    isSolanaAddressValid,
     resolveEverscaleAddress,
     sliceAddress,
     storage,
@@ -77,6 +75,7 @@ export type BridgeAssetsServiceCtorWallets = {
 export type BridgeAssetsServiceCtorOptions = {
     alienTokensLists?: string[];
     assetsUri: string;
+    currenciesList: string;
     primaryTokensList: string;
 }
 
@@ -99,6 +98,7 @@ export type ImportedBridgeAsset = BridgeAssetUniqueKey & {
 
 export type BridgeAssetsServiceData = {
     assets: BridgeTokensRawAssets;
+    currencies: TokenRaw<string>[];
     multiAssets: BridgeTokenRawAssets;
     rawAlienTokens: TokenRaw<string>[];
     rawPrimaryTokens: TokenRaw<string>[];
@@ -124,6 +124,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
         this.setData(() => ({
             assets: {},
+            currencies: [],
             multiAssets: {},
             rawAlienTokens: [],
             rawPrimaryTokens: [],
@@ -155,7 +156,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
      *
      */
     public async init(): Promise<void> {
-        const { alienTokensLists, assetsUri, primaryTokensList } = this.options
+        const { alienTokensLists, assetsUri, currenciesList, primaryTokensList } = this.options
 
         this.setState({
             isBuilt: false,
@@ -165,26 +166,25 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         try {
             const [
                 assets,
+                currencies,
                 primaryTokensManifest,
-            ]: [a: BridgeAssetsManifest, p: TokensListManifest] = await Promise.all([
-                fetch(assetsUri, { method: 'GET' }).then(
-                    value => value.json(),
-                ),
-                fetch(primaryTokensList, { method: 'GET' }).then(
-                    value => value.json(),
-                ),
+            ]: [BridgeAssetsManifest, TokensListManifest, TokensListManifest] = await Promise.all([
+                fetch(assetsUri, { method: 'GET' }).then(value => value.json()),
+                fetch(currenciesList, { method: 'GET' }).then(value => value.json()),
+                fetch(primaryTokensList, { method: 'GET' }).then(value => value.json()),
             ])
 
             this.setData({
-                assets: assets.token,
-                multiAssets: assets.multitoken,
+                assets: { ...assets.token },
+                currencies: currencies.tokens,
+                multiAssets: { ...assets.multitoken },
                 rawPrimaryTokens: primaryTokensManifest.tokens,
             })
 
             this.setState({
                 isAssetsFetched: (
-                    Object.keys(assets.token).length > 0
-                    && 'multitoken' in assets ? Object.keys(assets.multitoken).length > 0 : true
+                    Object.keys({ ...assets.token }).length > 0
+                    && 'multitoken' in assets ? Object.keys({ ...assets.multitoken }).length > 0 : true
                 ),
                 isPrimaryTokensFetched: primaryTokensManifest.tokens.length > 0,
             })
@@ -230,22 +230,64 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
      * @protected
      */
     protected async build(): Promise<void> {
-        this.setData('tokens', this.data.rawPrimaryTokens.map(token => new EverscaleToken({
+        this.setData('tokens', this.data.rawPrimaryTokens.filter(
+            token => !this.isNativeCurrency(token.address),
+        ).map(token => new EverscaleToken({
             ...token,
             address: resolveEverscaleAddress(token.address),
             chainId: token.chainId?.toString(),
-            key: `everscale-${token.chainId}-${token.address}`.toLowerCase(),
+            key: `tvm-${token.chainId}-${token.address}`.toLowerCase(),
             root: token.address,
         })))
 
         const exists = new Set<string>()
 
+        const nativeCurrencies = this.tokens.slice()
+        const natives: BridgeAsset[] = []
+
+        this.data.currencies.forEach(currency => {
+            if (isEverscaleAddressValid(currency.address)) {
+                const key = `tvm-${currency.chainId}-${currency.address}`.toLowerCase()
+                if (!exists.has(key)) {
+                    natives.push(new EverscaleToken<BridgeAssetUniqueKey>({
+                        address: new Address(currency.address),
+                        chainId: currency.chainId?.toString(),
+                        decimals: currency.decimals,
+                        key,
+                        logoURI: currency.logoURI,
+                        name: currency.name,
+                        root: currency.address,
+                        symbol: currency.symbol,
+                    }))
+                    exists.add(key)
+                }
+            }
+            else if (isEvmAddressValid(currency.address)) {
+                const key = `evm-${currency.chainId}-${currency.address}`.toLowerCase()
+                if (!exists.has(key)) {
+                    natives.push(new EvmToken<BridgeAssetUniqueKey>({
+                        address: currency.address,
+                        chainId: currency.chainId?.toString(),
+                        decimals: currency.decimals,
+                        key,
+                        logoURI: currency.logoURI,
+                        name: currency.name,
+                        root: currency.address,
+                        symbol: currency.symbol,
+                    }))
+                    exists.add(key)
+                }
+            }
+        })
+
+        this.setData('tokens', natives.concat(nativeCurrencies))
+
         Object.entries(this.assets).forEach(([tokenRoot, pipelines]) => {
-            const cachedToken = this.get('everscale', '1', tokenRoot.toLowerCase())
+            const cachedToken = this.get('tvm', this.wallets.everWallet?.networkId ?? '42', tokenRoot.toLowerCase())
             if (cachedToken !== undefined) {
                 Object.entries(pipelines).forEach(([direction, pipeline]) => {
                     const [tokenBase, target] = direction.split('_')
-                    const prefix = tokenBase === 'everscale' ? target : tokenBase
+                    const prefix = tokenBase === 'tvm' ? target : tokenBase
                     if (prefix === 'evm') {
                         pipeline.vaults.forEach(vault => {
                             const key = `evm-${vault.chainId}-${vault.token}`.toLowerCase()
@@ -288,7 +330,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             }
         })
 
-        const alienTokens: BridgeAssetsServiceData['tokens'] = this.tokens.slice()
+        const alienTokens = this.tokens.slice()
 
         this.data.rawAlienTokens?.forEach(token => {
             if (isEvmAddressValid(token.address)) {
@@ -336,19 +378,19 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
                     Object.entries<ImportedBridgeAsset>({ ...importedTokens })
                         .forEach(([key, { icon, ...token }]) => {
-                            if (!this.has(key)) {
+                            if (!this.has(key.toLowerCase())) {
                                 if (isEverscaleAddressValid(token.root)) {
                                     this.add(new EverscaleToken<BridgeAssetUniqueKey>({
                                         ...token,
                                         address: new Address(token.root),
-                                        key,
+                                        key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
                                 }
                                 else if (isEvmAddressValid(token.root)) {
                                     this.add(new EvmToken<BridgeAssetUniqueKey>({
                                         ...token,
-                                        key,
+                                        key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
                                 }
@@ -356,7 +398,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                     this.add(new SolanaToken({
                                         ...token,
                                         address: new PublicKey(token.root),
-                                        key,
+                                        key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
                                 }
@@ -517,25 +559,23 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
     }
 
     /**
-     * Returns token pipeline by the given token `root` address, `from` and `to` network (`<networkType>-<chainId>`) keys,
-     * and optionally `depositType` (Default: default)
+     * Returns token pipeline by the given token `root` address, `from` and `to` network
+     * (`<networkType>-<chainId>`) keys, and optionally `depositType` (Default: default)
      * @param {string} root
      * @param {string} from
      * @param {string} to
-     * @param depositType
      */
     public async pipeline(
         root: string,
         from: string,
         to: string,
-        depositType: string = 'default',
     ): Promise<PipelineData | undefined> {
         const [fromNetworkType, fromChainId] = from.split('-')
         const [toNetworkType, toChainId] = to.split('-')
-        const isFromEverscaleToEvm = fromNetworkType === 'everscale' && toNetworkType === 'evm'
-        const isFromEvmToEverscale = fromNetworkType === 'evm' && toNetworkType === 'everscale'
-        const isFromEverscaleToSolana = fromNetworkType === 'everscale' && toNetworkType === 'solana'
-        const isFromSolanaToEverscale = fromNetworkType === 'solana' && toNetworkType === 'everscale'
+        const isFromEverscaleToEvm = fromNetworkType === 'tvm' && toNetworkType === 'evm'
+        const isFromEvmToEverscale = fromNetworkType === 'evm' && toNetworkType === 'tvm'
+        const isFromEverscaleToSolana = fromNetworkType === 'tvm' && toNetworkType === 'solana'
+        const isFromSolanaToEverscale = fromNetworkType === 'solana' && toNetworkType === 'tvm'
 
         const isEverscaleToken = isEverscaleAddressValid(root)
         const isEvmToken = isEvmAddressValid(root)
@@ -543,7 +583,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         if (isEverscaleToken) {
             if (this.wallets.everWallet?.account?.address !== undefined) {
                 try {
-                    const token = this.get('everscale', fromChainId, root.toLowerCase());
+                    const token = this.get('tvm', fromChainId, root.toLowerCase());
                     (token as EverscaleToken)?.setData('balance', undefined)
                     await (token as EverscaleToken)?.sync(this.wallets.everWallet.account.address, true)
                 }
@@ -553,12 +593,8 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             }
         }
 
-        let network: NetworkShape | undefined,
-            pipeline = await this.resolvePipeline(root, from, to, depositType)
-
-        if (pipeline === undefined) {
-            pipeline = await this.resolveMultiPipeline(root.toLowerCase(), from, to, depositType)
-        }
+        let network: NetworkShape | undefined
+        const pipeline = await this.resolveMultiPipeline(root, from, to)
 
         if (isFromEverscaleToEvm) {
             network = findNetwork(toChainId, 'evm')
@@ -574,7 +610,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         }
 
         // Fetch everscale configuration
-        if (pipeline?.isMultiVault) {
+        if (pipeline) {
             if (network?.rpcUrl !== undefined && pipeline?.evmTokenAddress !== undefined) {
                 debug('> Fetch other pipeline meta data')
 
@@ -605,7 +641,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                         }
 
                     }
-                    else if (pipeline.tokenBase === 'everscale') {
+                    else if (pipeline.tokenBase === 'tvm') {
                         debug('> Fetch EVM fees data')
                         try {
                             const fees = await BridgeUtils.getEvmMultiVaultNativeFees(
@@ -634,32 +670,32 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                     .value0
                     .everscaleConfiguration
         }
-        else if (pipeline?.tokenBase === 'everscale') {
-            pipeline.everscaleConfiguration = (await everscaleTokenTransferProxyContract(pipeline.proxyAddress)
-                .methods.getDetails({ answerId: 0 })
-                .call())
-                ._config
-                .tonConfiguration
-        }
-        else if (pipeline?.tokenBase === 'evm') {
-            pipeline.everscaleConfiguration = (await ethereumTokenTransferProxyContract(pipeline.proxyAddress)
-                .methods.getDetails({ answerId: 0 })
-                .call())
-                .value0
-                .tonConfiguration
-        }
-        else if (pipeline?.tokenBase === 'solana') {
-            const { value0 } = await solanaTokenTransferProxyContract(pipeline.proxyAddress)
-                .methods.getDetails({ answerId: 0 })
-                .call()
-
-            if (isFromSolanaToEverscale) {
-                pipeline.everscaleConfiguration = value0.solanaEverscaleConfiguration
-            }
-            else if (isFromEverscaleToSolana) {
-                pipeline.everscaleConfiguration = value0.everscaleSolanaConfiguration
-            }
-        }
+        // else if (pipeline?.tokenBase === 'tvm') {
+        //     pipeline.everscaleConfiguration = (await everscaleTokenTransferProxyContract(pipeline.proxyAddress)
+        //         .methods.getDetails({ answerId: 0 })
+        //         .call())
+        //         ._config
+        //         .tonConfiguration
+        // }
+        // else if (pipeline?.tokenBase === 'evm') {
+        //     pipeline.everscaleConfiguration = (await ethereumTokenTransferProxyContract(pipeline.proxyAddress)
+        //         .methods.getDetails({ answerId: 0 })
+        //         .call())
+        //         .value0
+        //         .tonConfiguration
+        // }
+        // else if (pipeline?.tokenBase === 'solana') {
+        //     const { value0 } = await solanaTokenTransferProxyContract(pipeline.proxyAddress)
+        //         .methods.getDetails({ answerId: 0 })
+        //         .call()
+        //
+        //     if (isFromSolanaToEverscale) {
+        //         pipeline.everscaleConfiguration = value0.solanaEverscaleConfiguration
+        //     }
+        //     else if (isFromEverscaleToSolana) {
+        //         pipeline.everscaleConfiguration = value0.everscaleSolanaConfiguration
+        //     }
+        // }
 
         if (network?.rpcUrl !== undefined && pipeline?.solanaTokenAddress !== undefined) {
             try {
@@ -707,6 +743,8 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                         this.wallets.evmWallet.address,
                         network.rpcUrl,
                     )
+                    const token = this.get('evm', fromChainId, pipeline.evmTokenAddress);
+                    (token as EvmToken)?.setData('balance', pipeline.evmTokenBalance)
                 }
                 catch (e) {
                     error(e)
@@ -716,7 +754,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
         if (pipeline?.vaultAddress !== undefined && network?.rpcUrl !== undefined) {
             // Fetch vault details for non-everscale-based token
-            if (pipeline.evmTokenAddress !== undefined && pipeline.isMerged) {
+            if (pipeline.evmTokenAddress !== undefined) {
                 try {
                     pipeline.vaultBalance = await BridgeUtils.getEvmTokenBalance(
                         pipeline.evmTokenAddress,
@@ -752,153 +790,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         return pipeline
     }
 
-    protected async resolvePipeline(
-        root: string,
-        from: string,
-        to: string,
-        depositType: string = 'default',
-    ): Promise<PipelineData | undefined> {
-        const [fromNetworkType, fromChainId] = from.split('-')
-        const [toNetworkType, toChainId] = to.split('-')
-
-        const everscaleMainnet = getEverscaleMainNetwork()
-        const everscaleMainnetId = `${everscaleMainnet?.type}-${everscaleMainnet?.chainId}`
-        const isFromEverscale = fromNetworkType === 'everscale'
-        const isFromEvm = fromNetworkType === 'evm'
-        const isFromEverscaleToEvm = fromNetworkType === 'everscale' && toNetworkType === 'evm'
-        const isFromEvmToEverscale = fromNetworkType === 'evm' && toNetworkType === 'everscale'
-        const isFromEverscaleToSolana = fromNetworkType === 'everscale' && toNetworkType === 'solana'
-        const isFromSolanaToEverscale = fromNetworkType === 'solana' && toNetworkType === 'everscale'
-
-        const isEverscaleToken = isEverscaleAddressValid(root)
-        const isEvmToken = isEvmAddressValid(root)
-        const isSolanaToken = isSolanaAddressValid(root)
-
-        const pipelines: PipelineData[] = []
-        let assetRoot: string = root.toLowerCase()
-
-        if (isEvmToken && isFromEverscale) {
-            assetRoot = (this.findAssetRootByTokenAndChain(root, toChainId) ?? root).toLowerCase()
-        }
-        else if (isEvmToken && isFromEvm) {
-            assetRoot = (this.findAssetRootByTokenAndChain(root, fromChainId) ?? root).toLowerCase()
-        }
-        else if (isSolanaToken && isFromEverscaleToSolana) {
-            assetRoot = (this.findAssetRootByTokenAndChain(root, toChainId) ?? root).toLowerCase()
-        }
-        else if (isSolanaToken && isFromSolanaToEverscale) {
-            assetRoot = (this.findAssetRootByTokenAndChain(root, fromChainId) ?? root).toLowerCase()
-        }
-
-        const bridgeAssets = this.assets[assetRoot]
-
-        Object.entries({ ...bridgeAssets }).forEach(([key, { proxy, vaults }]) => {
-            const [tokenBase, assetTo] = key.split('_')
-            vaults.forEach(vault => {
-                const chainId = vault.chainId ?? '1'
-                const firstFrom = tokenBase === everscaleMainnet?.type ? everscaleMainnetId : `${tokenBase}-${chainId}`
-                const firstTo = assetTo === everscaleMainnet?.type ? everscaleMainnetId : `${assetTo}-${chainId}`
-                const secondFrom = assetTo === everscaleMainnet?.type ? everscaleMainnetId : `${assetTo}-${chainId}`
-                const secondTo = tokenBase === everscaleMainnet?.type ? everscaleMainnetId : `${tokenBase}-${chainId}`
-
-                const pipeline: PipelineData = {
-                    chainId,
-                    depositType: vault.depositType,
-                    ethereumConfiguration: vault.ethereumConfiguration
-                        ? new Address(vault.ethereumConfiguration)
-                        : undefined,
-                    everscaleConfiguration: vault.everscaleConfiguration
-                        ? new Address(vault.everscaleConfiguration)
-                        : undefined,
-                    everscaleTokenAddress: new Address(isEverscaleToken ? root : assetRoot),
-                    evmTokenAddress: isEvmToken ? root : undefined,
-                    evmTokenDecimals: undefined,
-                    from, // would be overriding below
-                    isMultiVault: false,
-                    isNative: tokenBase === 'everscale',
-                    name: vault.name,
-                    proxyAddress: new Address(proxy),
-                    settings: vault.settings ? new PublicKey(vault.settings) : undefined,
-                    solanaConfiguration: vault.solanaConfiguration
-                        ? new Address(vault.solanaConfiguration)
-                        : undefined,
-                    solanaTokenAddress: tokenBase === 'solana' && vault.token ? new PublicKey(vault.token) : undefined,
-                    to, // would be overriding below
-                    tokenBase,
-                    vaultAddress: isSolanaAddressValid(vault.vault) ? new PublicKey(vault.vault) : vault.vault,
-                }
-
-                pipelines.push({
-                    ...pipeline,
-                    from: firstFrom,
-                    to: firstTo,
-                }, {
-                    ...pipeline,
-                    from: secondFrom,
-                    to: secondTo,
-                })
-            })
-        })
-
-        const pipeline = pipelines.find(
-            asset => asset.from === from
-            && asset.to === to
-            && asset.depositType === depositType,
-        )
-
-        if (isFromEverscaleToSolana || isFromSolanaToEverscale) {
-            return pipeline
-        }
-
-        let network: NetworkShape | undefined
-
-        if (isFromEverscaleToEvm) {
-            network = findNetwork(toChainId, 'evm')
-        }
-        else if (isFromEvmToEverscale) {
-            network = findNetwork(fromChainId, 'evm')
-        }
-
-        if (pipeline?.vaultAddress !== undefined && network?.rpcUrl !== undefined) {
-            if (isEverscaleToken) {
-                try {
-                    const evmTokenAddress = await BridgeUtils.getEvmVaultTokenAddress(
-                        pipeline.vaultAddress.toString(),
-                        network.rpcUrl,
-                    )
-                    pipeline.evmTokenAddress = evmTokenAddress.toLowerCase()
-                }
-                catch (e) {
-                    return undefined
-                }
-            }
-
-            // Fetch vault details for non-everscale-based token
-            if (pipeline.evmTokenAddress !== undefined && pipeline.tokenBase !== 'everscale') {
-                try {
-                    const [vaultBalance, vaultLimit] = await Promise.all([
-                        BridgeUtils.getEvmTokenBalance(
-                            pipeline.evmTokenAddress,
-                            pipeline.vaultAddress.toString(),
-                            network.rpcUrl,
-                        ),
-                        BridgeUtils.getEvmVaultAvailableDepositLimit(
-                            pipeline.vaultAddress.toString(),
-                            network.rpcUrl,
-                        ),
-                    ])
-                    pipeline.vaultBalance = vaultBalance
-                    pipeline.vaultLimit = vaultLimit
-                }
-                catch (e) {
-                    error(e)
-                }
-            }
-        }
-
-        return pipeline
-    }
-
     protected async resolveMultiPipeline(
         root: string,
         from: string,
@@ -907,7 +798,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
     ): Promise<PipelineData | undefined> {
         const [fromNetworkType, fromChainId] = from.split('-')
         const [toNetworkType, toChainId] = to.split('-')
-        const isFromEverscale = fromNetworkType === 'everscale'
+        const isFromEverscale = fromNetworkType === 'tvm'
         const isFromEvm = fromNetworkType === 'evm'
         const isEverscaleToken = isEverscaleAddressValid(root)
         const isEvmToken = isEvmAddressValid(root)
@@ -928,7 +819,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             pipeline = {
                 everscaleTokenAddress: new Address(root),
                 from,
-                isMultiVault: true,
                 to,
             } as PipelineData
 
@@ -1036,7 +926,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                 : undefined,
                             isNative: true,
                             proxyAddress: new Address(asset.proxy.toLowerCase()),
-                            tokenBase: 'everscale',
+                            tokenBase: 'tvm',
                             vaultAddress: assetVault.vault.toString(),
                         }
 
@@ -1074,7 +964,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             pipeline = {
                 evmTokenAddress: root,
                 from,
-                isMultiVault: true,
                 proxyAddress: new Address(asset.proxy.toString()),
                 to,
             } as PipelineData
@@ -1114,7 +1003,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                     : undefined,
                                 isNative: true,
                                 proxyAddress: new Address(oppositeAsset.proxy.toLowerCase()),
-                                tokenBase: 'everscale',
+                                tokenBase: 'tvm',
                                 vaultAddress: oppositeVault.vault.toLowerCase(),
                             }
 
@@ -1146,15 +1035,32 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
                         const token = this.get('evm', pipeline.chainId, root)
 
-                        if (token?.decimals !== undefined && token.name !== undefined) {
+                        const data = await Promise.all([
+                            BridgeUtils.getEvmTokenName(root, network.rpcUrl),
+                            BridgeUtils.getEvmTokenSymbol(root, network.rpcUrl),
+                            BridgeUtils.getEvmTokenDecimals(root, network.rpcUrl),
+                        ])
+
+                        if (token?.symbol !== undefined && this.isNativeCurrency(root)) {
+                            const everscaleTokenAddress = this.data.currencies.find(
+                                i => (
+                                    i.chainId?.toString().toLowerCase() === toChainId?.toString().toLowerCase()
+                                    && i.symbol === token.symbol
+                                    && isEverscaleAddressValid(i.address)),
+                            )?.address
+                            if (everscaleTokenAddress) {
+                                pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
+                            }
+                        }
+                        else if (data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined) {
                             try {
                                 const everscaleTokenAddress = (await BridgeUtils.getDeriveAlienTokenRoot(
                                     pipeline.proxyAddress,
                                     {
-                                        chainId: (token as EvmToken)?.get('chainId') as string,
-                                        decimals: token.decimals.toString(),
-                                        name: token?.name,
-                                        symbol: token?.symbol,
+                                        chainId: fromChainId,
+                                        decimals: data[2].toString(),
+                                        name: data[0],
+                                        symbol: data[1],
                                         token: root,
                                     },
                                 )).toLowerCase()
@@ -1165,7 +1071,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                 error(e)
                                 return undefined
                             }
-
 
                             if (pipeline.everscaleTokenAddress !== undefined) {
                                 const canonicalTokenAddress = await BridgeUtils.getCanonicalToken(
@@ -1188,20 +1093,8 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         return pipeline
     }
 
-    /**
-     *
-     * @param root
-     * @param chainId
-     */
-    public isCreditAvailable(root: string, chainId: string): boolean {
-        const assetRoot = this.findAssetRootByTokenAndChain(root, chainId)
-        if (assetRoot === undefined) {
-            return false
-        }
-        const assets = this.assets[assetRoot]
-        return Object.values({ ...assets }).some(
-            asset => asset.vaults.some(vault => vault.depositType === 'credit'),
-        )
+    public isNativeCurrency(root: string): boolean {
+        return this.data.currencies.map(i => i.address.toLowerCase()).includes(root.toLowerCase())
     }
 
     /**
@@ -1210,17 +1103,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
      */
     public getPipelineType(address: string): string | undefined {
         let pipelineType: string | undefined
-
-        Object.entries(this.assets).some(([, pipelines]) => {
-            Object.entries(pipelines).some(([key, pipeline]) => {
-                if (pipeline.proxy === address) {
-                    pipelineType = key
-                    return true
-                }
-                return false
-            })
-            return false
-        })
 
         if (pipelineType === undefined) {
             Object.entries(this.multiAssets).some(([key, pipeline]) => {
@@ -1271,11 +1153,9 @@ export function useBridgeAssets(): BridgeAssetsService {
             evmWallet: useEvmWallet(),
             solanaWallet: useSolanaWallet(),
         }, {
-            alienTokensLists: [
-                BridgeAssetsURI,
-                AlienTokenListURI,
-            ],
-            assetsUri: TokenAssetsURI,
+            alienTokensLists: [AlienTokenListURI],
+            currenciesList: CurrenciesListURI,
+            assetsUri: BridgeAssetsURI,
             primaryTokensList: TokenListURI,
         })
     }

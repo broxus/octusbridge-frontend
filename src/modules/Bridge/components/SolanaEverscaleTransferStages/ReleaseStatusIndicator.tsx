@@ -8,7 +8,7 @@ import { useBridge, useSolanaEverscalePipelineContext } from '@/modules/Bridge/p
 
 function ReleaseStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useSolanaEverscalePipelineContext()
 
     const status = transfer.eventState?.status || 'disabled'

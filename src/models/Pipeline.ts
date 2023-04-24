@@ -14,13 +14,14 @@ export type PipelineData = {
     ethereumConfiguration?: Address;
     everscaleConfiguration?: Address;
     everscaleTokenAddress?: Address;
+    everscaleTokenBalance?: string;
+    everscaleTokenDecimals?: number;
     evmTokenAddress?: string;
     evmTokenBalance?: string;
     evmTokenDecimals?: number;
     from: string;
     isBlacklisted?: boolean;
     isMerged?: boolean;
-    isMultiVault: boolean;
     isNative?: boolean;
     mergeEverscaleTokenAddress?: Address;
     mergeEvmTokenAddress?: string;
@@ -50,17 +51,17 @@ export class Pipeline extends BaseStore<PipelineData, any> {
             canonicalTokenAddress: computed,
             chainId: computed,
             depositFee: computed,
-            depositType: computed,
             ethereumConfiguration: computed,
             everscaleConfiguration: computed,
             everscaleTokenAddress: computed,
+            everscaleTokenBalance: computed,
+            everscaleTokenDecimals: computed,
             evmTokenAddress: computed,
             evmTokenBalance: computed,
             evmTokenDecimals: computed,
             from: computed,
             isBlacklisted: computed,
             isMerged: computed,
-            isMultiVault: computed,
             isNative: computed,
             mergeEverscaleTokenAddress: computed,
             mergeEvmTokenAddress: computed,
@@ -103,10 +104,6 @@ export class Pipeline extends BaseStore<PipelineData, any> {
         return this.data.depositFee
     }
 
-    public get depositType(): PipelineData['depositType'] {
-        return this.data.depositType
-    }
-
     public get ethereumConfiguration(): PipelineData['ethereumConfiguration'] {
         return this.data.ethereumConfiguration
     }
@@ -117,6 +114,14 @@ export class Pipeline extends BaseStore<PipelineData, any> {
 
     public get everscaleTokenAddress(): PipelineData['everscaleTokenAddress'] {
         return this.data.everscaleTokenAddress
+    }
+
+    public get everscaleTokenBalance(): PipelineData['everscaleTokenBalance'] {
+        return this.data.everscaleTokenBalance
+    }
+
+    public get everscaleTokenDecimals(): PipelineData['everscaleTokenDecimals'] {
+        return this.data.everscaleTokenDecimals
     }
 
     public get evmTokenAddress(): PipelineData['evmTokenAddress'] {
@@ -141,10 +146,6 @@ export class Pipeline extends BaseStore<PipelineData, any> {
 
     public get isMerged(): PipelineData['isMerged'] {
         return this.data.isMerged
-    }
-
-    public get isMultiVault(): PipelineData['isMultiVault'] {
-        return this.data.isMultiVault
     }
 
     public get isNative(): PipelineData['isNative'] {

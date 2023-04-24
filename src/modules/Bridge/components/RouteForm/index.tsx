@@ -7,10 +7,10 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { Select } from '@/components/common/Select'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { EvmWalletService } from '@/stores/EvmWalletService'
-import { SolanaWalletService } from '@/stores/SolanaWalletService'
-import { NetworkShape } from '@/types'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type EvmWalletService } from '@/stores/EvmWalletService'
+import { type SolanaWalletService } from '@/stores/SolanaWalletService'
+import { type NetworkShape } from '@/types'
 import { isEverscaleAddressValid, isEvmAddressValid, isSolanaAddressValid } from '@/utils'
 
 import './index.scss'
@@ -32,7 +32,7 @@ type Props = {
 
 
 function isAddressValid(addr?: string, type?: NetworkShape['type']): boolean {
-    if (type === 'everscale') {
+    if (type === 'tvm') {
         return isEverscaleAddressValid(addr)
     }
 
@@ -83,26 +83,26 @@ export function RouteForm({
                             <Select
                                 className="network-select rc-select--md"
                                 disabled={networkFieldDisabled}
-                                options={networks.map(n => ({
-                                    disabled: n.disabled,
+                                options={networks.map(item => ({
+                                    disabled: item.disabled,
                                     label: (
                                         <div className="network-select-label">
                                             <div className="network-select-label-inner">
                                                 <div>
-                                                    <Icon icon={`${n.type.toLowerCase()}${n.chainId}BlockchainIcon`} />
+                                                    <Icon icon={`${item.type.toLowerCase()}${item.chainId}BlockchainIcon`} />
                                                 </div>
                                                 <div>
-                                                    {n.label}
+                                                    {item.name}
                                                 </div>
                                             </div>
-                                            {n.badge !== undefined && (
+                                            {item.badge !== undefined && (
                                                 <div className="network-select-label-badge">
-                                                    {n.badge}
+                                                    {item.badge}
                                                 </div>
                                             )}
                                         </div>
                                     ),
-                                    value: n.id,
+                                    value: item.id,
                                 }))}
                                 listHeight={460}
                                 placeholder={intl.formatMessage({
@@ -148,7 +148,7 @@ export function RouteForm({
 
                     <Observer>
                         {() => (
-                            <>
+                            <React.Fragment key="wrong-network-error">
                                 {(
                                     wallet !== undefined
                                     && wallet.isConnected
@@ -161,7 +161,7 @@ export function RouteForm({
                                         wallet={wallet as EvmWalletService}
                                     />
                                 )}
-                            </>
+                            </React.Fragment>
                         )}
                     </Observer>
                 </fieldset>

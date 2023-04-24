@@ -2,7 +2,7 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 import { action, computed, makeObservable } from 'mobx'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
-import type { ICoreOptions } from 'web3modal'
+import { type ICoreOptions } from 'web3modal'
 import BigNumber from 'bignumber.js'
 
 import { BaseStore } from '@/stores/BaseStore'
@@ -13,7 +13,7 @@ import {
     log,
     throwException,
 } from '@/utils'
-import type { NetworkShape, WalletNativeCoin } from '@/types'
+import { type NetworkShape, type WalletNativeCoin } from '@/types'
 import { networks } from '@/config'
 
 
@@ -74,10 +74,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             networks: options?.networks || [],
         }))
 
-        this.setState(() => ({
-            ...DEFAULT_WALLET_STATE,
-            isInitializing: true,
-        }))
+        this.setState(() => (DEFAULT_WALLET_STATE))
 
         makeObservable<EvmWalletService>(this, {
             address: computed,

@@ -19,7 +19,7 @@ import { findNetwork, getEverscaleMainNetwork } from '@/utils'
 
 export function RouteStep(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const evmWallet = bridge.useEvmWallet
     const everWallet = bridge.useEverWallet
     const solanaWallet = bridge.useSolanaWallet
@@ -75,7 +75,7 @@ export function RouteStep(): JSX.Element {
                         if (bridge.leftNetwork.type === 'evm') {
                             wallet = evmWallet
                         }
-                        else if (bridge.leftNetwork.type === 'everscale') {
+                        else if (bridge.leftNetwork.type === 'tvm') {
                             wallet = everWallet
                         }
                         else if (bridge.leftNetwork.type === 'solana') {
@@ -115,7 +115,7 @@ export function RouteStep(): JSX.Element {
                         if (bridge.rightNetwork.type === 'evm') {
                             wallet = evmWallet
                         }
-                        else if (bridge.rightNetwork.type === 'everscale') {
+                        else if (bridge.rightNetwork.type === 'tvm') {
                             wallet = everWallet
                         }
                         else if (bridge.rightNetwork.type === 'solana') {

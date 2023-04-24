@@ -11,7 +11,7 @@ import { isSolanaTxSignatureValid } from '@/utils'
 
 function TransferStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useSolanaEverscalePipelineContext()
 
     const [transferStatus, setTransferStatus] = React.useState<TransferStateStatus>('disabled')

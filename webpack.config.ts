@@ -11,8 +11,8 @@ type WebpackConfig = webpack.Configuration & { devServer?: DevServerConfiguratio
 
 
 export default (_: any, options: any): WebpackConfig => {
-    const HOST = process.env.HOST ?? '0.0.0.0'
-    const PORT = parseInt(process.env.PORT ?? '3000', 10)
+    const host = process.env.HOST ?? '0.0.0.0'
+    const port = parseInt(process.env.PORT ?? '3000', 10)
     const showErrors = process.env.ERRORS
 
     const isProduction = options.mode === 'production'
@@ -37,10 +37,15 @@ export default (_: any, options: any): WebpackConfig => {
      */
 
     config.output = {
-        path: path.resolve(__dirname, 'dist'),
+        assetModuleFilename: 'assets/[hash][ext]',
         filename: 'js/[name]-[contenthash:6].js',
+        path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
         clean: true,
+    }
+
+    if (isDevelopment) {
+        config.output.pathinfo = false
     }
 
     /*
@@ -50,12 +55,10 @@ export default (_: any, options: any): WebpackConfig => {
      */
 
     config.optimization = isDevelopment ? {
-        splitChunks: {
-            cacheGroups: {
-                default: false,
-                vendors: false,
-            },
-        },
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        runtimeChunk: true,
+        splitChunks: false,
     } : {
         splitChunks: {
             chunks: (chunk) => !/^(polyfills|pages|modules)$/.test(chunk.name),
@@ -90,12 +93,17 @@ export default (_: any, options: any): WebpackConfig => {
 
     config.plugins = [
         new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
             process: 'process/browser',
         }),
     ]
 
     if (isDevelopment && showErrors) {
-        config.plugins.push(new ForkTsCheckerWebpackPlugin())
+        config.plugins.push(new ForkTsCheckerWebpackPlugin({
+            typescript: {
+                configFile: path.resolve('tsconfig.json')
+            }
+        }))
     }
 
     config.plugins.push(
@@ -129,6 +137,11 @@ export default (_: any, options: any): WebpackConfig => {
                         from: 'meta-image.png',
                         to: 'assets/meta-image.png'
                     },
+                    {
+                        context: 'public',
+                        from: 'assets/currencies.json',
+                        to: 'assets/currencies.json'
+                    },
                 ],
             }),
         )
@@ -143,9 +156,9 @@ export default (_: any, options: any): WebpackConfig => {
     config.module = {
         rules: [
             {
-                test: /\.(ts|js)x?$/,
-                exclude: /node_modules/,
-                use: 'babel-loader',
+                exclude: [/node_modules/],
+                test: /\.([jt]sx?)?$/,
+                use: isProduction ? 'babel-loader' : 'swc-loader',
             },
             {
                 test: /\.s[ac]ss$/i,
@@ -174,16 +187,12 @@ export default (_: any, options: any): WebpackConfig => {
                 ],
             },
             {
-                test: /\.(png|jpe?g|gif|webp|svg|woff2?)$/,
-                use: {
-                    loader: 'file-loader',
-                    options: {
-                        publicPath: '/assets/',
-                        outputPath: 'assets/',
-                        esModule: false,
-                        name: '[hash:16].[ext]',
-                    },
-                },
+                test: /\.(png|jpe?g|gif|webp|svg?)$/,
+                type: 'asset/resource',
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',
             },
         ],
     }
@@ -199,38 +208,27 @@ export default (_: any, options: any): WebpackConfig => {
             '@': path.resolve(__dirname, 'src')
         },
 
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.scss', '.css'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.scss', '.css'],
 
         fallback: {
             assert: require.resolve('assert'),
             buffer: require.resolve('buffer'),
-            // console: require.resolve('console-browserify'),
-            // constants: require.resolve('constants-browserify'),
             crypto: require.resolve('crypto-browserify'),
-            // domain: require.resolve('domain-browser'),
-            // events: require.resolve('events'),
             http: require.resolve('stream-http'),
             https: require.resolve('https-browserify'),
             os: require.resolve('os-browserify/browser'),
-            // path: require.resolve('path-browserify'),
-            // punycode: require.resolve('punycode'),
             process: require.resolve('process/browser'),
-            // querystring: require.resolve('querystring-es3'),
             stream: require.resolve('stream-browserify'),
-            // string_decoder: require.resolve('string_decoder'),
-            // sys: require.resolve('util'),
-            // timers: require.resolve('timers-browserify'),
-            // tty: require.resolve('tty-browserify'),
             url: require.resolve('url'),
             util: require.resolve('util'),
-            // vm: require.resolve('vm-browserify'),
-            // zlib: require.resolve('browserify-zlib'),
         },
 
         modules: [
             path.resolve(__dirname, 'src'),
             'node_modules',
         ],
+
+        symlinks: false,
     }
 
     /*
@@ -240,7 +238,7 @@ export default (_: any, options: any): WebpackConfig => {
      */
 
     if (isDevelopment) {
-        config.devtool = 'inline-source-map'
+        config.devtool = 'eval-source-map'
     }
 
     /*
@@ -251,13 +249,17 @@ export default (_: any, options: any): WebpackConfig => {
 
     if (isDevelopment) {
         config.devServer = {
-            host: HOST,
-            port: PORT,
+            host,
+            port,
             historyApiFallback: true,
             liveReload: false,
             hot: false,
             client: {
-                overlay: false,
+                overlay: {
+                    errors: true,
+                    warnings: false,
+                },
+                reconnect: 10,
             },
         }
     }
@@ -270,8 +272,9 @@ export default (_: any, options: any): WebpackConfig => {
 
     if (isDevelopment) {
         config.watchOptions = {
-            aggregateTimeout: 100,
+            aggregateTimeout: 500,
             ignored: /node_modules/,
+            poll: 180,
         }
     }
 

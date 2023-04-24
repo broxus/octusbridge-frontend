@@ -1,5 +1,15 @@
 import { networks } from '@/config'
-import { NetworkShape, NetworkType } from '@/types'
+import { type NetworkShape, type NetworkType } from '@/types'
+
+
+export function getAssociatedNetwork(type: NetworkType): NetworkType {
+    return ({
+        everscale: 'tvm',
+        tvm: 'tvm',
+        evm: 'evm',
+        solana: 'solana',
+    } as Record<NetworkType, NetworkType>)[type]
+}
 
 
 export function findNetwork(chainId: string, type: NetworkType): NetworkShape | undefined {
@@ -7,9 +17,9 @@ export function findNetwork(chainId: string, type: NetworkType): NetworkShape | 
 }
 
 export function getEverscaleMainNetwork(): NetworkShape | undefined {
-    return findNetwork('1', 'everscale')
+    return findNetwork('42', 'tvm')
 }
 
 export function isEverscaleMainNetwork(network?: NetworkShape): boolean {
-    return network !== undefined && (network.chainId === '1' && network.type === 'everscale')
+    return network !== undefined && (network.chainId === '42' && network.type === 'tvm')
 }

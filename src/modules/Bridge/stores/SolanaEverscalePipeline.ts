@@ -15,7 +15,8 @@ import rpc from '@/hooks/useRpcClient'
 import staticRpc from '@/hooks/useStaticRpc'
 import {
     getFullContractState,
-    solEverEventConfigurationContract, tokenTransferSolEverEventContract,
+    solEverEventConfigurationContract,
+    tokenTransferSolEverEventContract,
 } from '@/misc/contracts'
 import { Pipeline } from '@/models'
 import type {
@@ -102,6 +103,7 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
             useEverWallet: computed,
             useSolanaWallet: computed,
             useBridgeAssets: computed,
+            success: computed,
         })
     }
 
@@ -234,7 +236,6 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
                     token.root,
                     `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
                     `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-                    this.depositType,
                 )
 
                 this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
@@ -472,10 +473,6 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
         return this.state.transferState
     }
 
-    public get depositType(): SolanaTransferUrlParams['depositType'] {
-        return this.params?.depositType
-    }
-
     public get txSignature(): SolanaTransferUrlParams['txSignature'] | undefined {
         return this.params?.txSignature
     }
@@ -485,15 +482,12 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
     }
 
     public get depositFee(): string {
-        if (this.pipeline?.isMultiVault) {
-            return this.amountNumber
-                .times(this.pipeline?.depositFee ?? 0)
-                .div(10000)
-                .dp(0, BigNumber.ROUND_UP)
-                .shiftedBy(-(this.pipeline.evmTokenDecimals || 0))
-                .toFixed()
-        }
-        return '0'
+        return this.amountNumber
+            .times(this.pipeline?.depositFee ?? 0)
+            .div(10000)
+            .dp(0, BigNumber.ROUND_UP)
+            .shiftedBy(-(this.pipeline?.evmTokenDecimals || 0))
+            .toFixed()
     }
 
     public get leftNetwork(): NetworkShape | undefined {
@@ -520,6 +514,10 @@ export class SolanaEverscalePipeline extends BaseStore<SolanaEverscalePipelineDa
 
     public get useBridgeAssets(): BridgeAssetsService {
         return this.bridgeAssets
+    }
+
+    public get success(): boolean {
+        return this.eventState?.status === 'confirmed'
     }
 
     #bridgeAssetsDisposer: IReactionDisposer | undefined

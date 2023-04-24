@@ -43,12 +43,9 @@ export function OptionSwitcher({
                 >
                     {label}
                 </label>
-                <div
-                    className="option-switcher__annotation"
-                    dangerouslySetInnerHTML={{
-                        __html: annotation as string,
-                    }}
-                />
+                <div className="option-switcher__annotation">
+                    {annotation}
+                </div>
             </div>
         </div>
     )

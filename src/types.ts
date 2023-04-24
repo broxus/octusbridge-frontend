@@ -1,4 +1,4 @@
-import { Address } from 'everscale-inpage-provider'
+import { type Address } from 'everscale-inpage-provider'
 
 export type WalletNativeCoin = {
     balance?: string;
@@ -39,14 +39,15 @@ export interface TokenRaw<Addr = unknown> extends Token<Addr> {
     version?: number;
 }
 
-export type NetworkType = 'evm' | 'everscale' | 'solana' & string
+export type NetworkType = 'tvm' | 'evm' | 'solana' & string
 
 export type NetworkShape = {
     badge?: string;
     chainId: string;
-    currencySymbol: string;
+    currencySymbol: string
     disabled?: boolean;
     explorerBaseUrl: string;
+    explorerLabel?: string
     id: string;
     label: string;
     name: string;

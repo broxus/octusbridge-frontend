@@ -2,31 +2,25 @@ import * as React from 'react'
 import { reaction } from 'mobx'
 import { useHistory } from 'react-router-dom'
 
-import { CrosschainBridge, TransferSummary } from '@/modules/Bridge/stores'
+import { useSummary } from '@/modules/Bridge/providers/BridgeTransferSummaryProvider'
+import { CrosschainBridge } from '@/modules/Bridge/stores'
+import { transferStatusStorageKey } from '@/modules/Bridge/utils'
 import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
 import { SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
+import { getAssociatedNetwork, storage } from '@/utils'
 
-export type CrosschainBridgeContextConsumerProps = {
-    bridge: CrosschainBridge;
-    summary: TransferSummary;
-}
+export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge>(new CrosschainBridge(
+    useEvmWallet(),
+    useEverWallet(),
+    useSolanaWallet(),
+    useBridgeAssets(),
+))
 
-export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridgeContextConsumerProps>({
-    bridge: new CrosschainBridge(
-        useEvmWallet(),
-        useEverWallet(),
-        useSolanaWallet(),
-        useBridgeAssets(),
-    ),
-    summary: new TransferSummary(useBridgeAssets()),
-})
-
-export function useBridge(): CrosschainBridgeContextConsumerProps {
+export function useBridge(): CrosschainBridge {
     return React.useContext(CrosschainBridgeStoreContext)
 }
-
 
 type Props = {
     bridgeAssets: BridgeAssetsService;
@@ -45,33 +39,28 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
         props.everWallet,
         props.solanaWallet,
         props.bridgeAssets,
-    ), [])
+    ), [
+        props.evmWallet,
+        props.everWallet,
+        props.solanaWallet,
+        props.bridgeAssets,
+    ])
 
-    const summary = React.useMemo(() => new TransferSummary(bridge.useBridgeAssets), [bridge.useBridgeAssets])
+    const summary = useSummary()
 
-    const context = React.useMemo(() => ({ bridge, summary }), [bridge, summary])
+    React.useEffect(() => bridge.init(), [])
 
     React.useEffect(() => {
-        bridge.init()
         summary.reset()
-
-        const redirectDisposer = reaction(() => bridge.txHash, value => {
-            if (value === undefined) {
-                return
-            }
-
-            const leftNetwork = `${bridge.leftNetwork?.type}-${bridge.leftNetwork?.chainId}`
-            const rightNetwork = `${bridge.rightNetwork?.type}-${bridge.rightNetwork?.chainId}`
-            const depositType = bridge.isEverscaleToEvm ? '' : `/${bridge.depositType || 'default'}`
-
-            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}${depositType}`)
-        })
 
         const summaryDisposer = reaction(
             () => ({
                 amount: bridge.amount,
                 depositFee: bridge.depositFee,
-                depositType: bridge.depositType,
+                eversAmount: bridge.eversAmount,
+                everscaleEvmCost: bridge.everscaleEvmCost,
+                evmEverscaleCost: bridge.evmEverscaleCost,
+                gasPrice: bridge.gasPrice,
                 hiddenBridgePipeline: bridge.hiddenBridgePipeline,
                 leftAddress: bridge.leftAddress,
                 leftNetwork: bridge.leftNetwork,
@@ -81,7 +70,6 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
                 rightAddress: bridge.rightAddress,
                 rightNetwork: bridge.rightNetwork,
                 token: bridge.token,
-                tokenAmount: bridge.tokenAmount,
                 withdrawFee: bridge.withdrawFee,
                 pendingWithdrawals: bridge.pendingWithdrawals,
             }),
@@ -90,16 +78,48 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
             },
         )
 
-        return () => {
-            redirectDisposer()
+        const redirectDisposer = reaction(() => bridge.txHash, value => {
+            if (
+                value === undefined
+                || bridge.leftNetwork?.type === undefined
+                || bridge.leftNetwork.chainId === undefined
+                || bridge.rightNetwork?.type === undefined
+                || bridge.rightNetwork.chainId === undefined
+            ) {
+                return
+            }
+
+            summary.setData('txAddress', value)
+
             summaryDisposer()
+
+            const leftNetworkType = getAssociatedNetwork(bridge.leftNetwork.type)
+            const rightNetworkType = getAssociatedNetwork(bridge.rightNetwork.type)
+
+            const leftNetwork = `${leftNetworkType}-${bridge.leftNetwork.chainId}`
+            const rightNetwork = `${rightNetworkType}-${bridge.rightNetwork?.chainId}`
+
+            const storageKey = transferStatusStorageKey(
+                bridge.leftNetwork.type,
+                bridge.leftNetwork.chainId,
+                bridge.rightNetwork.type,
+                bridge.rightNetwork.chainId,
+                value,
+            )
+            storage.set(storageKey, '1')
+
             bridge.dispose()
-            summary.reset()
+            history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}`)
+        })
+
+        return () => {
+            summaryDisposer()
+            redirectDisposer()
         }
     }, [bridge, summary])
 
     return (
-        <CrosschainBridgeStoreContext.Provider value={context}>
+        <CrosschainBridgeStoreContext.Provider value={bridge}>
             {children}
         </CrosschainBridgeStoreContext.Provider>
     )

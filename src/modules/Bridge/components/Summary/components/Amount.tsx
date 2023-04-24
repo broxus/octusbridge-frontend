@@ -3,13 +3,13 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
 
-import { useBridge } from '@/modules/Bridge/providers'
+import { useSummary } from '@/modules/Bridge/providers'
 import { formattedTokenAmount } from '@/utils'
 
 
 export function Amount(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const summary = useSummary()
 
     return (
         <>
@@ -35,11 +35,7 @@ export function Amount(): JSX.Element {
                 <Observer>
                     {() => {
                         switch (true) {
-                            case (
-                                summary.pipeline?.isMultiVault
-                                && summary.isFromEverscale
-                                && summary.withdrawFee !== undefined
-                            ):
+                            case summary.isFromEverscale && summary.withdrawFee !== undefined:
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
@@ -54,11 +50,7 @@ export function Amount(): JSX.Element {
                                     </b>
                                 )
 
-                            case (
-                                summary.pipeline?.isMultiVault
-                                && summary.isFromEvm
-                                && summary.depositFee !== undefined
-                            ):
+                            case summary.isFromEvm && summary.depositFee !== undefined:
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')

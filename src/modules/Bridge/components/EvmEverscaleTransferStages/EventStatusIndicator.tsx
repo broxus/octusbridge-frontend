@@ -5,8 +5,7 @@ import { useIntl } from 'react-intl'
 import { EventStatus } from '@/modules/Bridge/components/Statuses'
 import { useEvmEverscalePipelineContext } from '@/modules/Bridge/providers'
 
-
-function EventStatusIndicatorInner(): JSX.Element {
+export const EventStatusIndicator = observer(() => {
     const intl = useIntl()
     const transfer = useEvmEverscalePipelineContext()
 
@@ -26,6 +25,4 @@ function EventStatusIndicatorInner(): JSX.Element {
             status={status}
         />
     )
-}
-
-export const EventStatusIndicator = observer(EventStatusIndicatorInner)
+})

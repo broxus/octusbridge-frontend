@@ -1,11 +1,11 @@
 import { IndexerApiBaseUrl } from '@/config'
 import {
-    Transfer, TransferKind, TransfersGraphVolumeRequest, TransfersGraphVolumeResponse,
-    TransfersMainInfoResponse, TransfersRequest, TransfersResponse, TransferStatus,
+    type Transfer, type TransferKind, type TransfersGraphVolumeRequest, type TransfersGraphVolumeResponse,
+    type TransfersMainInfoResponse, type TransfersRequest, type TransfersResponse, type TransferStatus,
 } from '@/modules/Transfers/types'
-import { BadgeStatus } from '@/components/common/Badge'
+import { type BadgeStatus } from '@/components/common/Badge'
 import { findNetwork, handleApi } from '@/utils'
-import { NetworkShape } from '@/types'
+import { type NetworkShape } from '@/types'
 
 export async function handleTransfers(params: TransfersRequest): Promise<TransfersResponse> {
     return handleApi<TransfersResponse>({
@@ -93,7 +93,7 @@ export function getFromNetwork(transfer: Transfer): NetworkShape | undefined {
                 ? findNetwork(`${transfer.ethTonChainId}`, 'evm')
                 : undefined
         case 'TonToEth':
-            return findNetwork('1', 'everscale')
+            return findNetwork('42', 'tvm')
         default:
             return undefined
     }
@@ -103,7 +103,7 @@ export function getToNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
         case 'EthToTon':
         case 'CreditEthToTon':
-            return findNetwork('1', 'everscale')
+            return findNetwork('42', 'tvm')
         case 'EthToEth':
         case 'TonToEth':
             return transfer.tonEthChainId
@@ -118,15 +118,15 @@ export function getTransferLink(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
         case 'TonToEth':
             return transfer.tonEthChainId && transfer.tonEthContractAddress
-                ? `/transfer/everscale-1/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
+                ? `/transfer/tvm-42/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
                 : undefined
         case 'EthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/everscale-1/${transfer.ethTonTransactionHashEth}/default`
+                ? `/transfer/evm-${transfer.ethTonChainId}/tvm-42/${transfer.ethTonTransactionHashEth}/default`
                 : undefined
         case 'CreditEthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
-                ? `/transfer/evm-${transfer.ethTonChainId}/everscale-1/${transfer.ethTonTransactionHashEth}/credit`
+                ? `/transfer/evm-${transfer.ethTonChainId}/tvm-42/${transfer.ethTonTransactionHashEth}/credit`
                 : undefined
         case 'EthToEth':
             return transfer.ethTonChainId && transfer.tonEthChainId && transfer.ethTonTransactionHashEth

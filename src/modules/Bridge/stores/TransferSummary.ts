@@ -1,8 +1,9 @@
-import { computed, makeObservable } from 'mobx'
+import { action, computed, makeObservable } from 'mobx'
 
-import { PendingWithdrawal, TransferSummaryData, TransferSummaryState } from '@/modules/Bridge/types'
+import { WEVEREvmRoots, WEVERRootAddress } from '@/config'
+import { type PendingWithdrawal, type TransferSummaryData, type TransferSummaryState } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { BridgeAssetsService } from '@/stores/BridgeAssetsService'
+import { type BridgeAssetsService } from '@/stores/BridgeAssetsService'
 
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
@@ -14,7 +15,11 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
         makeObservable<TransferSummary>(this, {
             amount: computed,
+            eversAmount: computed,
             bridgeFee: computed,
+            gasPrice: computed,
+            everscaleEvmCost: computed,
+            evmEverscaleCost: computed,
             everscaleAddress: computed,
             maxTransferFee: computed,
             minTransferFee: computed,
@@ -30,6 +35,7 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             isTransferReleased: computed,
             vaultBalance: computed,
             vaultBalanceDecimals: computed,
+            txAddress: computed,
             evmTokenDecimals: computed,
             solanaTokenDecimals: computed,
             isEverscaleBasedToken: computed,
@@ -39,6 +45,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
             isEverscaleToEvm: computed,
             isEverscaleToSolana: computed,
             isSolanaToEverscale: computed,
+            isNativeEverscaleCurrency: computed,
+            isNativeEvmCurrency: computed,
+            reset: action,
+            success: computed,
         })
     }
 
@@ -49,6 +59,10 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get amount(): TransferSummaryData['amount'] {
         return this.data.amount
+    }
+
+    public get eversAmount(): TransferSummaryData['eversAmount'] {
+        return this.data.eversAmount
     }
 
     public get bridgeFee(): TransferSummaryData['bridgeFee'] {
@@ -111,6 +125,18 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.data.tokenAmount
     }
 
+    public get gasPrice(): TransferSummaryData['gasPrice'] {
+        return this.data.gasPrice
+    }
+
+    public get everscaleEvmCost(): TransferSummaryData['everscaleEvmCost'] {
+        return this.data.everscaleEvmCost
+    }
+
+    public get evmEverscaleCost(): TransferSummaryData['evmEverscaleCost'] {
+        return this.data.evmEverscaleCost
+    }
+
     public get isTransferPage(): TransferSummaryState['isTransferPage'] {
         return this.state.isTransferPage
     }
@@ -145,7 +171,21 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get isEverscaleBasedToken(): boolean {
-        return this.pipeline?.tokenBase === 'everscale'
+        return this.pipeline?.tokenBase === 'tvm'
+    }
+
+    public get isNativeEverscaleCurrency(): boolean {
+        if (this.data.token) {
+            return [...WEVEREvmRoots, WEVERRootAddress.toString()].includes(this.data.token.root)
+        }
+        return false
+    }
+
+    public get isNativeEvmCurrency(): boolean {
+        if (this.data.token && !this.isNativeEverscaleCurrency && this.data.token.root) {
+            return this.bridgeAssets.isNativeCurrency(this.data.token.root)
+        }
+        return false
     }
 
     public get isEvmToEvm(): boolean {
@@ -153,11 +193,11 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get isEvmToEverscale(): boolean {
-        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'everscale'
+        return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'tvm'
     }
 
     public get isFromEverscale(): boolean {
-        return this.leftNetwork?.type === 'everscale'
+        return this.leftNetwork?.type === 'tvm'
     }
 
     public get isFromEvm(): boolean {
@@ -165,19 +205,27 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get isEverscaleToEvm(): boolean {
-        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'evm'
+        return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'evm'
     }
 
     public get isEverscaleToSolana(): boolean {
-        return this.leftNetwork?.type === 'everscale' && this.rightNetwork?.type === 'solana'
+        return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'solana'
     }
 
     public get isSolanaToEverscale(): boolean {
-        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'everscale'
+        return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'tvm'
     }
 
     public get pendingWithdrawals(): PendingWithdrawal[] | undefined {
         return this.data.pendingWithdrawals
+    }
+
+    public get txAddress(): TransferSummaryData['txAddress'] {
+        return this.data.txAddress
+    }
+
+    public get success(): boolean {
+        return !!this.data.success
     }
 
 }

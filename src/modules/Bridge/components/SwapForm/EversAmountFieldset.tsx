@@ -7,28 +7,16 @@ import { Icon } from '@/components/common/Icon'
 import { TokenAmountField } from '@/components/common/TokenAmountField'
 import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
-import {
-    debounce,
-    formattedAmount,
-    isGoodBignumber,
-    validateMaxValue,
-    validateMinValue,
-} from '@/utils'
+import { formattedAmount, isGoodBignumber } from '@/utils'
 
 
 export function EversAmountFieldset(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
+    const everWallet = bridge.useEverWallet
 
-    const changeTonsAmountRecalculate = debounce(() => {
-        (async () => {
-            await bridge.onChangeEversAmount()
-        })()
-    }, 50)
-
-    const onChange = (value: string) => {
+    const onChange = (value: string): void => {
         bridge.setData('eversAmount', value)
-        changeTonsAmountRecalculate()
     }
 
     return (
@@ -65,53 +53,22 @@ export function EversAmountFieldset(): JSX.Element {
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
-                                let isMinValueValid = isGoodBignumber(bridge.tokenAmountNumber, false)
+                                const isInputEmpty = !bridge.eversAmount || bridge.eversAmount?.length === 0
+                                let isMaxValueValid = true
 
-                                if (bridge.isInsufficientEverBalance) {
-                                    isMinValueValid = validateMinValue(
-                                        bridge.minEversAmount,
-                                        bridge.eversAmount,
-                                        DexConstants.CoinDecimals,
-                                    )
+                                if (bridge.eversAmountNumber.isZero()) {
+                                    isMaxValueValid = true
                                 }
-                                else if (
-                                    bridge.eversAmount
-                                    && bridge.eversAmount.length > 0
-                                    && isGoodBignumber(bridge.eversAmountNumber, false)
-                                ) {
-                                    isMinValueValid = validateMinValue(
-                                        '0',
-                                        bridge.eversAmount,
-                                        DexConstants.CoinDecimals,
-                                    )
+                                else if (!isGoodBignumber(bridge.maxEversAmount || 0)) {
+                                    isMaxValueValid = false
                                 }
-
-                                const isMaxValueValid = isGoodBignumber(new BigNumber(bridge.maxEversAmount || 0))
-                                    ? validateMaxValue(
-                                        bridge.maxEversAmount,
-                                        bridge.eversAmount,
-                                        DexConstants.CoinDecimals,
-                                    )
-                                    : true
+                                else if (isGoodBignumber(bridge.maxEversAmount || 0)) {
+                                    isMaxValueValid = new BigNumber(bridge.maxEversAmount || 0)
+                                    .gte(bridge.eversAmountNumber.shiftedBy(everWallet.coin.decimals))
+                                }
 
                                 switch (true) {
-                                    case !isMinValueValid:
-                                        return (
-                                            <span className="text-danger">
-                                                {intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TONS_AMOUNT_HINT',
-                                                }, {
-                                                    symbol: DexConstants.CoinSymbol,
-                                                    value: formattedAmount(
-                                                        bridge.minEversAmount,
-                                                        DexConstants.CoinDecimals,
-                                                        { preserve: true },
-                                                    ),
-                                                })}
-                                            </span>
-                                        )
-
-                                    case !isMaxValueValid:
+                                    case !isMaxValueValid && !isInputEmpty:
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
@@ -144,7 +101,7 @@ export function EversAmountFieldset(): JSX.Element {
                                             {formattedAmount(
                                                 bridge.minEversAmount,
                                                 DexConstants.CoinDecimals,
-                                                { preserve: true },
+                                                { roundOn: false, preserve: true },
                                             )}
                                         </>
                                     )}
@@ -158,7 +115,7 @@ export function EversAmountFieldset(): JSX.Element {
                                             {formattedAmount(
                                                 bridge.maxEversAmount,
                                                 DexConstants.CoinDecimals,
-                                                { preserve: true },
+                                                { roundOn: false, preserve: true },
                                             )}
                                         </>
                                     )}

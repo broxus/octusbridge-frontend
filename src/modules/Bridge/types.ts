@@ -1,13 +1,11 @@
-import { Address, DecodedAbiFunctionInputs, FullContractState } from 'everscale-inpage-provider'
+import { DecodedAbiFunctionInputs } from 'everscale-inpage-provider'
 
-import { NetworkShape, NetworkType } from '@/types'
 import { BridgeAbi } from '@/misc'
 import { Pipeline } from '@/models'
 import { BridgeAsset } from '@/stores/BridgeAssetsService'
+import { NetworkShape, NetworkType } from '@/types'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
-
-export type TransferDepositType = 'default' | 'credit'
 
 export enum CrosschainBridgeStep {
     SELECT_ROUTE,
@@ -17,49 +15,46 @@ export enum CrosschainBridgeStep {
 }
 
 export type CrosschainBridgeStoreData = {
-    amount: string;
-    bridgeFee?: string;
-    creditFactoryFee?: string;
-    depositType: TransferDepositType;
-    eversAmount?: string;
-    hiddenBridgePipeline?: Pipeline;
-    leftAddress: string;
-    leftNetwork?: NetworkShape;
-    maxEversAmount?: string;
-    maxTokenAmount?: string;
-    maxTransferFee?: string;
-    minAmount?: string;
-    minEversAmount?: string;
-    minReceiveTokens?: string;
-    minTransferFee?: string;
-    pairAddress?: Address;
-    pairState?: FullContractState;
-    pipeline?: Pipeline;
-    rightAddress: string;
-    rightNetwork?: NetworkShape;
-    selectedToken?: string;
-    swapType: '0' | '1';
-    tokenAmount?: string;
-    txHash?: string;
-    pendingWithdrawals?: PendingWithdrawal[];
+    amount: string
+    bridgeFee?: string
+    eventInitialBalance?: string
+    eversAmount?: string
+    everscaleEvmCost?: string
+    evmEverscaleCost?: string
+    gasPrice?: string
+    hiddenBridgePipeline?: Pipeline
+    leftAddress: string
+    leftNetwork?: NetworkShape
+    maxEversAmount?: string
+    maxTransferFee?: string
+    minEversAmount?: string
+    minTransferFee?: string
+    pipeline?: Pipeline
+    rightAddress: string
+    rightNetwork?: NetworkShape
+    selectedToken?: string
+    txHash?: string
+    txPrice?: string
+    pendingWithdrawals?: PendingWithdrawal[]
 }
 
 export type CrosschainBridgeStoreState = {
-    approvalStrategy: ApprovalStrategies;
-    isCalculating: boolean;
-    isFetching: boolean;
-    isLocked: boolean;
-    isPendingAllowance: boolean;
-    isPendingApproval: boolean;
-    isProcessing: boolean;
-    isTokenChainSameToTargetChain: boolean;
-    step: CrosschainBridgeStep;
-    evmPendingWithdrawal?: EvmPendingWithdrawal;
+    approvalStrategy: ApprovalStrategies
+    isCalculating: boolean
+    isFetching: boolean
+    isLocked: boolean
+    isPendingAllowance: boolean
+    isPendingApproval: boolean
+    isProcessing: boolean
+    isTokenChainSameToTargetChain: boolean
+    isSwapEnabled?: boolean
+    step: CrosschainBridgeStep
+    evmPendingWithdrawal?: EvmPendingWithdrawal
 }
 
 export type AddressesFields = Pick<CrosschainBridgeStoreData, 'leftAddress' | 'rightAddress'>
 
-export type EvmEventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEventConfiguration, 'deployEvent'>['eventVoteData']
+export type EvmEventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.EthereumEverscaleEventConfiguration, 'deployEvent'>['eventVoteData']
 
 export type SolanaEventVoteData = DecodedAbiFunctionInputs<typeof BridgeAbi.SolanaEverscaleEventConfiguration, 'deployEvent'>['eventVoteData']
 
@@ -77,7 +72,6 @@ export type TransferStateStatus = 'confirmed' | 'pending' | 'disabled' | 'reject
 
 
 export type TransferUrlBaseParams = {
-    depositType?: TransferDepositType;
     fromId: string;
     fromType: NetworkType;
     toId: string;
@@ -96,50 +90,36 @@ export type SolanaTransferUrlParams = TransferUrlBaseParams & {
     txSignature: string;
 }
 
-
 export type TransferSummaryData = {
-    amount?: string;
-    bridgeFee?: string;
-    depositType?: string;
-    depositFee?: string;
-    everscaleAddress?: string;
-    hiddenBridgePipeline?: Pipeline;
-    leftAddress?: string;
-    leftNetwork?: NetworkShape;
-    maxTransferFee?: string;
-    minTransferFee?: string;
-    pipeline?: Pipeline;
-    rightAddress?: string;
-    rightNetwork?: NetworkShape;
-    swapAmount?: string;
-    token?: BridgeAsset;
-    tokenAmount?: string;
-    withdrawFee?: string;
-    pendingWithdrawals?: PendingWithdrawal[];
+    amount?: string
+    bridgeFee?: string
+    depositType?: string
+    depositFee?: string
+    eversAmount?: string
+    everscaleAddress?: string
+    gasPrice?: string
+    everscaleEvmCost?: string
+    evmEverscaleCost?: string
+    hiddenBridgePipeline?: Pipeline
+    leftAddress?: string
+    leftNetwork?: NetworkShape
+    maxTransferFee?: string
+    minTransferFee?: string
+    pipeline?: Pipeline
+    rightAddress?: string
+    rightNetwork?: NetworkShape
+    swapAmount?: string
+    token?: BridgeAsset
+    tokenAmount?: string
+    withdrawFee?: string
+    pendingWithdrawals?: PendingWithdrawal[]
+    txAddress: string
+    success?: boolean
 }
 
 export type TransferSummaryState = {
-    isTransferPage?: boolean;
-    isTransferReleased?: boolean;
-}
-
-
-export enum CreditProcessorState {
-    Created,
-    EventNotDeployed,
-    EventDeployInProgress,
-    EventConfirmed,
-    EventRejected,
-    CheckingAmount,
-    CalculateSwap,
-    SwapInProgress,
-    SwapFailed,
-    SwapUnknown,
-    UnwrapInProgress,
-    UnwrapFailed,
-    ProcessRequiresGas,
-    Processed,
-    Cancelled,
+    isTransferPage?: boolean
+    isTransferReleased?: boolean
 }
 
 export enum BurnCallbackOrdering {

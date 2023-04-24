@@ -5,13 +5,12 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { useBridge, useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
-import { PrepareStateStatus } from '@/modules/Bridge/types'
+import { type PrepareStateStatus } from '@/modules/Bridge/types'
 import { isEverscaleAddressValid } from '@/utils'
 
-
-function PrepareStatusIndicatorInner(): JSX.Element {
+export const PrepareStatusIndicator = observer(() => {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEverscaleEvmPipelineContext()
 
     const [prepareStatus, setPrepareStatus] = React.useState<PrepareStateStatus>('disabled')
@@ -27,24 +26,32 @@ function PrepareStatusIndicatorInner(): JSX.Element {
     const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
     const waitingWallet = !everWallet.isReady && !isConfirmed && !isPending
 
-    const onPrepare = async () => {
+    const onPrepare = async (): Promise<void> => {
         if (isTransferPage || prepareStatus === 'pending') {
             return
         }
 
         try {
             setPrepareStatus('pending')
-            const reject = () => {
+            const reject: VoidFunction = () => {
                 setPrepareStatus('disabled')
             }
-            if (
-                bridge.pipeline?.isMultiVault
-                && bridge.pipeline.isNative === false
-                && bridge.isTokenChainSameToTargetChain
-            ) {
-                await bridge.burnViaAlienProxy(reject)
+
+            if (bridge.pipeline?.isNative === false && bridge.isTokenChainSameToTargetChain) {
+                await bridge.burnAlienToken(reject)
             }
-            else if (bridge.pipeline?.isMultiVault && bridge.pipeline.isNative === true) {
+            else if (bridge.isNativeEverscaleCurrency) {
+                if (bridge.isEnoughWeverBalance) {
+                    await bridge.transferNativeMultiToken(reject)
+                }
+                else if (bridge.isEnoughEverBalance) {
+                    await bridge.wrapNative(reject)
+                }
+                else if (bridge.isEnoughComboBalance) {
+                    await bridge.transferNative(reject)
+                }
+            }
+            else if (bridge.pipeline?.isNative === true) {
                 await bridge.transferNativeMultiToken(reject)
             }
             else {
@@ -107,7 +114,4 @@ function PrepareStatusIndicatorInner(): JSX.Element {
             })()}
         </PrepareStatus>
     )
-}
-
-export const PrepareStatusIndicator = observer(PrepareStatusIndicatorInner)
-
+})

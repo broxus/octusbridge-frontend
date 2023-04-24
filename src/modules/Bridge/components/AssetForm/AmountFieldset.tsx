@@ -5,44 +5,47 @@ import { useIntl } from 'react-intl'
 
 import { Alert } from '@/components/common/Alert'
 import { AmountField } from '@/components/common/AmountField'
+import { EverSafeAmount } from '@/config'
 import { useBridge } from '@/modules/Bridge/providers'
-import {
-    debounce,
-    formattedAmount,
-    isGoodBignumber,
-} from '@/utils'
+import { formattedAmount, isGoodBignumber } from '@/utils'
 
 
 export function AmountFieldset(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
+    const everWallet = bridge.useEverWallet
 
-    const onChangeAmount = debounce(() => {
-        (async () => {
-            await bridge.onChangeAmount()
-        })()
-    }, 50)
-
-    const onChange = (value: string) => {
+    const onChange = (value: string): void => {
         bridge.setData('amount', value)
-
-        if (bridge.isSwapEnabled || bridge.isEvmToEvm) {
-            onChangeAmount()
-        }
     }
 
-    const onClickMax = () => {
+    const getMaxValue = () => {
+        if (bridge.isFromEverscale && bridge.isNativeEverscaleCurrency) {
+            const value = new BigNumber(bridge.token?.balance || 0)
+                .plus(everWallet.balance || 0)
+                .minus(bridge.isSwapEnabled
+                    ? (bridge.minEversAmount ?? EverSafeAmount)
+                    : EverSafeAmount)
+                .shiftedBy(-everWallet.coin.decimals)
+                .toFixed()
+            return isGoodBignumber(value) ? value : '0'
+        }
         const decimals = bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals
-        let formattedBalance = new BigNumber(bridge.balance || 0)
-        if (!isGoodBignumber(formattedBalance)) {
-            return
+        const value = new BigNumber(bridge.balance || 0)
+        if (!isGoodBignumber(value)) {
+            return '0'
         }
         if (bridge.decimals !== undefined && decimals !== undefined) {
-            formattedBalance = formattedBalance
+            return value
                 .shiftedBy(-bridge.decimals)
                 .dp(decimals, BigNumber.ROUND_DOWN)
+                .toFixed()
         }
-        onChange(formattedBalance.toFixed())
+        return '0'
+    }
+
+    const onMaximize = (): void => {
+        onChange(getMaxValue())
     }
 
     return (
@@ -67,7 +70,7 @@ export function AmountFieldset(): JSX.Element {
                                 size="md"
                                 value={bridge.amount}
                                 onChange={(bridge.isFetching || bridge.isLocked) ? undefined : onChange}
-                                onClickMax={(bridge.isFetching || bridge.isLocked) ? undefined : onClickMax}
+                                onClickMax={(bridge.isFetching || bridge.isLocked) ? undefined : onMaximize}
                             />
                         )}
                     </Observer>
@@ -92,34 +95,18 @@ export function AmountFieldset(): JSX.Element {
                                             </span>
                                         )
 
-                                    case !bridge.isAmountMinValueValid:
-                                        return (
-                                            <span className="text-danger">
-                                                {intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_AMOUNT_HINT',
-                                                }, {
-                                                    symbol: bridge.token?.symbol,
-                                                    value: formattedAmount(
-                                                        bridge.minAmount || 0,
-                                                        bridge.amountMinDecimals,
-                                                        { preserve: true },
-                                                    ),
-                                                })}
-                                            </span>
-                                        )
-
                                     case !bridge.isAmountMaxValueValid:
                                         return (
                                             <span className="text-danger">
                                                 {intl.formatMessage({
-                                                    id: isGoodBignumber(bridge.balance || 0)
+                                                    id: isGoodBignumber(getMaxValue() || 0)
                                                         ? 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT'
                                                         : 'CROSSCHAIN_TRANSFER_ASSET_INVALID_AMOUNT_HINT',
                                                 }, {
                                                     symbol: bridge.token?.symbol,
                                                     value: formattedAmount(
-                                                        bridge.balance,
-                                                        bridge.decimals,
+                                                        getMaxValue(),
+                                                        undefined,
                                                         { preserve: true },
                                                     ),
                                                 })}
@@ -151,12 +138,11 @@ export function AmountFieldset(): JSX.Element {
 
                     <Observer>
                         {() => (
-                            <>
+                            <React.Fragment key="amount-exceed-vault-balance">
                                 {(
                                     (
-                                        !bridge.pipeline?.isMultiVault
-                                        || bridge.vaultBalance !== undefined
-                                        || bridge.pipeline.mergePoolAddress !== undefined
+                                        bridge.vaultBalance !== undefined
+                                        || bridge.pipeline?.mergePoolAddress !== undefined
                                     )
                                     && bridge.isInsufficientVaultBalance
                                     && !bridge.isEverscaleBasedToken
@@ -177,13 +163,11 @@ export function AmountFieldset(): JSX.Element {
                                                 bridge.vaultBalance,
                                                 bridge.vaultBalanceDecimals,
                                             ),
-                                        }, {
-                                            ignoreTag: true,
                                         })}
                                         type="warning"
                                     />
                                 )}
-                            </>
+                            </React.Fragment>
                         )}
                     </Observer>
 
@@ -193,24 +177,10 @@ export function AmountFieldset(): JSX.Element {
                                 <Observer>
                                     {() => (
                                         <>
-                                            {'> Min value: '}
-                                            {formattedAmount(
-                                                bridge.minAmount || 0,
-                                                bridge.isFromEvm ? bridge.amountMinDecimals : bridge.decimals,
-                                                { preserve: true },
-                                            )}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
                                             {'> Max value: '}
                                             {formattedAmount(
-                                                bridge.balance || 0,
-                                                bridge.decimals,
+                                                getMaxValue() || 0,
+                                                undefined,
                                                 { preserve: true },
                                             )}
                                         </>

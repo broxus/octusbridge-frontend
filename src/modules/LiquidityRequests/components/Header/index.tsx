@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/common/Button'
 import { Select } from '@/components/common/Select'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
-import { SearchNotInstantFilters, SearchNotInstantStatus } from '@/modules/LiquidityRequests/types'
+import { type SearchNotInstantFilters, type SearchNotInstantStatus } from '@/modules/LiquidityRequests/types'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
 import { formattedAmount } from '@/utils'
 import { networks } from '@/config'
@@ -33,7 +33,7 @@ function LiquidityRequestsHeaderInner({
     const liquidityRequests = useLiquidityRequests()
 
     const tokenSymbol = liquidityRequests.selected.length > 0
-        ? bridgeAssets.get('everscale', '1', liquidityRequests.selected[0].tonTokenAddress)?.symbol
+        ? bridgeAssets.get('tvm', '42', liquidityRequests.selected[0].tonTokenAddress)?.symbol
         : undefined
 
     const evmTokenDecimals = liquidityRequests.selected.length > 0

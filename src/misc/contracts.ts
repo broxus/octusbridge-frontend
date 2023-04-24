@@ -6,7 +6,7 @@ import { resolveEverscaleAddress } from '@/utils'
 
 import {
     BridgeAbi,
-    DexAbi,
+    DexAbi, EverAbi,
     MultiVaultAbi,
     TokenAbi,
 } from './abi'
@@ -65,20 +65,6 @@ export function nativeProxyContract(
     return new provider.Contract(MultiVaultAbi.NativeProxy, resolveEverscaleAddress(address))
 }
 
-export function creditFactoryContract(
-    address: Address | string,
-    provider = staticRpc,
-): Contract<typeof BridgeAbi.CreditFactory> {
-    return new provider.Contract(BridgeAbi.CreditFactory, resolveEverscaleAddress(address))
-}
-
-export function creditProcessorContract(
-    address: Address | string,
-    provider = staticRpc,
-): Contract<typeof BridgeAbi.CreditProcessor> {
-    return new provider.Contract(BridgeAbi.CreditProcessor, resolveEverscaleAddress(address))
-}
-
 export function everscaleTokenTransferProxyContract(
     address: Address | string,
     provider = staticRpc,
@@ -96,43 +82,29 @@ export function ethereumTokenTransferProxyContract(
 export function everscaleEventConfigurationContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof BridgeAbi.EverscaleEventConfiguration> {
-    return new provider.Contract(BridgeAbi.EverscaleEventConfiguration, resolveEverscaleAddress(address))
+): Contract<typeof BridgeAbi.EverscaleEthereumEventConfiguration> {
+    return new provider.Contract(BridgeAbi.EverscaleEthereumEventConfiguration, resolveEverscaleAddress(address))
 }
 
 export function ethereumEventConfigurationContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof BridgeAbi.EthereumEventConfiguration> {
-    return new provider.Contract(BridgeAbi.EthereumEventConfiguration, resolveEverscaleAddress(address))
-}
-
-export function hiddenBridgeFactoryContract(
-    address: Address | string,
-    provider = staticRpc,
-): Contract<typeof BridgeAbi.HiddenBridgeStrategyFactory> {
-    return new provider.Contract(BridgeAbi.HiddenBridgeStrategyFactory, resolveEverscaleAddress(address))
-}
-
-export function hiddenBridgeStrategyContract(
-    address: Address | string,
-    provider = staticRpc,
-): Contract<typeof BridgeAbi.HiddenBridgeStrategy> {
-    return new provider.Contract(BridgeAbi.HiddenBridgeStrategy, resolveEverscaleAddress(address))
+): Contract<typeof BridgeAbi.EthereumEverscaleEventConfiguration> {
+    return new provider.Contract(BridgeAbi.EthereumEverscaleEventConfiguration, resolveEverscaleAddress(address))
 }
 
 export function tokenTransferEverscaleEventContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof BridgeAbi.TokenTransferEverscaleEvent> {
-    return new provider.Contract(BridgeAbi.TokenTransferEverscaleEvent, resolveEverscaleAddress(address))
+): Contract<typeof BridgeAbi.TokenTransferEverscaleEthereumEvent> {
+    return new provider.Contract(BridgeAbi.TokenTransferEverscaleEthereumEvent, resolveEverscaleAddress(address))
 }
 
 export function tokenTransferEthereumEventContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof BridgeAbi.TokenTransferEthereumEvent> {
-    return new provider.Contract(BridgeAbi.TokenTransferEthereumEvent, resolveEverscaleAddress(address))
+): Contract<typeof BridgeAbi.TokenTransferEthereumEverscaleEvent> {
+    return new provider.Contract(BridgeAbi.TokenTransferEthereumEverscaleEvent, resolveEverscaleAddress(address))
 }
 
 export function mergeRouterContract(
@@ -152,15 +124,15 @@ export function mergePoolContract(
 export function everscaleEventAlienContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof MultiVaultAbi.EverscaleEventAlien> {
-    return new provider.Contract(MultiVaultAbi.EverscaleEventAlien, resolveEverscaleAddress(address))
+): Contract<typeof MultiVaultAbi.EverscaleEVMEventAlien> {
+    return new provider.Contract(MultiVaultAbi.EverscaleEVMEventAlien, resolveEverscaleAddress(address))
 }
 
 export function everscaleEventNativeContract(
     address: Address | string,
     provider = staticRpc,
-): Contract<typeof MultiVaultAbi.EverscaleEventNative> {
-    return new provider.Contract(MultiVaultAbi.EverscaleEventNative, resolveEverscaleAddress(address))
+): Contract<typeof MultiVaultAbi.EverscaleEVMEventNative> {
+    return new provider.Contract(MultiVaultAbi.EverscaleEVMEventNative, resolveEverscaleAddress(address))
 }
 
 export function legacyEverscaleEventAlienContract(
@@ -210,4 +182,11 @@ export function tokenTransferSolEverEventContract(
     provider = staticRpc,
 ): Contract<typeof BridgeAbi.TokenTransferSolanaEverscaleEvent> {
     return new provider.Contract(BridgeAbi.TokenTransferSolanaEverscaleEvent, resolveEverscaleAddress(address))
+}
+
+export function wrappedCoinVaultContract(
+    address: Address | string,
+    provider = staticRpc,
+): Contract<typeof EverAbi.WeverVault> {
+    return new provider.Contract(EverAbi.WeverVault, resolveEverscaleAddress(address))
 }

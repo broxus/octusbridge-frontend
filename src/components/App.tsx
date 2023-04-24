@@ -15,7 +15,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { ScrollManager } from '@/components/layout/ScrollManager'
 import { LocalizationContext } from '@/context/Localization'
-// import Airdrop from '@/pages/airdrop'
+import { BridgeTransferSummeryProvider } from '@/modules/Bridge'
 import Bridge from '@/pages/bridge'
 import TransferStatus from '@/pages/transfer'
 import TransferList from '@/pages/transfers'
@@ -67,29 +67,7 @@ export function App(): JSX.Element {
                                 <Route exact path="/transfers">
                                     <TransferList />
                                 </Route>
-                                <Route path="/transfer/:fromType(evm)-:fromId/:toType(everscale|evm)-:toId/:txHash(0x[A-Fa-f0-9]{64})/:depositType?">
-                                    <TransferStatus />
-                                </Route>
-                                <Route path="/transfer/:fromType(everscale)-:fromId/:toType(evm|solana)-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
-                                    <TransferStatus />
-                                </Route>
-                                <Route path="/transfer/:fromType(solana)-:fromId/:toType(everscale)-:toId/:txSignature([A-HJ-NP-Za-km-z1-9]*)">
-                                    <TransferStatus />
-                                </Route>
-                                <Route exact path="/bridge">
-                                    <Bridge />
-                                </Route>
-                                <Route exact path="/bridge/liquidity-requests">
-                                    <LiquidityRequests />
-                                </Route>
-                                <Route path="/bridge/liquidity-requests/:chainId/:evmTokenAddress">
-                                    <LiquidityDeposit />
-                                </Route>
-                                {/*
-                                <Route exact path="/airdrop">
-                                    <Airdrop />
-                                </Route>
-                                */}
+
                                 <Route exact path="/staking">
                                     <StakingExplorer />
                                 </Route>
@@ -134,6 +112,27 @@ export function App(): JSX.Element {
                                 <Route exact path="/governance/proposals/:id([0-9]+)?">
                                     <Proposal />
                                 </Route>
+
+                                <BridgeTransferSummeryProvider>
+                                    <Route path="/transfer/:fromType(evm)-:fromId/:toType(tvm|evm)-:toId/:txHash(0x[A-Fa-f0-9]{64})">
+                                        <TransferStatus />
+                                    </Route>
+                                    <Route path="/transfer/:fromType(tvm)-:fromId/:toType(evm|solana)-:toId/:contractAddress(0:[A-Fa-f0-9]{64})">
+                                        <TransferStatus />
+                                    </Route>
+                                    <Route path="/transfer/:fromType(solana)-:fromId/:toType(tvm)-:toId/:txSignature([A-HJ-NP-Za-km-z1-9]*)">
+                                        <TransferStatus />
+                                    </Route>
+                                    <Route exact path="/bridge">
+                                        <Bridge />
+                                    </Route>
+                                    <Route exact path="/bridge/liquidity-requests">
+                                        <LiquidityRequests />
+                                    </Route>
+                                    <Route path="/bridge/liquidity-requests/:chainId/:evmTokenAddress">
+                                        <LiquidityDeposit />
+                                    </Route>
+                                </BridgeTransferSummeryProvider>
                             </Switch>
                         </div>
                         <Footer key="footer" />

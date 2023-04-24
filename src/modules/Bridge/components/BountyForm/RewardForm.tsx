@@ -93,7 +93,7 @@ export function RewardFormInner(): JSX.Element {
             </fieldset>
 
             {isOwner && (
-                <>
+                <React.Fragment key="owner">
                     {wrongNetwork ? (
                         <WrongNetworkError
                             className="margin-top"
@@ -115,7 +115,7 @@ export function RewardFormInner(): JSX.Element {
                             </Button>
                         </fieldset>
                     )}
-                </>
+                </React.Fragment>
             )}
         </form>
     )

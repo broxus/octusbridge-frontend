@@ -106,6 +106,7 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
             useEverWallet: computed,
             useSolanaWallet: computed,
             useBridgeAssets: computed,
+            success: computed,
         })
     }
 
@@ -231,7 +232,6 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
                 this.token.root,
                 `${this.leftNetwork.type}-${this.leftNetwork.chainId}`,
                 `${this.rightNetwork.type}-${this.rightNetwork.chainId}`,
-                this.depositType,
             )
 
             this.setData('pipeline', pipeline !== undefined ? new Pipeline(pipeline) : undefined)
@@ -528,10 +528,6 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
         return this.state.releaseState
     }
 
-    public get depositType(): EverscaleTransferUrlParams['depositType'] {
-        return this.params?.depositType
-    }
-
     public get leftNetwork(): NetworkShape | undefined {
         if (this.params?.fromId === undefined || this.params?.fromType === undefined) {
             return undefined
@@ -547,7 +543,7 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
     }
 
     public get isEverscaleBasedToken(): boolean {
-        return this.pipeline?.tokenBase === 'everscale'
+        return this.pipeline?.tokenBase === 'tvm'
     }
 
     public get token(): BridgeAsset | undefined {
@@ -570,6 +566,10 @@ export class EverscaleSolanaPipeline extends BaseStore<EverscaleSolanaPipelineDa
 
     public get useBridgeAssets(): BridgeAssetsService {
         return this.bridgeAssets
+    }
+
+    public get success(): boolean {
+        return this.eventState?.status === 'confirmed'
     }
 
     #bridgeAssetsDisposer: IReactionDisposer | undefined

@@ -1,0 +1,28 @@
+.skeleton {
+    display: inline-block;
+    position: relative;
+    z-index: 0;
+}
+
+.skeleton::after {
+    animation: 1s linear 0s infinite alternate skeleton;
+    background: rgb(255 255 255 / 7%);
+    border-radius: 3px;
+    bottom: 2px;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 2px;
+}
+
+.skeleton-circle::after {
+    border-radius: 50%;
+    bottom: 0;
+    top: 0;
+}
+
+@keyframes skeleton {
+    from { background: rgb(255 255 255 / 7%); }
+    to { background: rgb(255 255 255 / 2%); }
+}

@@ -3,14 +3,14 @@ import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
 
-import { useBridge } from '@/modules/Bridge/providers'
+import { useSummary } from '@/modules/Bridge/providers'
 import { formattedTokenAmount } from '@/utils'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 
 
 export function PendingWithdrawals(): JSX.Element {
     const intl = useIntl()
-    const { summary } = useBridge()
+    const summary = useSummary()
 
     return (
         <Observer>

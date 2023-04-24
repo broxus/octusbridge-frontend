@@ -9,7 +9,7 @@ import { TokenBadge } from '@/components/common/TokenBadge'
 import { Align, Table, Value } from '@/components/common/Table'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useLiquidityRequests } from '@/modules/LiquidityRequests/providers/LiquidityRequestsProvider'
-import { SearchNotInstant, SearchNotInstantOrdering } from '@/modules/LiquidityRequests/types'
+import { type SearchNotInstant, type SearchNotInstantOrdering } from '@/modules/LiquidityRequests/types'
 import {
     dateFormat, findNetwork, formattedAmount, sliceAddress,
 } from '@/utils'
@@ -97,8 +97,8 @@ function LiquidityRequestsTableInner({
                         <TokenBadge
                             size="xsmall"
                             address={item.tonTokenAddress}
-                            uri={bridgeAssets.get('everscale', '1', item.tonTokenAddress)?.icon}
-                            symbol={bridgeAssets.get('everscale', '1', item.tonTokenAddress)?.symbol ?? sliceAddress(item.tonTokenAddress)}
+                            uri={bridgeAssets.get('tvm', '42', item.tonTokenAddress)?.icon}
+                            symbol={bridgeAssets.get('tvm', '42', item.tonTokenAddress)?.symbol ?? sliceAddress(item.tonTokenAddress)}
                         />,
                         <Value
                             label={findNetwork(item.chainId.toString(), 'evm')?.name}
@@ -110,7 +110,7 @@ function LiquidityRequestsTableInner({
                                 })}
                         </Value>,
                         <Value
-                            label={findNetwork('1', 'everscale')?.name}
+                            label={findNetwork('42', 'tvm')?.name}
                         >
                             {item.decimals
                                 ? formattedAmount(
@@ -122,7 +122,7 @@ function LiquidityRequestsTableInner({
                                 })}
                         </Value>,
                         <Value
-                            label={findNetwork('1', 'everscale')?.name}
+                            label={findNetwork('42', 'tvm')?.name}
                         >
                             {item.decimals
                                 ? formattedAmount(item.bounty, item.decimals)
@@ -132,7 +132,7 @@ function LiquidityRequestsTableInner({
                         </Value>,
                         <Value
                             label={(
-                                <Link to={`/transfer/everscale-1/evm-${item.chainId}/${item.contractAddress}`}>
+                                <Link to={`/transfer/tvm-42/evm-${item.chainId}/${item.contractAddress}`}>
                                     {dateFormat(item.timestamp, 'DD')}
                                 </Link>
                             )}

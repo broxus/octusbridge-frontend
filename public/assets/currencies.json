@@ -1,0 +1,106 @@
+{
+    "name": "Everscale & EVM native currencies list",
+    "version": {
+        "major": 0,
+        "minor": 0,
+        "patch": 1
+    },
+    "keywords": [
+        "ever",
+        "everscale",
+        "venom",
+        "tvm",
+        "evm"
+    ],
+    "timestamp": "2023-03-31T11:27:33.633Z",
+    "tokens": [
+        {
+            "name": "Native Currency",
+            "symbol": "EVER",
+            "chainId": "42",
+            "logoURI": "https://app.flatqube.io/assets/992f1244bd3cbc67afa8.svg",
+            "decimals": 9,
+            "address": "0:a49cd4e158a9a15555e624759e2e4e766d22600b7800d891e46f9291f044a93d"
+        },
+        {
+            "name": "ETH",
+            "symbol": "ETH",
+            "chainId": "42",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/broxus/flatqube-assets/master/icons/WETHv3/logo.svg",
+            "address": "0:59b6b64ac6798aacf385ae9910008a525a84fc6dcf9f942ae81f8e8485fe160d"
+        },
+        {
+            "name": "BNB",
+            "symbol": "BNB",
+            "chainId": "42",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/BVFDT/venom-assets/master/icons/BNB/logo.svg",
+            "address": "0:9002c8a1cbbca3f9700b1b9438082342ede76d579e3a5a7c6f0e5d030ac5df43"
+        },
+        {
+            "name": "FTM",
+            "symbol": "FTM",
+            "chainId": "42",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/BVFDT/venom-assets/master/icons/FTM/logo.svg",
+            "address": "0:d53f813f775ae9435cc1f35eb5d9608590e78b11420b0e4529acfa8b591c78f7"
+        },
+
+        {
+            "name": "ETH",
+            "symbol": "ETH",
+            "chainId": "1",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/BVFDT/venom-assets/master/icons/WETH/logo.svg",
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "wrappedName": "Wrapped ETH",
+            "wrappedSymbol": "WETH"
+        },
+        {
+            "name": "BNB",
+            "symbol": "BNB",
+            "chainId": "56",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/BVFDT/venom-assets/master/icons/BNB/logo.svg",
+            "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "wrappedName": "Wrapped BNB",
+            "wrappedSymbol": "WBNB"
+        },
+        {
+            "name": "FTM",
+            "symbol": "FTM",
+            "chainId": "250",
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/BVFDT/venom-assets/master/icons/FTM/logo.svg",
+            "address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
+            "wrappedName": "Wrapped FTM",
+            "wrappedSymbol": "WFTM"
+        },
+
+        {
+            "name": "Native Currency",
+            "symbol": "EVER",
+            "chainId": "1",
+            "logoURI": "https://app.flatqube.io/assets/992f1244bd3cbc67afa8.svg",
+            "decimals": 9,
+            "address": "0x29d578CEc46B50Fa5C88a99C6A4B70184C062953"
+        },
+        {
+            "name": "Native Currency",
+            "symbol": "EVER",
+            "chainId": "56",
+            "logoURI": "https://app.flatqube.io/assets/992f1244bd3cbc67afa8.svg",
+            "decimals": 9,
+            "address": "0x0A7e7D210C45c4abBA183C1D0551B53AD1756ecA"
+        },
+        {
+            "name": "Native Currency",
+            "symbol": "EVER",
+            "chainId": "250",
+            "logoURI": "https://app.flatqube.io/assets/992f1244bd3cbc67afa8.svg",
+            "decimals": 9,
+            "address": "0xE41637925d920D0EA8c361773AD135E265CD569C"
+        }
+    ]
+}

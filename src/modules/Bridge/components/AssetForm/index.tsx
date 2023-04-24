@@ -11,7 +11,7 @@ import { useBridge } from '@/modules/Bridge/providers'
 
 export function AssetForm(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
@@ -31,7 +31,7 @@ export function AssetForm(): JSX.Element {
 
                 <Observer>
                     {() => (
-                        <>
+                        <React.Fragment key="locked">
                             {bridge.isLocked && (
                                 <Alert
                                     key="connection-alert"
@@ -45,7 +45,7 @@ export function AssetForm(): JSX.Element {
                                     type="danger"
                                 />
                             )}
-                        </>
+                        </React.Fragment>
                     )}
                 </Observer>
             </form>

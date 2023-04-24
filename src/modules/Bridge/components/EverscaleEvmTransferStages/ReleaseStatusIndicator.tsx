@@ -12,10 +12,9 @@ import { BountyForm } from '@/modules/Bridge/components/BountyForm'
 import { useBridge, useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
 import { isEverscaleAddressValid } from '@/utils'
 
-
-function ReleaseStatusIndicatorInner(): JSX.Element {
+export const ReleaseStatusIndicator = observer(() => {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
     const transfer = useEverscaleEvmPipelineContext()
 
     const isTransferPage = (
@@ -28,11 +27,31 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
+    const isOutdated = transfer.releaseState?.isOutdated === true
+    const isReleased = transfer.releaseState?.isReleased === true
+
+    // Check for expiring
+    let isExpired = false
+
+    const start = DateTime.now()
+    const end = DateTime.fromSeconds((transfer.releaseState?.ttl ?? start.toSeconds()))
+    const diff = end.diff(start, ['days', 'hours', 'minutes', 'seconds']).toObject()
+
+    if (isEventConfirmed && transfer.releaseState?.ttl !== undefined) {
+        isExpired = (
+            (diff.days ?? 0) <= 0
+            && (diff.hours ?? 0) <= 0
+            && (diff.minutes ?? 0) <= 0
+            && (diff.seconds ?? 0) <= 0
+        )
+    }
+
     const waitingWallet = (
         !evmWallet.isReady
         && isEventConfirmed
         && !isConfirmed
         && !isPending
+        && !isExpired
     )
     const wrongNetwork = (
         evmWallet.isReady
@@ -41,9 +60,10 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
         && isEventConfirmed
         && !isConfirmed
         && !isPending
+        && !isExpired
     )
 
-    const onRelease = async () => {
+    const onRelease = async (): Promise<void> => {
         if (
             !isTransferPage
             || (
@@ -59,18 +79,26 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
 
     return (
         <ReleaseStatus
-            isReleased={transfer.releaseState?.isReleased}
+            isReleased={isReleased}
             status={status}
             note={intl.formatMessage({
                 id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
             }, {
-                network: bridge.rightNetwork?.label || transfer.rightNetwork?.label || '',
+                network: bridge.rightNetwork?.name || transfer.rightNetwork?.name || '',
             })}
             waitingWallet={waitingWallet}
             wrongNetwork={wrongNetwork}
         >
             {(() => {
-                if (evmWallet.isInitializing) {
+                if (bridge.isSwapEnabled || evmWallet.isInitializing) {
+                    return null
+                }
+
+                if (isTransferPage && !isEventConfirmed) {
+                    return null
+                }
+
+                if (isTransferPage && transfer.isMultiVaultCredit && !isOutdated) {
                     return null
                 }
 
@@ -89,12 +117,7 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                 }
 
                 if (wrongNetwork) {
-                    return (
-                        <WrongNetworkError
-                            network={transfer.rightNetwork}
-                            wallet={evmWallet}
-                        />
-                    )
+                    return <WrongNetworkError network={transfer.rightNetwork} wallet={evmWallet} />
                 }
 
                 if (
@@ -105,18 +128,6 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
                     return <BountyForm />
                 }
 
-                const start = DateTime.now()
-                const end = DateTime.fromSeconds((transfer.releaseState?.ttl ?? start.toSeconds()))
-                const diff = end.diff(start, ['days', 'hours', 'minutes', 'seconds']).toObject()
-                let isExpired = false
-                if (isEventConfirmed && transfer.releaseState?.ttl !== undefined) {
-                    isExpired = (
-                        (diff.days ?? 0) <= 0
-                        && (diff.hours ?? 0) <= 0
-                        && (diff.minutes ?? 0) <= 0
-                        && (diff.seconds ?? 0) <= 0
-                    )
-                }
                 const disabled = !isTransferPage || (
                     !isEventConfirmed
                     || !isDisabled
@@ -178,6 +189,4 @@ function ReleaseStatusIndicatorInner(): JSX.Element {
             })()}
         </ReleaseStatus>
     )
-}
-
-export const ReleaseStatusIndicator = observer(ReleaseStatusIndicatorInner)
+})

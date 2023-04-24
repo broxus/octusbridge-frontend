@@ -2,28 +2,39 @@ import * as React from 'react'
 import { reaction } from 'mobx'
 import { useParams } from 'react-router-dom'
 
-import { useBridge } from '@/modules/Bridge/providers/CrosschainBridgeStoreProvider'
-import type {
-    EverscaleEvmPipeline,
-    EverscaleSolanaPipeline,
-    EvmEverscaleCreditPipeline,
-    EvmEverscalePipeline,
-    EvmEvmHiddenBridgePipeline,
-    SolanaEverscalePipeline,
+import { useSummary } from '@/modules/Bridge/providers/BridgeTransferSummaryProvider'
+import {
+    type EverscaleEvmPipeline,
+    type EverscaleSolanaPipeline,
+    type EvmEverscalePipeline,
+    type SolanaEverscalePipeline,
 } from '@/modules/Bridge/stores'
-import { EverscaleTransferUrlParams, EvmTransferUrlParams, SolanaTransferUrlParams } from '@/modules/Bridge/types'
+import {
+    type EverscaleTransferUrlParams,
+    type EvmTransferUrlParams,
+    type SolanaTransferUrlParams,
+} from '@/modules/Bridge/types'
 
 
-type Pipeline = EverscaleEvmPipeline
+type Pipeline =
+    EverscaleEvmPipeline
     | EvmEverscalePipeline
-    | EvmEverscaleCreditPipeline
-    | EvmEvmHiddenBridgePipeline
     | EverscaleSolanaPipeline
     | SolanaEverscalePipeline
 
 export function useTransferLifecycle(pipeline: Pipeline): void {
-    const { summary } = useBridge()
     const params = useParams<EverscaleTransferUrlParams | EvmTransferUrlParams | SolanaTransferUrlParams>()
+
+    const summary = useSummary()
+
+    if ('contractAddress' in params && summary.txAddress !== params.contractAddress) {
+        summary.reset()
+        summary.setData('txAddress', params.contractAddress)
+    }
+    else if ('txHash' in params && summary.txAddress !== params.txHash) {
+        summary.reset()
+        summary.setData('txAddress', params.txHash)
+    }
 
     React.useEffect(() => {
         (async () => {
@@ -37,43 +48,39 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
 
     React.useEffect(() => {
         summary.setState('isTransferPage', true)
-        const summaryDisposer = reaction(
+
+        return reaction(
             () => ({
                 amount: pipeline.amount,
+                eversAmount: (pipeline as EvmEverscalePipeline).eversAmount,
                 depositFee: (pipeline as EvmEverscalePipeline).depositFee,
-                depositType: pipeline.depositType || params.depositType,
-                everscaleAddress: (pipeline as EvmEvmHiddenBridgePipeline).everscaleAddress,
                 leftAddress: pipeline.leftAddress,
                 leftNetwork: pipeline.leftNetwork,
-                maxTransferFee: (pipeline as EvmEvmHiddenBridgePipeline).maxTransferFee,
-                minTransferFee: (pipeline as EvmEvmHiddenBridgePipeline).minTransferFee,
                 pipeline: pipeline.pipeline,
-                hiddenBridgePipeline: (pipeline as EvmEvmHiddenBridgePipeline).pipelineDefault,
                 rightAddress: pipeline.rightAddress,
                 rightNetwork: pipeline.rightNetwork,
-                swapAmount: (pipeline as EvmEvmHiddenBridgePipeline).swapAmount,
                 token: pipeline.token,
-                tokenAmount: (pipeline as EvmEvmHiddenBridgePipeline).tokenAmount,
                 withdrawFee: (pipeline as EverscaleEvmPipeline).withdrawFee,
                 pendingWithdrawals: (pipeline as EvmEverscalePipeline).pendingWithdrawals,
+                success: pipeline.success,
             }),
             data => {
-                summary.setData(data)
+                summary.setData({
+                    amount: data.amount ?? summary.amount,
+                    eversAmount: data.eversAmount ?? summary.eversAmount,
+                    depositFee: data.depositFee ?? summary.depositFee,
+                    leftAddress: data.leftAddress ?? summary.leftAddress,
+                    leftNetwork: data.leftNetwork ?? summary.leftNetwork,
+                    pipeline: data.pipeline ?? summary.pipeline,
+                    rightAddress: data.rightAddress ?? summary.rightAddress,
+                    rightNetwork: data.rightNetwork ?? summary.rightNetwork,
+                    token: data.token ?? summary.token,
+                    withdrawFee: data.withdrawFee ?? summary.withdrawFee,
+                    pendingWithdrawals: data.pendingWithdrawals ?? summary.pendingWithdrawals,
+                    success: pipeline.success,
+                })
             },
             { fireImmediately: true },
         )
-
-        const transferReleaseDisposer = reaction(
-            () => (pipeline as EvmEvmHiddenBridgePipeline).releaseState?.isReleased,
-            value => {
-                summary.setState('isTransferReleased', value)
-            },
-        )
-
-        return () => {
-            summaryDisposer()
-            transferReleaseDisposer()
-            summary.reset()
-        }
     }, [])
 }

@@ -13,9 +13,9 @@ import { CrosschainBridgeStep } from '@/modules/Bridge/types'
 
 export function AssetStep(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
 
-    const nextStep = async () => {
+    const nextStep = async (): Promise<void> => {
         if (
             bridge.isPendingAllowance
             || bridge.isFetching
@@ -26,7 +26,10 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isFromEvm && (!bridge.isEverscaleBasedToken || !bridge.pipeline?.isNative)) {
+        if (bridge.isFromEvm && (bridge.isNativeEvmCurrency || bridge.isNativeEverscaleCurrency)) {
+            bridge.setState('step', CrosschainBridgeStep.TRANSFER)
+        }
+        else if (bridge.isFromEvm && (!bridge.isEverscaleBasedToken || !bridge.pipeline?.isNative)) {
             await bridge.checkAllowance()
         }
         else {
@@ -34,7 +37,7 @@ export function AssetStep(): JSX.Element {
         }
     }
 
-    const prevStep = () => {
+    const prevStep: VoidFunction = () => {
         bridge.resetAsset()
         bridge.setData('selectedToken', undefined)
         bridge.setState('step', CrosschainBridgeStep.SELECT_ROUTE)
@@ -70,13 +73,7 @@ export function AssetStep(): JSX.Element {
             <AssetForm />
 
             <Observer>
-                {() => (
-                    <>
-                        {(bridge.isEvmToEverscale && bridge.isCreditAvailable) && (
-                            <SwapForm />
-                        )}
-                    </>
-                )}
+                {() => (bridge.pipeline !== undefined ? <SwapForm /> : null)}
             </Observer>
 
             <footer className="crosschain-transfer__footer">

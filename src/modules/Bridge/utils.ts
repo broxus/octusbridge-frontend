@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
-import { AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { type AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
-
+import { IndexerApiBaseUrl } from '@/config'
 import { DexConstants } from '@/misc'
 
 export function unshiftedAmountWithSlippage(amount: BigNumber, slippage: number | string): BigNumber {
@@ -45,4 +45,57 @@ export function ixFromRust(data: any): TransactionInstruction {
         data: Buffer.from(data.data),
         keys,
     })
+}
+
+export type Tickers = 'ETH' | 'BNB' | 'FTM' | 'MATIC' | 'AVAX'
+
+export async function getPrice(ticker: Tickers): Promise<{ ticker: Tickers, price: string }> {
+    return fetch(`${IndexerApiBaseUrl}/gate_prices`, {
+        body: JSON.stringify({ ticker }),
+        mode: 'cors',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        method: 'POST',
+    }).then(value => value.json())
+}
+
+export type UnwrapPayloadRequest = {
+    remainingGasTo: string;
+    destination: string;
+    amount: string;
+    payload?: string;
+};
+
+type UnwrapResponse = {
+    tokensTransferPayload: string;
+    sendTo: string;
+    everAmount: string;
+    tokenAmount: string;
+};
+
+export async function getUnwrapPayload(
+    unwrapConfig: UnwrapPayloadRequest,
+    apiEndpoint: string = 'https://api.flatqube.io',
+): Promise<UnwrapResponse> {
+    return fetch(`${apiEndpoint}/v2/middleware`, {
+        body: JSON.stringify({ input: { unwrapAll: unwrapConfig }}),
+        mode: 'cors',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        method: 'POST',
+    }).then(value => value.json()).then(value => value.output.unwrapAll)
+}
+
+export function transferStatusStorageKey(
+    leftNetType: string,
+    leftChainId: string | number,
+    rightNetType: string,
+    rightChainId: string | number,
+    txAddress: string,
+): string {
+    return `transfer/${leftNetType}/${leftChainId}/${rightNetType}/${rightChainId}/${txAddress}`
 }

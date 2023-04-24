@@ -10,9 +10,9 @@ import { formattedAmount } from '@/utils'
 
 export function ApproveForm(): JSX.Element {
     const intl = useIntl()
-    const { bridge } = useBridge()
+    const bridge = useBridge()
 
-    const onChangeStrategy = (value: ApprovalStrategies) => {
+    const onChangeStrategy = (value: ApprovalStrategies): void => {
         bridge.setState('approvalStrategy', value)
     }
 

@@ -1,14 +1,13 @@
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection, type PublicKey } from '@solana/web3.js'
 import { getMint } from '@solana/spl-token'
 import BigNumber from 'bignumber.js'
-import { Address } from 'everscale-inpage-provider'
-import type {
-    DecodedAbiFunctionInputs,
-    DecodedAbiFunctionOutputs,
-    FullContractState,
+import { type Address,
+    type DecodedAbiFunctionInputs,
+    type DecodedAbiFunctionOutputs,
+    type FullContractState,
 } from 'everscale-inpage-provider'
 
-import { MultiVaultAbi } from '@/misc/abi'
+import { type MultiVaultAbi } from '@/misc/abi'
 import {
     alienProxyContract,
     getFullContractState,
@@ -27,6 +26,7 @@ import { resolveEverscaleAddress } from '@/utils'
 export type EvmMultiVaultTokenMeta = {
     activation: string;
     blacklisted: boolean;
+    custom: string
     depositFee: string;
     isNative: boolean;
     withdrawFee: string;
@@ -70,6 +70,10 @@ export abstract class BridgeUtils {
         rpcUrl: string,
     ): Promise<string> {
         const [nativeWid, nativeAddress] = tokenAddress.toString().split(':')
+        // const nativeToken = await evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
+        // const customToken = await evmMultiVaultContract(vaultAddress, rpcUrl).methods.tokens(nativeToken).call()
+        // console.log(customToken, customToken.custom, nativeToken)
+        // return customToken.custom === '0x0000000000000000000000000000000000000000' ? nativeToken : customToken.custom
         return evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
     }
 
@@ -165,11 +169,11 @@ export abstract class BridgeUtils {
 
     public static async getDeriveAlienTokenRoot(
         alienProxyAddress: Address | string,
-        params: Omit<DecodedAbiFunctionInputs<typeof MultiVaultAbi.AlienProxy, 'deriveAlienTokenRoot'>, 'answerId'>,
+        params: Omit<DecodedAbiFunctionInputs<typeof MultiVaultAbi.AlienProxy, 'deriveEVMAlienTokenRoot'>, 'answerId'>,
         state?: FullContractState,
     ): Promise<string> {
         return (await alienProxyContract(alienProxyAddress)
-            .methods.deriveAlienTokenRoot({ ...params, answerId: 0 })
+            .methods.deriveEVMAlienTokenRoot({ ...params, answerId: 0 })
             .call({ cachedState: state }))
             .value0
             .toString()
@@ -200,14 +204,19 @@ export abstract class BridgeUtils {
         const aliens = await Promise.all(mergedTokens._tokens.map(
             async ([address, settings]) => {
                 if (settings.enabled) {
-                    const meta = await BridgeUtils.getAlienTokenRootMeta(address)
-                    return {
-                        canonicalTokenAddress: mergedTokens._canon,
-                        everscaleTokenAddress: address,
-                        evmTokenAddress: `0x${new BigNumber(meta.base_token)
+                    try {
+                        const meta = await BridgeUtils.getAlienTokenRootMeta(address)
+                        return {
+                            canonicalTokenAddress: mergedTokens._canon,
+                            everscaleTokenAddress: address,
+                            evmTokenAddress: `0x${new BigNumber(meta.base_token)
                             .toString(16)
                             .padStart(40, '0')}`,
-                        isMerged: meta.base_chainId === chainId,
+                            isMerged: meta.base_chainId === chainId,
+                        }
+                    }
+                    catch (e) {
+                        return { isMerged: false }
                     }
                 }
                 return { isMerged: false }

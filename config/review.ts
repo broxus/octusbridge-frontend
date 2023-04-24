@@ -1,23 +1,24 @@
 import { AddressLiteral } from 'everscale-inpage-provider'
 
-import { NetworkShape } from '@/types'
+import { type NetworkShape } from '@/types'
 
 
 export const networks: NetworkShape[] = [
     {
-        chainId: '1',
+        chainId: '42',
         currencySymbol: 'EVER',
         explorerBaseUrl: 'https://everscan.io/',
-        id: 'everscale-1',
+        id: 'tvm-42',
         label: 'Everscale',
         name: 'Everscale',
         rpcUrl: '',
-        type: 'everscale',
+        type: 'tvm',
     },
     {
         chainId: '1',
         currencySymbol: 'ETH',
         explorerBaseUrl: 'https://etherscan.io/',
+        explorerLabel: 'Etherscan',
         id: 'evm-1',
         label: 'Ethereum',
         name: 'Ethereum Mainnet',
@@ -29,9 +30,10 @@ export const networks: NetworkShape[] = [
         chainId: '56',
         currencySymbol: 'BNB',
         explorerBaseUrl: 'https://bscscan.com/',
+        explorerLabel: 'BscScan',
         id: 'evm-56',
-        label: 'BNB Chain (Binance Smart Chain)',
-        name: 'BNB Chain',
+        label: 'BSC',
+        name: 'Binance Smart Chain',
         rpcUrl: 'https://rpc.ankr.com/bsc/',
         transactionType: '0x0',
         type: 'evm',
@@ -40,6 +42,7 @@ export const networks: NetworkShape[] = [
         chainId: '250',
         currencySymbol: 'FTM',
         explorerBaseUrl: 'https://ftmscan.com/',
+        explorerLabel: 'FTMScan',
         id: 'evm-250',
         label: 'Fantom Opera',
         name: 'Fantom Opera',
@@ -51,6 +54,7 @@ export const networks: NetworkShape[] = [
         chainId: '137',
         currencySymbol: 'MATIC',
         explorerBaseUrl: 'https://polygonscan.com/',
+        explorerLabel: 'PolygonScan',
         id: 'evm-137',
         label: 'Polygon',
         name: 'Polygon',
@@ -62,6 +66,7 @@ export const networks: NetworkShape[] = [
         chainId: '43114',
         currencySymbol: 'AVAX',
         explorerBaseUrl: 'https://snowtrace.io/',
+        explorerLabel: 'SnowTrace',
         id: 'evm-43114',
         label: 'Avalanche',
         name: 'Avalanche Network',
@@ -69,19 +74,10 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        chainId: '2001',
-        currencySymbol: 'mADA',
-        explorerBaseUrl: 'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/',
-        id: 'evm-2001',
-        label: 'Milkomeda',
-        name: 'Milkomeda C1 Mainnet',
-        rpcUrl: 'https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
-        type: 'evm',
-    },
-    {
         chainId: '1',
         currencySymbol: 'SOL',
         explorerBaseUrl: 'https://solscan.io/',
+        explorerLabel: 'Solscan',
         id: 'solana-1',
         label: 'Solana',
         name: 'Solana',
@@ -91,23 +87,25 @@ export const networks: NetworkShape[] = [
 ]
 
 
-export const AirdropContractAddress = new AddressLiteral('0:b321058503889a78fe0954cfb67564b218cff1eac1467dc48e4c80118dd6719f')
-
 export const DexRootAddress = new AddressLiteral('0:5eb5713ea9b4a0f3a13bc91b282cde809636eb1e68d2fcb6427b9ad78a5a9008')
+
+export const WEVERVaultAddress = new AddressLiteral('0:557957cba74ab1dc544b4081be81f1208ad73997d74ab3b72d95864a41b779a4')
 
 export const WEVERRootAddress = new AddressLiteral('0:a49cd4e158a9a15555e624759e2e4e766d22600b7800d891e46f9291f044a93d')
 
-export const CreditBody = '5800000000'
+export const WEVEREvmRoots = [
+    '0x29d578CEc46B50Fa5C88a99C6A4B70184C062953', // 1
+    '0x0A7e7D210C45c4abBA183C1D0551B53AD1756ecA', // 56
+    '0x1ffEFD8036409Cb6d652bd610DE465933b226917',
+]
 
-export const EmptyWalletMinEversAmount = '10000000000'
+export const Compounder = new AddressLiteral('0:8707c99c2e4a98642ba29a9d389656e804bd5b3cbe11a426ca12335792168d8a')
 
-export const CreditFactoryAddress = new AddressLiteral('0:5ae128e08b2c17428629e092c1a7bd5c77a83a27fa3b833a31c2eb3d704d7f68')
+export const EventCloser = new AddressLiteral('0:6c5803db0fb7403421494ec458e5bc4763fb49cbb1b246ff2d3310e860845a78')
 
-export const DepositToFactoryMaxSlippage = 10
+export const Unwrapper = '0xa5cf4c57a7756943559B6B65f6cC67Aa834F79F5'
 
-export const DepositToFactoryMinSlippageNumerator = '1'
-
-export const DepositToFactoryMinSlippageDenominator = '100'
+export const EverSafeAmount = '10000000000'
 
 export const GasToStaking = '11500000000'
 
@@ -117,21 +115,15 @@ export const MinGasToUnlockCastedVotes = '11000000000'
 
 export const GasToUnlockCastedVote = '200000000'
 
-export const HiddenBridgeStrategyGas = '2500000000'
-
-export const HiddenBridgeStrategyFactory = new AddressLiteral('0:18e1dfffa7c13122c993c94b205b68905c14b77ce03d3cbcb1fd6f52664fbf2d')
-
 export const RelayEvmNetworkChainId = '1'
 
 export const StakingAccountAddress = new AddressLiteral('0:ec6a2fd6c3732e494684d016f1addec1a1828b6b7ecfcd30b34e8e5ad2d421d0')
 
 export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa24edde79728142d2bfb74bc9edf66ad86ae7cd8e56a86')
 
-export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/common.json'
+export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/tokenlist/common.json'
 
-export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-1/tokenlist/octus.json'
-
-export const TokenAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
@@ -139,8 +131,10 @@ export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/eve
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
-export const IndexerApiBaseUrl = 'https://api.octusbridge.io/v1'
+export const IndexerApiBaseUrl = 'https://api-test.octusbridge.io/v1'
 
 export const DaoIndexerApiBaseUrl = 'https://dao.octusbridge.io/v1'
 
-export const TonSwapIndexerApiBaseUrl = 'https://api.flatqube.io/v1'
+export const DexIndexerApiBaseUrl = 'https://api.flatqube.io/v1'
+
+export const CurrenciesListURI = '/assets/currencies.json'

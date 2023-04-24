@@ -5,7 +5,7 @@ import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { getFromAddress, getFromNetwork } from '@/modules/Transfers/utils'
-import { Transfer } from '@/modules/Transfers/types'
+import { type Transfer } from '@/modules/Transfers/types'
 
 import './index.scss'
 
@@ -44,6 +44,7 @@ export function From({
                             copy
                             address={fromAddress}
                             baseUrl={fromNetwork.explorerBaseUrl}
+                            explorerLabel={fromNetwork.explorerLabel ?? ''}
                         />
                     ) : (
                         <EverscanAccountLink
