@@ -1,4 +1,4 @@
-import { Address, Contract, FullContractState } from 'everscale-inpage-provider'
+import { type Address, type Contract, type FullContractState } from 'everscale-inpage-provider'
 
 import rpc from '@/hooks/useRpcClient'
 import staticRpc from '@/hooks/useStaticRpc'
@@ -186,7 +186,7 @@ export function tokenTransferSolEverEventContract(
 
 export function wrappedCoinVaultContract(
     address: Address | string,
-    provider = staticRpc,
+    provider = rpc,
 ): Contract<typeof EverAbi.WeverVault> {
     return new provider.Contract(EverAbi.WeverVault, resolveEverscaleAddress(address))
 }
