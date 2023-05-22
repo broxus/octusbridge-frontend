@@ -3,8 +3,11 @@ export type TransferType = 'Default' | 'Credit' | 'Transit'
 export type TransferKind =
     | 'TonToEth'
     | 'EthToTon'
-    | 'CreditEthToTon'
     | 'EthToEth'
+    | 'NativeEthToTon'
+    | 'NativeTonToEth'
+    | 'AlienEthToTon'
+    | 'AlienTonToEth'
 
 export type TransferKindFilter = Lowercase<TransferKind>
 
@@ -67,6 +70,7 @@ export type Transfer = {
 }
 
 export type TransfersParams = {
+    ethTokenAddress?: string
     limit?: number;
     offset?: number;
     ordering?: TransfersOrdering;

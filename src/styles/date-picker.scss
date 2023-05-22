@@ -73,3 +73,7 @@
         cursor: not-allowed;
     }
 }
+
+.react-datepicker__aria-live {
+    display: none !important;
+}
