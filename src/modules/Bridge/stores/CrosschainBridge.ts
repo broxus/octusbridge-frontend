@@ -1923,6 +1923,20 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
             const remainingGasTo = this.isSwapEnabled ? EventCloser : this.everWallet.account.address
 
+
+            console.log({
+                amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
+                deployWalletValue: '200000000',
+                notify: true,
+                payload: data.boc,
+                recipient: this.pipeline.proxyAddress,
+                remainingGasTo,
+            }, {
+                amount: attachedAmount,
+                bounce: true,
+                from: new Address(this.leftAddress),
+            })
+
             await walletContract
                 .methods.transfer({
                     amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),

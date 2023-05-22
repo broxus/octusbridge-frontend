@@ -11,6 +11,7 @@ import {
     TextFilter,
     TokenFilter,
 } from '@/components/common/Filters'
+import { Icon } from '@/components/common/Icon'
 import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
 import {
@@ -27,12 +28,13 @@ import {
     type TransferKindFilter,
     type TransfersFilters,
     type TransfersOrdering,
+    type TransfersRequest,
     type TransfersRequestStatus,
     type TransferType,
 } from '@/modules/Transfers/types'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { type BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
-import { error } from '@/utils'
+import { error, isEverscaleAddressValid, isEvmAddressValid } from '@/utils'
 import { Select } from '@/components/common/Select'
 import { Checkbox } from '@/components/common/Checkbox'
 
@@ -55,7 +57,7 @@ function TransfersListInner(): JSX.Element {
     const [createdAtGe] = useDateParam('createdge')
     const [createdAtLe] = useDateParam('createdle')
 
-    const [tonTokenAddress] = useTextParam('token')
+    const [tokenAddress] = useTextParam('token')
     const [status] = useDictParam<TransfersRequestStatus>('status', ['confirmed', 'pending', 'rejected'])
     const [transferType] = useDictParam<TransferType>('type', ['Credit', 'Default', 'Transit'])
 
@@ -63,16 +65,13 @@ function TransfersListInner(): JSX.Element {
     const [toId] = useTextParam('to')
 
     const tokens = React.useMemo(() => (
-        networks
-            .filter(item => item.type === 'evm')
-            .flatMap(network => bridgeAssets.filterTokensByChain(network.chainId))
-            .reduce<BridgeAsset[]>((acc, token) => {
-                if (acc.findIndex(({ root }) => root === token.root) > -1) {
-                    return acc
-                }
-                acc.push(token)
+        bridgeAssets.tokens.reduce<BridgeAsset[]>((acc, token) => {
+            if (acc.findIndex(({ root, symbol }) => symbol === token.symbol || root === token.root) > -1) {
                 return acc
-            }, [])
+            }
+            acc.push(token)
+            return acc
+        }, [])
     ), [bridgeAssets.tokens])
 
     let titleId = 'TRANSFERS_ALL_TITLE'
@@ -84,51 +83,9 @@ function TransfersListInner(): JSX.Element {
         titleId = 'TRANSFERS_USER_TITLE'
     }
 
-    const validTypes = (() => {
-        const from = networks.find(item => item.id === fromId)
-        const to = networks.find(item => item.id === toId)
-
-        if (from && to && from.type === 'evm' && to.type === 'evm') {
-            return ['Transit']
-        }
-        if (from && to && from.type === 'evm' && to.type === 'tvm') {
-            return ['Default', 'Credit']
-        }
-        if (from && to && from.type === 'tvm' && to.type === 'evm') {
-            return ['Default']
-        }
-        if (from && from.type === 'evm') {
-            return ['Default', 'Credit', 'Transit']
-        }
-        if (to && to.type === 'evm') {
-            return ['Default', 'Transit']
-        }
-        if (from && from.type === 'tvm') {
-            return ['Default']
-        }
-        if (to && to.type === 'tvm') {
-            return ['Credit', 'Default']
-        }
-        return ['Default', 'Credit', 'Transit'] as TransferType[]
-    })()
-
-    const mapTransferTypeToFilter = (): TransferKindFilter[] => {
-        switch (transferType) {
-            case 'Credit':
-                return ['creditethtoton']
-            case 'Transit':
-                return ['ethtoeth']
-            case 'Default':
-                return ['tontoeth', 'ethtoton']
-            default:
-                return []
-        }
-    }
-
     const mapExtraFilters = () => {
         const from = networks.find(item => item.id === fromId)
         const to = networks.find(item => item.id === toId)
-        const selectedKinds = mapTransferTypeToFilter()
 
         let ethTonChainId,
             tonEthChainId,
@@ -140,41 +97,39 @@ function TransfersListInner(): JSX.Element {
             transferKinds = ['ethtoeth']
         }
         else if (from && to && from.type === 'evm' && to.type === 'tvm') {
-            const validKinds = ['ethtoton', 'creditethtoton'] as TransferKindFilter[]
-            const selected = selectedKinds.filter(item => validKinds.includes(item))
+            const validKinds: TransferKindFilter[] = ['ethtoton', 'alienethtoton', 'nativeethtoton']
 
             ethTonChainId = parseInt(from.chainId, 10)
-            transferKinds = selected.length ? selected : validKinds
+            transferKinds = validKinds
         }
         else if (from && to && from.type === 'tvm' && to.type === 'evm') {
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = ['tontoeth']
+            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
         }
         else if (from && from.type === 'evm') {
-            const validKinds = ['ethtoton', 'creditethtoton', 'ethtoeth'] as TransferKindFilter[]
-            const selected = selectedKinds.filter(item => validKinds.includes(item))
-
+            const validKinds: TransferKindFilter[] = ['ethtoton', 'alienethtoton', 'nativeethtoton']
+            if (to && to.type === 'evm') {
+                validKinds.push('ethtoeth')
+            }
             ethTonChainId = parseInt(from.chainId, 10)
-            transferKinds = selected.length ? selected : []
+            transferKinds = validKinds
         }
         else if (to && to.type === 'evm') {
-            const validKinds = ['tontoeth', 'ethtoeth'] as TransferKindFilter[]
-            const selected = selectedKinds.filter(item => validKinds.includes(item))
-
+            const validKinds: TransferKindFilter[] = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            if (from && from.type === 'evm') {
+                validKinds.push('ethtoeth')
+            }
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = selected.length ? selected : []
+            transferKinds = validKinds
         }
         else if (from && from.type === 'tvm') {
-            transferKinds = ['tontoeth']
+            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
         }
         else if (to && to.type === 'tvm') {
-            const validKinds = ['creditethtoton', 'ethtoton'] as TransferKindFilter[]
-            const selected = selectedKinds.filter(item => validKinds.includes(item))
-
-            transferKinds = selected.length ? selected : validKinds
+            transferKinds = ['ethtoton', 'alienethtoton', 'nativeethtoton']
         }
         else {
-            transferKinds = selectedKinds
+            transferKinds = []
         }
 
         return { ethTonChainId, tonEthChainId, transferKinds }
@@ -182,17 +137,23 @@ function TransfersListInner(): JSX.Element {
 
     const fetchAll = React.useCallback(async () => {
         try {
-            await transfers.fetch({
-                status,
+            const params: TransfersRequest = {
                 createdAtGe,
                 createdAtLe,
                 userAddress,
-                tonTokenAddress,
                 limit: pagination.limit,
                 offset: pagination.offset,
                 ordering: tableOrder.order,
+                status,
                 ...mapExtraFilters(),
-            })
+            }
+            if (isEvmAddressValid(tokenAddress)) {
+                params.ethTokenAddress = tokenAddress?.toLowerCase()
+            }
+            else if (isEverscaleAddressValid(tokenAddress)) {
+                params.tonTokenAddress = tokenAddress?.toLowerCase()
+            }
+            await transfers.fetch(params)
         }
         catch (e) {
             error(e)
@@ -202,7 +163,7 @@ function TransfersListInner(): JSX.Element {
         createdAtGe,
         createdAtLe,
         userAddress,
-        tonTokenAddress,
+        tokenAddress,
         pagination,
     ])
 
@@ -229,7 +190,7 @@ function TransfersListInner(): JSX.Element {
             transferType,
             createdAtGe,
             createdAtLe,
-            tonTokenAddress,
+            tonTokenAddress: tokenAddress,
             userAddress: userAddress === tonWallet.address ? undefined : tonWallet.address,
         })
     }
@@ -245,7 +206,7 @@ function TransfersListInner(): JSX.Element {
         toId,
         createdAtGe,
         createdAtLe,
-        tonTokenAddress,
+        tokenAddress,
         userAddress,
         pagination.limit,
         pagination.offset,
@@ -280,7 +241,7 @@ function TransfersListInner(): JSX.Element {
                             transferType,
                             createdAtGe,
                             createdAtLe,
-                            tonTokenAddress,
+                            tonTokenAddress: tokenAddress,
                             userAddress,
                         }}
                         onChange={changeFilters}
@@ -323,9 +284,25 @@ function TransfersListInner(): JSX.Element {
                                         allowClear
                                         value={filters.fromId}
                                         onChange={changeFilter('fromId')}
-                                        options={networks.map(item => ({
+                                        options={networks.filter(item => item.type !== 'solana').map(item => ({
                                             value: item.id,
-                                            label: item.label,
+                                            label: (
+                                                <div className="network-select-label">
+                                                    <div className="network-select-label-inner">
+                                                        <div>
+                                                            <Icon icon={`${item.type.toLowerCase()}${item.chainId}BlockchainIcon`} />
+                                                        </div>
+                                                        <div>
+                                                            {item.name}
+                                                        </div>
+                                                    </div>
+                                                    {item.badge !== undefined && (
+                                                        <div className="network-select-label-badge">
+                                                            {item.badge}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ),
                                         }))}
                                         placeholder={intl.formatMessage({
                                             id: 'FILTERS_BC',
@@ -342,9 +319,25 @@ function TransfersListInner(): JSX.Element {
                                         allowClear
                                         value={filters.toId}
                                         onChange={changeFilter('toId')}
-                                        options={networks.map(item => ({
+                                        options={networks.filter(item => item.type !== 'solana').map(item => ({
                                             value: item.id,
-                                            label: item.label,
+                                            label: (
+                                                <div className="network-select-label">
+                                                    <div className="network-select-label-inner">
+                                                        <div>
+                                                            <Icon icon={`${item.type.toLowerCase()}${item.chainId}BlockchainIcon`} />
+                                                        </div>
+                                                        <div>
+                                                            {item.name}
+                                                        </div>
+                                                    </div>
+                                                    {item.badge !== undefined && (
+                                                        <div className="network-select-label-badge">
+                                                            {item.badge}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ),
                                         }))}
                                         placeholder={intl.formatMessage({
                                             id: 'FILTERS_BC',
@@ -388,35 +381,6 @@ function TransfersListInner(): JSX.Element {
                                             name: intl.formatMessage({
                                                 id: 'TRANSFERS_STATUS_REJECTED',
                                             }),
-                                        }]}
-                                    />
-                                </FilterField>
-                                <FilterField
-                                    title={intl.formatMessage({
-                                        id: 'TRANSFERS_TYPE',
-                                    })}
-                                >
-                                    <RadioFilter<TransferType>
-                                        value={filters.transferType}
-                                        onChange={changeFilter('transferType')}
-                                        labels={[{
-                                            id: 'Default',
-                                            name: intl.formatMessage({
-                                                id: 'TRANSFERS_TYPE_DEFAULT',
-                                            }),
-                                            disabled: !validTypes.includes('Default'),
-                                        }, {
-                                            id: 'Credit',
-                                            name: intl.formatMessage({
-                                                id: 'TRANSFERS_TYPE_CREDIT',
-                                            }),
-                                            disabled: !validTypes.includes('Credit'),
-                                        }, {
-                                            id: 'Transit',
-                                            name: intl.formatMessage({
-                                                id: 'TRANSFERS_TYPE_TRANSIT',
-                                            }),
-                                            disabled: !validTypes.includes('Transit'),
                                         }]}
                                     />
                                 </FilterField>

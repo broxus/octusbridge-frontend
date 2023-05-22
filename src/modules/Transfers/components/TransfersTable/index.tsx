@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 
 import { Align, Table } from '@/components/common/Table'
-import { Transfer, TransfersOrdering } from '@/modules/Transfers/types'
+import { type Transfer, type TransfersOrdering } from '@/modules/Transfers/types'
 import { Item } from '@/modules/Transfers/components/TransfersTable/Item'
 
 
@@ -33,10 +33,6 @@ export function TransfersTableInner({
             cols={[{
                 name: intl.formatMessage({
                     id: 'TRANSFERS_AMOUNT',
-                }),
-            }, {
-                name: intl.formatMessage({
-                    id: 'TRANSFERS_TYPE',
                 }),
             }, {
                 name: intl.formatMessage({

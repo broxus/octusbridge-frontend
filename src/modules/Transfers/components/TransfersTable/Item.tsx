@@ -8,8 +8,8 @@ import { Amount } from '@/modules/Transfers/components/Amount'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { From } from '@/modules/Transfers/components/TransfersTable/From'
 import { To } from '@/modules/Transfers/components/TransfersTable/To'
-import { getTransferLink, getTypeIntlId } from '@/modules/Transfers/utils'
-import { Transfer } from '@/modules/Transfers/types'
+import { getTransferLink } from '@/modules/Transfers/utils'
+import { type Transfer } from '@/modules/Transfers/types'
 import { dateFormat } from '@/utils'
 
 import './index.scss'
@@ -28,7 +28,6 @@ export function ItemInner({
     })
 
     const link = getTransferLink(transfer)
-    const typeIntlId = getTypeIntlId(transfer.transferKind)
 
     return (
         <Row>
@@ -46,11 +45,6 @@ export function ItemInner({
                         </div>
                     )}
                 </div>
-            </Cell>
-            <Cell>
-                {typeIntlId
-                    ? intl.formatMessage({ id: typeIntlId })
-                    : noValue}
             </Cell>
             <Cell>
                 <From transfer={transfer} />
