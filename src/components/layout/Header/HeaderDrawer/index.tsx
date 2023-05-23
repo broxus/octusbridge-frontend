@@ -1,23 +1,20 @@
 import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
-import { useIntl } from 'react-intl'
 
 import { Icon } from '@/components/common/Icon'
 import { Component } from '@/components/common/Component'
+import { Drawer, type DrawerRef } from '@/components/common/Drawer'
 import { Logo } from '@/components/layout/Logo'
 import { DeviceNav } from '@/components/layout/DeviceNav'
-import { Drawer, DrawerRef } from '@/components/common/Drawer'
+import { LangSwitcher } from '@/components/layout/LangSwitcher'
+import { Wallets } from '@/components/layout/Wallets'
 
 import './index.scss'
-import { Wallets } from '@/components/layout/Wallets'
-import { LangSwitcher } from '@/components/layout/LangSwitcher'
 
 export function HeaderDrawer(): JSX.Element {
-    const intl = useIntl()
-
     const drawer = React.useRef<DrawerRef | null>(null)
 
-    const collapse = () => {
+    const collapse: VoidFunction = () => {
         drawer.current?.collapse()
     }
 

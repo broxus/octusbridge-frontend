@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { Contract } from 'web3-eth-contract'
+import { type Contract } from 'web3-eth-contract'
 
 import { EthAbi } from './abi'
 

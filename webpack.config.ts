@@ -126,11 +126,7 @@ export default (_: any, options: any): WebpackConfig => {
                 patterns: [
                     {
                         context: 'public',
-                        from: 'favicon.ico',
-                    },
-                    {
-                        context: 'public',
-                        from: 'favicon.svg',
+                        from: 'favicon.{ico,svg}',
                     },
                     {
                         context: 'public',
@@ -141,6 +137,11 @@ export default (_: any, options: any): WebpackConfig => {
                         context: 'public',
                         from: 'assets/currencies.json',
                         to: 'assets/currencies.json'
+                    },
+                    {
+                        context: 'public',
+                        from: 'assets/icons',
+                        to: 'assets/icons'
                     },
                 ],
             }),

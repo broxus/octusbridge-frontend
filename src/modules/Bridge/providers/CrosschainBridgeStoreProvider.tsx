@@ -4,12 +4,11 @@ import { useHistory } from 'react-router-dom'
 
 import { useSummary } from '@/modules/Bridge/providers/BridgeTransferSummaryProvider'
 import { CrosschainBridge } from '@/modules/Bridge/stores'
-import { transferStatusStorageKey } from '@/modules/Bridge/utils'
-import { BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
-import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
-import { EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
-import { SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
-import { getAssociatedNetwork, storage } from '@/utils'
+import { type BridgeAssetsService, useBridgeAssets } from '@/stores/BridgeAssetsService'
+import { type EverWalletService, useEverWallet } from '@/stores/EverWalletService'
+import { type EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
+import { type SolanaWalletService, useSolanaWallet } from '@/stores/SolanaWalletService'
+import { getAssociatedNetwork } from '@/utils'
 
 export const CrosschainBridgeStoreContext = React.createContext<CrosschainBridge>(new CrosschainBridge(
     useEvmWallet(),
@@ -98,15 +97,6 @@ export function CrosschainBridgeStoreProvider({ children, ...props }: Props): JS
 
             const leftNetwork = `${leftNetworkType}-${bridge.leftNetwork.chainId}`
             const rightNetwork = `${rightNetworkType}-${bridge.rightNetwork?.chainId}`
-
-            const storageKey = transferStatusStorageKey(
-                bridge.leftNetwork.type,
-                bridge.leftNetwork.chainId,
-                bridge.rightNetwork.type,
-                bridge.rightNetwork.chainId,
-                value,
-            )
-            storage.set(storageKey, '1')
 
             bridge.dispose()
             history.push(`/transfer/${leftNetwork}/${rightNetwork}/${value}`)

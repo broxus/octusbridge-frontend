@@ -19,7 +19,7 @@ export function AmountFieldset(): JSX.Element {
         bridge.setData('amount', value)
     }
 
-    const getMaxValue = () => {
+    const getMaxValue = (): string => {
         if (bridge.isFromEverscale && bridge.isNativeEverscaleCurrency) {
             const value = new BigNumber(bridge.token?.balance || 0)
                 .plus(everWallet.balance || 0)

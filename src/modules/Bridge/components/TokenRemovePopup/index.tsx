@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { BridgeAsset } from '@/stores/BridgeAssetsService'
+import { type BridgeAsset } from '@/stores/BridgeAssetsService'
 
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 }
 
 
-export function TokenImportPopup({ token, ocConfirm, onClose }: Props): JSX.Element {
+export function TokenRemovePopup({ token, ocConfirm, onClose }: Props): JSX.Element {
     const intl = useIntl()
 
     return ReactDOM.createPortal(
@@ -31,7 +31,7 @@ export function TokenImportPopup({ token, ocConfirm, onClose }: Props): JSX.Elem
                 </button>
                 <h2 className="popup-title">
                     {intl.formatMessage({
-                        id: 'TOKENS_POPUP_IMPORT_TOKEN_TITLE',
+                        id: 'TOKENS_POPUP_REMOVE_TOKEN_TITLE',
                     })}
                 </h2>
 
@@ -54,7 +54,7 @@ export function TokenImportPopup({ token, ocConfirm, onClose }: Props): JSX.Elem
                     className="popup-txt"
                     dangerouslySetInnerHTML={{
                         __html: intl.formatMessage({
-                            id: 'TOKENS_POPUP_IMPORT_TOKEN_WARNING',
+                            id: 'TOKENS_POPUP_REMOVE_TOKEN_WARNING',
                         }),
                     }}
                 />
@@ -66,7 +66,7 @@ export function TokenImportPopup({ token, ocConfirm, onClose }: Props): JSX.Elem
                     onClick={ocConfirm}
                 >
                     {intl.formatMessage({
-                        id: 'TOKENS_POPUP_CONFIRM_BTN_TEXT',
+                        id: 'TOKENS_POPUP_CONFIRM_REMOVE_BTN_TEXT',
                     })}
                 </Button>
             </div>

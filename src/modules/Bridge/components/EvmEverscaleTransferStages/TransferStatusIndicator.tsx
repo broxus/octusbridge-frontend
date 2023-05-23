@@ -25,12 +25,13 @@ export const TransferStatusIndicator = observer(() => {
     const isRejected = status === 'rejected'
     const isPending = status === 'pending'
     const { confirmedBlocksCount = 0, eventBlocksToConfirm = 0 } = { ...transfer.transferState }
+    const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
     const waitingWallet = (
         !evmWallet.isReady
         && !isConfirmed
         && !isPending
+        && !isTransferPage
     )
-    const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
     const wrongNetwork = (
         evmWallet.isReady
         && leftNetwork !== undefined
@@ -38,6 +39,10 @@ export const TransferStatusIndicator = observer(() => {
         && !isConfirmed
         && !isPending
     )
+
+    const onReject: VoidFunction = () => {
+        setTransferStatus('disabled')
+    }
 
     const onTransfer = async (): Promise<void> => {
         if (isTransferPage || transferStatus === 'pending') {
@@ -47,19 +52,13 @@ export const TransferStatusIndicator = observer(() => {
         try {
             setTransferStatus('pending')
             if (bridge.isNativeEvmCurrency) {
-                await bridge.depositNative(() => {
-                    setTransferStatus('disabled')
-                })
+                await bridge.depositEvmNativeCurrency(onReject)
             }
             else if (bridge.isSwapEnabled) {
-                await bridge.depositWithMultiSwap(() => {
-                    setTransferStatus('disabled')
-                })
+                await bridge.depositWithCredit(onReject)
             }
             else {
-                await bridge.depositAlienMultiToken(() => {
-                    setTransferStatus('disabled')
-                })
+                await bridge.depositToken(onReject)
             }
         }
         catch (e) {

@@ -28,7 +28,7 @@ export function Debug(): JSX.Element {
                     const isFromEverscale = summary.isTransferPage ? summary.isFromEverscale : bridge.isFromEverscale
                     const isFromEvm = summary.isTransferPage ? summary.isFromEvm : bridge.isFromEvm
                     return (
-                        <div className="card card--ghost card--flat margin-top">
+                        <div className="card card--ghost card--small card--flat margin-top">
                             <h3 className="margin-bottom">Pipeline debug</h3>
                             <ul className="list ">
                                 {Object.keys({ ...pipeline?.toJSON() }).sort().map(key => {
@@ -85,6 +85,15 @@ export function Debug(): JSX.Element {
                                                         )
                                                     }
 
+                                                    case 'everscaleTokenBalance':
+                                                        return (
+                                                            <code>
+                                                                {formattedTokenAmount(
+                                                                    value?.toString(),
+                                                                    pipeline?.everscaleTokenDecimals,
+                                                                )}
+                                                            </code>
+                                                        )
                                                     case 'evmTokenBalance':
                                                         return (
                                                             <code>
@@ -148,7 +157,7 @@ export function Debug(): JSX.Element {
                     const isFromEverscale = summary.isTransferPage ? summary.isFromEverscale : bridge.isFromEverscale
                     const isFromEvm = summary.isTransferPage ? summary.isFromEvm : bridge.isFromEvm
                     return (
-                        <div className="card card--ghost card--flat margin-top">
+                        <div className="card card--ghost card--small card--flat margin-top">
                             <h3 className="margin-bottom">Opposite pipeline debug</h3>
                             <ul className="list ">
                                 {Object.keys({ ...pipeline?.toJSON() }).sort().map(key => {

@@ -7,7 +7,7 @@ import {
     AlienTokenListURI,
     BridgeAssetsURI,
     CurrenciesListURI,
-    TokenListURI,
+    TokenListURI, WEVERRootAddress,
 } from '@/config'
 import {
     alienProxyContract,
@@ -558,6 +558,17 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         }
     }
 
+    public remove(token: BridgeAsset): void {
+        if (this.has(token.get('key'))) {
+            this.setData(
+                'tokens',
+                this.tokens.filter(
+                    item => item.get('key').toLowerCase() !== token.get('key')?.toLowerCase(),
+                ),
+            )
+        }
+    }
+
     /**
      * Returns token pipeline by the given token `root` address, `from` and `to` network
      * (`<networkType>-<chainId>`) keys, and optionally `depositType` (Default: default)
@@ -565,7 +576,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
      * @param {string} from
      * @param {string} to
      */
-    public async pipeline(
+    public async _pipeline(
         root: string,
         from: string,
         to: string,
@@ -594,7 +605,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         }
 
         let network: NetworkShape | undefined
-        const pipeline = await this.resolveMultiPipeline(root, from, to)
+        const pipeline = await this._resolveMultiPipeline(root, from, to)
 
         if (isFromEverscaleToEvm) {
             network = findNetwork(toChainId, 'evm')
@@ -670,32 +681,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                     .value0
                     .everscaleConfiguration
         }
-        // else if (pipeline?.tokenBase === 'tvm') {
-        //     pipeline.everscaleConfiguration = (await everscaleTokenTransferProxyContract(pipeline.proxyAddress)
-        //         .methods.getDetails({ answerId: 0 })
-        //         .call())
-        //         ._config
-        //         .tonConfiguration
-        // }
-        // else if (pipeline?.tokenBase === 'evm') {
-        //     pipeline.everscaleConfiguration = (await ethereumTokenTransferProxyContract(pipeline.proxyAddress)
-        //         .methods.getDetails({ answerId: 0 })
-        //         .call())
-        //         .value0
-        //         .tonConfiguration
-        // }
-        // else if (pipeline?.tokenBase === 'solana') {
-        //     const { value0 } = await solanaTokenTransferProxyContract(pipeline.proxyAddress)
-        //         .methods.getDetails({ answerId: 0 })
-        //         .call()
-        //
-        //     if (isFromSolanaToEverscale) {
-        //         pipeline.everscaleConfiguration = value0.solanaEverscaleConfiguration
-        //     }
-        //     else if (isFromEverscaleToSolana) {
-        //         pipeline.everscaleConfiguration = value0.everscaleSolanaConfiguration
-        //     }
-        // }
 
         if (network?.rpcUrl !== undefined && pipeline?.solanaTokenAddress !== undefined) {
             try {
@@ -790,7 +775,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         return pipeline
     }
 
-    protected async resolveMultiPipeline(
+    protected async _resolveMultiPipeline(
         root: string,
         from: string,
         to: string,
@@ -884,7 +869,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                             ...pipeline,
                             ...merge,
                             chainId: assetVault.chainId,
-                            depositType: assetVault.depositType,
                             ethereumConfiguration: assetVault.ethereumConfiguration
                                 ? new Address(assetVault.ethereumConfiguration.toLowerCase())
                                 : undefined,
@@ -920,7 +904,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                         pipeline = {
                             ...pipeline,
                             chainId: assetVault.chainId,
-                            depositType: assetVault.depositType,
                             ethereumConfiguration: assetVault.ethereumConfiguration
                                 ? new Address(assetVault.ethereumConfiguration.toLowerCase())
                                 : undefined,
@@ -972,7 +955,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                 pipeline = {
                     ...pipeline,
                     chainId: assetVault.chainId,
-                    depositType: assetVault.depositType,
                     ethereumConfiguration: assetVault.ethereumConfiguration
                         ? new Address(assetVault.ethereumConfiguration.toLowerCase())
                         : undefined,
@@ -997,7 +979,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                             pipeline = {
                                 ...pipeline,
                                 chainId: oppositeVault.chainId,
-                                depositType: oppositeVault.depositType,
                                 ethereumConfiguration: oppositeVault.ethereumConfiguration
                                     ? new Address(oppositeVault.ethereumConfiguration.toLowerCase())
                                     : undefined,
@@ -1093,6 +1074,463 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         return pipeline
     }
 
+    public async pipeline(
+        root: string,
+        from: string,
+        to: string,
+    ): Promise<PipelineData | undefined> {
+        const [sourceType] = from.split('-')
+        const [targetType] = to.split('-')
+
+        if (sourceType === 'tvm' && targetType === 'evm') {
+            return this.resolveTvmEvmPipeline(root, from, to)
+        }
+
+        if (sourceType === 'evm' && targetType === 'tvm') {
+            return this.resolveEvmTvmPipeline(root, from, to)
+        }
+
+        throw new Error('Pipeline cannot be resolved')
+    }
+
+    protected async resolveTvmEvmPipeline(
+        root: string,
+        from: string,
+        to: string,
+    ): Promise<PipelineData | undefined> {
+        const [sourceType, sourceId] = from.split('-')
+        const [targetType, targetId] = to.split('-')
+
+        const targetNetwork = findNetwork(targetId, 'evm')
+
+        if (!targetNetwork) {
+            throw new Error('Cannot resolve target network config')
+        }
+
+        let pipeline: PipelineData | undefined = {
+                everscaleTokenAddress: new Address(root),
+                from,
+                to,
+            } as PipelineData,
+            alien = false,
+            merge: MergedTokenDetails | undefined
+
+        try {
+            const meta = await BridgeUtils.getAlienTokenRootMeta(root)
+
+            pipeline = {
+                ...pipeline,
+                baseChainId: meta.base_chainId,
+                evmTokenAddress: meta.base_chainId === targetId
+                    ? `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`.toLowerCase()
+                    : undefined,
+                evmTokenDecimals: meta.base_chainId === targetId ? parseInt(meta.decimals, 10) : undefined,
+                isNative: meta.base_chainId !== targetId,
+            }
+
+            alien = meta.base_chainId === targetId
+        }
+        catch (e: any) {}
+
+        if (!alien) {
+            try {
+                const asset = this.multiAssets[`${targetType}_${sourceType}`]
+                if (asset !== undefined) {
+                    merge = await BridgeUtils.getMergedTokenDetails(
+                        root,
+                        asset.proxy,
+                        targetId,
+                    )
+                    alien = merge !== undefined
+                }
+            }
+            catch (e: any) {}
+        }
+
+        if (alien) {
+            const asset = this.multiAssets[`${targetType}_${sourceType}`]
+
+            if (asset !== undefined) {
+                const assetVault = asset.vaults.find(item => item.chainId === targetId)
+
+                if (assetVault !== undefined) {
+                    pipeline = {
+                        ...pipeline,
+                        ...merge,
+                        chainId: assetVault.chainId,
+                        ethereumConfiguration: assetVault.ethereumConfiguration
+                            ? new Address(assetVault.ethereumConfiguration.toLowerCase())
+                            : undefined,
+                        isNative: false,
+                        proxyAddress: new Address(asset.proxy.toLowerCase()),
+                        tokenBase: 'evm',
+                        vaultAddress: assetVault.vault.toLowerCase(),
+                    }
+
+                    if (merge?.mergeEvmTokenAddress !== undefined) {
+                        pipeline.evmTokenAddress = merge.mergeEvmTokenAddress
+                    }
+
+                    if (merge?.canonicalTokenAddress) {
+                        pipeline.everscaleTokenAddress = merge.canonicalTokenAddress
+                    }
+                }
+            }
+        }
+        else {
+            const asset = this.multiAssets[`${sourceType}_${targetType}`]
+
+            if (asset !== undefined) {
+                const assetVault = asset.vaults.find(item => item.chainId === targetId)
+
+                if (assetVault !== undefined) {
+                    pipeline = {
+                        ...pipeline,
+                        chainId: assetVault.chainId,
+                        ethereumConfiguration: assetVault.ethereumConfiguration
+                            ? new Address(assetVault.ethereumConfiguration.toLowerCase())
+                            : undefined,
+                        isNative: true,
+                        proxyAddress: new Address(asset.proxy.toLowerCase()),
+                        tokenBase: 'tvm',
+                        vaultAddress: assetVault.vault.toString(),
+                    }
+
+                    try {
+                        pipeline.evmTokenAddress = (await BridgeUtils.getEvmMultiVaultNativeToken(
+                            pipeline.vaultAddress.toString(),
+                            root,
+                            targetNetwork.rpcUrl,
+                        )).toLowerCase()
+                    }
+                    catch (e) {}
+                }
+            }
+        }
+
+        if (this.wallets.everWallet?.account?.address !== undefined) {
+            try {
+                const token = this.get('tvm', sourceId, root.toLowerCase());
+                (token as EverscaleToken)?.setData('balance', undefined)
+                await (token as EverscaleToken)?.sync(
+                    this.wallets.everWallet.account.address,
+                    true,
+                )
+                pipeline.everscaleTokenBalance = token?.balance
+                pipeline.everscaleTokenDecimals = token?.decimals
+            }
+            catch (e) {}
+        }
+
+        if (pipeline.evmTokenAddress !== undefined) {
+            const meta = await BridgeUtils.getEvmMultiVaultTokenMeta(
+                pipeline.vaultAddress.toString(),
+                pipeline.evmTokenAddress,
+                targetNetwork.rpcUrl,
+            )
+
+            if (meta.custom !== '0x0000000000000000000000000000000000000000') {
+                pipeline.evmTokenAddress = meta.custom
+            }
+
+            pipeline.depositFee = meta.depositFee
+            pipeline.isBlacklisted = meta.blacklisted
+            pipeline.withdrawFee = meta.withdrawFee
+
+            if (!isGoodBignumber(meta.activation)) {
+                if (pipeline.tokenBase === 'evm') {
+                    try {
+                        const fees = await BridgeUtils.getEvmMultiVaultAlienFees(
+                            pipeline.vaultAddress.toString(),
+                            targetNetwork.rpcUrl,
+                        )
+                        pipeline.depositFee = fees.depositFee
+                        pipeline.withdrawFee = fees.withdrawFee
+                    }
+                    catch (e) {}
+                }
+                else if (pipeline.tokenBase === 'tvm') {
+                    try {
+                        const fees = await BridgeUtils.getEvmMultiVaultNativeFees(
+                            pipeline.vaultAddress.toString(),
+                            targetNetwork.rpcUrl,
+                        )
+                        pipeline.depositFee = fees.depositFee
+                        pipeline.withdrawFee = fees.withdrawFee
+                    }
+                    catch (e) {}
+                }
+            }
+
+            pipeline.everscaleConfiguration = pipeline.isNative
+                ? (await nativeProxyContract(pipeline.proxyAddress)
+                    .methods.getConfiguration({ answerId: 0 })
+                    .call()).value0.everscaleConfiguration
+                : (await alienProxyContract(pipeline.proxyAddress)
+                    .methods.getConfiguration({ answerId: 0 })
+                    .call()).value0.everscaleConfiguration
+
+            if (pipeline.evmTokenDecimals == null) {
+                try {
+                    pipeline.evmTokenDecimals = await BridgeUtils.getEvmTokenDecimals(
+                        pipeline.evmTokenAddress,
+                        targetNetwork.rpcUrl,
+                    )
+                }
+                catch (e) {
+                    pipeline.evmTokenDecimals = pipeline.everscaleTokenDecimals
+                }
+            }
+
+            try {
+                pipeline.vaultBalance = await BridgeUtils.getEvmTokenBalance(
+                    pipeline.evmTokenAddress,
+                    pipeline.vaultAddress.toString(),
+                    targetNetwork.rpcUrl,
+                )
+            }
+            catch (e) {}
+        }
+
+        return pipeline
+    }
+
+    protected async resolveEvmTvmPipeline(
+        root: string,
+        from: string,
+        to: string,
+    ): Promise<PipelineData | undefined> {
+        const [sourceType, sourceId] = from.split('-')
+        const [targetType, targetId] = to.split('-')
+
+        const sourceNetwork = findNetwork(sourceId, 'evm')
+
+        if (!sourceNetwork) {
+            throw new Error('Cannot resolve source network config')
+        }
+
+        const asset = this.multiAssets[`${sourceType}_${targetType}`]
+        const assetVault = asset.vaults.find(item => item.chainId === sourceId)
+
+        let pipeline: PipelineData = {
+            evmTokenAddress: root,
+            from,
+            proxyAddress: new Address(asset.proxy),
+            to,
+        } as PipelineData
+
+        if (assetVault !== undefined) {
+            pipeline = {
+                ...pipeline,
+                chainId: assetVault.chainId,
+                ethereumConfiguration: assetVault.ethereumConfiguration
+                    ? new Address(assetVault.ethereumConfiguration)
+                    : undefined,
+                vaultAddress: assetVault.vault,
+            }
+
+            const meta = await BridgeUtils.getEvmMultiVaultTokenMeta(
+                assetVault.vault,
+                root,
+                sourceNetwork.rpcUrl,
+            )
+
+            if (meta.isNative) {
+                const oppositeAsset = this.multiAssets[`${targetType}_${sourceType}`]
+                const oppositeVault = oppositeAsset.vaults.find(item => item.chainId === sourceId)
+
+                if (oppositeVault !== undefined) {
+                    pipeline = {
+                        ...pipeline,
+                        chainId: oppositeVault.chainId,
+                        ethereumConfiguration: oppositeVault.ethereumConfiguration
+                            ? new Address(oppositeVault.ethereumConfiguration)
+                            : undefined,
+                        isNative: true,
+                        proxyAddress: new Address(oppositeAsset.proxy),
+                        tokenBase: 'tvm',
+                        vaultAddress: oppositeVault.vault,
+                    }
+
+                    try {
+                        const everscaleTokenAddress = (await BridgeUtils.getEvmMultiVaultExternalNativeToken(
+                            assetVault.vault,
+                            root,
+                            sourceNetwork.rpcUrl,
+                        ))
+
+                        if (everscaleTokenAddress !== undefined) {
+                            pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
+                        }
+                    }
+                    catch (e) {
+                        error(e)
+                        return undefined
+                    }
+                }
+            }
+            else {
+                pipeline = {
+                    ...pipeline,
+                    isNative: false,
+                    tokenBase: 'evm',
+                }
+
+                const token = this.get('evm', pipeline.chainId, root)
+
+                const data = await Promise.all([
+                    BridgeUtils.getEvmTokenName(root, sourceNetwork.rpcUrl),
+                    BridgeUtils.getEvmTokenSymbol(root, sourceNetwork.rpcUrl),
+                    BridgeUtils.getEvmTokenDecimals(root, sourceNetwork.rpcUrl),
+                ])
+
+                if (token?.symbol !== undefined && this.isNativeCurrency(root)) {
+                    const everscaleTokenAddress = this.data.currencies.find(
+                        i => (
+                            i.chainId?.toString() === targetId?.toString()
+                            && i.symbol === token.symbol
+                            && isEverscaleAddressValid(i.address)),
+                    )?.address
+
+                    if (everscaleTokenAddress) {
+                        pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
+                    }
+                }
+                else if (data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined) {
+                    try {
+                        const everscaleTokenAddress = await BridgeUtils.getDeriveAlienTokenRoot(
+                            pipeline.proxyAddress,
+                            {
+                                chainId: sourceId,
+                                decimals: data[2].toString(),
+                                name: data[0],
+                                symbol: data[1],
+                                token: root,
+                            },
+                        )
+
+                        pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
+                    }
+                    catch (e) {
+                        error(e)
+                        return undefined
+                    }
+
+                    if (pipeline.everscaleTokenAddress !== undefined) {
+                        const canonicalTokenAddress = await BridgeUtils.getCanonicalToken(
+                            pipeline.everscaleTokenAddress,
+                            pipeline.proxyAddress,
+                        )
+                        if (canonicalTokenAddress !== undefined) {
+                            pipeline.canonicalTokenAddress = canonicalTokenAddress
+                            pipeline.everscaleTokenAddress = canonicalTokenAddress
+                        }
+                    }
+                }
+            }
+        }
+
+        let meta = await BridgeUtils.getEvmMultiVaultTokenMeta(
+            pipeline.vaultAddress.toString(),
+            root,
+            sourceNetwork.rpcUrl,
+        )
+
+        pipeline.depositFee = meta.depositFee
+        pipeline.isBlacklisted = meta.blacklisted
+        pipeline.withdrawFee = meta.withdrawFee
+
+        // dirty hack for check custom token for erver
+        if (
+            meta.custom === '0x0000000000000000000000000000000000000000'
+            && pipeline.everscaleTokenAddress
+            && pipeline.everscaleTokenAddress.toString().toLowerCase() === WEVERRootAddress.toString().toLowerCase()
+        ) {
+            pipeline.evmTokenAddress = await BridgeUtils.getEvmMultiVaultNativeToken(
+                pipeline.vaultAddress.toString(),
+                pipeline.everscaleTokenAddress,
+                sourceNetwork.rpcUrl,
+            )
+            meta = await BridgeUtils.getEvmMultiVaultTokenMeta(
+                pipeline.vaultAddress.toString(),
+                pipeline.evmTokenAddress,
+                sourceNetwork.rpcUrl,
+            )
+            pipeline.depositFee = meta.depositFee
+            pipeline.isBlacklisted = meta.blacklisted
+            pipeline.withdrawFee = meta.withdrawFee
+        }
+
+        if (!isGoodBignumber(meta.activation)) {
+            if (pipeline.tokenBase === 'evm') {
+                try {
+                    const fees = await BridgeUtils.getEvmMultiVaultAlienFees(
+                        pipeline.vaultAddress.toString(),
+                        sourceNetwork.rpcUrl,
+                    )
+                    pipeline.depositFee = fees.depositFee
+                    pipeline.withdrawFee = fees.withdrawFee
+                }
+                catch (e) {}
+            }
+            else if (pipeline.tokenBase === 'tvm') {
+                try {
+                    const fees = await BridgeUtils.getEvmMultiVaultNativeFees(
+                        pipeline.vaultAddress.toString(),
+                        sourceNetwork.rpcUrl,
+                    )
+                    pipeline.depositFee = fees.depositFee
+                    pipeline.withdrawFee = fees.withdrawFee
+                }
+                catch (e) {}
+            }
+        }
+
+        pipeline.everscaleConfiguration = pipeline.isNative
+            ? (await nativeProxyContract(pipeline.proxyAddress)
+                .methods.getConfiguration({ answerId: 0 })
+                .call()).value0.everscaleConfiguration
+            : (await alienProxyContract(pipeline.proxyAddress)
+                .methods.getConfiguration({ answerId: 0 })
+                .call()).value0.everscaleConfiguration
+
+        if (this.wallets.evmWallet?.address !== undefined) {
+            try {
+                pipeline.evmTokenBalance = await BridgeUtils.getEvmTokenBalance(
+                    root,
+                    this.wallets.evmWallet.address,
+                    sourceNetwork.rpcUrl,
+                )
+                const token = this.get('evm', sourceId, root);
+                (token as EvmToken)?.setData('balance', pipeline.evmTokenBalance)
+            }
+            catch (e) {}
+        }
+
+        if (pipeline.evmTokenDecimals == null) {
+            try {
+                pipeline.evmTokenDecimals = await BridgeUtils.getEvmTokenDecimals(
+                    root,
+                    sourceNetwork.rpcUrl,
+                )
+            }
+            catch (e) {
+                pipeline.evmTokenDecimals = pipeline.everscaleTokenDecimals
+            }
+        }
+
+        try {
+            pipeline.vaultBalance = await BridgeUtils.getEvmTokenBalance(
+                root,
+                pipeline.vaultAddress.toString(),
+                sourceNetwork.rpcUrl,
+            )
+        }
+        catch (e) {}
+
+        return pipeline
+    }
+
     public isNativeCurrency(root: string): boolean {
         return this.data.currencies.map(i => i.address.toLowerCase()).includes(root.toLowerCase())
     }
@@ -1127,6 +1565,22 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
             && this.state.isAssetsFetched
             && this.state.isAlienTokensFetched
         )
+    }
+
+    public isCustomToken(root: string): boolean {
+        const isCurrency = this.isNativeCurrency(root)
+        if (isCurrency) {
+            return false
+        }
+        if (isEverscaleAddressValid(root)) {
+            const isPrimaryToken = this.data.rawPrimaryTokens.map(i => i.address).includes(root)
+            return !isPrimaryToken
+        }
+        if (isEvmAddressValid(root)) {
+            const isAlienToken = this.data.rawAlienTokens.map(i => i.address).includes(root)
+            return !isAlienToken
+        }
+        return false
     }
 
     /**

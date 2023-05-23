@@ -1,7 +1,7 @@
 import { computed, makeObservable } from 'mobx'
 
 import { BaseStore } from '@/stores/BaseStore'
-import type { TokenRaw } from '@/types'
+import { type TokenRaw } from '@/types'
 
 
 export type EvmTokenData = TokenRaw<string> & {
