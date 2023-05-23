@@ -123,7 +123,7 @@ export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa2
 
 export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/tokenlist/common.json'
 
-export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/master/main.json'
+export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
