@@ -70,10 +70,6 @@ export abstract class BridgeUtils {
         rpcUrl: string,
     ): Promise<string> {
         const [nativeWid, nativeAddress] = tokenAddress.toString().split(':')
-        // const nativeToken = await evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
-        // const customToken = await evmMultiVaultContract(vaultAddress, rpcUrl).methods.tokens(nativeToken).call()
-        // console.log(customToken, customToken.custom, nativeToken)
-        // return customToken.custom === '0x0000000000000000000000000000000000000000' ? nativeToken : customToken.custom
         return evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
     }
 
@@ -115,19 +111,6 @@ export abstract class BridgeUtils {
             evmMultiVaultContract(vaultAddress, rpcUrl).methods.defaultNativeWithdrawFee().call(),
         ])
         return { depositFee, withdrawFee }
-    }
-
-    /**
-     * Get Everscale token address in the related Vault by the given vault address
-     * @param {string} vaultAddress
-     * @param {string} rpcUrl
-     */
-    public static async getEvmVaultTokenAddress(vaultAddress: string, rpcUrl: string): Promise<string> {
-        return evmVaultContract(vaultAddress, rpcUrl).methods.token().call()
-    }
-
-    public static async getEvmVaultAvailableDepositLimit(vaultAddress: string, rpcUrl: string): Promise<string> {
-        return evmVaultContract(vaultAddress, rpcUrl).methods.availableDepositLimit().call()
     }
 
     public static async getEvmTokenBalance(

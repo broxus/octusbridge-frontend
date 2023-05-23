@@ -40,6 +40,7 @@ import {
     isEverscaleAddressValid,
     storage,
 } from '@/utils'
+import { middlewareDecodePayload } from '@/modules/Bridge/utils'
 
 
 export type EvmEverscalePipelineData = {
@@ -63,7 +64,7 @@ export type EvmEverscalePipelineState = {
         status: EventStateStatus;
     };
     isCheckingTransaction: boolean;
-    isMultiVaultCredit?: boolean;
+    isSwapEnabled?: boolean;
     prepareState?: {
         errorMessage?: string;
         isDeployed?: boolean;
@@ -105,7 +106,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
             rightAddress: computed,
             token: computed,
             eventState: computed,
-            isMultiVaultCredit: computed,
+            isSwapEnabled: computed,
             prepareState: computed,
             transferState: computed,
             leftNetwork: computed,
@@ -323,7 +324,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     leftAddress: txReceipt.from.toLowerCase(),
                     rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
                 })
-                this.setState('isMultiVaultCredit', expectedEvers !== '0')
+                this.setState('isSwapEnabled', expectedEvers !== '0')
             }
             else if (nativeTransfer) {
                 debug('Native Transfer Logs', nativeTransfer)
@@ -420,13 +421,28 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     i => ['recipient_addr', 'addr'].includes(i.name),
                 )?.value
 
+                let rightAddress = `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase()
+
+                if (
+                    this.pipeline.everscaleTokenAddress
+                    && this.bridgeAssets.isNativeCurrency(this.pipeline.everscaleTokenAddress.toString())
+                ) {
+                    const payload = nativeTransfer.events.find(i => i.name === 'payload')?.value
+                    const hex = new BigNumber(payload).toString(16)
+                    const base64 = Buffer.from(hex, 'hex').toString('base64')
+                    try {
+                        rightAddress = (await middlewareDecodePayload(base64)).remainingTokensTo
+                    }
+                    catch (e) {}
+                }
+
                 this.setData({
                     amount: new BigNumber(depositAmount || 0).shiftedBy(-token.decimals).toFixed(),
                     expectedEvers,
                     leftAddress: txReceipt.from.toLowerCase(),
-                    rightAddress: `${targetWid}:${new BigNumber(targetAddress).toString(16).padStart(64, '0')}`.toLowerCase(),
+                    rightAddress,
                 })
-                this.setState('isMultiVaultCredit', expectedEvers !== '0')
+                this.setState('isSwapEnabled', expectedEvers !== '0')
             }
             else {
                 token = this.bridgeAssets.findTokenByVaultAndChain(
@@ -743,7 +759,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                     }
 
                     if (
-                        (isFirstIteration && !this.state.isMultiVaultCredit)
+                        (isFirstIteration && !this.state.isSwapEnabled)
                         || this.prepareState?.isOutdated) {
                         this.setState('prepareState', {
                             ...this.prepareState,
@@ -881,8 +897,8 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
         return this.data.token
     }
 
-    public get isMultiVaultCredit(): EvmEverscalePipelineState['isMultiVaultCredit'] {
-        return this.state.isMultiVaultCredit
+    public get isSwapEnabled(): EvmEverscalePipelineState['isSwapEnabled'] {
+        return this.state.isSwapEnabled
     }
 
     public get eventState(): EvmEverscalePipelineState['eventState'] {

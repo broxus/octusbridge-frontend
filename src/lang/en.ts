@@ -2,6 +2,7 @@ export default {
     OPEN_IN_EXPLORER: 'Open in EVERScan',
     OPEN_IN_ETHERSCAN: 'Open in {explorerLabel}',
     BEFORE_UNLOAD_ALERT: 'Are you sure you want to leave?',
+    REMOVE_ASSET: 'Remove asset',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
     NAV_LINK_TEXT_STAKING: 'Staking',
@@ -105,7 +106,7 @@ export default {
     CROSSCHAIN_TRANSFER_STEP_2_TITLE: 'Select token and amount',
     CROSSCHAIN_TRANSFER_ASSET_ASSET_LABEL: 'Asset',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_LABEL: 'Token',
-    CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER: 'Select a token from {blockchainName}',
+    CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER: 'Select or import a token from {blockchainName}',
     CROSSCHAIN_TRANSFER_ASSET_AMOUNT_LABEL: 'Amount',
     CROSSCHAIN_TRANSFER_ASSET_MIN_RECEIVE_TOKENS_LABEL: 'Minimum receive in <abbr>{network}</abbr>',
     CROSSCHAIN_TRANSFER_ASSET_ENTER_AMOUNT_PLACEHOLDER: 'Enter an amount',
@@ -129,11 +130,11 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TITLE: 'Token has not been deployed',
     CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_NOT_DEPLOYED_TEXT: 'The <b>{symbol}</b> token has not yet been deployed on the <b>{blockchain}</b> blockchain. To continue, you should deploy the token root contract.',
 
-    CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing EVERs to pay gas fees?',
+    CROSSCHAIN_TRANSFER_SWAP_LABEL: 'Missing {symbol}s to pay gas fees?',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} tokens',
     CROSSCHAIN_TRANSFER_MULTIVAULT_SWAP_OPTION_LABEL: 'Pay gas fees in {symbol} coins',
     CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE: 'We recommend using the auto exchange if your wallet balance is insufficient to pay gas fees for the transaction.',
-    CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into {symbol}, pay for your transfer and send the change to the target address.',
+    CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE: 'We will exchange part of your source assets into <b>{symbol}</b>, pay for your transfer and send the change to the target address.',
     CROSSCHAIN_TRANSFER_SWAP_MINIMUM_RECEIVED_HINT: 'Minimum receive: {value} {symbol}',
     CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TITLE: 'Your {symbol} Wallet address is not deployed',
     CROSSCHAIN_TRANSFER_SWAP_WALLET_NOT_DEPLOYED_ALERT_TEXT: '<p>To perform the cross-chain transfer, you need to pay blockchain fees in {symbol}.</p><p>Your balance is sufficient, but cannot be used until the wallet is deployed. Would you please go to EVER Wallet and click the «Deploy» button to proceed?</p><p>If you don’t want to deploy your wallet, you can still pay the gas by converting part of your tokens into EVERs with the form below.</p>',
@@ -873,6 +874,10 @@ export default {
     TOKENS_POPUP_CONFIRM_BTN_TEXT: 'Import',
     TOKENS_POPUP_IMPORT_TOKEN_TITLE: 'Import token',
     TOKENS_POPUP_IMPORT_TOKEN_WARNING: 'This token doesn’t appear on the active token list(s). Make sure this is the token that you want to trade.',
+
+    TOKENS_POPUP_CONFIRM_REMOVE_BTN_TEXT: 'Confirm',
+    TOKENS_POPUP_REMOVE_TOKEN_TITLE: 'Remove token',
+    TOKENS_POPUP_REMOVE_TOKEN_WARNING: 'Are you sure you want to remove the imported token?',
 
     DATE_INPUT_PLACEHOLDER: 'YYYY.MM.DD',
 

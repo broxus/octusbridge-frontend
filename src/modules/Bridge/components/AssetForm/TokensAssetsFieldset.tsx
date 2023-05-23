@@ -2,26 +2,28 @@ import * as React from 'react'
 import BigNumber from 'bignumber.js'
 import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
+import { Tooltip } from 'react-tooltip'
 
 import { Alert } from '@/components/common/Alert'
 import { Button } from '@/components/common/Button'
+import { Icon } from '@/components/common/Icon'
 import { type BaseSelectRef, Select } from '@/components/common/Select'
 import { TokenIcon } from '@/components/common/TokenIcon'
-import { TokenWallet } from '@/misc'
+import { BridgeUtils, TokenWallet } from '@/misc'
+import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
+import { EverscaleToken, EvmToken, type EvmTokenData } from '@/models'
 import { TokenImportPopup } from '@/modules/Bridge/components/TokenImportPopup'
+import { TokenRemovePopup } from '@/modules/Bridge/components/TokenRemovePopup'
 import { useBridge } from '@/modules/Bridge/providers'
+import { type BridgeAsset } from '@/stores/BridgeAssetsService'
 import {
     error,
     findNetwork,
     isEverscaleAddressValid,
     isEvmAddressValid,
     sliceAddress,
-    storage,
+    storage, uniqueId,
 } from '@/utils'
-import { EverscaleToken, EvmToken, type EvmTokenData } from '@/models'
-import { type BridgeAsset } from '@/stores/BridgeAssetsService'
-import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
-import { BridgeUtils } from '@/misc/BridgeUtils'
 
 
 export function TokensAssetsFieldset(): JSX.Element {
@@ -32,9 +34,21 @@ export function TokensAssetsFieldset(): JSX.Element {
     const selectRef = React.useRef<BaseSelectRef>(null)
     const [token, setToken] = React.useState<BridgeAsset>()
     const [isImporting, setImporting] = React.useState(false)
+    const [removingToken, setRemovingToken] = React.useState<BridgeAsset>()
+    const [isRemoving, setRemoving] = React.useState<boolean>()
+    const [isOpen, setOpen] = React.useState(false)
 
     const onChangeToken = async (value: string): Promise<void> => {
+        setRemoving(undefined)
         await bridge.changeToken(value)
+    }
+
+    const onBlur: VoidFunction = () => {
+        setOpen(false)
+    }
+
+    const onFocus: VoidFunction = () => {
+        setOpen(true)
     }
 
     const onClear: VoidFunction = () => {
@@ -171,6 +185,33 @@ export function TokensAssetsFieldset(): JSX.Element {
         }
     }
 
+    const onRemoveImportedToken = (asset: BridgeAsset) => (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation()
+        setRemovingToken(asset)
+        setRemoving(true)
+        setOpen(true)
+    }
+
+    const onConfirmRemoveToken: VoidFunction = () => {
+        if (removingToken) {
+            const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
+            delete importedAssets[removingToken.get('key')]
+            storage.set('imported_assets', JSON.stringify(importedAssets))
+            bridgeAssets.remove(removingToken)
+            setRemovingToken(undefined)
+            setRemoving(undefined)
+            selectRef.current?.focus()
+            setOpen(true)
+        }
+    }
+
+    const onCloseRemoveToken: VoidFunction = () => {
+        setRemovingToken(undefined)
+        setRemoving(undefined)
+        selectRef.current?.focus()
+        setOpen(true)
+    }
+
     return (
         <fieldset className="form-fieldset">
             <legend className="form-legend">
@@ -186,6 +227,7 @@ export function TokensAssetsFieldset(): JSX.Element {
                                 ref={selectRef}
                                 className="rc-select-assets rc-select--md"
                                 notFoundContent="Token not found"
+                                open={bridge.token ? undefined : isOpen}
                                 optionFilterProp="search"
                                 options={token !== undefined ? [{
                                     label: (
@@ -208,43 +250,66 @@ export function TokensAssetsFieldset(): JSX.Element {
                                         </div>
                                     ),
                                     value: token.root,
-                                }] : bridge.tokens.map(({
-                                    icon,
-                                    name,
-                                    root,
-                                    symbol,
-                                }) => ({
-                                    label: (
-                                        <div className="token-select-label">
-                                            <TokenIcon
-                                                address={root}
-                                                size="xsmall"
-                                                uri={icon}
-                                            />
-                                            <div className="token-select-label__symbol text-truncate">
-                                                {symbol}
-                                            </div>
-                                            {bridge.leftNetwork?.tokenType !== undefined && (
-                                                <div className="token-select-label__badge">
-                                                    <span>
-                                                        {bridge.leftNetwork?.tokenType}
-                                                    </span>
+                                }] : bridge.tokens.map(asset => {
+                                    const {
+                                        icon,
+                                        name,
+                                        root,
+                                        symbol,
+                                    } = asset
+                                    const tooltipId = `remove${uniqueId()}`
+                                    return ({
+                                        label: (
+                                            <div className="token-select-label">
+                                                <div className="token-select-label-inner">
+                                                    <TokenIcon
+                                                        address={root}
+                                                        size="xsmall"
+                                                        uri={icon}
+                                                    />
+                                                    <div className="token-select-label__symbol text-truncate">
+                                                        {symbol}
+                                                    </div>
+                                                    {process.env.NODE_ENV !== 'production' && (
+                                                        <span className="text-muted">{sliceAddress(root)}</span>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ),
-                                    search: `${symbol} ${name} ${root}`,
-                                    value: root,
-                                }))}
+                                                {bridgeAssets.isCustomToken(root) && (
+                                                    <div>
+                                                        <Icon
+                                                            className="token-select-label__remove"
+                                                            icon="close"
+                                                            id={tooltipId}
+                                                            ratio={0.8}
+                                                            data-tooltip-content={intl.formatMessage(
+                                                                { id: 'REMOVE_ASSET' },
+                                                            )}
+                                                            onClick={onRemoveImportedToken(asset)}
+                                                        />
+                                                        <Tooltip
+                                                            anchorId={tooltipId}
+                                                            className="tooltip-common-small"
+                                                            place="left"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ),
+                                        search: `${symbol} ${name} ${root}`,
+                                        value: root,
+                                    })
+                                })}
                                 placeholder={intl.formatMessage({
                                     id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
-                                }, { blockchainName: bridge.leftNetwork?.name ?? '' })}
+                                }, { blockchainName: bridge.leftNetwork?.label ?? '' })}
                                 showSearch
                                 allowClear={token !== undefined}
                                 value={token?.root ?? bridge.token?.root}
                                 virtual
+                                onBlur={isRemoving ? undefined : onBlur}
                                 onChange={token === undefined ? onChangeToken : undefined}
                                 onClear={onClear}
+                                onFocus={onFocus}
                                 onSearch={onSearch}
                                 onInputKeyDown={onInputKeyDown}
                                 disabled={bridge.isFetching || bridge.evmPendingWithdrawal !== undefined}
@@ -293,6 +358,13 @@ export function TokensAssetsFieldset(): JSX.Element {
                             />
                         )}
                     </>
+                )}
+                {removingToken && isRemoving && (
+                    <TokenRemovePopup
+                        token={removingToken}
+                        onClose={onCloseRemoveToken}
+                        ocConfirm={onConfirmRemoveToken}
+                    />
                 )}
             </div>
         </fieldset>

@@ -1,6 +1,6 @@
-import { Address } from 'everscale-inpage-provider'
+import { type Address } from 'everscale-inpage-provider'
 import { computed, makeObservable } from 'mobx'
-import { PublicKey } from '@solana/web3.js'
+import { type PublicKey } from '@solana/web3.js'
 
 import { BaseStore } from '@/stores/BaseStore'
 
@@ -10,7 +10,6 @@ export type PipelineData = {
     canonicalTokenAddress?: Address;
     chainId: string;
     depositFee?: string;
-    depositType: string;
     ethereumConfiguration?: Address;
     everscaleConfiguration?: Address;
     everscaleTokenAddress?: Address;

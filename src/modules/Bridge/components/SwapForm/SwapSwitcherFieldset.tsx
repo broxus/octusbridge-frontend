@@ -114,15 +114,18 @@ export function SwapSwitcherFieldset(): JSX.Element {
 
                                 default:
                                     return (
-                                        <div className="text-sm text-muted margin-top">
-                                            {intl.formatMessage({
-                                                id: bridge.isSwapEnabled
-                                                    ? 'CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE'
-                                                    : 'CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE',
-                                            }, {
-                                                symbol: bridge.rightNetwork?.currencySymbol,
-                                            })}
-                                        </div>
+                                        <div
+                                            className="text-sm text-muted margin-top"
+                                            dangerouslySetInnerHTML={{
+                                                __html: intl.formatMessage({
+                                                    id: bridge.isSwapEnabled
+                                                        ? 'CROSSCHAIN_TRANSFER_SWAP_OPTION_ENABLED_NOTE'
+                                                        : 'CROSSCHAIN_TRANSFER_SWAP_OPTION_NOTE',
+                                                }, {
+                                                    symbol: bridge.rightNetwork?.currencySymbol,
+                                                }, { ignoreTag: true }),
+                                            }}
+                                        />
                                     )
                             }
                         }}

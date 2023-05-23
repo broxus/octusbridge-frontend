@@ -3,17 +3,12 @@
     flex-flow: column wrap;
     gap: 16px;
 
-    @media only screen and (min-width: 960px) {
-        flex-flow: row nowrap;
-        justify-content: space-between;
-    }
-
     & + & {
         margin-top: 16px;
     }
 
     &__label {
-        color: #ffffff;
+        color: #fff;
         font-size: 18px;
         font-weight: 700;
         letter-spacing: 0.06px;
@@ -100,7 +95,7 @@
 
         > li {
             align-items: center;
-            color: #ffffff;
+            color: #fff;
             display: flex;
             flex-direction: row;
             font-size: 14px;
@@ -182,17 +177,26 @@
         align-items: center;
         display: flex;
         gap: 10px;
+        justify-content: space-between;
+        width: 100%;
 
-        &__badge {
+        &-inner {
             align-items: center;
-            background: rgb(255 255 255 / 16%);
-            border-radius: 27px;
             display: flex;
-            font-size: 12px;
-            height: 20px;
-            line-height: normal;
-            padding: 0 8px;
+            gap: 10px;
         }
+
+        &__remove {
+            opacity: 0.8;
+
+            &:hover {
+                opacity: 0.9;
+            }
+        }
+    }
+
+    .rc-select-assets .rc-select-selector .token-select-label__remove {
+        display: none;
     }
 
     .rc-select-assets.rc-select-focused .rc-select-selector .token-select-label {
@@ -219,5 +223,10 @@
             top: 11px;
             width: 20px;
         }
+    }
+
+    @media only screen and (min-width: 960px) {
+        flex-flow: row nowrap;
+        justify-content: space-between;
     }
 }

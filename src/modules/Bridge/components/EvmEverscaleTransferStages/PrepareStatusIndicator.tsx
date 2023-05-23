@@ -19,20 +19,13 @@ export const PrepareStatusIndicator = observer(() => {
     const isDisabled = status === undefined || status === 'disabled'
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
-    const waitingWallet = (
-        !everWallet.isReady
-        && isTransferConfirmed
-        && !isConfirmed
-        && !isPending
-    )
+    const isOutdated = transfer.prepareState?.isOutdated
+    const waitingWallet = !everWallet.isReady && isTransferConfirmed && !isConfirmed && !isPending
 
     const onPrepare = async (): Promise<void> => {
         if (
             !isTransferPage
-            || (
-                transfer.prepareState !== undefined
-                && ['confirmed', 'pending'].includes(transfer.prepareState.status)
-            )
+            || (transfer.prepareState !== undefined && ['confirmed', 'pending'].includes(transfer.prepareState.status))
         ) {
             return
         }
@@ -42,60 +35,62 @@ export const PrepareStatusIndicator = observer(() => {
 
     return (
         <PrepareStatus
-            isDeployed={transfer.prepareState?.isDeployed}
-            isDeploying={transfer.prepareState?.isDeploying}
+            isDeployed={isTransferPage && transfer.prepareState?.isDeployed}
+            isDeploying={isTransferPage && transfer.prepareState?.isDeploying}
             isTransferPage={isTransferPage}
-            note={intl.formatMessage({
-                id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
-            }, {
-                network: bridge.rightNetwork?.label || transfer.rightNetwork?.label || '',
-            })}
+            note={intl.formatMessage(
+                {
+                    id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
+                },
+                {
+                    network: bridge.rightNetwork?.label || transfer.rightNetwork?.label || '',
+                },
+            )}
             status={status}
             txHash={isConfirmed ? transfer.deriveEventAddress?.toString() : undefined}
             waitingWallet={waitingWallet}
         >
             {(() => {
-                if (everWallet.isInitializing) {
-                    return null
-                }
+                switch (true) {
+                    case everWallet.isInitializing:
+                        return null
 
-                if (waitingWallet) {
-                    return (
-                        <Button
-                            disabled={everWallet.isConnecting || everWallet.isConnected}
-                            type="primary"
-                            onClick={everWallet.connect}
-                        >
-                            {intl.formatMessage({
-                                id: 'EVER_WALLET_CONNECT_BTN_TEXT',
-                            })}
-                        </Button>
-                    )
-                }
+                    case waitingWallet:
+                        return (
+                            <Button
+                                disabled={everWallet.isConnecting || everWallet.isConnected}
+                                type="primary"
+                                onClick={everWallet.connect}
+                            >
+                                {intl.formatMessage({
+                                    id: 'EVER_WALLET_CONNECT_BTN_TEXT',
+                                })}
+                            </Button>
+                        )
 
-                if (
-                    isTransferPage && (!isTransferConfirmed
-                        || (!transfer.prepareState?.isOutdated && transfer.isMultiVaultCredit))
-                ) {
-                    return null
-                }
+                    case !isTransferPage && bridge.isSwapEnabled:
+                    case isTransferPage && (!isTransferConfirmed || (!isOutdated && transfer.isSwapEnabled)):
+                        return null
 
-                return (
-                    <Button
-                        disabled={(!isTransferPage || (
-                            !isTransferConfirmed
-                            || !isDisabled
-                            || isConfirmed
-                            || isPending
-                        ))}
-                        type="primary"
-                        onClick={isTransferPage ? onPrepare : undefined}
-                    >
-                        {intl.formatMessage({
-                            id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_BTN_TEXT',
-                        })}
-                    </Button>
-                )
+                    default:
+                        return (
+                            <Button
+                                disabled={(
+                                    !isTransferPage
+                                    || !isTransferConfirmed
+                                    || !isDisabled
+                                    || isConfirmed
+                                    || isPending
+                                )}
+                                type="primary"
+                                onClick={isTransferPage ? onPrepare : undefined}
+                            >
+                                {intl.formatMessage({
+                                    id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_BTN_TEXT',
+                                })}
+                            </Button>
+                        )
+                }
             })()}
         </PrepareStatus>
     )

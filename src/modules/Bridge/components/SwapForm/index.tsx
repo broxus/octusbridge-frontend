@@ -10,13 +10,24 @@ import { EversAmountFieldset } from '@/modules/Bridge/components/SwapForm/EversA
 export function SwapForm(): JSX.Element {
     const intl = useIntl()
     const bridge = useBridge()
+    const everWallet = bridge.useEverWallet
+    const evmWallet = bridge.useEvmWallet
+
+    let symbol = ''
+
+    if (bridge.isFromEverscale) {
+        symbol = evmWallet.coin.symbol
+    }
+    else if (bridge.isFromEvm) {
+        symbol = everWallet.coin.symbol
+    }
 
     return (
         <div className="card card--flat card--small crosschain-transfer">
             <div className="crosschain-transfer__label">
                 {intl.formatMessage({
                     id: 'CROSSCHAIN_TRANSFER_SWAP_LABEL',
-                })}
+                }, { symbol })}
             </div>
             <form className="form crosschain-transfer__form">
                 <SwapSwitcherFieldset />

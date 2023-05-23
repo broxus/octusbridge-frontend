@@ -90,12 +90,32 @@ export async function getUnwrapPayload(
     }).then(value => value.json()).then(value => value.output.unwrapAll)
 }
 
-export function transferStatusStorageKey(
-    leftNetType: string,
-    leftChainId: string | number,
-    rightNetType: string,
-    rightChainId: string | number,
-    txAddress: string,
-): string {
-    return `transfer/${leftNetType}/${leftChainId}/${rightNetType}/${rightChainId}/${txAddress}`
+type MiddlewareDecodePayloadForUnwrap = {
+    amount: number
+    decodedPayload: string | null
+    destination: string
+    payload: string
+    remainingGasTo: string
+}
+
+export type MiddlewareDecodePayloadResponse = {
+    payloadForUnwrap: MiddlewareDecodePayloadForUnwrap[]
+    remainingGasTo: string
+    remainingTokensTo: string
+    tokensDistributionType: number
+}
+
+export async function middlewareDecodePayload(
+    payload: string,
+    apiEndpoint: string = 'https://api.flatqube.io',
+): Promise<MiddlewareDecodePayloadResponse> {
+    return fetch(`${apiEndpoint}/v2/middleware/decode_payload`, {
+        body: JSON.stringify({ payload }),
+        mode: 'cors',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        method: 'POST',
+    }).then(value => value.json())
 }

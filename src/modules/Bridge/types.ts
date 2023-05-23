@@ -1,9 +1,9 @@
-import { DecodedAbiFunctionInputs } from 'everscale-inpage-provider'
+import { type DecodedAbiFunctionInputs } from 'everscale-inpage-provider'
 
-import { BridgeAbi } from '@/misc'
-import { Pipeline } from '@/models'
-import { BridgeAsset } from '@/stores/BridgeAssetsService'
-import { NetworkShape, NetworkType } from '@/types'
+import { type BridgeAbi } from '@/misc'
+import { type Pipeline } from '@/models'
+import { type BridgeAsset } from '@/stores/BridgeAssetsService'
+import { type NetworkShape, type NetworkType } from '@/types'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
 
@@ -46,7 +46,6 @@ export type CrosschainBridgeStoreState = {
     isPendingAllowance: boolean
     isPendingApproval: boolean
     isProcessing: boolean
-    isTokenChainSameToTargetChain: boolean
     isSwapEnabled?: boolean
     step: CrosschainBridgeStep
     evmPendingWithdrawal?: EvmPendingWithdrawal

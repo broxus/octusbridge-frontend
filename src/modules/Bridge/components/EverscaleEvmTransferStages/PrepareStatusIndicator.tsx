@@ -24,7 +24,11 @@ export const PrepareStatusIndicator = observer(() => {
     const isConfirmed = status === 'confirmed'
     const isPending = status === 'pending'
     const leftNetwork = isTransferPage ? transfer.leftNetwork : bridge.leftNetwork
-    const waitingWallet = !everWallet.isReady && !isConfirmed && !isPending
+    const waitingWallet = !everWallet.isReady && !isConfirmed && !isPending && !isTransferPage
+
+    const onReject: VoidFunction = () => {
+        setPrepareStatus('disabled')
+    }
 
     const onPrepare = async (): Promise<void> => {
         if (isTransferPage || prepareStatus === 'pending') {
@@ -33,29 +37,23 @@ export const PrepareStatusIndicator = observer(() => {
 
         try {
             setPrepareStatus('pending')
-            const reject: VoidFunction = () => {
-                setPrepareStatus('disabled')
-            }
 
-            if (bridge.pipeline?.isNative === false && bridge.isTokenChainSameToTargetChain) {
-                await bridge.burnAlienToken(reject)
-            }
-            else if (bridge.isNativeEverscaleCurrency) {
+            if (bridge.isNativeEverscaleCurrency) {
                 if (bridge.isEnoughWeverBalance) {
-                    await bridge.transferNativeMultiToken(reject)
+                    await bridge.transferTvmNativeToken(onReject)
                 }
                 else if (bridge.isEnoughEverBalance) {
-                    await bridge.wrapNative(reject)
+                    await bridge.wrapTvmNativeCurrency(onReject)
                 }
                 else if (bridge.isEnoughComboBalance) {
-                    await bridge.transferNative(reject)
+                    await bridge.transferTvmNativeCombination(onReject)
                 }
             }
-            else if (bridge.pipeline?.isNative === true) {
-                await bridge.transferNativeMultiToken(reject)
+            else if (bridge.pipeline?.isNative === false) {
+                await bridge.burnTvmAlienToken(onReject)
             }
-            else {
-                await bridge.prepareEverscaleToEvm(reject)
+            else if (bridge.pipeline?.isNative === true) {
+                await bridge.transferTvmNativeToken(onReject)
             }
         }
         catch (e) {
