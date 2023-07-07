@@ -151,6 +151,28 @@
         }
     }
 
+    &__alert {
+        align-items: center;
+        color: #e6ac00;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        a {
+            color: #e6ac00;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline !important;
+            &:hover,
+            &:focus {
+                color: #bb941c;
+                text-decoration: none !important;
+            }
+        }
+    }
+    &__alert-note {
+        margin-bottom: 8px;
+    }
+
     &-statuses-list {
         align-items: flex-start;
         display: flex;

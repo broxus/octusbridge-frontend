@@ -39,8 +39,10 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
+        badge: 'Back soon',
         chainId: '250',
         currencySymbol: 'FTM',
+        disabled: true,
         explorerBaseUrl: 'https://ftmscan.com/',
         explorerLabel: 'FTMScan',
         id: 'evm-250',

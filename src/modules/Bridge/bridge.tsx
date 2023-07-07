@@ -16,6 +16,8 @@ import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep, type EvmPendingWithdrawal } from '@/modules/Bridge/types'
 
 import './index.scss'
+import { Button } from '@/components/common/Button'
+import { storage } from '@/utils'
 
 
 type Props = {
@@ -25,6 +27,14 @@ type Props = {
 export function Bridge({ evmPendingWithdrawal }: Props): JSX.Element {
     const bridge = useBridge()
 
+    const [hasBanner, setBanner] = React.useState((storage.get('fantom_alert') ?? '1') === '1')
+
+    const closeBanner = React.useCallback<React.MouseEventHandler<HTMLButtonElement>>(e => {
+        e.preventDefault()
+        storage.set('fantom_alert', '0')
+        setBanner(false)
+    }, [hasBanner])
+
     React.useEffect(() => {
         bridge.setState('evmPendingWithdrawal', evmPendingWithdrawal)
     }, [evmPendingWithdrawal])
@@ -33,6 +43,18 @@ export function Bridge({ evmPendingWithdrawal }: Props): JSX.Element {
         <section className="section">
             <div className="section__wrapper">
                 <main className="content">
+                    {hasBanner && (
+                        <div className="crosschain-transfer__alert">
+                            <div className="crosschain-transfer__alert-note">
+                                Fantom transfers are temporarily unavailable.
+                                {' '}
+                                <a href="https://t.me/broxus/501" target="_blank" rel="noopener noreferrer">
+                                    More info here
+                                </a>
+                            </div>
+                            <Button type="tertiary" onClick={closeBanner}>Got it</Button>
+                        </div>
+                    )}
                     <hr />
                     <Observer>
                         {() => {
