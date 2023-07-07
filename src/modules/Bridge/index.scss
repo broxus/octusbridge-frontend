@@ -168,6 +168,9 @@
                 text-decoration: none !important;
             }
         }
+        .btn {
+            min-width: fit-content;
+        }
     }
     &__alert-note {
         margin-bottom: 8px;
