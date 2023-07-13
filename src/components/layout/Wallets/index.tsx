@@ -10,6 +10,7 @@ import { EverWallet, EvmWallet, SolanaWallet } from '@/modules/Accounts'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useSolanaWallet } from '@/stores/SolanaWalletService'
+import { EvmWalletPopup } from '@/modules/Accounts/components/EvmWalletTypePopup'
 import { findNetwork } from '@/utils'
 
 import './index.scss'
@@ -20,20 +21,28 @@ export function Wallets(): JSX.Element {
     const evmWallet = useEvmWallet()
     const solanaWallet = useSolanaWallet()
 
+    const [dropVisible, setDropVisible] = React.useState(false)
+
+    const hide = (): void => setDropVisible(false)
+
     return (
         <div className="wallets">
+            <EvmWalletPopup />
+
             <Observer>
                 {() => {
                     const network = findNetwork(evmWallet.chainId, 'evm')
                     return (
                         <Drop
+                            onVisibleChange={setDropVisible}
+                            visible={dropVisible}
                             overlay={(
                                 <ul className="wallets-list">
                                     <li>
                                         <EverWallet />
                                     </li>
                                     <li>
-                                        <EvmWallet />
+                                        <EvmWallet onClickConnect={hide} />
                                     </li>
                                     <li>
                                         <SolanaWallet />

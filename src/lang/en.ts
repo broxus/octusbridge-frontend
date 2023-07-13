@@ -43,6 +43,7 @@ export default {
     EVER_WALLET_CONNECT_BTN_TEXT: 'Connect EVER Wallet',
     EVM_WALLET_CONNECT_BTN_TEXT: 'Connect EVM wallet',
     EVM_WALLET_WRONG_NETWORK_NOTE: 'Wrong blockchain selected in MetaMask. Open the wallet to select {network}.',
+    EVM_WALLET_WRONG_NETWORK_NOTE_APP: 'Wrong blockchain selected in the wallet app. Open the wallet app and select {network} there.',
     EVM_WALLET_WRONG_NETWORK_BTN_TEXT: 'Change Network',
     EVM_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'EVM network',
     SOLANA_WALLET_CONNECTOR_BLOCKCHAIN_NAME: 'Solana',

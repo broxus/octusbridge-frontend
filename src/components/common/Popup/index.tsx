@@ -9,6 +9,7 @@ type Props = {
     disabled?: boolean;
     onDismiss: () => void;
     children: React.ReactNode | React.ReactNodeArray;
+    showClose?: boolean
 }
 
 export function Popup({
@@ -16,6 +17,7 @@ export function Popup({
     disabled,
     onDismiss,
     children,
+    showClose = true,
 }: Props): JSX.Element {
     return ReactDOM.createPortal(
         <div className="popup">
@@ -25,14 +27,16 @@ export function Popup({
             />
 
             <div className={`popup__wrap ${className}`}>
-                <Button
-                    type="icon"
-                    className="popup-close"
-                    onClick={onDismiss}
-                    disabled={disabled}
-                >
-                    <Icon icon="close" />
-                </Button>
+                {showClose && (
+                    <Button
+                        type="icon"
+                        className="popup-close"
+                        onClick={onDismiss}
+                        disabled={disabled}
+                    >
+                        <Icon icon="close" />
+                    </Button>
+                )}
 
                 {children}
             </div>

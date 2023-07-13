@@ -820,4 +820,6 @@ export default {
     EVENTS_DISTRIBUTION_EVENTS_CONFIRMED: 'Events confirmed',
     EVENTS_DISTRIBUTION_TOTAL_EVENTS: 'Total events',
     EVENTS_DISTRIBUTION_TABLE_NET: 'Network',
+
+    EVM_WALLET_WRONG_NETWORK_NOTE_APP: 'Wrong blockchain selected in the wallet app. Open the wallet app and select {network} there.',
 }

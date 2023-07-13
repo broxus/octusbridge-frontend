@@ -62,7 +62,7 @@ export const Drop = React.forwardRef<unknown, DropProps>((props, ref) => {
         showAction,
         transitionName = 'motion-slide-up',
         trigger = ['hover'],
-        visible,
+        // visible,
         onOverlayClick,
         onVisibleChange,
         ...restProps
@@ -71,7 +71,7 @@ export const Drop = React.forwardRef<unknown, DropProps>((props, ref) => {
     const triggerRef = React.useRef(null)
 
     const [triggerVisible, setTriggerVisible] = React.useState<boolean>()
-    const mergedVisible = 'visible' in restProps ? visible : triggerVisible
+    const mergedVisible = 'visible' in restProps ? restProps.visible : triggerVisible
 
     const onPopupVisibleChange = (value: boolean) => {
         setTriggerVisible(value)

@@ -8,6 +8,10 @@ declare module '*.svg' {
     export default content
 }
 
+interface Window {
+    ethereum: any
+}
+
 declare module 'abi-decoder' {
     import { AbiItem } from 'web3-utils'
 

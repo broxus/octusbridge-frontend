@@ -1,49 +1,39 @@
-import WalletConnectProvider from '@walletconnect/web3-provider'
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { action, computed, makeObservable } from 'mobx'
 import Web3 from 'web3'
-import Web3Modal from 'web3modal'
-import { type ICoreOptions } from 'web3modal'
 import BigNumber from 'bignumber.js'
 
 import { BaseStore } from '@/stores/BaseStore'
-import {
-    debug,
-    error,
-    findNetwork,
-    log,
-    throwException,
-} from '@/utils'
+import { debug, error, findNetwork, log, throwException } from '@/utils'
 import { type NetworkShape, type WalletNativeCoin } from '@/types'
-import { networks } from '@/config'
-
+import { EvmProvider, EvmWalletType } from '@/models/EvmProvider'
 
 type Asset = {
-    address: string; // The address of the token contract
-    decimals: number; // The number of token decimals
-    image?: string; // A string url of the token logo
-    symbol: string; // A ticker symbol or shorthand, up to 5 characters
+    address: string // The address of the token contract
+    decimals: number // The number of token decimals
+    image?: string // A string url of the token logo
+    symbol: string // A ticker symbol or shorthand, up to 5 characters
 }
 
 export type EvmWalletData = {
-    address?: string;
-    balance?: string;
-    chainId: string;
-    networks: NetworkShape[];
+    address?: string
+    balance?: string
+    chainId: string
+    networks: NetworkShape[]
 }
 
 export type EvmWalletState = {
-    isConnected: boolean;
-    isConnecting: boolean;
-    isDisconnecting: boolean;
-    isInitialized: boolean;
-    isInitializing: boolean;
+    isConnected: boolean
+    isConnecting: boolean
+    isDisconnecting: boolean
+    isInitialized: boolean
+    isInitializing: boolean
+    walletTypePopupVisible: boolean
 }
 
 export type EvmWalletServiceCtorOptions = {
-    modalOptions?: Partial<ICoreOptions>;
-    networks?: NetworkShape[];
+    networks?: NetworkShape[]
 }
-
 
 const DEFAULT_WALLET_DATA: EvmWalletData = {
     address: undefined,
@@ -58,10 +48,12 @@ const DEFAULT_WALLET_STATE: EvmWalletState = {
     isDisconnecting: false,
     isInitialized: false,
     isInitializing: false,
+    walletTypePopupVisible: false,
 }
 
-
 export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
+
+    protected evmProvider: EvmProvider
 
     constructor(
         protected readonly nativeCoin?: WalletNativeCoin,
@@ -74,16 +66,15 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             networks: options?.networks || [],
         }))
 
-        this.setState(() => (DEFAULT_WALLET_STATE))
+        this.setState(() => DEFAULT_WALLET_STATE)
 
         makeObservable<EvmWalletService>(this, {
             address: computed,
             balance: computed,
             chainId: computed,
             coin: computed,
-            connect: action.bound,
+            connectTo: action.bound,
             disconnect: action.bound,
-            hasProvider: computed,
             isConnected: computed,
             isConnecting: computed,
             isDisconnecting: computed,
@@ -93,10 +84,110 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             isReady: computed,
             network: computed,
             web3: computed,
+            connect: action.bound,
+            walletTypePopupVisible: computed,
+            hideWalletTypePopup: action.bound,
         })
 
-        this.init().catch(reason => {
-            error(reason)
+        this.onAccountsChanged = this.onAccountsChanged.bind(this)
+        this.onChainChanged = this.onChainChanged.bind(this)
+        this.onDisconnect = this.onDisconnect.bind(this)
+
+        this.evmProvider = new EvmProvider(
+            this.onAccountsChanged,
+            this.onChainChanged,
+            this.onDisconnect,
+        )
+
+        this.init().catch(error)
+    }
+
+    /**
+     * Trying to resolve EVM Wallet connection
+     * @protected
+     */
+    protected async init(): Promise<void> {
+        this.setState({
+            isConnecting: true,
+            isInitializing: true,
+        })
+
+        try {
+            await this.evmProvider.init()
+        }
+        catch (e) {
+            error(e)
+        }
+
+        try {
+            this.setState({
+                isInitialized: !!this.evmProvider.provider,
+                isInitializing: false,
+            })
+
+            await Promise.all([this.syncAccountData(), this.syncChainId()])
+            await this.syncBalance()
+            this.setState('isConnecting', false)
+        }
+        catch (e) {
+            error('Fetch account data error', e)
+            this.setState({
+                isConnected: false,
+                isConnecting: false,
+                isInitialized: false,
+                isInitializing: false,
+            })
+        }
+    }
+
+    protected async onAccountsChanged([address]: string[]): Promise<void> {
+        try {
+            if (address !== undefined) {
+                await this.syncAccountData()
+            }
+            else {
+                await this.disconnect()
+            }
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async onChainChanged(chainId: string): Promise<void> {
+        try {
+            this.setData({
+                balance: '0',
+                chainId: parseInt(chainId, 16).toString(),
+            })
+            await Promise.all([this.syncAccountData(), this.syncBalance()])
+        }
+        catch (e) {
+            error(e)
+        }
+    }
+
+    protected async onDisconnect(): Promise<void> {
+        this.setState('isConnected', false)
+        this.setData({
+            address: undefined,
+            balance: undefined,
+        })
+    }
+
+    public connect(): void {
+        if (this.isConnecting || this.isDisconnecting) {
+            return
+        }
+
+        this.setState({
+            walletTypePopupVisible: true,
+        })
+    }
+
+    public hideWalletTypePopup(): void {
+        this.setState({
+            walletTypePopupVisible: false,
         })
     }
 
@@ -104,7 +195,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * Manually connect to the wallet
      * @returns {Promise<void>}
      */
-    public async connect(): Promise<void> {
+    public async connectTo(walletType: EvmWalletType): Promise<void> {
         if (this.isConnecting || this.isDisconnecting) {
             return
         }
@@ -112,12 +203,11 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         this.setState('isConnecting', true)
 
         try {
-            this.provider = await this.modal.connect?.()
+            await this.evmProvider.connect(walletType)
 
-            this.setData('address', this.provider?.selectedAddress)
             this.setState({
-                isConnected: this.provider?.selectedAddress != null,
-                isInitialized: this.provider != null,
+                isConnected: true,
+                isInitialized: true,
                 isInitializing: false,
             })
         }
@@ -126,20 +216,17 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             this.setState({
                 isConnected: false,
                 isConnecting: false,
-                isInitialized: this.provider != null,
+                isInitialized: false,
                 isInitializing: false,
             })
         }
 
         try {
-            await Promise.all([
-                this.syncAccountData(),
-                this.syncChainId(),
-            ])
+            await Promise.all([this.syncAccountData(), this.syncChainId()])
             await this.syncBalance()
         }
         catch (e) {
-            //
+            error('EVM Wallet connect error', e)
         }
     }
 
@@ -155,18 +242,13 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         this.setState('isDisconnecting', true)
 
         try {
-            await this.provider?.disconnect?.()
-
-            this.modal.clearCachedProvider()
+            await this.evmProvider.disconnect()
 
             this.setState('isConnected', false)
             this.setData({
                 address: undefined,
                 balance: undefined,
-                // chainId: '1',
             })
-
-            this.provider = Web3.givenProvider
         }
         catch (e) {
             error('EVM Wallet disconnect error', e)
@@ -181,12 +263,12 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * @param {Asset} asset
      */
     public async addAsset(asset: Asset): Promise<void> {
-        if (!this.hasProvider) {
+        if (!this.evmProvider.provider) {
             return
         }
 
         try {
-            await this.provider.request({
+            await this.evmProvider.provider.request({
                 method: 'wallet_watchAsset',
                 params: {
                     options: {
@@ -209,7 +291,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * @param {string} chainId
      */
     public async addNetwork(chainId: string): Promise<void> {
-        if (!this.hasProvider) {
+        if (!this.evmProvider.provider) {
             return
         }
 
@@ -219,19 +301,21 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
                 throwException(`Cannot find EVM network with chainId ${chainId}.`)
             }
 
-            await this.provider.request({
+            await this.evmProvider.provider.request({
                 method: 'wallet_addEthereumChain',
-                params: [{
-                    blockExplorerUrls: [network.explorerBaseUrl],
-                    chainId: `0x${parseInt(chainId, 10).toString(16)}`,
-                    chainName: network.name,
-                    nativeCurrency: {
-                        decimals: 18,
-                        name: network.currencySymbol,
-                        symbol: network.currencySymbol,
+                params: [
+                    {
+                        blockExplorerUrls: [network.explorerBaseUrl],
+                        chainId: `0x${parseInt(chainId, 10).toString(16)}`,
+                        chainName: network.name,
+                        nativeCurrency: {
+                            decimals: 18,
+                            name: network.currencySymbol,
+                            symbol: network.currencySymbol,
+                        },
+                        rpcUrls: [network.rpcUrl],
                     },
-                    rpcUrls: [network.rpcUrl],
-                }],
+                ],
             })
         }
         catch (e) {
@@ -244,12 +328,12 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * @param {string} chainId
      */
     public async changeNetwork(chainId: string): Promise<void> {
-        if (!this.hasProvider) {
+        if (!this.evmProvider.provider) {
             return
         }
 
         try {
-            await this.provider.request({
+            this.evmProvider.provider.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
             })
@@ -259,7 +343,10 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         }
         catch (e: any) {
             // This error code indicates that the chain has not been added to MetaMask.
-            if (e.code === 4902 || (this.isWalletConnect && /wallet_addethereumchain/gi.test(e.message?.toLowerCase()))) {
+            if (
+                e.code === 4902
+                || (this.isWalletConnect && /wallet_addethereumchain/gi.test(e.message?.toLowerCase()))
+            ) {
                 await this.addNetwork(chainId)
             }
             debug('Switch network error', e)
@@ -402,7 +489,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * Returns current Web3 Instance
      */
     public get web3(): Web3 | undefined {
-        return this.provider != null ? new Web3(this.provider) : undefined
+        return this.evmProvider.provider != null ? new Web3(this.evmProvider.provider) : undefined
     }
 
     /**
@@ -410,9 +497,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * That means extension is installed and activated, else `false`
      * @returns {boolean}
      */
-    public get hasProvider(): boolean {
-        return this.provider != null
-    }
+    public hasProvider = true
 
     /**
      * Returns `true` if wallet is connected
@@ -458,14 +543,14 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
      * Returns `true` if wallet is Metamask
      */
     public get isMetaMask(): boolean {
-        return this.provider.isMetaMask
+        return this.evmProvider.walletType === EvmWalletType.MetaMask
     }
 
     /**
      * Returns `true` if wallet connected via WalletConnect
      */
     public get isWalletConnect(): boolean {
-        return this.provider instanceof WalletConnectProvider
+        return this.evmProvider.walletType === EvmWalletType.WalletConnect
     }
 
     /**
@@ -482,96 +567,11 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         )
     }
 
-    /**
-     * Trying to resolve EVM Wallet connection
-     * @protected
-     */
-    protected async init(): Promise<void> {
-        this.setState({
-            isConnecting: true,
-            isInitializing: true,
-        })
-
-        try {
-            this.provider = this.modal.cachedProvider.length > 0
-                ? await this.modal.connectTo(this.modal.cachedProvider)
-                : Web3.givenProvider
-        }
-        catch (e) {
-            this.provider = Web3.givenProvider
-        }
-
-        try {
-            this.setState({
-                isInitialized: this.provider != null,
-                isInitializing: false,
-            })
-
-            if (this.modal.cachedProvider.length > 0) {
-                await Promise.all([
-                    this.syncAccountData(),
-                    this.syncChainId(),
-                ])
-                await this.syncBalance()
-            }
-            else {
-                this.setState('isConnecting', false)
-            }
-        }
-        catch (e) {
-            error('Fetch account data error', e)
-            this.setState({
-                isConnected: false,
-                isConnecting: false,
-                isInitialized: this.provider != null,
-                isInitializing: false,
-            })
-        }
-
-        this.provider?.on('accountsChanged', async ([address]: string[]) => {
-            if (address !== undefined) {
-                await this.syncAccountData()
-            }
-            else {
-                await this.disconnect()
-            }
-        })
-
-        this.provider?.on('chainChanged', async (chainId: string) => {
-            this.setData({
-                balance: '0',
-                chainId: parseInt(chainId, 16).toString(),
-            })
-            await Promise.all([
-                this.syncAccountData(),
-                this.syncBalance(),
-            ])
-        })
-
-        if (this.modal.cachedProvider.length > 0) {
-            setInterval(async () => {
-                await this.syncChainId()
-                await this.syncBalance()
-            }, 15000)
-        }
+    public get walletTypePopupVisible(): boolean {
+        return this.state.walletTypePopupVisible
     }
-
-    /**
-     *
-     * @protected
-     */
-    protected get modal(): Web3Modal {
-        return new Web3Modal({
-            cacheProvider: true, // optional
-            disableInjectedProvider: false,
-            ...this.options?.modalOptions,
-        })
-    }
-
-    protected provider: any | null
 
 }
-
 
 let wallet: EvmWalletService
 
@@ -583,27 +583,12 @@ export function useEvmWallet(): EvmWalletService {
             'color: #bae701',
             'color: #c5e4f3',
         )
+
         wallet = new EvmWalletService({
             decimals: 18,
             symbol: 'ETH',
-        }, {
-            modalOptions: {
-                providerOptions: {
-                    walletconnect: {
-                        options: {
-                            rpc: networks
-                                .filter(network => network.type === 'evm')
-                                .reduce<Record<number, string>>((acc, value) => {
-                                    acc[Number(value.chainId)] = value.rpcUrl
-                                    return acc
-                                }, {}),
-                        },
-                        package: WalletConnectProvider, // required
-                    },
-                },
-                theme: 'dark',
-            },
         })
     }
+
     return wallet
 }

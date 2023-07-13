@@ -140,3 +140,5 @@ export const DaoIndexerApiBaseUrl = 'https://dao.octusbridge.io/v1'
 export const DexIndexerApiBaseUrl = 'https://api.flatqube.io/v1'
 
 export const CurrenciesListURI = '/assets/currencies.json'
+
+export const WalletConnectProjectId = 'ec260171b28013443ebb9472c9560543'
