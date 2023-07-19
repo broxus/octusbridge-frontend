@@ -592,7 +592,7 @@ export class EvmEverscalePipeline extends BaseStore<EvmEverscalePipelineData, Ev
                 }
 
                 keepNonDecodedLogs()
-                addABI(EthAbi.Vault)
+                addABI(EthAbi.MultiVault)
 
                 const decodedLogs = decodeLogs(txReceipt?.logs || [])
 

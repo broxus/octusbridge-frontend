@@ -18,7 +18,6 @@ import {
 import {
     erc20TokenContract,
     evmMultiVaultContract,
-    evmVaultContract,
 } from '@/misc/eth-contracts'
 import { resolveEverscaleAddress } from '@/utils'
 

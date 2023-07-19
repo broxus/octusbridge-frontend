@@ -14,7 +14,7 @@ import {
     getFullContractState,
     legacyEverscaleEventAlienContract,
     legacyEverscaleEventNativeContract,
-    tokenTransferEverscaleEventContract,
+    tokenTransferEverscaleEventContract, tokenWalletContract,
 } from '@/misc/contracts'
 import { evmBridgeContract, evmMultiVaultContract } from '@/misc/eth-contracts'
 import { EverscaleToken, Pipeline } from '@/models'
@@ -324,10 +324,8 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
             }
 
             const {
-                // eslint-disable-next-line camelcase
-                recipient_: ethereum_address,
-                // eslint-disable-next-line camelcase
-                remainingGasTo_: owner_address,
+                recipient_: ethereumAddress,
+                remainingGasTo_: ownerAddress,
                 amount_: tokens,
                 base_chainId_: chainId,
             } = eventData
@@ -379,10 +377,25 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                 }
             }
 
-            // eslint-disable-next-line camelcase
-            const leftAddress = owner_address.toString()
-            const rightAddress = `0x${new BigNumber(ethereum_address).toString(16).padStart(40, '0')}`
+            let leftAddress = ownerAddress.toString()
+            const rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
             const remainingGasTo = eventData.remainingGasTo_.toString().toLowerCase()
+
+            if (EventCloser.toString().toLowerCase() === leftAddress.toLowerCase()) {
+                try {
+                    const sender = await everscaleEventAlienContract(this.contractAddress)
+                        .methods.sender()
+                        .call()
+                        .then(r => r.sender)
+                    const owner = await tokenWalletContract(sender)
+                        .methods.owner({ answerId: 0 })
+                        .call()
+                    leftAddress = owner.value0.toString()
+                }
+                catch (e) {
+                    error(e)
+                }
+            }
 
             this.setData({
                 amount: new BigNumber(tokens || 0).shiftedBy(-token.decimals).toFixed(),
@@ -623,7 +636,7 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                 attempts += 1
 
                 const vaultContract = new this.evmWallet.web3.eth.Contract(
-                    EthAbi.Vault,
+                    EthAbi.MultiVault,
                     this.pipeline.vaultAddress.toString(),
                 )
 
@@ -926,6 +939,9 @@ export class EverscaleEvmPipeline extends BaseStore<EverscaleEvmPipelineData, Ev
                         isReleasing: false,
                         status: 'confirmed',
                     })
+                    await this.runPendingWithdrawalUpdater(
+                        this.releaseState?.isInsufficientVaultBalance ? 20 : undefined,
+                    )
                 }
                 else if (isOutdated && !this.releaseState?.isReleasing) {
                     this.setState('releaseState', {

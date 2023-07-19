@@ -45,9 +45,9 @@ export function AssetStep(): JSX.Element {
 
     React.useEffect(() => reaction(
         () => bridge.evmPendingWithdrawal,
-        () => {
+        async () => {
             if (bridge.evmPendingWithdrawal) {
-                bridge.setData('selectedToken', bridge.evmPendingWithdrawal.evmTokenAddress)
+                await bridge.changeToken(bridge.evmPendingWithdrawal.evmTokenAddress)
             }
         },
         {

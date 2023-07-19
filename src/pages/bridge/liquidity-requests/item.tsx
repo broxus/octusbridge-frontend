@@ -16,12 +16,10 @@ export default function Page(): JSX.Element {
     const evmPendingWithdrawal = {
         chainId: params.chainId,
         evmTokenAddress: params.evmTokenAddress,
-        withdrawalIds: new URLSearchParams(location.search)
-            .getAll('id')
-            .map(item => ({
-                recipient: item.split('.')[0],
-                id: item.split('.')[1],
-            })),
+        withdrawalIds: new URLSearchParams(location.search).getAll('id').map(item => ({
+            recipient: item.split('.')[0],
+            id: item.split('.')[1],
+        })),
     }
 
     return (
@@ -40,9 +38,7 @@ export default function Page(): JSX.Element {
                 solanaWallet={useSolanaWallet()}
                 bridgeAssets={useBridgeAssets()}
             >
-                <Bridge
-                    evmPendingWithdrawal={evmPendingWithdrawal}
-                />
+                <Bridge evmPendingWithdrawal={evmPendingWithdrawal} />
             </CrosschainBridgeStoreProvider>
         </div>
     )

@@ -21,7 +21,7 @@ export function RewardFormInner(): JSX.Element {
         || transfer.releaseState?.isPendingClosing
     )
     const isOwner = transfer.leftAddress
-        ? transfer.leftAddress === transfer.useEverWallet.address
+        ? transfer.leftAddress.toLowerCase() === transfer.useEverWallet.address?.toLowerCase()
         : false
 
     const [localBounty, setLocalBounty] = React.useState<string>('')

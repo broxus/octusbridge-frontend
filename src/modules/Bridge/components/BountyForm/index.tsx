@@ -1,21 +1,21 @@
+import BigNumber from 'bignumber.js'
+import isEqual from 'lodash.isequal'
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import BigNumber from 'bignumber.js'
-import { observer } from 'mobx-react-lite'
-import isEqual from 'lodash.isequal'
 
 import { Button } from '@/components/common/Button'
 import { SimpleRadio } from '@/components/common/SimpleRadio'
-import { useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
 import { RewardForm } from '@/modules/Bridge/components/BountyForm/RewardForm'
 import { WrongNetworkError } from '@/modules/Bridge/components/WrongNetworkError'
+import { useEverscaleEvmPipelineContext } from '@/modules/Bridge/providers'
 
 enum BountyKind {
     Default = 'Default',
     Bounty = 'Bounty',
 }
 
-export function BountyFormInner(): JSX.Element {
+export const BountyForm = observer(() => {
     const intl = useIntl()
     const transfer = useEverscaleEvmPipelineContext()
     const evmWallet = transfer.useEvmWallet
@@ -27,7 +27,7 @@ export function BountyFormInner(): JSX.Element {
         || transfer.releaseState?.isPendingClosing
     )
     const isOwner = transfer.leftAddress
-        ? transfer.leftAddress === transfer.useEverWallet.address
+        ? transfer.leftAddress.toLowerCase() === transfer.useEverWallet.address?.toLowerCase()
         : false
 
     const [bountyKind, setBountyKind] = React.useState<BountyKind>(BountyKind.Default)
@@ -125,6 +125,4 @@ export function BountyFormInner(): JSX.Element {
             </fieldset>
         </div>
     )
-}
-
-export const BountyForm = observer(BountyFormInner)
+})
