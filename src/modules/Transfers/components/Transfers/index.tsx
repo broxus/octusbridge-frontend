@@ -1,8 +1,8 @@
-import * as React from 'react'
 import { observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { networks } from '@/config'
+import { Checkbox } from '@/components/common/Checkbox'
 import {
     DateFilter,
     FilterField,
@@ -12,8 +12,10 @@ import {
     TokenFilter,
 } from '@/components/common/Filters'
 import { Icon } from '@/components/common/Icon'
-import { Header, Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
+import { Header, Section, Title } from '@/components/common/Section'
+import { Select } from '@/components/common/Select'
+import { networks } from '@/config'
 import {
     useDateParam,
     useDictParam,
@@ -22,21 +24,19 @@ import {
     useTextParam,
     useUrlParams,
 } from '@/hooks'
-import { useTransfersContext } from '@/modules/Transfers/providers'
 import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
+import { useTransfersContext } from '@/modules/Transfers/providers'
 import {
     type TransferKindFilter,
+    type TransferType,
     type TransfersFilters,
     type TransfersOrdering,
     type TransfersRequest,
     type TransfersRequestStatus,
-    type TransferType,
 } from '@/modules/Transfers/types'
-import { useEverWallet } from '@/stores/EverWalletService'
 import { type BridgeAsset, useBridgeAssets } from '@/stores/BridgeAssetsService'
+import { useEverWallet } from '@/stores/EverWalletService'
 import { error, isEverscaleAddressValid, isEvmAddressValid } from '@/utils'
-import { Select } from '@/components/common/Select'
-import { Checkbox } from '@/components/common/Checkbox'
 
 import './index.scss'
 
@@ -94,39 +94,39 @@ function TransfersListInner(): JSX.Element {
         if (from && to && from.type === 'evm' && to.type === 'evm') {
             ethTonChainId = parseInt(from.chainId, 10)
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = ['ethtoeth']
+            transferKinds = ['alienethtoeth', 'nativeethtoeth']
         }
         else if (from && to && from.type === 'evm' && to.type === 'tvm') {
-            const validKinds: TransferKindFilter[] = ['ethtoton', 'alienethtoton', 'nativeethtoton']
+            const validKinds: TransferKindFilter[] = ['alienethtoton', 'nativeethtoton']
 
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = validKinds
         }
         else if (from && to && from.type === 'tvm' && to.type === 'evm') {
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            transferKinds = ['alientontoeth', 'nativetontoeth']
         }
         else if (from && from.type === 'evm') {
-            const validKinds: TransferKindFilter[] = ['ethtoton', 'alienethtoton', 'nativeethtoton']
+            const validKinds: TransferKindFilter[] = ['alienethtoton', 'nativeethtoton']
             if (to && to.type === 'evm') {
-                validKinds.push('ethtoeth')
+                validKinds.push('alienethtoeth', 'nativeethtoeth')
             }
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = validKinds
         }
         else if (to && to.type === 'evm') {
-            const validKinds: TransferKindFilter[] = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            const validKinds: TransferKindFilter[] = ['alientontoeth', 'nativetontoeth']
             if (from && from.type === 'evm') {
-                validKinds.push('ethtoeth')
+                validKinds.push('alienethtoeth', 'nativeethtoeth')
             }
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = validKinds
         }
         else if (from && from.type === 'tvm') {
-            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            transferKinds = ['alientontoeth', 'nativetontoeth']
         }
         else if (to && to.type === 'tvm') {
-            transferKinds = ['ethtoton', 'alienethtoton', 'nativeethtoton']
+            transferKinds = ['alienethtoton', 'nativeethtoton']
         }
         else {
             transferKinds = []

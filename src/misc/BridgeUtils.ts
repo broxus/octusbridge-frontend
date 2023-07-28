@@ -1,7 +1,8 @@
-import { Connection, type PublicKey } from '@solana/web3.js'
 import { getMint } from '@solana/spl-token'
+import { Connection, type PublicKey } from '@solana/web3.js'
 import BigNumber from 'bignumber.js'
-import { type Address,
+import {
+    type Address,
     type DecodedAbiFunctionInputs,
     type DecodedAbiFunctionOutputs,
     type FullContractState,
@@ -15,30 +16,25 @@ import {
     mergeRouterContract,
     tokenRootAlienEvmContract,
 } from '@/misc/contracts'
-import {
-    erc20TokenContract,
-    evmMultiVaultContract,
-} from '@/misc/eth-contracts'
+import { erc20TokenContract, evmMultiVaultContract } from '@/misc/eth-contracts'
 import { resolveEverscaleAddress } from '@/utils'
 
-
 export type EvmMultiVaultTokenMeta = {
-    activation: string;
-    blacklisted: boolean;
+    activation: string
+    blacklisted: boolean
     custom: string
-    depositFee: string;
-    isNative: boolean;
-    withdrawFee: string;
+    depositFee: string
+    isNative: boolean
+    withdrawFee: string
 }
 
 export type MergedTokenDetails = {
-    canonicalTokenAddress?: Address;
+    canonicalTokenAddress?: Address
     isMerged: boolean
-    mergeEverscaleTokenAddress?: Address;
-    mergeEvmTokenAddress?: string;
-    mergePoolAddress?: Address;
+    mergeEverscaleTokenAddress?: Address
+    mergeEvmTokenAddress?: string
+    mergePoolAddress?: Address
 }
-
 
 export abstract class BridgeUtils {
 
@@ -69,7 +65,9 @@ export abstract class BridgeUtils {
         rpcUrl: string,
     ): Promise<string> {
         const [nativeWid, nativeAddress] = tokenAddress.toString().split(':')
-        return evmMultiVaultContract(vaultAddress, rpcUrl).methods.getNativeToken([nativeWid, `0x${nativeAddress}`]).call()
+        return evmMultiVaultContract(vaultAddress, rpcUrl)
+            .methods.getNativeToken([nativeWid, `0x${nativeAddress}`])
+            .call()
     }
 
     /**
@@ -83,7 +81,7 @@ export abstract class BridgeUtils {
         tokenAddress: string,
         rpcUrl: string,
     ): Promise<string | undefined> {
-        type Result = { addr: string; wid: string; }
+        type Result = { addr: string; wid: string }
         const result: Result = await evmMultiVaultContract(vaultAddress, rpcUrl).methods.natives(tokenAddress).call()
         return result !== undefined
             ? `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
@@ -93,7 +91,7 @@ export abstract class BridgeUtils {
     public static async getEvmMultiVaultAlienFees(
         vaultAddress: string,
         rpcUrl: string,
-    ): Promise<{ depositFee: string, withdrawFee: string }> {
+    ): Promise<{ depositFee: string; withdrawFee: string }> {
         const [depositFee, withdrawFee] = await Promise.all([
             evmMultiVaultContract(vaultAddress, rpcUrl).methods.defaultAlienDepositFee().call(),
             evmMultiVaultContract(vaultAddress, rpcUrl).methods.defaultAlienWithdrawFee().call(),
@@ -104,7 +102,7 @@ export abstract class BridgeUtils {
     public static async getEvmMultiVaultNativeFees(
         vaultAddress: string,
         rpcUrl: string,
-    ): Promise<{ depositFee: string, withdrawFee: string }> {
+    ): Promise<{ depositFee: string; withdrawFee: string }> {
         const [depositFee, withdrawFee] = await Promise.all([
             evmMultiVaultContract(vaultAddress, rpcUrl).methods.defaultNativeDepositFee().call(),
             evmMultiVaultContract(vaultAddress, rpcUrl).methods.defaultNativeWithdrawFee().call(),
@@ -121,7 +119,7 @@ export abstract class BridgeUtils {
     }
 
     public static async getEvmTokenDecimals(tokenAddress: string, rpcUrl: string): Promise<number> {
-        return parseInt((await erc20TokenContract(tokenAddress, rpcUrl).methods.decimals().call()), 10)
+        return parseInt(await erc20TokenContract(tokenAddress, rpcUrl).methods.decimals().call(), 10)
     }
 
     public static async getEvmTokenName(tokenAddress: string, rpcUrl: string): Promise<string> {
@@ -144,9 +142,7 @@ export abstract class BridgeUtils {
         tokenAddress: Address | string,
         state?: FullContractState,
     ): Promise<DecodedAbiFunctionOutputs<typeof MultiVaultAbi.TokenRootAlienEvm, 'meta'>> {
-        return tokenRootAlienEvmContract(tokenAddress)
-            .methods.meta({ answerId: 0 })
-            .call({ cachedState: state })
+        return tokenRootAlienEvmContract(tokenAddress).methods.meta({ answerId: 0 }).call({ cachedState: state })
     }
 
     public static async getDeriveAlienTokenRoot(
@@ -154,11 +150,11 @@ export abstract class BridgeUtils {
         params: Omit<DecodedAbiFunctionInputs<typeof MultiVaultAbi.AlienProxy, 'deriveEVMAlienTokenRoot'>, 'answerId'>,
         state?: FullContractState,
     ): Promise<string> {
-        return (await alienProxyContract(alienProxyAddress)
-            .methods.deriveEVMAlienTokenRoot({ ...params, answerId: 0 })
-            .call({ cachedState: state }))
-            .value0
-            .toString()
+        return (
+            await alienProxyContract(alienProxyAddress)
+                .methods.deriveEVMAlienTokenRoot({ ...params, answerId: 0 })
+                .call({ cachedState: state })
+        ).value0.toString()
     }
 
     public static async getMergedTokenDetails(
@@ -166,55 +162,51 @@ export abstract class BridgeUtils {
         alienProxyAddress: Address | string,
         chainId: string,
     ): Promise<MergedTokenDetails | undefined> {
-        const mergeRouterAddress = (await alienProxyContract(resolveEverscaleAddress(alienProxyAddress))
-            .methods.deriveMergeRouter({
-                answerId: 0,
-                token: resolveEverscaleAddress(tokenAddress),
-            })
-            .call())
-            .router
+        const mergeRouterAddress = (
+            await alienProxyContract(resolveEverscaleAddress(alienProxyAddress))
+                .methods.deriveMergeRouter({
+                    answerId: 0,
+                    token: resolveEverscaleAddress(tokenAddress),
+                })
+                .call()
+        ).router
 
-        const mergePoolAddress = (await mergeRouterContract(mergeRouterAddress)
-            .methods.getPool({ answerId: 0 })
-            .call())
+        const mergePoolAddress = (await mergeRouterContract(mergeRouterAddress).methods.getPool({ answerId: 0 }).call())
             .value0
 
-        const mergedTokens = await mergePoolContract(mergePoolAddress)
-            .methods.getTokens({ answerId: 0 })
-            .call()
+        const mergedTokens = await mergePoolContract(mergePoolAddress).methods.getTokens({ answerId: 0 }).call()
 
-        const aliens = await Promise.all(mergedTokens._tokens.map(
-            async ([address, settings]) => {
+        const aliens = await Promise.all(
+            mergedTokens._tokens.map(async ([address, settings]) => {
                 if (settings.enabled) {
                     try {
                         const meta = await BridgeUtils.getAlienTokenRootMeta(address)
                         return {
                             canonicalTokenAddress: mergedTokens._canon,
                             everscaleTokenAddress: address,
-                            evmTokenAddress: `0x${new BigNumber(meta.base_token)
-                            .toString(16)
-                            .padStart(40, '0')}`,
+                            evmTokenAddress: `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`,
                             isMerged: meta.base_chainId === chainId,
                         }
                     }
-                    catch (e) {
+ catch (e) {
                         return { isMerged: false }
                     }
                 }
                 return { isMerged: false }
-            },
-
-        ))
+            }),
+        )
 
         const merged = aliens.find(e => e.isMerged)
 
-        return merged?.isMerged ? {
-            canonicalTokenAddress: merged.canonicalTokenAddress,
-            isMerged: true,
-            mergeEverscaleTokenAddress: merged.everscaleTokenAddress,
-            mergeEvmTokenAddress: merged.evmTokenAddress,
-            mergePoolAddress,
-        } : undefined
+        return merged?.isMerged
+            ? {
+                  canonicalTokenAddress: merged.canonicalTokenAddress,
+                  isMerged: true,
+                  mergeEverscaleTokenAddress: merged.everscaleTokenAddress,
+                  mergeEvmTokenAddress: merged.evmTokenAddress,
+                  mergePoolAddress,
+              }
+            : undefined
     }
 
     public static async getCanonicalToken(
@@ -222,37 +214,33 @@ export abstract class BridgeUtils {
         proxyAddress: Address | string,
     ): Promise<Address | undefined> {
         try {
-            const mergeRouterAddress = (await alienProxyContract(proxyAddress)
-                .methods.deriveMergeRouter({
-                    token: resolveEverscaleAddress(tokenAddress),
-                    answerId: 0,
-                })
-                .call())
-                .router
+            const mergeRouterAddress = (
+                await alienProxyContract(proxyAddress)
+                    .methods.deriveMergeRouter({
+                        token: resolveEverscaleAddress(tokenAddress),
+                        answerId: 0,
+                    })
+                    .call()
+            ).router
 
             const mergeRouterState = await getFullContractState(mergeRouterAddress)
 
             if (mergeRouterState?.isDeployed) {
-                const mergePoolAddress = (await mergeRouterContract(mergeRouterAddress)
-                    .methods.getPool({ answerId: 0 })
-                    .call())
-                    .value0
+                const mergePoolAddress = (
+                    await mergeRouterContract(mergeRouterAddress).methods.getPool({ answerId: 0 }).call()
+                ).value0
 
                 const mergePoolState = await getFullContractState(mergePoolAddress)
 
                 if (mergePoolState?.isDeployed) {
-                    return (await mergePoolContract(mergePoolAddress)
-                        .methods.getCanon({ answerId: 0 })
-                        .call())
-                        .value0
+                    return (await mergePoolContract(mergePoolAddress).methods.getCanon({ answerId: 0 }).call()).value0
                 }
             }
             return undefined
         }
-        catch (e) {
+ catch (e) {
             return undefined
         }
-
     }
 
 }

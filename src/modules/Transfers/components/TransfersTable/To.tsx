@@ -4,8 +4,8 @@ import { useIntl } from 'react-intl'
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
-import { getToAddress, getToNetwork } from '@/modules/Transfers/utils'
 import { type Transfer } from '@/modules/Transfers/types'
+import { getToAddress, getToNetwork } from '@/modules/Transfers/utils'
 
 import './index.scss'
 
@@ -25,7 +25,7 @@ export function To({
     const toAddress = getToAddress(transfer)
     const toNetwork = getToNetwork(transfer)
 
-    const showTransitStatus = transfer.transferKind === 'EthToEth'
+    const showTransitStatus = ['AlienEthToEth', 'NativeEthToEth'].includes(transfer.transferKind)
         && (transfer.ethTonStatus !== 'Confirmed' || transfer.tonEthStatus !== 'Confirmed')
 
     return (

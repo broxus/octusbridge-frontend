@@ -1,23 +1,22 @@
-import * as React from 'react'
 import classNames from 'classnames'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
-import { EventStateStatus } from '@/modules/Bridge/types'
+import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { type EventStateStatus } from '@/modules/Bridge/types'
 import { sliceAddress } from '@/utils'
 
-
 type Props = {
-    children?: React.ReactNode;
-    confirmations: number;
-    isCancelled?: boolean;
-    note?: React.ReactNode;
-    requiredConfirmations: number;
-    status: EventStateStatus;
-    txHash?: string;
-    waitingWallet?: boolean;
-    wrongNetwork?: boolean;
+    children?: React.ReactNode
+    confirmations: number
+    isCancelled?: boolean
+    note?: React.ReactNode
+    requiredConfirmations: number
+    status: EventStateStatus
+    txHash?: string
+    waitingWallet?: boolean
+    wrongNetwork?: boolean
 }
 
 export function EventStatus({
@@ -73,14 +72,18 @@ export function EventStatus({
                                         })
 
                                     case 'pending':
-                                        return intl.formatMessage({
-                                            id: confirmations > 0
-                                                ? 'CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMATION'
-                                                : 'CROSSCHAIN_TRANSFER_STATUS_EVENT_PENDING',
-                                        }, {
-                                            confirmations,
-                                            requiredConfirmations,
-                                        })
+                                        return intl.formatMessage(
+                                            {
+                                                id:
+                                                    confirmations > 0
+                                                        ? 'CROSSCHAIN_TRANSFER_STATUS_EVENT_CONFIRMATION'
+                                                        : 'CROSSCHAIN_TRANSFER_STATUS_EVENT_PENDING',
+                                            },
+                                            {
+                                                confirmations,
+                                                requiredConfirmations,
+                                            },
+                                        )
 
                                     case 'rejected':
                                         return intl.formatMessage({
@@ -99,14 +102,13 @@ export function EventStatus({
             </div>
             <div className="crosschain-transfer__status-control">
                 <div className="crosschain-transfer__status-note">
-                    {note || intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE',
-                    })}
-                    {(isConfirmed && txHash !== undefined) && (
+                    {note
+                        || intl.formatMessage({
+                            id: 'CROSSCHAIN_TRANSFER_STATUS_EVENT_NOTE',
+                        })}
+                    {isConfirmed && txHash !== undefined && (
                         <EverscanAccountLink
-                            key="tx-link"
-                            address={txHash}
-                            className="text-muted"
+                            key="tx-link" address={txHash} className="text-muted"
                             copy
                         >
                             {sliceAddress(txHash)}

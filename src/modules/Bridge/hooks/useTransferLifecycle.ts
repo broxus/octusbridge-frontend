@@ -1,29 +1,25 @@
-import * as React from 'react'
 import { reaction } from 'mobx'
+import * as React from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useSummary } from '@/modules/Bridge/providers/BridgeTransferSummaryProvider'
 import {
-    type EverscaleEvmPipeline,
-    type EverscaleSolanaPipeline,
-    type EvmEverscalePipeline,
-    type SolanaEverscalePipeline,
+    type EvmEvmPipeline,
+    type EvmTvmPipeline,
+    type SolanaTvmPipeline,
+    type TvmEvmPipeline,
+    type TvmSolanaPipeline,
 } from '@/modules/Bridge/stores'
 import {
-    type EverscaleTransferUrlParams,
     type EvmTransferUrlParams,
     type SolanaTransferUrlParams,
+    type TvmTransferUrlParams,
 } from '@/modules/Bridge/types'
 
-
-type Pipeline =
-    EverscaleEvmPipeline
-    | EvmEverscalePipeline
-    | EverscaleSolanaPipeline
-    | SolanaEverscalePipeline
+type Pipeline = TvmEvmPipeline | EvmTvmPipeline | EvmEvmPipeline | TvmSolanaPipeline | SolanaTvmPipeline
 
 export function useTransferLifecycle(pipeline: Pipeline): void {
-    const params = useParams<EverscaleTransferUrlParams | EvmTransferUrlParams | SolanaTransferUrlParams>()
+    const params = useParams<TvmTransferUrlParams | EvmTransferUrlParams | SolanaTransferUrlParams>()
 
     const summary = useSummary()
 
@@ -52,32 +48,40 @@ export function useTransferLifecycle(pipeline: Pipeline): void {
         return reaction(
             () => ({
                 amount: pipeline.amount,
-                eversAmount: (pipeline as EvmEverscalePipeline).eversAmount,
-                depositFee: (pipeline as EvmEverscalePipeline).depositFee,
+                depositFee: (pipeline as EvmTvmPipeline).depositFee,
+                expectedEversAmount: (pipeline as EvmTvmPipeline).expectedEversAmount,
                 leftAddress: pipeline.leftAddress,
                 leftNetwork: pipeline.leftNetwork,
+                pendingWithdrawals: (pipeline as EvmTvmPipeline).pendingWithdrawals,
                 pipeline: pipeline.pipeline,
                 rightAddress: pipeline.rightAddress,
                 rightNetwork: pipeline.rightNetwork,
-                token: pipeline.token,
-                withdrawFee: (pipeline as EverscaleEvmPipeline).withdrawFee,
-                pendingWithdrawals: (pipeline as EvmEverscalePipeline).pendingWithdrawals,
+                secondDepositFee: (pipeline as EvmEvmPipeline).secondDepositFee,
+                secondPipeline: (pipeline as EvmEvmPipeline).secondPipeline,
+                secondWithdrawFee: (pipeline as EvmEvmPipeline).secondWithdrawFee,
                 success: pipeline.success,
+                token: pipeline.token,
+                tvmAddress: (pipeline as EvmEvmPipeline).tvmAddress,
+                withdrawFee: (pipeline as TvmEvmPipeline).withdrawFee,
             }),
             data => {
                 summary.setData({
                     amount: data.amount ?? summary.amount,
-                    eversAmount: data.eversAmount ?? summary.eversAmount,
                     depositFee: data.depositFee ?? summary.depositFee,
+                    expectedEversAmount: data.expectedEversAmount ?? summary.expectedEversAmount,
                     leftAddress: data.leftAddress ?? summary.leftAddress,
                     leftNetwork: data.leftNetwork ?? summary.leftNetwork,
+                    pendingWithdrawals: data.pendingWithdrawals ?? summary.pendingWithdrawals,
                     pipeline: data.pipeline ?? summary.pipeline,
                     rightAddress: data.rightAddress ?? summary.rightAddress,
                     rightNetwork: data.rightNetwork ?? summary.rightNetwork,
-                    token: data.token ?? summary.token,
-                    withdrawFee: data.withdrawFee ?? summary.withdrawFee,
-                    pendingWithdrawals: data.pendingWithdrawals ?? summary.pendingWithdrawals,
+                    secondDepositFee: data.secondDepositFee ?? summary.secondDepositFee,
+                    secondPipeline: data.secondPipeline ?? summary.secondPipeline,
+                    secondWithdrawFee: data.secondWithdrawFee ?? summary.secondWithdrawFee,
                     success: pipeline.success,
+                    token: data.token ?? summary.token,
+                    tvmAddress: data.tvmAddress ?? summary.tvmAddress,
+                    withdrawFee: data.withdrawFee ?? summary.withdrawFee,
                 })
             },
             { fireImmediately: true },

@@ -1,19 +1,26 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Amount } from '@/modules/Bridge/components/Summary/components/Amount'
-import { PendingWithdrawals } from '@/modules/Bridge/components/Summary/components/PendingWithdrawals'
 import { FeesDetails } from '@/modules/Bridge/components/Summary/components/FeesDetails'
 import { Networks } from '@/modules/Bridge/components/Summary/components/Networks'
-import { SwapDetails } from '@/modules/Bridge/components/Summary/components/SwapDetails'
-import { TokenAmountDetails } from '@/modules/Bridge/components/Summary/components/TokenAmountDetails'
+import { PendingWithdrawals } from '@/modules/Bridge/components/Summary/components/PendingWithdrawals'
 import { Tokens } from '@/modules/Bridge/components/Summary/components/Tokens'
-import { TransitDetails } from '@/modules/Bridge/components/Summary/components/TransitDetails'
 import { VaultDetails } from '@/modules/Bridge/components/Summary/components/VaultDetails'
+import { useBridge, useSummary } from '@/modules/Bridge/providers'
 
-
-export function Summary(): JSX.Element {
+export const Summary = observer(() => {
     const intl = useIntl()
+    const bridge = useBridge()
+    const summary = useSummary()
+
+    const isNativeTvmCurrency = bridge.isNativeTvmCurrency || summary.isNativeTvmCurrency
+    const isAlienForTargetNetwork = (
+        bridge.isNativeEvmCurrency && bridge.secondPipeline?.isNative
+    ) || (
+        summary.isNativeEvmCurrency && summary.secondPipeline?.isNative
+    )
 
     return (
         <div className="card card--ghost card--flat card--small">
@@ -24,15 +31,16 @@ export function Summary(): JSX.Element {
             </h3>
             <ul className="summary">
                 <Networks />
-                <TransitDetails />
-                <VaultDetails />
+                {!isNativeTvmCurrency && !isAlienForTargetNetwork && (
+                    <VaultDetails />
+                )}
                 <Tokens />
-                <FeesDetails />
+                {(bridge.token || summary.token) && (
+                    <FeesDetails />
+                )}
                 <PendingWithdrawals />
                 <Amount />
-                <SwapDetails />
-                <TokenAmountDetails />
             </ul>
         </div>
     )
-}
+})

@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx'
 
 import {
-    Transfer, TransfersRequest, TransfersResponse,
-    TransfersStoreData, TransfersStoreState,
+    type Transfer, type TransfersRequest, type TransfersResponse,
+    type TransfersStoreData, type TransfersStoreState,
 } from '@/modules/Transfers/types'
 import { handleTransfers } from '@/modules/Transfers/utils'
 import { error, lastOfCalls } from '@/utils'
@@ -12,8 +12,8 @@ export class TransfersStore {
     protected data: TransfersStoreData = {}
 
     protected state: TransfersStoreState = {
-        page: 1,
         limit: 10,
+        page: 1,
     }
 
     protected handleTransfers: (params: TransfersRequest) => Promise<TransfersResponse | undefined>

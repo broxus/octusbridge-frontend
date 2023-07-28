@@ -1,15 +1,15 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
-import { observer } from 'mobx-react-lite'
 
 import { Align, Cell, Row } from '@/components/common/Table'
 import { Amount } from '@/modules/Transfers/components/Amount'
-import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { From } from '@/modules/Transfers/components/TransfersTable/From'
+import { Status } from '@/modules/Transfers/components/TransfersTable/Status'
 import { To } from '@/modules/Transfers/components/TransfersTable/To'
-import { getTransferLink } from '@/modules/Transfers/utils'
 import { type Transfer } from '@/modules/Transfers/types'
+import { getTransferLink } from '@/modules/Transfers/utils'
 import { dateFormat } from '@/utils'
 
 import './index.scss'

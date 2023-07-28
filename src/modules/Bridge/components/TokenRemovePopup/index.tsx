@@ -7,13 +7,11 @@ import { Icon } from '@/components/common/Icon'
 import { TokenIcon } from '@/components/common/TokenIcon'
 import { type BridgeAsset } from '@/stores/BridgeAssetsService'
 
-
 type Props = {
-    token: BridgeAsset;
-    ocConfirm: () => void;
-    onClose: () => void;
+    token: BridgeAsset
+    ocConfirm: () => void
+    onClose: () => void
 }
-
 
 export function TokenRemovePopup({ token, ocConfirm, onClose }: Props): JSX.Element {
     const intl = useIntl()
@@ -22,11 +20,7 @@ export function TokenRemovePopup({ token, ocConfirm, onClose }: Props): JSX.Elem
         <div className="popup">
             <div className="popup-overlay" onClick={onClose} />
             <div className="popup__wrap">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="btn btn-icon popup-close"
-                >
+                <button type="button" onClick={onClose} className="btn btn-icon popup-close">
                     <Icon icon="close" />
                 </button>
                 <h2 className="popup-title">
@@ -37,11 +31,7 @@ export function TokenRemovePopup({ token, ocConfirm, onClose }: Props): JSX.Elem
 
                 <div className="popup-main warning">
                     <div className="popup-main__ava" style={{ background: 'none' }}>
-                        <TokenIcon
-                            address={token.root}
-                            name={token.name}
-                            uri={token.icon}
-                        />
+                        <TokenIcon address={token.root} name={token.name} uri={token.icon} />
                     </div>
                     <div className="popup-main__name">
                         {token.symbol}
@@ -60,9 +50,7 @@ export function TokenRemovePopup({ token, ocConfirm, onClose }: Props): JSX.Elem
                 />
 
                 <Button
-                    block
-                    size="md"
-                    type="primary"
+                    block size="md" type="primary"
                     onClick={ocConfirm}
                 >
                     {intl.formatMessage({

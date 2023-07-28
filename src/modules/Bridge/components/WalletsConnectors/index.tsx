@@ -1,21 +1,19 @@
-import * as React from 'react'
 import classNames from 'classnames'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
-import { EvmWalletService } from '@/stores/EvmWalletService'
-import { EverWalletService } from '@/stores/EverWalletService'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type EvmWalletService } from '@/stores/EvmWalletService'
 
 import './index.scss'
 
-
 type Props = {
-    className?: string;
-    evmWallet: EvmWalletService;
-    everWallet: EverWalletService;
+    className?: string
+    evmWallet: EvmWalletService
+    everWallet: EverWalletService
 }
-
 
 export function WalletsConnectors({ className, evmWallet, everWallet }: Props): JSX.Element {
     const intl = useIntl()

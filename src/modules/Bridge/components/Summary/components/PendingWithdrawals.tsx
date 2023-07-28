@@ -1,12 +1,11 @@
-import * as React from 'react'
-import { Observer } from 'mobx-react-lite'
-import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
+import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
+import { useIntl } from 'react-intl'
 
+import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { useSummary } from '@/modules/Bridge/providers'
 import { formattedTokenAmount } from '@/utils'
-import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
-
 
 export function PendingWithdrawals(): JSX.Element {
     const intl = useIntl()
@@ -46,6 +45,7 @@ export function PendingWithdrawals(): JSX.Element {
                                             key="evm-address"
                                             address={item.recipient}
                                             baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                            explorerLabel={summary.leftNetwork.explorerLabel}
                                             copy
                                         />
                                     )}
@@ -99,6 +99,7 @@ export function PendingWithdrawals(): JSX.Element {
                                             key="evm-address"
                                             address={item.recipient}
                                             baseUrl={summary.leftNetwork.explorerBaseUrl}
+                                            explorerLabel={summary.leftNetwork.explorerLabel}
                                             copy
                                         />
                                     )}

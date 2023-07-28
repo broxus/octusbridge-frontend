@@ -1,21 +1,20 @@
-import * as React from 'react'
 import classNames from 'classnames'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { StatusIndicator } from '@/components/common/StatusIndicator'
-import { ReleaseStateStatus } from '@/modules/Bridge/types'
-import { NetworkShape } from '@/types'
-
+import { type ReleaseStateStatus } from '@/modules/Bridge/types'
+import { type NetworkShape } from '@/types'
 
 type Props = {
-    children?: React.ReactNode;
-    isCancelled?: boolean;
-    isReleased?: boolean;
-    network?: NetworkShape;
-    note?: React.ReactNode;
-    status: ReleaseStateStatus;
-    waitingWallet?: boolean;
-    wrongNetwork?: boolean;
+    children?: React.ReactNode
+    isCancelled?: boolean
+    isReleased?: boolean
+    network?: NetworkShape
+    note?: React.ReactNode
+    status: ReleaseStateStatus
+    waitingWallet?: boolean
+    wrongNetwork?: boolean
 }
 
 export function ReleaseStatus({
@@ -69,9 +68,10 @@ export function ReleaseStatus({
 
                                     case 'pending':
                                         return intl.formatMessage({
-                                            id: isReleased === undefined
-                                                ? 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CHECKING'
-                                                : 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
+                                            id:
+                                                isReleased === undefined
+                                                    ? 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_CHECKING'
+                                                    : 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_PENDING',
                                         })
 
                                     case 'rejected':
@@ -91,11 +91,15 @@ export function ReleaseStatus({
             </div>
             <div className="crosschain-transfer__status-control">
                 <div className="crosschain-transfer__status-note">
-                    {note || intl.formatMessage({
-                        id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
-                    }, {
-                        network: network?.label || '',
-                    })}
+                    {note
+                        || intl.formatMessage(
+                            {
+                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_NOTE',
+                            },
+                            {
+                                network: network?.label || '',
+                            },
+                        )}
                 </div>
 
                 {children}

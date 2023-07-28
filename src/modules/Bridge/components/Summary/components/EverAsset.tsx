@@ -7,7 +7,6 @@ import { sliceAddress, uniqueId } from '@/utils'
 
 export function EverAsset({ address }: { address: string }): JSX.Element {
     const bridge = useBridge()
-    const everWallet = bridge.useEverWallet
 
     const isMount = React.useRef(false)
     const linkId = React.useRef(`link${uniqueId()}-${uniqueId()}`)
@@ -16,7 +15,7 @@ export function EverAsset({ address }: { address: string }): JSX.Element {
 
     const addToEverAsset = (root: string) => async () => {
         try {
-            const result = await everWallet.addAsset(root)
+            const result = await bridge.tvmWallet.addAsset(root)
             setIsOpen(result?.newAsset === false)
         }
         catch (e) {}

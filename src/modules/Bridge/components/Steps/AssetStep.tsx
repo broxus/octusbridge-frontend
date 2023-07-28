@@ -1,7 +1,8 @@
 import { reaction } from 'mobx'
-import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
+import BigNumber from 'bignumber.js'
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
@@ -9,7 +10,7 @@ import { AssetForm } from '@/modules/Bridge/components/AssetForm'
 import { SwapForm } from '@/modules/Bridge/components/SwapForm'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
-
+import { isGoodBignumber } from '@/utils'
 
 export function AssetStep(): JSX.Element {
     const intl = useIntl()
@@ -26,10 +27,10 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isFromEvm && (bridge.isNativeEvmCurrency || bridge.isNativeEverscaleCurrency)) {
+        if (bridge.isFromEvm && (bridge.isNativeEvmCurrency || bridge.isNativeTvmCurrency)) {
             bridge.setState('step', CrosschainBridgeStep.TRANSFER)
         }
-        else if (bridge.isFromEvm && (!bridge.isEverscaleBasedToken || !bridge.pipeline?.isNative)) {
+        else if (bridge.isFromEvm && (!bridge.isTvmBasedToken || !bridge.pipeline?.isNative)) {
             await bridge.checkAllowance()
         }
         else {
@@ -48,6 +49,10 @@ export function AssetStep(): JSX.Element {
         async () => {
             if (bridge.evmPendingWithdrawal) {
                 await bridge.changeToken(bridge.evmPendingWithdrawal.evmTokenAddress)
+                const amount = new BigNumber(bridge.pendingWithdrawalsAmount ?? 0)
+                if (isGoodBignumber(amount)) {
+                    bridge.setData('amount', amount.shiftedBy(-(bridge.decimals ?? 0)).toFixed())
+                }
             }
         },
         {
@@ -73,7 +78,16 @@ export function AssetStep(): JSX.Element {
             <AssetForm />
 
             <Observer>
-                {() => (bridge.pipeline !== undefined ? <SwapForm /> : null)}
+                {() => {
+                    switch (true) {
+                        case bridge.isEvmTvm:
+                        case bridge.isTvmEvm:
+                            return bridge.pipeline !== undefined ? <SwapForm /> : null
+
+                        default:
+                            return null
+                    }
+                }}
             </Observer>
 
             <footer className="crosschain-transfer__footer">
@@ -105,7 +119,7 @@ export function AssetStep(): JSX.Element {
                             {(bridge.isPendingAllowance || bridge.isFetching || bridge.isCalculating) ? (
                                 <Icon icon="loader" className="spin" />
                             ) : intl.formatMessage({
-                                id: bridge.isEvmToEverscale
+                                id: bridge.isEvmTvm
                                     ? 'CROSSCHAIN_TRANSFER_NEXT_STEP_BTN_TEXT'
                                     : 'CROSSCHAIN_TRANSFER_TRANSFER_BTN_TEXT',
                             })}

@@ -1,13 +1,13 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { observer } from 'mobx-react-lite'
 
-import { Section, Title } from '@/components/common/Section'
 import { Pagination } from '@/components/common/Pagination'
-import { useTransfersContext } from '@/modules/Transfers/providers'
-import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
+import { Section, Title } from '@/components/common/Section'
 import { usePagination, useTableOrder, useTextParam } from '@/hooks'
-import { TransfersOrdering } from '@/modules/Transfers/types'
+import { TransfersTable } from '@/modules/Transfers/components/TransfersTable'
+import { useTransfersContext } from '@/modules/Transfers/providers'
+import { type TransfersOrdering } from '@/modules/Transfers/types'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { error } from '@/utils'
 
@@ -26,11 +26,11 @@ function PendingTransfersInner(): JSX.Element {
         }
         try {
             await transfers.fetch({
-                status: 'pending',
-                userAddress,
                 limit: pagination.limit,
                 offset: pagination.offset,
                 ordering: tableOrder.order,
+                status: 'pending',
+                userAddress,
             })
         }
         catch (e) {

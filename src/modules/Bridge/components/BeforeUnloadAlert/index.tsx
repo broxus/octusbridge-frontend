@@ -2,11 +2,9 @@ import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Prompt } from 'react-router-dom'
 
-
 type Props = {
-    message?: string;
+    message?: string
 }
-
 
 export function BeforeUnloadAlert({ message }: Props): JSX.Element {
     const intl = useIntl()
@@ -26,13 +24,12 @@ export function BeforeUnloadAlert({ message }: Props): JSX.Element {
     return (
         <Prompt
             when
-            message={(location, action) => (
-                (action === 'PUSH' && location.pathname.startsWith('/transfer'))
+            message={(location, action) => (action === 'PUSH' && location.pathname.startsWith('/transfer')
                     ? true
-                    : message || intl.formatMessage({
-                        id: 'BEFORE_UNLOAD_ALERT',
-                    })
-            )}
+                    : message
+                      || intl.formatMessage({
+                          id: 'BEFORE_UNLOAD_ALERT',
+                      }))}
         />
     )
 }

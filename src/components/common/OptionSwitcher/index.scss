@@ -1,10 +1,10 @@
 .option-switcher {
     display: flex;
+    gap: 16px;
 
     &__main {
-        color: #ffffff;
+        color: #fff;
         display: block;
-        padding: 0 0 0 16px;
         position: relative;
     }
 

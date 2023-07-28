@@ -1,22 +1,18 @@
+import { Observer, observer } from 'mobx-react-lite'
 import * as React from 'react'
-import BigNumber from 'bignumber.js'
-import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Icon } from '@/components/common/Icon'
 import { TokenAmountField } from '@/components/common/TokenAmountField'
-import { DexConstants } from '@/misc'
 import { useBridge } from '@/modules/Bridge/providers'
-import { formattedAmount, isGoodBignumber } from '@/utils'
+import { formattedAmount } from '@/utils'
 
-
-export function EversAmountFieldset(): JSX.Element {
+export const EversAmountFieldset = observer(() => {
     const intl = useIntl()
     const bridge = useBridge()
-    const everWallet = bridge.useEverWallet
 
     const onChange = (value: string): void => {
-        bridge.setData('eversAmount', value)
+        bridge.setData('expectedEversAmount', value)
     }
 
     return (
@@ -28,59 +24,49 @@ export function EversAmountFieldset(): JSX.Element {
             </legend>
             <div className="crosschain-transfer__controls">
                 <div className="crosschain-transfer__control">
-                    <Observer>
-                        {() => (
-                            <TokenAmountField
-                                decimals={DexConstants.CoinDecimals}
-                                disabled={bridge.isFetching}
-                                displayMaxButton={false}
-                                isValid={bridge.isEversAmountValid}
-                                placeholder="0"
-                                suffix={(
-                                    <div className="amount-field-suffix">
-                                        <Icon icon="everCoinIcon" ratio={1.2} />
-                                        <span>{DexConstants.CoinSymbol}</span>
-                                    </div>
-                                )}
-                                token={bridge.token}
-                                size="md"
-                                value={bridge.eversAmount || ''}
-                                onChange={bridge.isFetching ? undefined : onChange}
-                            />
+                    <TokenAmountField
+                        decimals={bridge.tvmWallet.coin.decimals}
+                        disabled={bridge.isFetching}
+                        displayMaxButton={false}
+                        isValid={bridge.isExpectedEversAmountValid}
+                        placeholder="0"
+                        suffix={(
+                            <div className="amount-field-suffix">
+                                <Icon icon="everCoinIcon" ratio={1.2} />
+                                <span>{bridge.tvmWallet.coin.symbol}</span>
+                            </div>
                         )}
-                    </Observer>
+                        token={bridge.token}
+                        size="md"
+                        value={bridge.expectedEversAmount || ''}
+                        onChange={bridge.isFetching ? undefined : onChange}
+                    />
 
                     <div className="crosschain-transfer__control-hint">
                         <Observer>
                             {() => {
-                                const isInputEmpty = !bridge.eversAmount || bridge.eversAmount?.length === 0
-                                let isMaxValueValid = true
-
-                                if (bridge.eversAmountNumber.isZero()) {
-                                    isMaxValueValid = true
-                                }
-                                else if (!isGoodBignumber(bridge.maxEversAmount || 0)) {
-                                    isMaxValueValid = false
-                                }
-                                else if (isGoodBignumber(bridge.maxEversAmount || 0)) {
-                                    isMaxValueValid = new BigNumber(bridge.maxEversAmount || 0)
-                                    .gte(bridge.eversAmountNumber.shiftedBy(everWallet.coin.decimals))
-                                }
+                                const isInputEmpty = (
+                                    !bridge.expectedEversAmount
+                                    || bridge.expectedEversAmount?.length === 0
+                                )
 
                                 switch (true) {
-                                    case !isMaxValueValid && !isInputEmpty:
+                                    case !bridge.isExpectedEversAmountValid && !isInputEmpty:
                                         return (
                                             <span className="text-danger">
-                                                {intl.formatMessage({
-                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT',
-                                                }, {
-                                                    symbol: DexConstants.CoinSymbol,
-                                                    value: formattedAmount(
-                                                        bridge.maxEversAmount,
-                                                        DexConstants.CoinDecimals,
-                                                        { preserve: true },
-                                                    ),
-                                                })}
+                                                {intl.formatMessage(
+                                                    {
+                                                        id: 'CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_TONS_AMOUNT_HINT',
+                                                    },
+                                                    {
+                                                        symbol: bridge.tvmWallet.coin.symbol,
+                                                        value: formattedAmount(
+                                                            bridge.maxExpectedEversAmount,
+                                                            bridge.tvmWallet.coin.decimals,
+                                                            { preserve: true },
+                                                        ),
+                                                    },
+                                                )}
                                             </span>
                                         )
 
@@ -92,39 +78,16 @@ export function EversAmountFieldset(): JSX.Element {
                     </div>
 
                     {process.env.NODE_ENV !== 'production' && (
-                        <React.Fragment key="amounts">
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
-                                            {'> Min value: '}
-                                            {formattedAmount(
-                                                bridge.minEversAmount,
-                                                DexConstants.CoinDecimals,
-                                                { roundOn: false, preserve: true },
-                                            )}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                            <div className="crosschain-transfer__control-hint">
-                                <Observer>
-                                    {() => (
-                                        <>
-                                            {'> Max value: '}
-                                            {formattedAmount(
-                                                bridge.maxEversAmount,
-                                                DexConstants.CoinDecimals,
-                                                { roundOn: false, preserve: true },
-                                            )}
-                                        </>
-                                    )}
-                                </Observer>
-                            </div>
-                        </React.Fragment>
+                        <div className="crosschain-transfer__control-hint">
+                            {`> Max value: ${formattedAmount(
+                                bridge.maxExpectedEversAmount,
+                                bridge.tvmWallet.coin.decimals,
+                                { preserve: true, roundOn: false },
+                            )}`}
+                        </div>
                     )}
                 </div>
             </div>
         </fieldset>
     )
-}
+})

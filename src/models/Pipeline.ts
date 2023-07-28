@@ -1,9 +1,8 @@
+import { type PublicKey } from '@solana/web3.js'
 import { type Address } from 'everscale-inpage-provider'
 import { computed, makeObservable } from 'mobx'
-import { type PublicKey } from '@solana/web3.js'
 
 import { BaseStore } from '@/stores/BaseStore'
-
 
 export type PipelineData = {
     baseChainId?: string;
@@ -42,7 +41,7 @@ export type PipelineData = {
 
 export class Pipeline extends BaseStore<PipelineData, any> {
 
-    constructor(protected readonly initialData: PipelineData) {
+    constructor(initialData: Readonly<PipelineData>) {
         super()
 
         makeObservable(this, {

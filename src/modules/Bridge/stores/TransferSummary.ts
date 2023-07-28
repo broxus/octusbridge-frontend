@@ -1,10 +1,43 @@
 import { action, computed, makeObservable } from 'mobx'
 
 import { WEVEREvmRoots, WEVERRootAddress } from '@/config'
-import { type PendingWithdrawal, type TransferSummaryData, type TransferSummaryState } from '@/modules/Bridge/types'
+import { type Pipeline } from '@/models'
+import { type PendingWithdrawal } from '@/modules/Bridge/types'
 import { BaseStore } from '@/stores/BaseStore'
-import { type BridgeAssetsService } from '@/stores/BridgeAssetsService'
+import { type BridgeAsset, type BridgeAssetsService } from '@/stores/BridgeAssetsService'
+import { type NetworkShape } from '@/types'
 
+export type TransferSummaryData = {
+    amount?: string
+    bridgeFee?: string
+    depositType?: string
+    depositFee?: string
+    evmTvmCost?: string
+    expectedEversAmount?: string
+    gasPrice?: string
+    leftAddress?: string
+    leftNetwork?: NetworkShape
+    maxTransferFee?: string
+    minTransferFee?: string
+    pipeline?: Pipeline
+    rightAddress?: string
+    rightNetwork?: NetworkShape
+    token?: BridgeAsset
+    withdrawFee?: string
+    pendingWithdrawals?: PendingWithdrawal[]
+    tvmAddress?: string
+    tvmEvmCost?: string
+    txAddress: string
+    secondPipeline?: Pipeline
+    secondDepositFee?: string
+    secondWithdrawFee?: string
+    success?: boolean
+}
+
+export type TransferSummaryState = {
+    isTransferPage?: boolean
+    isTransferReleased?: boolean
+}
 
 export class TransferSummary extends BaseStore<TransferSummaryData, TransferSummaryState> {
 
@@ -15,40 +48,38 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
         makeObservable<TransferSummary>(this, {
             amount: computed,
-            eversAmount: computed,
             bridgeFee: computed,
+            evmTokenDecimals: computed,
+            evmTvmCost: computed,
+            expectedEversAmount: computed,
             gasPrice: computed,
-            everscaleEvmCost: computed,
-            evmEverscaleCost: computed,
-            everscaleAddress: computed,
-            maxTransferFee: computed,
-            minTransferFee: computed,
-            leftAddress: computed,
-            leftNetwork: computed,
-            rightAddress: computed,
-            rightNetwork: computed,
-            pipeline: computed,
-            swapAmount: computed,
-            token: computed,
-            tokenAmount: computed,
+            isEvmEvm: computed,
+            isEvmTvm: computed,
+            isFromTvm: computed,
+            isNativeEvmCurrency: computed,
+            isNativeTvmCurrency: computed,
+            isSolanaTvm: computed,
             isTransferPage: computed,
             isTransferReleased: computed,
+            isTvmBasedToken: computed,
+            isTvmEvm: computed,
+            isTvmSolana: computed,
+            leftAddress: computed,
+            leftNetwork: computed,
+            maxTransferFee: computed,
+            minTransferFee: computed,
+            pipeline: computed,
+            reset: action,
+            rightAddress: computed,
+            rightNetwork: computed,
+            solanaTokenDecimals: computed,
+            success: computed,
+            token: computed,
+            tvmAddress: computed,
+            tvmEvmCost: computed,
+            txAddress: computed,
             vaultBalance: computed,
             vaultBalanceDecimals: computed,
-            txAddress: computed,
-            evmTokenDecimals: computed,
-            solanaTokenDecimals: computed,
-            isEverscaleBasedToken: computed,
-            isEvmToEvm: computed,
-            isEvmToEverscale: computed,
-            isFromEverscale: computed,
-            isEverscaleToEvm: computed,
-            isEverscaleToSolana: computed,
-            isSolanaToEverscale: computed,
-            isNativeEverscaleCurrency: computed,
-            isNativeEvmCurrency: computed,
-            reset: action,
-            success: computed,
         })
     }
 
@@ -61,16 +92,16 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.data.amount
     }
 
-    public get eversAmount(): TransferSummaryData['eversAmount'] {
-        return this.data.eversAmount
+    public get expectedEversAmount(): TransferSummaryData['expectedEversAmount'] {
+        return this.data.expectedEversAmount
     }
 
     public get bridgeFee(): TransferSummaryData['bridgeFee'] {
         return this.data.bridgeFee
     }
 
-    public get everscaleAddress(): TransferSummaryData['everscaleAddress'] {
-        return this.data.everscaleAddress
+    public get tvmAddress(): TransferSummaryData['tvmAddress'] {
+        return this.data.tvmAddress
     }
 
     public get maxTransferFee(): TransferSummaryData['maxTransferFee'] {
@@ -87,6 +118,14 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get withdrawFee(): TransferSummaryData['withdrawFee'] {
         return this.data.withdrawFee
+    }
+
+    public get secondDepositFee(): TransferSummaryData['secondDepositFee'] {
+        return this.data.secondDepositFee
+    }
+
+    public get secondWithdrawFee(): TransferSummaryData['secondWithdrawFee'] {
+        return this.data.secondWithdrawFee
     }
 
     public get leftAddress(): TransferSummaryData['leftAddress'] {
@@ -109,32 +148,24 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.data.pipeline
     }
 
-    public get hiddenBridgePipeline(): TransferSummaryData['hiddenBridgePipeline'] {
-        return this.data.hiddenBridgePipeline
-    }
-
-    public get swapAmount(): TransferSummaryData['swapAmount'] {
-        return this.data.swapAmount
+    public get secondPipeline(): TransferSummaryData['secondPipeline'] {
+        return this.data.secondPipeline
     }
 
     public get token(): TransferSummaryData['token'] {
         return this.data.token
     }
 
-    public get tokenAmount(): TransferSummaryData['tokenAmount'] {
-        return this.data.tokenAmount
-    }
-
     public get gasPrice(): TransferSummaryData['gasPrice'] {
         return this.data.gasPrice
     }
 
-    public get everscaleEvmCost(): TransferSummaryData['everscaleEvmCost'] {
-        return this.data.everscaleEvmCost
+    public get tvmEvmCost(): TransferSummaryData['tvmEvmCost'] {
+        return this.data.tvmEvmCost
     }
 
-    public get evmEverscaleCost(): TransferSummaryData['evmEverscaleCost'] {
-        return this.data.evmEverscaleCost
+    public get evmTvmCost(): TransferSummaryData['evmTvmCost'] {
+        return this.data.evmTvmCost
     }
 
     public get isTransferPage(): TransferSummaryState['isTransferPage'] {
@@ -146,18 +177,18 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get vaultBalance(): string | undefined {
-        if (this.isEvmToEvm) {
-            return this.hiddenBridgePipeline?.vaultBalance
+        if (this.isEvmEvm) {
+            return this.secondPipeline?.vaultBalance
         }
         return this.pipeline?.vaultBalance
     }
 
     public get vaultBalanceDecimals(): number | undefined {
-        if (this.isEverscaleToSolana || this.isSolanaToEverscale) {
+        if (this.isTvmSolana || this.isSolanaTvm) {
             return this.pipeline?.solanaTokenDecimals
         }
-        if (this.isEvmToEvm) {
-            return this.hiddenBridgePipeline?.evmTokenDecimals
+        if (this.isEvmEvm) {
+            return this.secondPipeline?.evmTokenDecimals
         }
         return this.pipeline?.evmTokenDecimals
     }
@@ -170,11 +201,11 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.pipeline?.solanaTokenDecimals
     }
 
-    public get isEverscaleBasedToken(): boolean {
+    public get isTvmBasedToken(): boolean {
         return this.pipeline?.tokenBase === 'tvm'
     }
 
-    public get isNativeEverscaleCurrency(): boolean {
+    public get isNativeTvmCurrency(): boolean {
         if (this.data.token) {
             return [...WEVEREvmRoots, WEVERRootAddress.toString()].includes(this.data.token.root)
         }
@@ -182,21 +213,21 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
     }
 
     public get isNativeEvmCurrency(): boolean {
-        if (this.data.token && !this.isNativeEverscaleCurrency && this.data.token.root) {
+        if (this.data.token && !this.isNativeTvmCurrency && this.data.token.root) {
             return this.bridgeAssets.isNativeCurrency(this.data.token.root)
         }
         return false
     }
 
-    public get isEvmToEvm(): boolean {
+    public get isEvmEvm(): boolean {
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'evm'
     }
 
-    public get isEvmToEverscale(): boolean {
+    public get isEvmTvm(): boolean {
         return this.leftNetwork?.type === 'evm' && this.rightNetwork?.type === 'tvm'
     }
 
-    public get isFromEverscale(): boolean {
+    public get isFromTvm(): boolean {
         return this.leftNetwork?.type === 'tvm'
     }
 
@@ -204,15 +235,15 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
         return this.leftNetwork?.type === 'evm'
     }
 
-    public get isEverscaleToEvm(): boolean {
+    public get isTvmEvm(): boolean {
         return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'evm'
     }
 
-    public get isEverscaleToSolana(): boolean {
+    public get isTvmSolana(): boolean {
         return this.leftNetwork?.type === 'tvm' && this.rightNetwork?.type === 'solana'
     }
 
-    public get isSolanaToEverscale(): boolean {
+    public get isSolanaTvm(): boolean {
         return this.leftNetwork?.type === 'solana' && this.rightNetwork?.type === 'tvm'
     }
 

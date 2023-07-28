@@ -1500,6 +1500,91 @@ export abstract class MultiVaultAbi {
                 inputs: [],
                 outputs: [{ name: 'signatures', type: 'map(uint256,bytes)' }],
             },
+            {
+                name: 'nonce',
+                inputs: [],
+                outputs: [{ name: 'nonce', type: 'uint32' }],
+            },
+            {
+                name: 'proxy',
+                inputs: [],
+                outputs: [{ name: 'proxy', type: 'address' }],
+            },
+            {
+                name: 'tokenWallet',
+                inputs: [],
+                outputs: [{ name: 'tokenWallet', type: 'address' }],
+            },
+            {
+                name: 'token',
+                inputs: [],
+                outputs: [{ name: 'token', type: 'address' }],
+            },
+            {
+                name: 'remainingGasTo',
+                inputs: [],
+                outputs: [{ name: 'remainingGasTo', type: 'address' }],
+            },
+            {
+                name: 'amount',
+                inputs: [],
+                outputs: [{ name: 'amount', type: 'uint128' }],
+            },
+            {
+                name: 'recipient',
+                inputs: [],
+                outputs: [{ name: 'recipient', type: 'uint160' }],
+            },
+            {
+                name: 'chainId',
+                inputs: [],
+                outputs: [{ name: 'chainId', type: 'uint256' }],
+            },
+            {
+                name: 'sender',
+                inputs: [],
+                outputs: [{ name: 'sender', type: 'address' }],
+            },
+            {
+                name: 'initial_balance',
+                inputs: [],
+                outputs: [{ name: 'initial_balance', type: 'uint128' }],
+            },
+            {
+                name: 'callback_recipient',
+                inputs: [],
+                outputs: [{ name: 'callback_recipient', type: 'uint160' }],
+            },
+            {
+                name: 'callback_payload',
+                inputs: [],
+                outputs: [{ name: 'callback_payload', type: 'bytes' }],
+            },
+            {
+                name: 'callback_strict',
+                inputs: [],
+                outputs: [{ name: 'callback_strict', type: 'bool' }],
+            },
+            {
+                name: 'name',
+                inputs: [],
+                outputs: [{ name: 'name', type: 'string' }],
+            },
+            {
+                name: 'symbol',
+                inputs: [],
+                outputs: [{ name: 'symbol', type: 'string' }],
+            },
+            {
+                name: 'decimals',
+                inputs: [],
+                outputs: [{ name: 'decimals', type: 'uint8' }],
+            },
+            {
+                name: 'expectedTokenWallet',
+                inputs: [],
+                outputs: [{ name: 'expectedTokenWallet', type: 'address' }],
+            },
         ],
         data: [
             {
@@ -1582,6 +1667,7 @@ export abstract class MultiVaultAbi {
                 type: 'tuple',
             },
             { name: 'signatures', type: 'map(uint256,bytes)' },
+            { name: 'nonce', type: 'uint32' },
             { name: 'proxy', type: 'address' },
             { name: 'tokenWallet', type: 'address' },
             { name: 'token', type: 'address' },
@@ -1589,6 +1675,8 @@ export abstract class MultiVaultAbi {
             { name: 'amount', type: 'uint128' },
             { name: 'recipient', type: 'uint160' },
             { name: 'chainId', type: 'uint256' },
+            { name: 'sender', type: 'address' },
+            { name: 'initial_balance', type: 'uint128' },
             { name: 'callback_recipient', type: 'uint160' },
             { name: 'callback_payload', type: 'bytes' },
             { name: 'callback_strict', type: 'bool' },
@@ -3029,6 +3117,105 @@ export abstract class MultiVaultAbi {
             { name: 'walletVersion_', type: 'uint32' },
             { name: 'base_chainId_', type: 'uint256' },
             { name: 'base_token_', type: 'uint160' },
+        ],
+    } as const
+
+    static Mediator = {
+        'ABI version': 2,
+        version: '2.2',
+        header: ['time', 'expire'],
+        functions: [
+            {
+                name: 'constructor',
+                inputs: [
+                    { name: '_owner', type: 'address' },
+                    { name: '_nativeProxy', type: 'address' },
+                    { name: '_alienTokenWalletPlatformCode', type: 'cell' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'setNativeProxy',
+                inputs: [{ name: '_nativeProxy', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'onAcceptTokensMint',
+                inputs: [
+                    { name: 'tokenRoot', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payloadWithNonce', type: 'cell' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'onAcceptTokensTransfer',
+                inputs: [
+                    { name: 'value0', type: 'address' },
+                    { name: 'amount', type: 'uint128' },
+                    { name: 'sender', type: 'address' },
+                    { name: 'value3', type: 'address' },
+                    { name: 'remainingGasTo', type: 'address' },
+                    { name: 'payloadWithNonce', type: 'cell' },
+                ],
+                outputs: [],
+            },
+            {
+                name: 'upgrade',
+                inputs: [{ name: 'code', type: 'cell' }],
+                outputs: [],
+            },
+            {
+                name: 'transferOwnership',
+                inputs: [{ name: 'newOwner', type: 'address' }],
+                outputs: [],
+            },
+            {
+                name: 'renounceOwnership',
+                inputs: [],
+                outputs: [],
+            },
+            {
+                name: 'owner',
+                inputs: [],
+                outputs: [{ name: 'owner', type: 'address' }],
+            },
+            {
+                name: '_randomNonce',
+                inputs: [],
+                outputs: [{ name: '_randomNonce', type: 'uint256' }],
+            },
+            {
+                name: 'alienTokenWalletPlatformCode',
+                inputs: [],
+                outputs: [{ name: 'alienTokenWalletPlatformCode', type: 'cell' }],
+            },
+            {
+                name: 'nativeProxy',
+                inputs: [],
+                outputs: [{ name: 'nativeProxy', type: 'address' }],
+            },
+        ],
+        data: [{ key: 1, name: '_randomNonce', type: 'uint256' }],
+        events: [
+            {
+                name: 'OwnershipTransferred',
+                inputs: [
+                    { name: 'previousOwner', type: 'address' },
+                    { name: 'newOwner', type: 'address' },
+                ],
+                outputs: [],
+            },
+        ],
+        fields: [
+            { name: '_pubkey', type: 'uint256' },
+            { name: '_timestamp', type: 'uint64' },
+            { name: '_constructorFlag', type: 'bool' },
+            { name: 'owner', type: 'address' },
+            { name: '_randomNonce', type: 'uint256' },
+            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
+            { name: 'nativeProxy', type: 'address' },
         ],
     } as const
 

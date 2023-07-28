@@ -1,6 +1,6 @@
-import * as React from 'react'
 import BigNumber from 'bignumber.js'
-import { Observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 import { Tooltip } from 'react-tooltip'
 
@@ -22,14 +22,13 @@ import {
     isEverscaleAddressValid,
     isEvmAddressValid,
     sliceAddress,
-    storage, uniqueId,
+    storage,
+    uniqueId,
 } from '@/utils'
 
-
-export function TokensAssetsFieldset(): JSX.Element {
+export const TokensAssetsFieldset = observer(() => {
     const intl = useIntl()
     const bridge = useBridge()
-    const bridgeAssets = bridge.useBridgeAssets
 
     const selectRef = React.useRef<BaseSelectRef>(null)
     const [token, setToken] = React.useState<BridgeAsset>()
@@ -67,17 +66,17 @@ export function TokensAssetsFieldset(): JSX.Element {
         const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
 
         importedAssets[token.get('key')] = {
+            chainId: token.chainId,
             decimals: token.decimals,
+            icon: token.icon,
+            key: token.get('key'),
             name: token.name,
             root: token.root,
-            icon: token.icon,
             symbol: token.symbol,
-            chainId: token.chainId,
-            key: token.get('key'),
         }
 
         storage.set('imported_assets', JSON.stringify(importedAssets))
-        bridgeAssets.add(token)
+        bridge.bridgeAssets.add(token)
         setImporting(false)
         setToken(undefined)
         bridge.changeToken(token.root).catch(error)
@@ -98,10 +97,10 @@ export function TokensAssetsFieldset(): JSX.Element {
         const root = value.toLowerCase()
         const { type, chainId } = bridge.leftNetwork
         const key = `${type}-${chainId}-${root}`
-        if (bridgeAssets.has(key)) {
+        if (bridge.bridgeAssets.has(key)) {
             bridge.setData('selectedToken', root)
         }
-        else if (bridge.isFromEverscale && isEverscaleAddressValid(root)) {
+ else if (bridge.isFromTvm && isEverscaleAddressValid(root)) {
             try {
                 const asset = await TokenWallet.getTokenFullDetails(root)
 
@@ -109,27 +108,29 @@ export function TokensAssetsFieldset(): JSX.Element {
                     try {
                         const meta = await BridgeUtils.getAlienTokenRootMeta(asset.address)
                         const evmTokenAddress = `0x${new BigNumber(meta.base_token).toString(16).padStart(40, '0')}`
-                        const evmToken = bridgeAssets.get('evm', meta.base_chainId, evmTokenAddress)
+                        const evmToken = bridge.bridgeAssets.get('evm', meta.base_chainId, evmTokenAddress)
                         asset.logoURI = evmToken?.icon
                     }
-                    catch (e) {
+ catch (e) {
                         //
                     }
 
-                    setToken(new EverscaleToken({
-                        ...asset,
-                        root,
-                        key,
-                        chainId,
-                    }))
+                    setToken(
+                        new EverscaleToken({
+                            ...asset,
+                            chainId,
+                            key,
+                            root,
+                        }),
+                    )
                     selectRef.current?.blur()
                 }
             }
-            catch (e) {
+ catch (e) {
                 //
             }
         }
-        else if (bridge.isFromEvm && isEvmAddressValid(root)) {
+ else if (bridge.isFromEvm && isEvmAddressValid(root)) {
             const network = findNetwork(bridge.leftNetwork.chainId, 'evm')
 
             if (network === undefined) {
@@ -145,41 +146,42 @@ export function TokensAssetsFieldset(): JSX.Element {
 
                 const asset: EvmTokenData = {
                     address: root,
-                    root,
                     decimals: parseInt(decimals, 10),
                     name,
+                    root,
                     symbol,
                 }
 
                 try {
-                    const vault = bridgeAssets.multiAssets.evm_everscale.vaults.find(v => (
-                        v.chainId === bridge.leftNetwork?.chainId
-                    ))
+                    const vault = bridge.bridgeAssets.multiAssets.evm_everscale.vaults.find(
+                        v => v.chainId === bridge.leftNetwork?.chainId,
+                    )
 
                     if (vault !== undefined) {
-                        const vaultContract = evmMultiVaultContract(
-                            vault.vault,
-                            network.rpcUrl,
-                        )
+                        const vaultContract = evmMultiVaultContract(vault.vault, network.rpcUrl)
                         const result = await vaultContract.methods.natives(root).call()
-                        const everscaleAddress = `${result.wid}:${new BigNumber(result.addr).toString(16).padStart(64, '0')}`
-                        const everscaleToken = bridgeAssets.get('tvm', '42', everscaleAddress)
+                        const everscaleAddress = `${result.wid}:${new BigNumber(result.addr)
+                            .toString(16)
+                            .padStart(64, '0')}`
+                        const everscaleToken = bridge.bridgeAssets.get('tvm', '42', everscaleAddress)
                         asset.logoURI = everscaleToken?.icon
                     }
                 }
-                catch (e) {
+ catch (e) {
                     //
                 }
 
-                setToken(new EvmToken({
-                    ...asset,
-                    root,
-                    key,
-                    chainId,
-                }))
+                setToken(
+                    new EvmToken({
+                        ...asset,
+                        chainId,
+                        key,
+                        root,
+                    }),
+                )
                 selectRef.current?.blur()
             }
-            catch (e) {
+ catch (e) {
                 //
             }
         }
@@ -197,7 +199,7 @@ export function TokensAssetsFieldset(): JSX.Element {
             const importedAssets = JSON.parse(storage.get('imported_assets') || '{}')
             delete importedAssets[removingToken.get('key')]
             storage.set('imported_assets', JSON.stringify(importedAssets))
-            bridgeAssets.remove(removingToken)
+            bridge.bridgeAssets.remove(removingToken)
             setRemovingToken(undefined)
             setRemoving(undefined)
             selectRef.current?.focus()
@@ -221,141 +223,121 @@ export function TokensAssetsFieldset(): JSX.Element {
             </legend>
             <div className="crosschain-transfer__controls">
                 <div className="crosschain-transfer__control">
-                    <Observer>
-                        {() => (
-                            <Select
-                                ref={selectRef}
-                                className="rc-select-assets rc-select--md"
-                                notFoundContent="Token not found"
-                                open={bridge.token ? undefined : isOpen}
-                                optionFilterProp="search"
-                                options={token !== undefined ? [{
-                                    label: (
-                                        <div className="token-select-label">
-                                            <TokenIcon
-                                                address={token.root}
-                                                size="xsmall"
-                                                uri={token.icon}
-                                            />
-                                            <div className="token-select-label__symbol text-truncate">
-                                                {`${token.symbol ?? 'Non-exist'} (${sliceAddress(token.root)})`}
-                                            </div>
-                                            {bridge.leftNetwork?.tokenType !== undefined && (
-                                                <div className="token-select-label__badge">
-                                                    <span>
-                                                        {bridge.leftNetwork?.tokenType}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ),
-                                    value: token.root,
-                                }] : bridge.tokens.map(asset => {
-                                    const {
-                                        icon,
-                                        name,
-                                        root,
-                                        symbol,
-                                    } = asset
-                                    const tooltipId = `remove${uniqueId()}`
-                                    return ({
-                                        label: (
-                                            <div className="token-select-label">
-                                                <div className="token-select-label-inner">
-                                                    <TokenIcon
-                                                        address={root}
-                                                        size="xsmall"
-                                                        uri={icon}
-                                                    />
-                                                    <div className="token-select-label__symbol text-truncate">
-                                                        {symbol}
-                                                    </div>
-                                                    {process.env.NODE_ENV !== 'production' && (
-                                                        <span className="text-muted">{sliceAddress(root)}</span>
-                                                    )}
-                                                </div>
-                                                {bridgeAssets.isCustomToken(root) && (
-                                                    <div>
-                                                        <Icon
-                                                            className="token-select-label__remove"
-                                                            icon="close"
-                                                            id={tooltipId}
-                                                            ratio={0.8}
-                                                            data-tooltip-content={intl.formatMessage(
-                                                                { id: 'REMOVE_ASSET' },
-                                                            )}
-                                                            onClick={onRemoveImportedToken(asset)}
-                                                        />
-                                                        <Tooltip
-                                                            anchorId={tooltipId}
-                                                            className="tooltip-common-small"
-                                                            place="left"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ),
-                                        search: `${symbol} ${name} ${root}`,
-                                        value: root,
-                                    })
-                                })}
-                                placeholder={intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
-                                }, { blockchainName: bridge.leftNetwork?.label ?? '' })}
-                                showSearch
-                                allowClear={token !== undefined}
-                                value={token?.root ?? bridge.token?.root}
-                                virtual
-                                onBlur={isRemoving ? undefined : onBlur}
-                                onChange={token === undefined ? onChangeToken : undefined}
-                                onClear={onClear}
-                                onFocus={onFocus}
-                                onSearch={onSearch}
-                                onInputKeyDown={onInputKeyDown}
-                                disabled={bridge.isFetching || bridge.evmPendingWithdrawal !== undefined}
-                            />
+                    <Select
+                        ref={selectRef}
+                        className="rc-select-assets rc-select--md"
+                        notFoundContent="Token not found"
+                        open={bridge.token ? undefined : isOpen}
+                        optionFilterProp="search"
+                        options={
+                            token !== undefined
+                                ? [
+                                      {
+                                          label: (
+                                              <div className="token-select-label">
+                                                  <TokenIcon address={token.root} size="xsmall" uri={token.icon} />
+                                                  <div className="token-select-label__symbol text-truncate">
+                                                      {`${token.symbol ?? 'Non-exist'} (${sliceAddress(token.root)})`}
+                                                  </div>
+                                                  {bridge.leftNetwork?.tokenType !== undefined && (
+                                                      <div className="token-select-label__badge">
+                                                          <span>{bridge.leftNetwork?.tokenType}</span>
+                                                      </div>
+                                                  )}
+                                              </div>
+                                          ),
+                                          value: token.root,
+                                      },
+                                  ]
+                                : bridge.tokens.map(asset => {
+                                      const { icon, name, root, symbol } = asset
+                                      const tooltipId = `remove${uniqueId()}`
+                                      return {
+                                          label: (
+                                              <div className="token-select-label">
+                                                  <div className="token-select-label-inner">
+                                                      <TokenIcon address={root} size="xsmall" uri={icon} />
+                                                      <div className="token-select-label__symbol text-truncate">
+                                                          {symbol}
+                                                      </div>
+                                                      {process.env.NODE_ENV !== 'production' && (
+                                                          <span className="text-muted">{sliceAddress(root)}</span>
+                                                      )}
+                                                  </div>
+                                                  {bridge.bridgeAssets.isCustomToken(root) && (
+                                                      <div>
+                                                          <Icon
+                                                              className="token-select-label__remove"
+                                                              icon="close"
+                                                              id={tooltipId}
+                                                              ratio={0.8}
+                                                              data-tooltip-content={intl.formatMessage({
+                                                                  id: 'REMOVE_ASSET',
+                                                              })}
+                                                              onClick={onRemoveImportedToken(asset)}
+                                                          />
+                                                          <Tooltip
+                                                              anchorId={tooltipId}
+                                                              className="tooltip-common-small"
+                                                              place="left"
+                                                          />
+                                                      </div>
+                                                  )}
+                                              </div>
+                                          ),
+                                          search: `${symbol} ${name} ${root}`,
+                                          value: root,
+                                      }
+                                  })
+                        }
+                        placeholder={intl.formatMessage(
+                            {
+                                id: 'CROSSCHAIN_TRANSFER_ASSET_SELECT_TOKEN_PLACEHOLDER',
+                            },
+                            { blockchainName: bridge.leftNetwork?.label ?? '' },
                         )}
-                    </Observer>
+                        showSearch
+                        allowClear={token !== undefined}
+                        value={token?.root ?? bridge.token?.root}
+                        virtual
+                        onBlur={isRemoving ? undefined : onBlur}
+                        onChange={token === undefined ? onChangeToken : undefined}
+                        onClear={onClear}
+                        onFocus={onFocus}
+                        onSearch={onSearch}
+                        onInputKeyDown={onInputKeyDown}
+                        disabled={bridge.isFetching || bridge.evmPendingWithdrawal !== undefined}
+                    />
 
-                    <Observer>
-                        {() => (
-                            <React.Fragment key="blacklisted">
-                                {bridge.pipeline?.isBlacklisted && (
-                                    <Alert
-                                        className="margin-top"
-                                        text={intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT',
-                                        }, {
-                                            blockchain: bridge.rightNetwork?.label,
-                                            symbol: bridge.token?.symbol,
-                                        }, { ignoreTag: true })}
-                                        title={intl.formatMessage({
-                                            id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE',
-                                        })}
-                                        type="danger"
-                                    />
-                                )}
-                            </React.Fragment>
-                        )}
-                    </Observer>
+                    {bridge.pipeline?.isBlacklisted && (
+                        <Alert
+                            className="margin-top"
+                            text={intl.formatMessage(
+                                {
+                                    id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TEXT',
+                                },
+                                {
+                                    blockchain: bridge.rightNetwork?.label,
+                                    symbol: bridge.token?.symbol,
+                                },
+                                { ignoreTag: true },
+                            )}
+                            title={intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_ASSET_TOKEN_IS_BLACKLISTED_TITLE',
+                            })}
+                            type="danger"
+                        />
+                    )}
                 </div>
-                {(token?.symbol !== undefined && token.root !== undefined) && (
+                {token?.symbol !== undefined && token.root !== undefined && (
                     <>
                         <div className="crosschain-transfer__wallet">
-                            <Button
-                                size="md"
-                                type="primary"
-                                onClick={onImport}
-                            >
+                            <Button size="md" type="primary" onClick={onImport}>
                                 Import
                             </Button>
                         </div>
                         {isImporting && (
-                            <TokenImportPopup
-                                token={token}
-                                onClose={onCloseImportPopup}
-                                ocConfirm={onConfirmImport}
-                            />
+                            <TokenImportPopup token={token} onClose={onCloseImportPopup} ocConfirm={onConfirmImport} />
                         )}
                     </>
                 )}
@@ -369,4 +351,4 @@ export function TokensAssetsFieldset(): JSX.Element {
             </div>
         </fieldset>
     )
-}
+})

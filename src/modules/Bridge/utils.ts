@@ -1,79 +1,199 @@
-import BigNumber from 'bignumber.js'
-import { type AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { type AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import BigNumber from 'bignumber.js'
 
 import { IndexerApiBaseUrl } from '@/config'
+import staticRpc from '@/hooks/useStaticRpc'
 import { DexConstants } from '@/misc'
+import { TransitOperation } from '@/modules/Bridge/types'
 
 export function unshiftedAmountWithSlippage(amount: BigNumber, slippage: number | string): BigNumber {
-    return amount.times(100)
+    return amount
+        .times(100)
         .div(new BigNumber(100).minus(slippage))
         .shiftedBy(DexConstants.CoinDecimals)
         .dp(0, BigNumber.ROUND_UP)
 }
 
-const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey(
-    'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-)
+const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 
 export async function findAssociatedTokenAddress(
     walletAddress: PublicKey,
     tokenMintAddress: PublicKey,
 ): Promise<PublicKey> {
-    return (await PublicKey.findProgramAddress(
-        [
-            walletAddress.toBuffer(),
-            TOKEN_PROGRAM_ID.toBuffer(),
-            tokenMintAddress.toBuffer(),
-        ],
-        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
-    ))[0]
+    return (
+        await PublicKey.findProgramAddress(
+            [walletAddress.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), tokenMintAddress.toBuffer()],
+            SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+        )
+    )[0]
 }
 
 export function accountMetaFromRust(meta: any): AccountMeta {
     return {
-        pubkey: new PublicKey(meta.pubkey),
         isSigner: meta.is_signer,
         isWritable: meta.is_writable,
+        pubkey: new PublicKey(meta.pubkey),
     }
 }
 
 export function ixFromRust(data: any): TransactionInstruction {
     const keys: Array<AccountMeta> = data.accounts.map(accountMetaFromRust)
     return new TransactionInstruction({
-        programId: new PublicKey(data.program_id),
         data: Buffer.from(data.data),
         keys,
+        programId: new PublicKey(data.program_id),
     })
 }
 
 export type Tickers = 'ETH' | 'BNB' | 'FTM' | 'MATIC' | 'AVAX'
 
-export async function getPrice(ticker: Tickers): Promise<{ ticker: Tickers, price: string }> {
+export async function getPrice(ticker: Tickers): Promise<{ ticker: Tickers; price: string }> {
     return fetch(`${IndexerApiBaseUrl}/gate_prices`, {
         body: JSON.stringify({ ticker }),
-        mode: 'cors',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         method: 'POST',
+        mode: 'cors',
     }).then(value => value.json())
 }
 
+export async function deriveEvmAddressFromOperations(base64str: string): Promise<string> {
+    try {
+        const operationPayload = await staticRpc.unpackFromCell({
+            allowPartial: true,
+            boc: base64str,
+            structure: [
+                { name: 'operation', type: 'uint8' },
+                { name: 'recipient', type: 'address' },
+                { name: 'payload', type: 'cell' },
+            ] as const,
+        })
+
+        if (operationPayload.data.operation === TransitOperation.BurnToAlienProxy) {
+            const callback = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: operationPayload.data.payload,
+                structure: [
+                    { name: 'network', type: 'uint8' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            const data = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: callback.data.payload,
+                structure: [
+                    { name: 'targetAddress', type: 'uint160' },
+                    { name: 'chainId', type: 'uint256' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                        name: 'callback',
+                        type: 'tuple',
+                    },
+                ] as const,
+            })
+
+            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+        }
+        if (operationPayload.data.operation === TransitOperation.BurnToMergePool) {
+            const burnPayload = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: operationPayload.data.payload,
+                structure: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'burnType', type: 'uint8' },
+                    { name: 'targetToken', type: 'address' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            const callback = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: burnPayload.data.payload,
+                structure: [
+                    { name: 'network', type: 'uint8' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            const data = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: callback.data.payload,
+                structure: [
+                    { name: 'targetAddress', type: 'uint160' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                        name: 'callback',
+                        type: 'tuple',
+                    },
+                ] as const,
+            })
+
+            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+        }
+        if (operationPayload.data.operation === TransitOperation.TransferToNativeProxy) {
+            const transferPayload = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: operationPayload.data.payload,
+                structure: [
+                    { name: 'nonce', type: 'uint32' },
+                    { name: 'network', type: 'uint8' },
+                    { name: 'payload', type: 'cell' },
+                ] as const,
+            })
+
+            const data = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: transferPayload.data.payload,
+                structure: [
+                    { name: 'targetAddress', type: 'uint160' },
+                    { name: 'chainId', type: 'uint256' },
+                    {
+                        components: [
+                            { name: 'recipient', type: 'uint160' },
+                            { name: 'payload', type: 'cell' },
+                            { name: 'strict', type: 'bool' },
+                        ] as const,
+                        name: 'callback',
+                        type: 'tuple',
+                    },
+                ] as const,
+            })
+
+            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+        }
+
+        return ''
+    }
+    catch (e) {
+        return ''
+    }
+}
+
 export type UnwrapPayloadRequest = {
-    remainingGasTo: string;
-    destination: string;
-    amount: string;
-    payload?: string;
-};
+    remainingGasTo: string
+    destination: string
+    amount: string
+    payload?: string
+}
 
 type UnwrapResponse = {
-    tokensTransferPayload: string;
-    sendTo: string;
-    everAmount: string;
-    tokenAmount: string;
-};
+    tokensTransferPayload: string
+    sendTo: string
+    everAmount: string
+    tokenAmount: string
+}
 
 export async function getUnwrapPayload(
     unwrapConfig: UnwrapPayloadRequest,
@@ -81,13 +201,15 @@ export async function getUnwrapPayload(
 ): Promise<UnwrapResponse> {
     return fetch(`${apiEndpoint}/v2/middleware`, {
         body: JSON.stringify({ input: { unwrapAll: unwrapConfig }}),
-        mode: 'cors',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         method: 'POST',
-    }).then(value => value.json()).then(value => value.output.unwrapAll)
+        mode: 'cors',
+    })
+        .then(value => value.json())
+        .then(value => value.output.unwrapAll)
 }
 
 type MiddlewareDecodePayloadForUnwrap = {
@@ -111,11 +233,11 @@ export async function middlewareDecodePayload(
 ): Promise<MiddlewareDecodePayloadResponse> {
     return fetch(`${apiEndpoint}/v2/middleware/decode_payload`, {
         body: JSON.stringify({ payload }),
-        mode: 'cors',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         method: 'POST',
+        mode: 'cors',
     }).then(value => value.json())
 }

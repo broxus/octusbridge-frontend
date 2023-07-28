@@ -3,7 +3,6 @@ import { type Contract } from 'web3-eth-contract'
 
 import { EthAbi } from './abi'
 
-
 export function evmMultiVaultContract(address: string, rpcUrl: string): Contract {
     const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl))
     return new web3.eth.Contract(EthAbi.MultiVault, address)

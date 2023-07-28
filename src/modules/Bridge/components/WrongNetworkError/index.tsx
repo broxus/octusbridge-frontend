@@ -7,13 +7,11 @@ import { Button } from '@/components/common/Button'
 import { type EvmWalletService } from '@/stores/EvmWalletService'
 import { type NetworkShape } from '@/types'
 
-
 type Props = {
-    className?: string;
-    network: NetworkShape;
-    wallet: EvmWalletService;
+    className?: string
+    network: NetworkShape
+    wallet: EvmWalletService
 }
-
 
 export function WrongNetworkError({ className, network, wallet }: Props): JSX.Element {
     const intl = useIntl()

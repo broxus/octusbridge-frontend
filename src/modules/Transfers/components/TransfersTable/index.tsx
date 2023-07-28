@@ -1,11 +1,10 @@
+import { observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import { observer } from 'mobx-react-lite'
 
 import { Align, Table } from '@/components/common/Table'
-import { type Transfer, type TransfersOrdering } from '@/modules/Transfers/types'
 import { Item } from '@/modules/Transfers/components/TransfersTable/Item'
-
+import { type Transfer, type TransfersOrdering } from '@/modules/Transfers/types'
 
 import './index.scss'
 
@@ -43,12 +42,12 @@ export function TransfersTableInner({
                     id: 'TRANSFERS_TO',
                 }),
             }, {
-                name: intl.formatMessage({
-                    id: 'TRANSFERS_DATE',
-                }),
                 align: Align.right,
                 ascending: 'createdatascending',
                 descending: 'createdatdescending',
+                name: intl.formatMessage({
+                    id: 'TRANSFERS_DATE',
+                }),
             }]}
             rawRows={items.map((item, index) => (
                 /* eslint-disable react/no-array-index-key */

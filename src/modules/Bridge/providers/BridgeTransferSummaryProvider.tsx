@@ -3,7 +3,6 @@ import * as React from 'react'
 import { TransferSummary } from '@/modules/Bridge/stores/TransferSummary'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 
-
 export const BridgeTransferSummeryContext = React.createContext<TransferSummary>(new TransferSummary(useBridgeAssets()))
 
 export function useSummary(): TransferSummary {

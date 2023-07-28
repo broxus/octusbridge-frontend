@@ -1,10 +1,9 @@
-import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
 import { useSummary } from '@/modules/Bridge/providers'
-
 
 export function TransitDetails(): JSX.Element {
     const intl = useIntl()
@@ -14,7 +13,7 @@ export function TransitDetails(): JSX.Element {
         <Observer>
             {() => (
                 <React.Fragment key="transit">
-                    {(summary.isEvmToEvm && summary.everscaleAddress !== undefined) && (
+                    {(summary.isEvmEvm && summary.tvmAddress !== undefined) && (
                         <li key="everscale-address">
                             <div className="text-muted">
                                 {intl.formatMessage({
@@ -24,7 +23,7 @@ export function TransitDetails(): JSX.Element {
                             <div className="text-truncate">
                                 <EverscanAccountLink
                                     key="everscale-address"
-                                    address={summary.everscaleAddress}
+                                    address={summary.tvmAddress}
                                     copy
                                 />
                             </div>

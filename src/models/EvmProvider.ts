@@ -160,7 +160,8 @@ export class EvmProvider {
 
         const provider = await EthereumProvider.init({
             projectId: WalletConnectProjectId,
-            chains,
+            chains: [1],
+            optionalChains: chains,
             methods: [
                 'eth_sendTransaction',
                 'personal_sign',

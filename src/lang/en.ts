@@ -1,3 +1,5 @@
+
+/* eslint-disable sort-keys */
 export default {
     OPEN_IN_EXPLORER: 'Open in EVERScan',
     OPEN_IN_ETHERSCAN: 'Open in {explorerLabel}',
@@ -245,7 +247,7 @@ export default {
     CROSSCHAIN_TRANSFER_SUMMARY_EVERSCALE_ADDRESS: 'Everscale address',
     CROSSCHAIN_TRANSFER_SUMMARY_VAULT_BALANCE: 'Vault balance, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_FEES: 'Fees',
-    CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE: 'Bridge fee, {symbol}',
+    CROSSCHAIN_TRANSFER_SUMMARY_BRIDGE_FEE: 'Bridge fee',
     CROSSCHAIN_TRANSFER_SUMMARY_TRANSFER_FEE: 'Transfer fee, {symbol}',
     CROSSCHAIN_TRANSFER_SUMMARY_WITHDRAW_FEE: 'Withdrawal fee',
     CROSSCHAIN_TRANSFER_SUMMARY_DEPOSIT_FEE: 'Deposit fee',

@@ -1,11 +1,10 @@
-import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { BlockScanAddressLink } from '@/components/common/BlockScanAddressLink'
 import { useSummary } from '@/modules/Bridge/providers'
 import { formattedTokenAmount } from '@/utils'
-
 
 export function VaultDetails(): JSX.Element {
     const intl = useIntl()
@@ -17,21 +16,21 @@ export function VaultDetails(): JSX.Element {
                 let baseUrl = summary.rightNetwork?.explorerBaseUrl as string,
                     vaultAddress = summary.pipeline?.vaultAddress as string,
                     explorerLabel
-                if (summary.isEvmToEvm) {
+                if (summary.isEvmEvm) {
                     baseUrl = summary.rightNetwork?.explorerBaseUrl as string
                     explorerLabel = summary.leftNetwork?.explorerLabel
-                    vaultAddress = summary.hiddenBridgePipeline?.vaultAddress as string
+                    vaultAddress = summary.secondPipeline?.vaultAddress as string
                 }
-                else if (summary.isFromEvm || summary.isSolanaToEverscale) {
+                else if (summary.isFromEvm || summary.isSolanaTvm) {
                     explorerLabel = summary.leftNetwork?.explorerLabel
                     baseUrl = summary.leftNetwork?.explorerBaseUrl as string
                 }
-                else if (summary.isEverscaleToEvm) {
+                else if (summary.isTvmEvm) {
                     explorerLabel = summary.rightNetwork?.explorerLabel
                 }
                 return (
                     <React.Fragment key="vault-balance">
-                        {(!summary.isEverscaleBasedToken && summary.vaultBalance !== undefined) && (
+                        {(!summary.isTvmBasedToken && summary.vaultBalance !== undefined) && (
                             <li key="vault-balance">
                                 <div className="text-muted">
                                     {intl.formatMessage({

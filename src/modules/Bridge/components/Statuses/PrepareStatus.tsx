@@ -1,27 +1,26 @@
-import * as React from 'react'
 import classNames from 'classnames'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
-import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { EverscanAccountLink } from '@/components/common/EverscanAccountLink'
+import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { BeforeUnloadAlert } from '@/modules/Bridge/components/BeforeUnloadAlert'
-import { PrepareStateStatus } from '@/modules/Bridge/types'
+import { type PrepareStateStatus } from '@/modules/Bridge/types'
 import { sliceAddress } from '@/utils'
 
-
 type Props = {
-    children?: React.ReactNode;
-    isBroadcasting?: boolean;
-    isCancelled?: boolean;
+    children?: React.ReactNode
+    isBroadcasting?: boolean
+    isCancelled?: boolean
     isDeployed?: boolean
-    isDeploying?: boolean;
-    isTokenDeploying?: boolean;
-    isTransferPage: boolean;
-    note?: React.ReactNode;
-    status: PrepareStateStatus;
-    txHash?: string;
-    waitingWallet?: boolean;
-    wrongNetwork?: boolean;
+    isDeploying?: boolean
+    isTokenDeploying?: boolean
+    isTransferPage: boolean
+    note?: React.ReactNode
+    status: PrepareStateStatus
+    txHash?: string
+    waitingWallet?: boolean
+    wrongNetwork?: boolean
 }
 
 export function PrepareStatus({
@@ -97,9 +96,7 @@ export function PrepareStatus({
                                         }
 
                                         return intl.formatMessage({
-                                            id: isDeploying
-                                                ? 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING'
-                                                : descriptor,
+                                            id: isDeploying ? 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_PENDING' : descriptor,
                                         })
                                     }
 
@@ -121,17 +118,19 @@ export function PrepareStatus({
             <div className="crosschain-transfer__status-control">
                 <div className="crosschain-transfer__status-note">
                     <div>
-                        {note || intl.formatMessage({
-                            id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
-                        }, {
-                            network: 'unknown',
-                        })}
+                        {note
+                            || intl.formatMessage(
+                                {
+                                    id: 'CROSSCHAIN_TRANSFER_STATUS_PREPARE_NOTE',
+                                },
+                                {
+                                    network: 'unknown',
+                                },
+                            )}
                     </div>
                     {txHash !== undefined && (
                         <EverscanAccountLink
-                            key="contract-link"
-                            address={txHash}
-                            className="text-muted"
+                            key="contract-link" address={txHash} className="text-muted"
                             copy
                         >
                             {sliceAddress(txHash)}
@@ -142,9 +141,7 @@ export function PrepareStatus({
                 {children}
             </div>
 
-            {(!isTransferPage && status === 'pending') && (
-                <BeforeUnloadAlert key="unload-alert" />
-            )}
+            {!isTransferPage && status === 'pending' && <BeforeUnloadAlert key="unload-alert" />}
         </div>
     )
 }

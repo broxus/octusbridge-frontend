@@ -2,7 +2,6 @@ import { AddressLiteral } from 'everscale-inpage-provider'
 
 import { type NetworkShape } from '@/types'
 
-
 export const networks: NetworkShape[] = [
     {
         chainId: '42',
@@ -60,7 +59,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-137',
         label: 'Polygon',
         name: 'Polygon',
-        rpcUrl: 'https://matic-mainnet.chainstacklabs.com/',
+        rpcUrl: 'https://polygon-rpc.com/',
         transactionType: '0x0',
         type: 'evm',
     },
@@ -88,7 +87,6 @@ export const networks: NetworkShape[] = [
     },
 ]
 
-
 export const DexRootAddress = new AddressLiteral('0:5eb5713ea9b4a0f3a13bc91b282cde809636eb1e68d2fcb6427b9ad78a5a9008')
 
 export const WEVERVaultAddress = new AddressLiteral('0:557957cba74ab1dc544b4081be81f1208ad73997d74ab3b72d95864a41b779a4')
@@ -104,6 +102,10 @@ export const WEVEREvmRoots = [
 export const Compounder = new AddressLiteral('0:8707c99c2e4a98642ba29a9d389656e804bd5b3cbe11a426ca12335792168d8a')
 
 export const EventCloser = new AddressLiteral('0:6c5803db0fb7403421494ec458e5bc4763fb49cbb1b246ff2d3310e860845a78')
+
+export const Mediator = new AddressLiteral('0:fc0794367a1597b988aeaa23f405aa305fcda8b6d7f17f89a600f492372b9df7')
+
+export const DexMiddleware = new AddressLiteral('0:7ab8004fe2941a5793447cf28c86237a3f43827a15de399a2eb315215632eb28')
 
 export const Unwrapper = '0xa5cf4c57a7756943559B6B65f6cC67Aa834F79F5'
 

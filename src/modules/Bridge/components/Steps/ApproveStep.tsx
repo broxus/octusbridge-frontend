@@ -1,5 +1,5 @@
+import { observer, Observer } from 'mobx-react-lite'
 import * as React from 'react'
-import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
@@ -7,19 +7,23 @@ import { Icon } from '@/components/common/Icon'
 import { ApproveForm } from '@/modules/Bridge/components/ApproveForm'
 import { useBridge } from '@/modules/Bridge/providers'
 import { CrosschainBridgeStep } from '@/modules/Bridge/types'
+import isEqual from 'lodash.isequal'
 
-
-export function ApproveStep(): JSX.Element {
+export const ApproveStep = observer(() => {
     const intl = useIntl()
     const bridge = useBridge()
 
-    const nextStep = async () => {
+    const nextStep = async (): Promise<void> => {
         await bridge.approveAmount()
     }
 
-    const prevStep = () => {
+    const prevStep: VoidFunction = () => {
         bridge.setState('step', CrosschainBridgeStep.SELECT_ASSET)
     }
+
+    const wrongNetwork = bridge.evmWallet.isReady
+        && bridge.leftNetwork !== undefined
+        && !isEqual(bridge.leftNetwork.chainId, bridge.evmWallet.chainId)
 
     return (
         <>
@@ -60,16 +64,18 @@ export function ApproveStep(): JSX.Element {
                             </Button>
                             <Button
                                 className="crosschain-transfer__btn-next"
-                                disabled={bridge.isPendingApproval}
+                                disabled={wrongNetwork || bridge.isPendingApproval}
                                 size="lg"
                                 type="primary"
                                 onClick={nextStep}
                             >
                                 {bridge.isPendingApproval ? (
                                     <Icon icon="loader" className="spin" />
-                                ) : intl.formatMessage({
-                                    id: 'CROSSCHAIN_TRANSFER_CONFIRM_BTN_TEXT',
-                                })}
+                                ) : (
+                                    intl.formatMessage({
+                                        id: 'CROSSCHAIN_TRANSFER_CONFIRM_BTN_TEXT',
+                                    })
+                                )}
                             </Button>
                         </>
                     )}
@@ -77,4 +83,4 @@ export function ApproveStep(): JSX.Element {
             </footer>
         </>
     )
-}
+})

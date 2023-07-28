@@ -1,7 +1,7 @@
-import * as React from 'react'
 import classNames from 'classnames'
+import * as React from 'react'
 
-import { TransferStatus } from '@/modules/Transfers/types'
+import { type TransferStatus } from '@/modules/Transfers/types'
 
 import './index.scss'
 
@@ -15,9 +15,9 @@ export function Status({
     return (
         <span
             className={classNames('transfers-table-status', {
-                success: status === 'Confirmed',
                 pending: status === 'Pending',
                 rejected: status === 'Rejected',
+                success: status === 'Confirmed',
             })}
         />
     )

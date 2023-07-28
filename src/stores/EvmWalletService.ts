@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import BigNumber from 'bignumber.js'
 import { action, computed, makeObservable } from 'mobx'
 import Web3 from 'web3'
-import BigNumber from 'bignumber.js'
 
-import { BaseStore } from '@/stores/BaseStore'
-import { debug, error, findNetwork, log, throwException } from '@/utils'
-import { type NetworkShape, type WalletNativeCoin } from '@/types'
+import { networks } from '@/config'
 import { EvmProvider, EvmWalletType } from '@/models/EvmProvider'
+import { BaseStore } from '@/stores/BaseStore'
+import { type NetworkShape, type WalletNativeCoin } from '@/types'
+import { debug, error, findNetwork, log, throwException } from '@/utils'
 
 type Asset = {
     address: string // The address of the token contract
@@ -73,8 +74,10 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             balance: computed,
             chainId: computed,
             coin: computed,
+            connect: action.bound,
             connectTo: action.bound,
             disconnect: action.bound,
+            hideWalletTypePopup: action.bound,
             isConnected: computed,
             isConnecting: computed,
             isDisconnecting: computed,
@@ -83,10 +86,8 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
             isMetaMask: computed,
             isReady: computed,
             network: computed,
-            web3: computed,
-            connect: action.bound,
             walletTypePopupVisible: computed,
-            hideWalletTypePopup: action.bound,
+            web3: computed,
         })
 
         this.onAccountsChanged = this.onAccountsChanged.bind(this)
@@ -143,7 +144,8 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
     protected async onAccountsChanged([address]: string[]): Promise<void> {
         try {
             if (address !== undefined) {
-                await this.syncAccountData()
+                await this.syncAccountData(address)
+                await this.syncBalance()
             }
             else {
                 await this.disconnect()
@@ -160,7 +162,8 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
                 balance: '0',
                 chainId: parseInt(chainId, 16).toString(),
             })
-            await Promise.all([this.syncAccountData(), this.syncBalance()])
+            await this.syncAccountData()
+            await this.syncBalance()
         }
         catch (e) {
             error(e)
@@ -333,7 +336,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         }
 
         try {
-            this.evmProvider.provider.request({
+            await this.evmProvider.provider.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${parseInt(chainId, 10).toString(16)}` }],
             })
@@ -356,7 +359,7 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
     /**
      * Sync account data
      */
-    public async syncAccountData(): Promise<void> {
+    public async syncAccountData(newAddress?: string): Promise<void> {
         if (this.web3 === undefined) {
             return
         }
@@ -364,7 +367,8 @@ export class EvmWalletService extends BaseStore<EvmWalletData, EvmWalletState> {
         this.setState('isConnecting', this.isConnecting === undefined)
 
         try {
-            const [address] = await this.web3.eth.getAccounts()
+            const [address] = newAddress ? [newAddress] : await this.web3.eth.getAccounts()
+
             this.setData('address', address)
             this.setState({
                 isConnected: address != null,
@@ -587,7 +591,7 @@ export function useEvmWallet(): EvmWalletService {
         wallet = new EvmWalletService({
             decimals: 18,
             symbol: 'ETH',
-        })
+        }, { networks })
     }
 
     return wallet

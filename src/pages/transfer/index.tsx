@@ -3,22 +3,23 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 
 import {
-    EverscaleEvmPipelineProvider,
-    EverscaleSolanaPipelineProvider,
-    EverscaleToEvm,
-    EverscaleToSolana,
-    EvmEverscalePipelineProvider,
-    EvmToEverscale,
-    SolanaEverscalePipelineProvider,
-    SolanaToEverscale,
+    EvmEvmPipelineProvider,
+    EvmToEvm,
+    EvmToTvm,
+    EvmTvmPipelineProvider,
+    SolanaToTvm,
+    SolanaTvmPipelineProvider,
+    TvmEvmPipelineProvider,
+    TvmSolanaPipelineProvider,
+    TvmToEvm,
+    TvmToSolana,
 } from '@/modules/Bridge'
-import type { TransferUrlBaseParams } from '@/modules/Bridge/types'
+import { type TransferUrlBaseParams } from '@/modules/Bridge/types'
 import { useBridgeAssets } from '@/stores/BridgeAssetsService'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useEvmWallet } from '@/stores/EvmWalletService'
 import { useSolanaWallet } from '@/stores/SolanaWalletService'
 import { getAssociatedNetwork } from '@/utils'
-
 
 export default function Page(): JSX.Element | null {
     const intl = useIntl()
@@ -39,13 +40,13 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    <EverscaleEvmPipelineProvider
+                    <TvmEvmPipelineProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
                         bridgeAssets={useBridgeAssets()}
                     >
-                        <EverscaleToEvm />
-                    </EverscaleEvmPipelineProvider>
+                        <TvmToEvm />
+                    </TvmEvmPipelineProvider>
                 </div>
             )
 
@@ -60,13 +61,34 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    <EvmEverscalePipelineProvider
+                    <EvmTvmPipelineProvider
+                        evmWallet={useEvmWallet()}
+                        tvmWallet={useEverWallet()}
+                        bridgeAssets={useBridgeAssets()}
+                    >
+                        <EvmToTvm />
+                    </EvmTvmPipelineProvider>
+                </div>
+            )
+
+        case 'evm-evm':
+            return (
+                <div className="container container--large">
+                    <header className="page-header">
+                        <h1 className="page-title">
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_HEADER_TITLE',
+                            })}
+                        </h1>
+                    </header>
+
+                    <EvmEvmPipelineProvider
                         evmWallet={useEvmWallet()}
                         everWallet={useEverWallet()}
                         bridgeAssets={useBridgeAssets()}
                     >
-                        <EvmToEverscale />
-                    </EvmEverscalePipelineProvider>
+                        <EvmToEvm />
+                    </EvmEvmPipelineProvider>
                 </div>
             )
 
@@ -81,13 +103,13 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    <EverscaleSolanaPipelineProvider
+                    <TvmSolanaPipelineProvider
                         everWallet={useEverWallet()}
                         solanaWallet={useSolanaWallet()}
                         bridgeAssets={useBridgeAssets()}
                     >
-                        <EverscaleToSolana />
-                    </EverscaleSolanaPipelineProvider>
+                        <TvmToSolana />
+                    </TvmSolanaPipelineProvider>
                 </div>
             )
 
@@ -102,13 +124,13 @@ export default function Page(): JSX.Element | null {
                         </h1>
                     </header>
 
-                    <SolanaEverscalePipelineProvider
+                    <SolanaTvmPipelineProvider
                         everWallet={useEverWallet()}
                         solanaWallet={useSolanaWallet()}
                         bridgeAssets={useBridgeAssets()}
                     >
-                        <SolanaToEverscale />
-                    </SolanaEverscalePipelineProvider>
+                        <SolanaToTvm />
+                    </SolanaTvmPipelineProvider>
                 </div>
             )
 

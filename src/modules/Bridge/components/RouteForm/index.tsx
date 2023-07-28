@@ -1,6 +1,6 @@
-import * as React from 'react'
 import classNames from 'classnames'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
@@ -15,13 +15,13 @@ import { isEverscaleAddressValid, isEvmAddressValid, isSolanaAddressValid } from
 
 import './index.scss'
 
-
 type Props = {
     address?: string;
     addressFieldDisabled?: boolean;
     addressFieldLabel: string;
     changeAddress: (value: string) => void;
     changeNetwork: (value: string, option: any) => void;
+    clearable?: boolean
     label: React.ReactNode;
     network?: NetworkShape;
     networkFieldDisabled?: boolean;
@@ -29,7 +29,6 @@ type Props = {
     shouldDisplayNetworkAlert?: boolean;
     wallet?: EverWalletService | EvmWalletService | SolanaWalletService;
 }
-
 
 function isAddressValid(addr?: string, type?: NetworkShape['type']): boolean {
     if (type === 'tvm') {
@@ -53,6 +52,7 @@ export function RouteForm({
     addressFieldDisabled,
     changeAddress,
     changeNetwork,
+    clearable,
     label,
     network,
     networkFieldDisabled,
@@ -63,7 +63,11 @@ export function RouteForm({
     const intl = useIntl()
 
     const onChangeAddress: React.ChangeEventHandler<HTMLInputElement> = event => {
-        changeAddress(event.target.value)
+        changeAddress(event.target.value.trim())
+    }
+
+    const clear: VoidFunction = () => {
+        changeAddress('')
     }
 
     return (
@@ -172,15 +176,27 @@ export function RouteForm({
                         <div className="crosschain-transfer__control">
                             <Observer>
                                 {() => (
-                                    <input
-                                        className={classNames('form-input', 'form-input--md', {
-                                            invalid: !isAddressValid(address, network?.type),
-                                        })}
-                                        disabled={!wallet?.isConnected || addressFieldDisabled}
-                                        type="text"
-                                        value={address}
-                                        onChange={onChangeAddress}
-                                    />
+                                    <div className="form-input-address">
+                                        <input
+                                            className={classNames('form-input', 'form-input--md', {
+                                                invalid: !isAddressValid(address, network?.type),
+                                            })}
+                                            disabled={addressFieldDisabled}
+                                            type="text"
+                                            value={address}
+                                            onChange={onChangeAddress}
+                                        />
+                                        {clearable && (address?.length ?? 0) > 0 && (
+                                            <button
+                                                className="clear-address-input clear-input"
+                                                type="button"
+                                                onClick={clear}
+                                                tabIndex={-1}
+                                            >
+                                                <Icon icon="remove" ratio={0.6} />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </Observer>
                         </div>

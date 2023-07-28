@@ -1,11 +1,10 @@
-import * as React from 'react'
-import { Observer } from 'mobx-react-lite'
-import { useIntl } from 'react-intl'
 import BigNumber from 'bignumber.js'
+import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
+import { useIntl } from 'react-intl'
 
 import { useSummary } from '@/modules/Bridge/providers'
-import { formattedTokenAmount } from '@/utils'
-
+import { formattedTokenAmount, isGoodBignumber } from '@/utils'
 
 export function Amount(): JSX.Element {
     const intl = useIntl()
@@ -35,7 +34,7 @@ export function Amount(): JSX.Element {
                 <Observer>
                     {() => {
                         switch (true) {
-                            case summary.isFromEverscale && summary.withdrawFee !== undefined:
+                            case summary.isFromTvm:
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')
@@ -50,7 +49,25 @@ export function Amount(): JSX.Element {
                                     </b>
                                 )
 
-                            case summary.isFromEvm && summary.depositFee !== undefined:
+                            case summary.isEvmEvm: {
+                                const amount = new BigNumber(summary.amount || 0)
+                                    .minus(summary.depositFee || 0)
+                                    .minus(summary.secondWithdrawFee || 0)
+                                    .toFixed()
+                                return (
+                                    <b className="text-lg text-truncate">
+                                        {(summary.amount && summary.amount !== '0')
+                                            ? formattedTokenAmount(
+                                                isGoodBignumber(amount) ? amount : 0,
+                                                undefined,
+                                                { preserve: true, roundOn: false },
+                                            )
+                                            : '–'}
+                                    </b>
+                                )
+                            }
+
+                            case summary.isFromEvm:
                                 return (
                                     <b className="text-lg text-truncate">
                                         {(summary.amount && summary.amount !== '0')

@@ -2,10 +2,20 @@ import { type DecodedAbiFunctionInputs } from 'everscale-inpage-provider'
 
 import { type BridgeAbi } from '@/misc'
 import { type Pipeline } from '@/models'
-import { type BridgeAsset } from '@/stores/BridgeAssetsService'
 import { type NetworkShape, type NetworkType } from '@/types'
 
 export type ApprovalStrategies = 'infinity' | 'fixed'
+
+export enum TransitOperation {
+    BurnToAlienProxy = '0',
+    BurnToMergePool = '1',
+    TransferToNativeProxy = '2'
+}
+
+export enum BurnType {
+    Withdraw,
+    Swap
+}
 
 export enum CrosschainBridgeStep {
     SELECT_ROUTE,
@@ -17,25 +27,24 @@ export enum CrosschainBridgeStep {
 export type CrosschainBridgeStoreData = {
     amount: string
     bridgeFee?: string
-    eventInitialBalance?: string
-    eversAmount?: string
-    everscaleEvmCost?: string
-    evmEverscaleCost?: string
+    eventInitialBalance?: number
+    evmGas?: string
+    evmPendingWithdrawal?: EvmPendingWithdrawal
+    expectedEversAmount?: string
     gasPrice?: string
-    hiddenBridgePipeline?: Pipeline
+    gasUsage?: string
     leftAddress: string
     leftNetwork?: NetworkShape
-    maxEversAmount?: string
     maxTransferFee?: string
-    minEversAmount?: string
     minTransferFee?: string
+    pendingWithdrawals?: PendingWithdrawal[]
     pipeline?: Pipeline
+    rate?: string
     rightAddress: string
     rightNetwork?: NetworkShape
+    secondPipeline?: Pipeline
     selectedToken?: string
     txHash?: string
-    txPrice?: string
-    pendingWithdrawals?: PendingWithdrawal[]
 }
 
 export type CrosschainBridgeStoreState = {
@@ -48,7 +57,6 @@ export type CrosschainBridgeStoreState = {
     isProcessing: boolean
     isSwapEnabled?: boolean
     step: CrosschainBridgeStep
-    evmPendingWithdrawal?: EvmPendingWithdrawal
 }
 
 export type AddressesFields = Pick<CrosschainBridgeStoreData, 'leftAddress' | 'rightAddress'>
@@ -65,10 +73,7 @@ export type PrepareStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejecte
 
 export type ReleaseStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejected'
 
-export type SwapStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejected'
-
 export type TransferStateStatus = 'confirmed' | 'pending' | 'disabled' | 'rejected'
-
 
 export type TransferUrlBaseParams = {
     fromId: string;
@@ -81,86 +86,12 @@ export type EvmTransferUrlParams = TransferUrlBaseParams & {
     txHash: string;
 }
 
-export type EverscaleTransferUrlParams = TransferUrlBaseParams & {
+export type TvmTransferUrlParams = TransferUrlBaseParams & {
     contractAddress: string;
 }
 
 export type SolanaTransferUrlParams = TransferUrlBaseParams & {
     txSignature: string;
-}
-
-export type TransferSummaryData = {
-    amount?: string
-    bridgeFee?: string
-    depositType?: string
-    depositFee?: string
-    eversAmount?: string
-    everscaleAddress?: string
-    gasPrice?: string
-    everscaleEvmCost?: string
-    evmEverscaleCost?: string
-    hiddenBridgePipeline?: Pipeline
-    leftAddress?: string
-    leftNetwork?: NetworkShape
-    maxTransferFee?: string
-    minTransferFee?: string
-    pipeline?: Pipeline
-    rightAddress?: string
-    rightNetwork?: NetworkShape
-    swapAmount?: string
-    token?: BridgeAsset
-    tokenAmount?: string
-    withdrawFee?: string
-    pendingWithdrawals?: PendingWithdrawal[]
-    txAddress: string
-    success?: boolean
-}
-
-export type TransferSummaryState = {
-    isTransferPage?: boolean
-    isTransferReleased?: boolean
-}
-
-export enum BurnCallbackOrdering {
-    AMOUNT_EXEC_ASCENDING = 'amountexecascending',
-    AMOUNT_EXEC_DESCENDING = 'amountexecdescending',
-    CREATED_AT_ASCENDING = 'createdatascending',
-    CREATED_AT_DESCENDING = 'createdatdescending',
-}
-
-export type SearchBurnCallbackInfoRequest = {
-    amountGe?: string;
-    amountLe?: string;
-    callId?: number;
-    chainId?: number;
-    createdAtGe?: number;
-    createdAtLe?: number;
-    creditProcessorAddress?: string;
-    ethUserAddress?: string;
-    limit: number;
-    offset: number;
-    ordering?: BurnCallbackOrdering;
-    proxyAddress?: string;
-    tonEventUserAddress?: string;
-}
-
-export type BurnCallbackInfoResponse = {
-    amount: string;
-    burnCallbackTimestampLt: number;
-    callId: number;
-    chainId: number;
-    createdAt: number;
-    creditProcessorAddress?: string;
-    ethUserAddress: string;
-    proxyAddress: string;
-    tonEventContractAddress?: string;
-    tonTransactionHash?: string;
-    userAddress?: string;
-}
-
-export type BurnCallbackTableResponse = {
-    totalCount: number;
-    transfers: BurnCallbackInfoResponse[];
 }
 
 export type PendingWithdrawalStatus = 'Close' | 'Open'

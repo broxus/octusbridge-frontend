@@ -8,18 +8,17 @@ import { type TransferStateStatus } from '@/modules/Bridge/types'
 import { type NetworkShape } from '@/types'
 import { sliceAddress } from '@/utils'
 
-
 type Props = {
-    children?: React.ReactNode;
-    confirmedBlocksCount: number;
-    eventBlocksToConfirm: number;
-    isTransferPage: boolean;
-    network?: NetworkShape;
-    note?: React.ReactNode;
-    status: TransferStateStatus;
-    txHash?: string;
-    waitingWallet?: boolean;
-    wrongNetwork?: boolean;
+    children?: React.ReactNode
+    confirmedBlocksCount: number
+    eventBlocksToConfirm: number
+    isTransferPage: boolean
+    network?: NetworkShape
+    note?: React.ReactNode
+    status: TransferStateStatus
+    txHash?: string
+    waitingWallet?: boolean
+    wrongNetwork?: boolean
 }
 
 export function TransferStatus({
@@ -70,14 +69,18 @@ export function TransferStatus({
                                         })
 
                                     case 'pending':
-                                        return intl.formatMessage({
-                                            id: confirmedBlocksCount > 0
-                                                ? 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_CONFIRMATION'
-                                                : 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_PENDING',
-                                        }, {
-                                            confirmedBlocksCount,
-                                            eventBlocksToConfirm,
-                                        })
+                                        return intl.formatMessage(
+                                            {
+                                                id:
+                                                    confirmedBlocksCount > 0
+                                                        ? 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_CONFIRMATION'
+                                                        : 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_PENDING',
+                                            },
+                                            {
+                                                confirmedBlocksCount,
+                                                eventBlocksToConfirm,
+                                            },
+                                        )
 
                                     case 'rejected':
                                         return intl.formatMessage({
@@ -97,13 +100,17 @@ export function TransferStatus({
             <div className="crosschain-transfer__status-control">
                 <div className="crosschain-transfer__status-note">
                     <div>
-                        {note || intl.formatMessage({
-                            id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
-                        }, {
-                            network: network?.label || '',
-                        })}
+                        {note
+                            || intl.formatMessage(
+                                {
+                                    id: 'CROSSCHAIN_TRANSFER_STATUS_TRANSFER_NOTE',
+                                },
+                                {
+                                    network: network?.label || '',
+                                },
+                            )}
                     </div>
-                    {(txHash !== undefined && network !== undefined) && (
+                    {txHash !== undefined && network !== undefined && (
                         <BlockScanTxLink
                             key="tx-link"
                             baseUrl={network.explorerBaseUrl}
@@ -120,9 +127,7 @@ export function TransferStatus({
                 {children}
             </div>
 
-            {(!isTransferPage && status === 'pending') && (
-                <BeforeUnloadAlert key="unload-alert" />
-            )}
+            {!isTransferPage && status === 'pending' && <BeforeUnloadAlert key="unload-alert" />}
         </div>
     )
 }
