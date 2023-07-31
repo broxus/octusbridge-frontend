@@ -38,16 +38,14 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
-        badge: 'Back soon',
         chainId: '250',
         currencySymbol: 'FTM',
-        disabled: true,
         explorerBaseUrl: 'https://ftmscan.com/',
         explorerLabel: 'FTMScan',
         id: 'evm-250',
         label: 'Fantom Opera',
         name: 'Fantom Opera',
-        rpcUrl: 'https://rpc.ankr.com/fantom/',
+        rpcUrl: 'https://rpc.fantom.network',
         transactionType: '0x0',
         type: 'evm',
     },
@@ -89,9 +87,7 @@ export const networks: NetworkShape[] = [
 
 export const DexRootAddress = new AddressLiteral('0:5eb5713ea9b4a0f3a13bc91b282cde809636eb1e68d2fcb6427b9ad78a5a9008')
 
-export const WEVERVaultAddress = new AddressLiteral(
-    '0:557957cba74ab1dc544b4081be81f1208ad73997d74ab3b72d95864a41b779a4',
-)
+export const WEVERVaultAddress = new AddressLiteral('0:557957cba74ab1dc544b4081be81f1208ad73997d74ab3b72d95864a41b779a4',)
 
 export const WEVERRootAddress = new AddressLiteral('0:a49cd4e158a9a15555e624759e2e4e766d22600b7800d891e46f9291f044a93d')
 
@@ -141,7 +137,7 @@ export const UpgradeTokenListURI = 'https://raw.githubusercontent.com/broxus/eve
 
 export const Web3Url = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
 
-export const IndexerApiBaseUrl = 'https://api.octusbridge.io/v1'
+export const IndexerApiBaseUrl = 'https://api-test.octusbridge.io/v1'
 
 export const DaoIndexerApiBaseUrl = 'https://dao.octusbridge.io/v1'
 

@@ -47,6 +47,25 @@ export const AmountFieldset = observer(() => {
                     <div className="crosschain-transfer__control-hint">
                         {(() => {
                             switch (true) {
+                                case bridge.isFromTvm && !bridge.isEnoughTvmBalance:
+                                    return (
+                                        <span className="text-danger">
+                                            {intl.formatMessage(
+                                                {
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INSUFFICIENT_BALANCE_HINT',
+                                                },
+                                                {
+                                                    symbol: bridge.tvmWallet.coin.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.tvmWallet.balance,
+                                                        bridge.tvmWallet.coin.decimals,
+                                                        { preserve: true },
+                                                    ),
+                                                },
+                                            )}
+                                        </span>
+                                    )
+
                                 case bridge.isEvmTvm && bridge.isAmountVaultLimitExceed:
                                     return (
                                         <span className="text-danger">
@@ -146,10 +165,19 @@ export const AmountFieldset = observer(() => {
                                     </div>
                                     {!bridge.isEnoughEvmBalance && (
                                         <span className="text-danger text-sm">
-                                            {`Insufficient ${bridge.evmWallet.coin.symbol} balance. Current is ${formattedTokenAmount(
-                                                bridge.evmWallet.balance,
-                                                bridge.evmWallet.coin.decimals,
-                                            )} ${bridge.evmWallet.coin.symbol}`}
+                                            {intl.formatMessage(
+                                                {
+                                                    id: 'CROSSCHAIN_TRANSFER_ASSET_INSUFFICIENT_BALANCE_HINT',
+                                                },
+                                                {
+                                                    symbol: bridge.evmWallet.coin.symbol,
+                                                    value: formattedAmount(
+                                                        bridge.evmWallet.balance,
+                                                        bridge.evmWallet.coin.decimals,
+                                                        { preserve: true },
+                                                    ),
+                                                },
+                                            )}
                                         </span>
                                     )}
                                 </>

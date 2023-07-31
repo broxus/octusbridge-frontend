@@ -1,7 +1,7 @@
+import { PublicKey } from '@solana/web3.js'
 import BigNumber from 'bignumber.js'
 import { Address } from 'everscale-inpage-provider'
 import { computed, makeObservable } from 'mobx'
-import { PublicKey } from '@solana/web3.js'
 
 import {
     AlienTokenListURI,
@@ -9,12 +9,13 @@ import {
     CurrenciesListURI,
     TokenListURI, WEVERRootAddress,
 } from '@/config'
+import { BridgeUtils, type MergedTokenDetails } from '@/misc/BridgeUtils'
 import {
     alienProxyContract,
     nativeProxyContract,
 } from '@/misc/contracts'
-import { BridgeUtils, type MergedTokenDetails } from '@/misc/BridgeUtils'
 import { EverscaleToken, EvmToken, type PipelineData } from '@/models'
+import { SolanaToken } from '@/models/SolanaToken'
 import { BaseStore } from '@/stores/BaseStore'
 import { type EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { type EvmWalletService, useEvmWallet } from '@/stores/EvmWalletService'
@@ -32,8 +33,6 @@ import {
     sliceAddress,
     storage,
 } from '@/utils'
-import { SolanaToken } from '@/models/SolanaToken'
-
 
 export type BridgeTokenRawAssetVault = {
     chainId: string;
@@ -112,7 +111,6 @@ export type BridgeAssetsServiceState = {
     isFetching: boolean;
     isPrimaryTokensFetched: boolean;
 }
-
 
 export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, BridgeAssetsServiceState> {
 
@@ -383,6 +381,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                     this.add(new EverscaleToken<BridgeAssetUniqueKey>({
                                         ...token,
                                         address: new Address(token.root),
+                                        decimals: Number(token.decimals),
                                         key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
@@ -390,6 +389,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                 else if (isEvmAddressValid(token.root)) {
                                     this.add(new EvmToken<BridgeAssetUniqueKey>({
                                         ...token,
+                                        decimals: Number(token.decimals),
                                         key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
@@ -398,6 +398,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                                     this.add(new SolanaToken({
                                         ...token,
                                         address: new PublicKey(token.root),
+                                        decimals: Number(token.decimals),
                                         key: key.toLowerCase(),
                                         logoURI: icon || token.logoURl,
                                     }))
@@ -1597,7 +1598,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
 }
 
-
 let service: BridgeAssetsService
 
 export function useBridgeAssets(): BridgeAssetsService {
@@ -1608,8 +1608,8 @@ export function useBridgeAssets(): BridgeAssetsService {
             solanaWallet: useSolanaWallet(),
         }, {
             alienTokensLists: [AlienTokenListURI],
-            currenciesList: CurrenciesListURI,
             assetsUri: BridgeAssetsURI,
+            currenciesList: CurrenciesListURI,
             primaryTokensList: TokenListURI,
         })
     }

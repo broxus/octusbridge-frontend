@@ -1,8 +1,8 @@
+import BigNumber from 'bignumber.js'
 import { reaction } from 'mobx'
 import { Observer } from 'mobx-react-lite'
 import * as React from 'react'
 import { useIntl } from 'react-intl'
-import BigNumber from 'bignumber.js'
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
@@ -27,10 +27,13 @@ export function AssetStep(): JSX.Element {
             return
         }
 
-        if (bridge.isFromEvm && (bridge.isNativeEvmCurrency || bridge.isNativeTvmCurrency)) {
+        const isNativeCurrency = bridge.isNativeEvmCurrency || bridge.isNativeTvmCurrency
+        const isNative = bridge.pipeline?.tokenBase === 'tvm' || bridge.pipeline?.isNative
+
+        if (bridge.isFromEvm && (isNativeCurrency || isNative)) {
             bridge.setState('step', CrosschainBridgeStep.TRANSFER)
         }
-        else if (bridge.isFromEvm && (!bridge.isTvmBasedToken || !bridge.pipeline?.isNative)) {
+        else if (bridge.isFromEvm && !isNative) {
             await bridge.checkAllowance()
         }
         else {

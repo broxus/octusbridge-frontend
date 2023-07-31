@@ -1470,7 +1470,14 @@ export class EvmEvmPipeline extends BaseStore<EvmEvmPipelineData, EvmEvmPipeline
                 const isReleased = await vaultContract.methods.withdrawalIds(this.data.withdrawalId).call()
                 const timestamp = Date.now() / 1000 - (this.secondEventState?.timestamp ?? 0)
                 const isOutdated = timestamp >= 600
-                const shouldCheckPendingWithdrawals = timestamp < 120 && (
+                const isInsufficientVaultBalance = (
+                    this.releaseState?.isInsufficientVaultBalance
+                    || this.isInsufficientVaultBalance
+                )
+                const shouldCheckPendingWithdrawals = (
+                    timestamp < 120
+                    || isInsufficientVaultBalance
+                ) && (
                     !this.isTvmBasedToken
                     || !this.secondPipeline.isNative
                 )
@@ -1480,27 +1487,22 @@ export class EvmEvmPipeline extends BaseStore<EvmEvmPipelineData, EvmEvmPipeline
                     this.setState('releaseState', {
                         isOutdated: isReleased ? undefined : isOutdated,
                         isReleased,
-                        status: this.isTvmBasedToken || this.secondPipeline.isNative ? 'confirmed' : status,
+                        status: shouldCheckPendingWithdrawals ? 'pending' : status,
                         ttl: (!isReleased && ttl !== undefined) ? parseInt(ttl, 10) : undefined,
                     })
                 }
 
                 if (isReleased) {
                     this.setState('releaseState', {
-                        ...this.releaseState,
-                        isOutdated: isReleased ? undefined : isOutdated,
                         isPendingWithdrawal: shouldCheckPendingWithdrawals,
-                        isReleased: true,
-                        isReleasing: false,
+                        isReleased: !shouldCheckPendingWithdrawals,
                         status: shouldCheckPendingWithdrawals ? 'pending' : 'confirmed',
                     })
-                    if (!this.isTvmBasedToken || !this.secondPipeline.isNative) {
-                        await this.runPendingWithdrawalUpdater(
-                            // eslint-disable-next-line no-nested-ternary
-                            this.releaseState?.isInsufficientVaultBalance
-                                ? 30
-                                : shouldCheckPendingWithdrawals ? 5 : 1,
-                        )
+                    if (shouldCheckPendingWithdrawals) {
+                        await this.runPendingWithdrawalUpdater(shouldCheckPendingWithdrawals ? 30 : 5)
+                    }
+                    else {
+                        await this.runPendingWithdrawalUpdater(1)
                     }
                 }
                 else if (isOutdated && !this.releaseState?.isReleasing) {
@@ -1713,7 +1715,7 @@ export class EvmEvmPipeline extends BaseStore<EvmEvmPipelineData, EvmEvmPipeline
     }
 
     public get isTvmBasedToken(): boolean {
-        return this.pipeline?.tokenBase === 'tvm'
+        return this.secondPipeline?.tokenBase === 'tvm'
     }
 
     /**

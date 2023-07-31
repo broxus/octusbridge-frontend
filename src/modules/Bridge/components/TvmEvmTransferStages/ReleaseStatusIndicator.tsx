@@ -104,6 +104,16 @@ export const ReleaseStatusIndicator = observer(() => {
                     return null
                 }
 
+                if (!isTransferPage && !bridge.isSwapEnabled) {
+                    return (
+                        <Button disabled type="primary">
+                            {intl.formatMessage({
+                                id: 'CROSSCHAIN_TRANSFER_STATUS_RELEASE_BTN_TEXT',
+                            })}
+                        </Button>
+                    )
+                }
+
                 if (waitingWallet) {
                     return (
                         <Button

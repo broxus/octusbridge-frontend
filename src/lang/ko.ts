@@ -107,6 +107,7 @@ export default {
     CROSSCHAIN_TRANSFER_ASSET_VAULT_BALANCE_HINT: '브리지 볼트(Vault) 잔액: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_AMOUNT_HINT: '최소 지출: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_AMOUNT_HINT: '{symbol} 잔액 부족',
+    CROSSCHAIN_TRANSFER_ASSET_INSUFFICIENT_BALANCE_HINT: 'Insufficient {symbol} balance. Current is {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_AMOUNT_HINT: '{symbol} 잔액이 충분하지 않습니다. 최대 지출: {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MAX_VAULT_AMOUNT_HINT: '금고 한도를 초과했습니다. 사용 가능한 한도 {value} {symbol}',
     CROSSCHAIN_TRANSFER_ASSET_INVALID_MIN_TOKENS_AMOUNT_HINT: '최소 교환: {value} {symbol}',

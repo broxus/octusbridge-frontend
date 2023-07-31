@@ -64,10 +64,13 @@ export function AmountInner({ transfer }: Props): JSX.Element {
         if (asset === undefined) {
             if (
                 [
-                    'AlienEthToEth',
-                    'AlienEthToTon',
+                    'EthToTon',
+                    'EthToEth',
+                    'CreditEthToTon',
                     'NativeEthToEth',
                     'NativeEthToTon',
+                    'AlienEthToEth',
+                    'AlienEthToTon',
                 ].includes(transfer.transferKind)
                 && fromNetwork?.type === 'evm'
             ) {
@@ -116,8 +119,6 @@ export function AmountInner({ transfer }: Props): JSX.Element {
             }
         }
     }, [])
-
-    console.log(transfer, asset)
 
     return currencyAddress && amount ? (
         <TokenAmount

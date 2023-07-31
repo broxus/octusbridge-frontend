@@ -1,6 +1,8 @@
+import { error } from '@broxus/js-utils'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { type AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import BigNumber from 'bignumber.js'
+import { Buffer } from 'buffer'
 
 import { IndexerApiBaseUrl } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
@@ -46,10 +48,10 @@ export function ixFromRust(data: any): TransactionInstruction {
     })
 }
 
-export type Tickers = 'ETH' | 'BNB' | 'FTM' | 'MATIC' | 'AVAX'
+export type Tickers = 'ETH' | 'BNB' | 'FTM' | 'MATIC' | 'AVAX' | string
 
-export async function getPrice(ticker: Tickers): Promise<{ ticker: Tickers; price: string }> {
-    return fetch(`${IndexerApiBaseUrl}/gate_prices`, {
+export async function getPrice(ticker: Tickers): Promise<string> {
+    const response = await fetch(`${IndexerApiBaseUrl}/gate_prices`, {
         body: JSON.stringify({ ticker }),
         headers: {
             Accept: 'application/json',
@@ -58,6 +60,7 @@ export async function getPrice(ticker: Tickers): Promise<{ ticker: Tickers; pric
         method: 'POST',
         mode: 'cors',
     }).then(value => value.json())
+    return response.price
 }
 
 export async function deriveEvmAddressFromOperations(base64str: string): Promise<string> {
@@ -77,17 +80,17 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 allowPartial: true,
                 boc: operationPayload.data.payload,
                 structure: [
+                    { name: 'nonce', type: 'uint32' },
                     { name: 'network', type: 'uint8' },
                     { name: 'payload', type: 'cell' },
                 ] as const,
             })
 
-            const data = await staticRpc.unpackFromCell({
+            const burnPayload = await staticRpc.unpackFromCell({
                 allowPartial: true,
                 boc: callback.data.payload,
                 structure: [
                     { name: 'targetAddress', type: 'uint160' },
-                    { name: 'chainId', type: 'uint256' },
                     {
                         components: [
                             { name: 'recipient', type: 'uint160' },
@@ -100,7 +103,15 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 ] as const,
             })
 
-            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+            const payload = await staticRpc.unpackFromCell({
+                allowPartial: true,
+                boc: burnPayload.data.callback.payload,
+                structure: [
+                    { name: 'recipient', type: 'uint256' },
+                ] as const,
+            })
+
+            return `0x${BigNumber(payload.data.recipient).toString(16).padStart(40, '0')}`
         }
         if (operationPayload.data.operation === TransitOperation.BurnToMergePool) {
             const burnPayload = await staticRpc.unpackFromCell({
@@ -123,7 +134,7 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 ] as const,
             })
 
-            const data = await staticRpc.unpackFromCell({
+            const payload = await staticRpc.unpackFromCell({
                 allowPartial: true,
                 boc: callback.data.payload,
                 structure: [
@@ -140,7 +151,7 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 ] as const,
             })
 
-            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+            return `0x${new BigNumber(payload.data.targetAddress).toString(16).padStart(40, '0')}`
         }
         if (operationPayload.data.operation === TransitOperation.TransferToNativeProxy) {
             const transferPayload = await staticRpc.unpackFromCell({
@@ -153,7 +164,7 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 ] as const,
             })
 
-            const data = await staticRpc.unpackFromCell({
+            const payload = await staticRpc.unpackFromCell({
                 allowPartial: true,
                 boc: transferPayload.data.payload,
                 structure: [
@@ -171,12 +182,13 @@ export async function deriveEvmAddressFromOperations(base64str: string): Promise
                 ] as const,
             })
 
-            return `0x${new BigNumber(data.data.targetAddress).toString(16).padStart(40, '0')}`
+            return `0x${new BigNumber(payload.data.targetAddress).toString(16).padStart(40, '0')}`
         }
 
         return ''
     }
     catch (e) {
+        error(e)
         return ''
     }
 }

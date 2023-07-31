@@ -1,6 +1,10 @@
 export type TransferType = 'Default' | 'Credit' | 'Transit'
 
 export type TransferKind =
+    | 'EthToEth'
+    | 'EthToTon'
+    | 'TonToEth'
+    | 'CreditEthToTon'
     | 'AlienEthToEth'
     | 'AlienEthToTon'
     | 'AlienTonToEth'

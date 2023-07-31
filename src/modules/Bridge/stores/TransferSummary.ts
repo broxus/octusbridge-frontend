@@ -207,14 +207,23 @@ export class TransferSummary extends BaseStore<TransferSummaryData, TransferSumm
 
     public get isNativeTvmCurrency(): boolean {
         if (this.data.token) {
-            return [...WEVEREvmRoots, WEVERRootAddress.toString()].includes(this.data.token.root)
+            return [
+                ...WEVEREvmRoots.map(i => i.toLowerCase()),
+                WEVERRootAddress.toString().toLowerCase(),
+            ].includes(this.data.token.root.toLowerCase())
         }
         return false
     }
 
     public get isNativeEvmCurrency(): boolean {
-        if (this.data.token && !this.isNativeTvmCurrency && this.data.token.root) {
-            return this.bridgeAssets.isNativeCurrency(this.data.token.root)
+        if (this.data.token?.root && !this.isNativeTvmCurrency) {
+            return (
+                this.bridgeAssets.isNativeCurrency(this.data.token.root)
+                && (
+                    this.pipeline?.chainId === this.pipeline?.baseChainId
+                    || this.pipeline?.chainId === this.token?.chainId
+                )
+            )
         }
         return false
     }

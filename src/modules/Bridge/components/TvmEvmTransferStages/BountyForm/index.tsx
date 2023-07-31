@@ -75,7 +75,7 @@ export const BountyForm = observer(() => {
                                     { ignoreTag: true },
                                 )}
                             >
-                                {isOwner && bountyKind === BountyKind.Default && wrongNetwork ? (
+                                {wrongNetwork ? (
                                     <WrongNetworkError network={transfer.rightNetwork} wallet={evmWallet} />
                                 ) : (
                                     <Button

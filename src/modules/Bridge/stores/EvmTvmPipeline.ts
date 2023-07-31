@@ -5,7 +5,7 @@ import { Address } from 'everscale-inpage-provider'
 import { type IReactionDisposer, computed, makeObservable, reaction, toJS } from 'mobx'
 import Web3 from 'web3'
 
-import { DexMiddleware } from '@/config'
+import { DexMiddleware, WEVEREvmRoots, WEVERRootAddress } from '@/config'
 import rpc from '@/hooks/useRpcClient'
 import { BridgeUtils, EthAbi, TokenWallet } from '@/misc'
 import {
@@ -402,11 +402,12 @@ export class EvmTvmPipeline extends BaseStore<EvmTvmPipelineData, EvmTvmPipeline
                     .padStart(64, '0')}`.toLowerCase()
 
                 const isDexMiddleware = DexMiddleware.equals(rightAddress)
+                const isNativeTvmCurrency = [
+                    ...WEVEREvmRoots.map(i => i.toLowerCase()),
+                    WEVERRootAddress.toString().toLowerCase(),
+                ].includes(this.pipeline.everscaleTokenAddress.toString())
 
-                if (
-                    this._bridgeAssets.isNativeCurrency(this.pipeline.everscaleTokenAddress.toString())
-                    || isDexMiddleware
-                ) {
+                if (isNativeTvmCurrency || isDexMiddleware) {
                     const payload = nativeTransfer.events.find(i => i.name === 'payload')?.value
                     const hex = new BigNumber(payload).toString(16)
                     const base64 = Buffer.from(hex, 'hex').toString('base64')

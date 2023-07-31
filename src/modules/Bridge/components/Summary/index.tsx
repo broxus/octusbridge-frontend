@@ -17,9 +17,8 @@ export const Summary = observer(() => {
 
     const isNativeTvmCurrency = bridge.isNativeTvmCurrency || summary.isNativeTvmCurrency
     const isAlienForTargetNetwork = (
-        bridge.isNativeEvmCurrency && bridge.secondPipeline?.isNative
-    ) || (
-        summary.isNativeEvmCurrency && summary.secondPipeline?.isNative
+        (bridge.isNativeEvmCurrency && bridge.secondPipeline?.isNative)
+        || (summary.isNativeEvmCurrency && summary.secondPipeline?.isNative)
     )
 
     return (
@@ -31,13 +30,9 @@ export const Summary = observer(() => {
             </h3>
             <ul className="summary">
                 <Networks />
-                {!isNativeTvmCurrency && !isAlienForTargetNetwork && (
-                    <VaultDetails />
-                )}
-                <Tokens />
-                {(bridge.token || summary.token) && (
-                    <FeesDetails />
-                )}
+                {!isNativeTvmCurrency && !isAlienForTargetNetwork && <VaultDetails />}
+                {summary.leftNetwork && summary.rightNetwork && summary.pipeline && <Tokens />}
+                {(bridge.token || summary.token) && <FeesDetails />}
                 <PendingWithdrawals />
                 <Amount />
             </ul>

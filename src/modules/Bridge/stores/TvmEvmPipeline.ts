@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
 import { mapTonCellIntoEthBytes } from 'eth-ton-abi-converter'
-import { Address } from 'everscale-inpage-provider'
+import { Address, type DecodedAbiFunctionOutputs } from 'everscale-inpage-provider'
 import { type IReactionDisposer, computed, makeObservable, reaction, toJS } from 'mobx'
 import Web3 from 'web3'
 
-import { EventCloser } from '@/config'
+import { EventCloser, Unwrapper } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
-import { EthAbi, TokenWallet } from '@/misc'
+import { EthAbi, type MultiVaultAbi, TokenWallet } from '@/misc'
 import { BridgeUtils } from '@/misc/BridgeUtils'
 import {
     everscaleEventAlienContract,
@@ -187,8 +187,9 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
             .eventEmitter
         const pipelineType = this._bridgeAssets.getPipelineType(proxyAddress.toString())
 
+        // Native transfer
         if (pipelineType === 'multi_tvm_evm') {
-            let eventData
+            let eventData: any
 
             try {
                 eventData = await everscaleEventNativeContract(this.contractAddress)
@@ -208,6 +209,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 remainingGasTo_: ownerAddress,
                 amount_: tokens,
                 token_: tokenAddress,
+                callback,
             } = eventData
 
             let token = this._bridgeAssets.get(
@@ -241,8 +243,8 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 return
             }
 
-            let leftAddress = ownerAddress.toString()
-            const rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
+            let leftAddress = ownerAddress.toString(),
+                rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
             const remainingGasTo = eventData.remainingGasTo_.toString().toLowerCase()
 
             if (EventCloser.toString().toLowerCase() === leftAddress.toLowerCase()) {
@@ -252,10 +254,24 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                         .call()
                         .then(r => r.sender)
                     leftAddress = sender.toString()
+                    try {
+                        const owner = await tokenWalletContract(sender, staticRpc)
+                            .methods.owner({ answerId: 0 })
+                            .call()
+                            .then(r => r.value0)
+                        leftAddress = owner.toString()
+                    }
+                    catch {}
                 }
                 catch (e) {
                     error(e)
                 }
+            }
+
+            if (rightAddress.toLowerCase() === Unwrapper.toLowerCase()) {
+                rightAddress = `0x${BigNumber(
+                    `0x${Buffer.from(callback.payload, 'base64').toString('hex')}`,
+                ).toString(16)}`
             }
 
             this.setData({
@@ -321,8 +337,9 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
 
             this.runEventUpdater()
         }
+        // Alien transfer
         else if (pipelineType === 'multi_evm_tvm') {
-            let eventData
+            let eventData: DecodedAbiFunctionOutputs<typeof MultiVaultAbi.EverscaleEVMEventAlien, 'getDecodedData'> | any
 
             try {
                 eventData = await everscaleEventAlienContract(this.contractAddress)
@@ -341,6 +358,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 remainingGasTo_: ownerAddress,
                 amount_: tokens,
                 base_chainId_: chainId,
+                callback,
             } = eventData
             const { token_: eventTokenAddress } = eventData
 
@@ -390,8 +408,8 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 }
             }
 
-            let leftAddress = ownerAddress.toString()
-            const rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
+            let leftAddress = ownerAddress.toString(),
+                rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
             const remainingGasTo = eventData.remainingGasTo_.toString().toLowerCase()
 
             if (EventCloser.toString().toLowerCase() === leftAddress.toLowerCase()) {
@@ -400,14 +418,25 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                         .methods.sender()
                         .call()
                         .then(r => r.sender)
-                    const owner = await tokenWalletContract(sender, staticRpc)
-                        .methods.owner({ answerId: 0 })
-                        .call()
-                    leftAddress = owner.value0.toString()
+                    leftAddress = sender.toString()
+                    try {
+                        const owner = await tokenWalletContract(sender, staticRpc)
+                            .methods.owner({ answerId: 0 })
+                            .call()
+                            .then(r => r.value0)
+                        leftAddress = owner.toString()
+                    }
+                    catch {}
                 }
                 catch (e) {
                     error(e)
                 }
+            }
+
+            if (rightAddress.toLowerCase() === Unwrapper.toLowerCase()) {
+                rightAddress = `0x${BigNumber(
+                    `0x${Buffer.from(callback.payload, 'base64').toString('hex')}`,
+                ).toString(16)}`
             }
 
             this.setData({
@@ -934,38 +963,40 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 const firstIteration = this.releaseState?.isReleased === undefined
                 const isReleased = await vaultContract.methods.withdrawalIds(this.data.withdrawalId).call()
                 const timestamp = ((Date.now() / 1000) - (this.eventState?.timestamp ?? 0))
+                const isInsufficientVaultBalance = (
+                    this.releaseState?.isInsufficientVaultBalance
+                    || this.isInsufficientVaultBalance
+                )
                 const isOutdated = timestamp >= 600
-                const shouldCheckPendingWithdrawals = timestamp < 120 && (
+                const shouldCheckPendingWithdrawals = (
+                    timestamp < 120
+                    || isInsufficientVaultBalance
+                ) && (
                     !this.isTvmBasedToken
                     || !this.pipeline.isNative
                 )
 
                 if (this.releaseState?.status === 'pending' && firstIteration && !this.isMultiVaultCredit) {
-                    const status = isReleased ? 'confirmed' : 'pending'
+                    const status = isReleased ? 'confirmed' : 'disabled'
                     this.setState('releaseState', {
                         isOutdated: isReleased ? undefined : isOutdated,
                         isReleased,
-                        status: this.isTvmBasedToken || this.pipeline.isNative ? 'confirmed' : status,
+                        status,
                         ttl: (!isReleased && ttl !== undefined) ? parseInt(ttl, 10) : undefined,
                     })
                 }
 
                 if (isReleased) {
                     this.setState('releaseState', {
-                        ...this.releaseState,
-                        isOutdated: isReleased ? undefined : isOutdated,
                         isPendingWithdrawal: shouldCheckPendingWithdrawals,
-                        isReleased: true,
-                        isReleasing: false,
+                        isReleased: !shouldCheckPendingWithdrawals,
                         status: shouldCheckPendingWithdrawals ? 'pending' : 'confirmed',
                     })
-                    if (!this.isTvmBasedToken || !this.pipeline.isNative) {
-                        await this.runPendingWithdrawalUpdater(
-                            // eslint-disable-next-line no-nested-ternary
-                            this.releaseState?.isInsufficientVaultBalance
-                                ? 30
-                                : shouldCheckPendingWithdrawals ? 5 : 1,
-                        )
+                    if (shouldCheckPendingWithdrawals) {
+                        await this.runPendingWithdrawalUpdater(isInsufficientVaultBalance ? 30 : 5)
+                    }
+                    else {
+                        await this.runPendingWithdrawalUpdater(1)
                     }
                 }
                 else if (isOutdated && !this.releaseState?.isReleasing) {

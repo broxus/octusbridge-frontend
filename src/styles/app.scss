@@ -328,7 +328,12 @@ ul.summary {
     }
 }
 
-
 .react-tooltip.tooltip-common-small {
     padding: 2px 10px;
+}
+
+.rc-select-assets {
+    .rc-select-selection-item {
+        flex: none;
+    }
 }

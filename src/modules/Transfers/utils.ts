@@ -64,11 +64,15 @@ export function mapStatusToBadge(status?: TransferStatus): BadgeStatus {
 
 export function getCurrencyAddress(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
+        case 'TonToEth':
+        case 'EthToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return transfer.tonEthTonTokenAddress
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return transfer.ethTonTonTokenAddress
@@ -79,11 +83,15 @@ export function getCurrencyAddress(transfer: Transfer): string | undefined {
 
 export function getAmount(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
+        case 'TonToEth':
+        case 'EthToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return transfer.tonEthVolumeExec
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return transfer.ethTonVolumeExec
@@ -94,11 +102,15 @@ export function getAmount(transfer: Transfer): string | undefined {
 
 export function getFromNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
+        case 'EthToTon':
+        case 'EthToEth':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return transfer.ethTonChainId ? findNetwork(`${transfer.ethTonChainId}`, 'evm') : undefined
+        case 'TonToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
             return findNetwork('42', 'tvm')
@@ -109,9 +121,13 @@ export function getFromNetwork(transfer: Transfer): NetworkShape | undefined {
 
 export function getToNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return findNetwork('42', 'tvm')
+        case 'TonToEth':
+        case 'EthToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
         case 'AlienEthToEth':
@@ -124,11 +140,15 @@ export function getToNetwork(transfer: Transfer): NetworkShape | undefined {
 
 export function getTransitNetwork(transfer: Transfer): NetworkShape | undefined {
     switch (transfer.transferKind) {
-        case 'AlienEthToEth':
-        case 'NativeEthToEth':
+        case 'EthToTon':
+        case 'EthToEth':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
+        case 'AlienEthToEth':
+        case 'NativeEthToEth':
             return findNetwork('42', 'tvm')
+        case 'TonToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
             return transfer.tonEthChainId ? findNetwork(`${transfer.tonEthChainId}`, 'evm') : undefined
@@ -139,16 +159,20 @@ export function getTransitNetwork(transfer: Transfer): NetworkShape | undefined 
 
 export function getTransferLink(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
+        case 'TonToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
             return transfer.tonEthChainId && transfer.tonEthContractAddress
                 ? `/transfer/tvm-42/evm-${transfer.tonEthChainId}/${transfer.tonEthContractAddress}`
                 : undefined
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return transfer.ethTonChainId && transfer.ethTonTransactionHashEth
                 ? `/transfer/evm-${transfer.ethTonChainId}/tvm-42/${transfer.ethTonTransactionHashEth}`
                 : undefined
+        case 'EthToEth':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return transfer.ethTonChainId && transfer.tonEthChainId && transfer.ethTonTransactionHashEth
@@ -161,11 +185,15 @@ export function getTransferLink(transfer: Transfer): string | undefined {
 
 export function getTypeIntlId(transferKind: TransferKind): string | undefined {
     switch (transferKind) {
+        case 'TonToEth':
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return 'TRANSFERS_TYPE_DEFAULT'
+        case 'EthToEth':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return 'TRANSFERS_TYPE_TRANSIT'
@@ -176,9 +204,13 @@ export function getTypeIntlId(transferKind: TransferKind): string | undefined {
 
 export function getFromAddress(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
+        case 'TonToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
             return transfer.tonUserAddress
+        case 'EthToTon':
+        case 'EthToEth':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
         case 'AlienEthToEth':
@@ -191,12 +223,16 @@ export function getFromAddress(transfer: Transfer): string | undefined {
 
 export function getToAddress(transfer: Transfer): string | undefined {
     switch (transfer.transferKind) {
+        case 'TonToEth':
         case 'AlienTonToEth':
         case 'NativeTonToEth':
             return transfer.tonEthEthUserAddress
+        case 'EthToTon':
+        case 'CreditEthToTon':
         case 'AlienEthToTon':
         case 'NativeEthToTon':
             return transfer.tonUserAddress
+        case 'EthToEth':
         case 'AlienEthToEth':
         case 'NativeEthToEth':
             return transfer.tonEthEthUserAddress

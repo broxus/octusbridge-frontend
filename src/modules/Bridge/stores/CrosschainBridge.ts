@@ -40,7 +40,6 @@ import {
     TransitOperation,
 } from '@/modules/Bridge/types'
 import {
-    type Tickers,
     findAssociatedTokenAddress,
     getPrice,
     getUnwrapPayload,
@@ -138,6 +137,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             isEnoughComboBalance: computed,
             isEnoughEverBalance: computed,
             isEnoughEvmBalance: computed,
+            isEnoughTvmBalance: computed,
             isEnoughWeverBalance: computed,
             isEvmEvm: computed,
             isEvmTvm: computed,
@@ -412,7 +412,6 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             else {
                 gasUsage = 600_000
             }
-
         }
 
         return gasUsage
@@ -485,17 +484,17 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             let rate = '0'
 
             if (this.isFromEvm) {
-                rate = (await getPrice(this.leftNetwork!.currencySymbol.toUpperCase() as Tickers)).price
+                rate = await getPrice(this.leftNetwork!.currencySymbol.toUpperCase())
             }
             else if (this.isFromTvm) {
-                rate = (await getPrice(this.rightNetwork!.currencySymbol.toUpperCase() as Tickers)).price
+                rate = await getPrice(this.rightNetwork!.currencySymbol.toUpperCase())
             }
 
             let web3 = new Web3(network.rpcUrl)
 
             const [eventInitialBalance = 6_000_000_000, gasPrice = '0', gasUsage] = await Promise.all([
                 this.getInitialBalance(),
-                web3.eth.getGasPrice().catch(() => '0'),
+                web3.eth.getGasPrice(),
                 this.getGasUsage(),
             ])
 
@@ -507,6 +506,24 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 .dp(this.tvmWallet.coin.decimals, BigNumber.ROUND_DOWN)
                 .shiftedBy(this.tvmWallet.coin.decimals)
 
+            try {
+                if (this.pipeline.everscaleTokenAddress) {
+                    const state = await getFullContractState(this.pipeline.everscaleTokenAddress)
+                    if (!state?.isDeployed) {
+                        debug('Token not deployed: + 1 expected evers')
+                        gasPriceNumber = gasPriceNumber.plus(1_000_000_000)
+                    }
+                }
+                else {
+                    debug('Token not deployed: + 1 expected evers')
+                    gasPriceNumber = gasPriceNumber.plus(1_000_000_000)
+                }
+            }
+            catch (e) {
+                debug('Token not deployed: + 1 expected evers')
+                gasPriceNumber = gasPriceNumber.plus(1_000_000_000)
+            }
+
             if (this.isEvmEvm) {
                 const targetNetwork = this.secondPipeline?.chainId
                     ? findNetwork(this.secondPipeline.chainId, 'evm')
@@ -515,18 +532,18 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 if (targetNetwork) {
                     web3 = new Web3(targetNetwork.rpcUrl)
                     const [_rate, _gasPrice = '0', _gasUsage] = await Promise.all([
-                        (await getPrice(targetNetwork.currencySymbol.toLowerCase() as Tickers)).price,
-                        web3.eth.getGasPrice().catch(() => '0'),
+                        getPrice(targetNetwork.currencySymbol.toLowerCase()),
+                        web3.eth.getGasPrice(),
                         this.getSecondGasUsage(),
                     ])
                     gasPriceNumber = gasPriceNumber.plus(
                         BigNumber(_gasPrice || 0)
-                            .times(_gasUsage)
-                            .shiftedBy(-this.evmWallet.coin.decimals)
-                            .times(_rate)
-                            .times(1.2) // +20%
-                            .dp(this.tvmWallet.coin.decimals, BigNumber.ROUND_DOWN)
-                            .shiftedBy(this.tvmWallet.coin.decimals),
+                        .times(_gasUsage)
+                        .shiftedBy(-this.evmWallet.coin.decimals)
+                        .times(_rate)
+                        .times(1.2) // +20%
+                        .dp(this.tvmWallet.coin.decimals, BigNumber.ROUND_DOWN)
+                        .shiftedBy(this.tvmWallet.coin.decimals),
                     )
                 }
             }
@@ -727,18 +744,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.pipeline.vaultAddress.toString(),
                 )
 
-                let eventInitialBalance = '6000000000'
-
-                if (this.pipeline?.ethereumConfiguration !== undefined) {
-                    try {
-                        eventInitialBalance = (
-                            await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
-                            .methods.getDetails({ answerId: 0 })
-                            .call()
-                        )._basicConfiguration.eventInitialBalance
-                    }
-                    catch (e) {}
-                }
+                const eventInitialBalance = await this.getInitialBalance()
 
                 const amount = this.amountNumber
                     .shiftedBy(this.pipeline.evmTokenDecimals)
@@ -786,7 +792,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .shiftedBy(this.tvmWallet.coin.decimals)
                     .plus(eventInitialBalance ?? 0)
 
-                const rate = (await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as Tickers)).price as string
+                const rate = await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as string)
 
                 const value = expectedEvers
                     .shiftedBy(-this.tvmWallet.coin.decimals)
@@ -902,18 +908,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     this.pipeline.vaultAddress.toString(),
                 )
 
-                let eventInitialBalance = '6000000000'
-
-                if (this.pipeline?.ethereumConfiguration !== undefined) {
-                    try {
-                        eventInitialBalance = (
-                            await ethereumEventConfigurationContract(this.pipeline.ethereumConfiguration)
-                            .methods.getDetails({ answerId: 0 })
-                            .call()
-                        )._basicConfiguration.eventInitialBalance
-                    }
-                    catch (e) {}
-                }
+                const eventInitialBalance = await this.getInitialBalance()
 
                 const amount = this.amountNumber
                     .shiftedBy(this.pipeline.evmTokenDecimals)
@@ -952,8 +947,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 let value = this.amountNumber.shiftedBy(this.evmWallet.coin.decimals)
 
                 if (this.isSwapEnabled) {
-                    const rate = (await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as Tickers))
-                        .price as string
+                    const rate = await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as string)
 
                     value = value.plus(
                         expectedEvers
@@ -1156,7 +1150,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     /**
      * Transfer TVM-native token to the EVM
      *
-     * - WEVER, QUBE, BRIDGE
+     * - QUBE, BRIDGE
      * - Token that base chainId is not equals to target EVM network chainId
      *
      * @param {(e: any) => void} reject
@@ -1289,8 +1283,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const web3 = new Web3(network.rpcUrl)
 
                 const [rate, gasPrice = '0', gasUsage] = await Promise.all([
-                    (await getPrice(this.rightNetwork.currencySymbol.toLowerCase() as Tickers)).price,
-                    web3.eth.getGasPrice().catch(() => '0'),
+                    getPrice(this.rightNetwork.currencySymbol.toLowerCase()),
+                    web3.eth.getGasPrice(),
                     this.getGasUsage(),
                 ])
 
@@ -1536,8 +1530,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const web3 = new Web3(network.rpcUrl)
 
                 const [rate, gasPrice = '0', gasUsage] = await Promise.all([
-                    (await getPrice(this.rightNetwork.currencySymbol.toLowerCase() as Tickers)).price,
-                    web3.eth.getGasPrice().catch(() => '0'),
+                    getPrice(this.rightNetwork.currencySymbol.toLowerCase()),
+                    web3.eth.getGasPrice(),
                     this.getGasUsage(),
                 ])
 
@@ -1554,11 +1548,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
             const delta = this.amountNumber
                 .shiftedBy(this.tvmWallet.coin.decimals)
-                .minus(this.token.balance ?? 0)
+                .minus(this.token.balance ?? this.pipeline.everscaleTokenBalance ?? 0)
                 .toFixed()
 
-            await walletContract.methods
-                .transfer({
+            await walletContract
+                .methods.transfer({
                     amount: this.token.balance ?? '0',
                     deployWalletValue: '200000000',
                     notify: true,
@@ -1726,7 +1720,9 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
             const eventInitialBalance = await this.getInitialBalance()
 
-            let attachedAmount = BigNumber(eventInitialBalance)
+            let value = this.amountNumber
+                .shiftedBy(this.tvmWallet.coin.decimals)
+                .plus(eventInitialBalance)
 
             if (this.isSwapEnabled) {
                 const network = findNetwork(this.pipeline.chainId, 'evm')
@@ -1738,8 +1734,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const web3 = new Web3(network.rpcUrl)
 
                 const [rate, gasPrice = '0', gasUsage] = await Promise.all([
-                    (await getPrice(this.rightNetwork.currencySymbol.toLowerCase() as Tickers)).price,
-                    web3.eth.getGasPrice().catch(() => '0'),
+                    getPrice(this.rightNetwork.currencySymbol.toLowerCase()),
+                    web3.eth.getGasPrice(),
                     this.getGasUsage(),
                 ])
 
@@ -1751,7 +1747,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                     .dp(this.tvmWallet.coin.decimals, BigNumber.ROUND_DOWN)
                     .shiftedBy(this.tvmWallet.coin.decimals)
 
-                attachedAmount = this.amountNumber
+                value = this.amountNumber
                     .shiftedBy(this.tvmWallet.coin.decimals)
                     .plus(gasPriceNumber.plus(eventInitialBalance))
                     .dp(0, BigNumber.ROUND_UP)
@@ -1759,13 +1755,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
             await WEVERVault.methods
                 .wrap({
-                    gas_back_address: remainingGasTo,
-                    owner_address: Compounder,
-                    payload: compounderPayload.boc,
                     tokens: this.amountNumber.shiftedBy(this.tvmWallet.coin.decimals).toFixed(),
+                    // eslint-disable-next-line sort-keys
+                    owner_address: Compounder,
+                    // eslint-disable-next-line sort-keys
+                    gas_back_address: remainingGasTo,
+                    payload: compounderPayload.boc,
                 })
                 .send({
-                    amount: attachedAmount.toFixed(),
+                    amount: value.plus(500_000_000).toFixed(),
                     bounce: true,
                     from: new Address(this.leftAddress),
                 })
@@ -1785,7 +1783,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
     }
 
     /**
-     * Burn TVM-alien token and mint it into EVM
+     * Burn TVM-alien token and unlock it in EVM
      *
      * - through MergePool
      * - through AlienProxy (EVM Wrapped Native currency)
@@ -1845,8 +1843,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         })
 
                         const checkEvmAddress = `0x${BigNumber(event.data.recipient)
-                        .toString(16)
-                        .padStart(40, '0')}`
+                            .toString(16)
+                            .padStart(40, '0')}`
 
                         const addr = `0x${BigNumber(
                             `0x${Buffer.from(event.data.callback_payload, 'base64').toString('hex')}`,
@@ -1889,8 +1887,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 const gasUsage = 600_000
 
                 const [rate, gasPrice = '0'] = await Promise.all([
-                    (await getPrice(this.rightNetwork.currencySymbol.toLowerCase() as Tickers)).price,
-                    web3.eth.getGasPrice().catch(() => '0'),
+                    getPrice(this.rightNetwork.currencySymbol.toLowerCase()),
+                    web3.eth.getGasPrice(),
                 ])
 
                 const gasPriceNumber = BigNumber(gasPrice || 0)
@@ -2311,12 +2309,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 else {
                     /** TransitOperation.BurnToAlienProxy */
-                    const callbackPayload = await staticRpc.packIntoCell({
+                    const burnPayload = await staticRpc.packIntoCell({
                         data: {
-                            addr: this.rightAddress,
+                            addr: Unwrapper,
                             callback: {
-                                recipient: '0x0000000000000000000000000000000000000000',
-                                payload: '',
+                                recipient: Unwrapper,
+                                payload: this.evmWallet.web3?.eth.abi.encodeParameters(
+                                    ['address'],
+                                    [this.rightAddress],
+                                ) ?? '',
                                 strict: false,
                             },
                         },
@@ -2325,7 +2326,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             {
                                 components: [
                                     { name: 'recipient', type: 'uint160' },
-                                    { name: 'payload', type: 'cell' },
+                                    { name: 'payload', type: 'bytes' },
                                     { name: 'strict', type: 'bool' },
                                 ] as const,
                                 name: 'callback',
@@ -2336,10 +2337,12 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                     const operationPayload = await staticRpc.packIntoCell({
                         data: {
+                            nonce: getRandomUint(),
                             network: 1,
-                            payload: callbackPayload.boc,
+                            payload: burnPayload.boc,
                         },
                         structure: [
+                            { name: 'nonce', type: 'uint32' },
                             { name: 'network', type: 'uint8' },
                             { name: 'payload', type: 'cell' },
                         ] as const,
@@ -2362,27 +2365,57 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 }
                 /* eslint-enable sort-keys */
 
-                let expectedEvers = BigNumber(eventInitialBalance)
-                const rate = (await getPrice(
-                    this.leftNetwork?.currencySymbol.toLowerCase() as Tickers,
-                )).price as string
+                let value = this.amountNumber.shiftedBy(this.evmWallet.coin.decimals),
+                    expectedEvers = BigNumber(eventInitialBalance)
+
+                try {
+                    if (this.pipeline.everscaleTokenAddress) {
+                        const state = await getFullContractState(this.pipeline.everscaleTokenAddress)
+                        if (!state?.isDeployed) {
+                            debug('Token not deployed: + 1 expected evers')
+                            expectedEvers = expectedEvers.plus(1_000_000_000)
+                        }
+                    }
+                    else {
+                        debug('Token not deployed: + 1 expected evers')
+                        expectedEvers = expectedEvers.plus(1_000_000_000)
+                    }
+                }
+                catch (e) {
+                    debug('Token not deployed: + 1 expected evers')
+                    expectedEvers = expectedEvers.plus(1_000_000_000)
+                }
+
+                const rate = await getPrice(this.leftNetwork?.currencySymbol.toLowerCase() as string)
+
+                if (this.isNativeEvmCurrency) {
+                    value = value.plus(
+                        expectedEvers
+                        .shiftedBy(-this.tvmWallet.coin.decimals)
+                        .div(rate)
+                        .times(1.2)
+                        .shiftedBy(this.evmWallet.coin.decimals)
+                        .dp(0, BigNumber.ROUND_DOWN),
+                    )
+                }
+                else {
+                    value = expectedEvers
+                        .shiftedBy(-this.tvmWallet.coin.decimals)
+                        .div(rate)
+                        .times(1.2)
+                        .shiftedBy(this.evmWallet.coin.decimals)
+                        .dp(0, BigNumber.ROUND_DOWN)
+                }
+
                 const targetNetwork = findNetwork(this.secondPipeline.chainId, 'evm')
-                let value = BigNumber(expectedEvers)
-                    .shiftedBy(-this.tvmWallet.coin.decimals)
-                    .div(rate)
-                    .times(1.2)
-                    .shiftedBy(this.evmWallet.coin.decimals)
-                    .dp(0, BigNumber.ROUND_DOWN)
 
                 // if token exists in evm
                 if (targetNetwork) {
                     const gasUsage = await this.getSecondGasUsage()
 
                     const web3 = new Web3(targetNetwork.rpcUrl)
-                    const targetGasPrice = (await web3.eth.getGasPrice().catch(() => '0')) ?? '0'
-                    const targetRate = (
-                        await getPrice(this.rightNetwork?.currencySymbol.toLowerCase() as Tickers)
-                    ).price as string
+                    const targetGasPrice = await web3.eth.getGasPrice()
+                    const targetRate = await getPrice(this.rightNetwork?.currencySymbol.toLowerCase() as string)
 
                     const gasPriceNumber = BigNumber(targetGasPrice || 0)
                         .times(gasUsage)
@@ -3049,6 +3082,10 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
     public get maxAmount(): string {
         if (this.isFromTvm && this.isNativeTvmCurrency) {
+            if (!this.isEnoughTvmBalance) {
+                return '0'
+            }
+
             const value = BigNumber(this.token?.balance || 0)
                 .plus(this.tvmWallet.balance || 0)
                 .minus(this.isSwapEnabled ? this.minEversAmount ?? EverSafeAmount : EverSafeAmount)
@@ -3135,6 +3172,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             this.isAmountMaxValueValid
             && this.isAmountMinValueValid
             && (this.isEvmTvm ? !this.isAmountVaultLimitExceed : true)
+            && (this.isFromTvm ? this.isEnoughTvmBalance : true)
         )
     }
 
@@ -3357,6 +3395,16 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             .minus(this.isSwapEnabled ? this.minEversAmount ?? EverSafeAmount : EverSafeAmount)
             .shiftedBy(-this.tvmWallet.coin.decimals)
             .gte(this.amountNumber)
+    }
+
+    public get isEnoughTvmBalance(): boolean {
+        const eventInitialBalance = BigNumber(this.data.eventInitialBalance ?? 0)
+            .shiftedBy(-this.tvmWallet.coin.decimals)
+        return this.tvmWallet.balanceNumber.gte(
+            this.isSwapEnabled
+                ? this.tvmEvmCost || 0
+                : eventInitialBalance,
+        )
     }
 
     public get isEnoughComboBalance(): boolean {
