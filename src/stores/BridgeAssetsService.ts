@@ -1397,7 +1397,11 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                         pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
                     }
                 }
-                else if (data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined) {
+
+                if (
+                    !pipeline.everscaleTokenAddress
+                    || (data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined)
+                ) {
                     try {
                         const everscaleTokenAddress = await BridgeUtils.getDeriveAlienTokenRoot(
                             pipeline.proxyAddress,
@@ -1441,7 +1445,7 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
         pipeline.isBlacklisted = meta.blacklisted
         pipeline.withdrawFee = meta.withdrawFee
 
-        // dirty hack for check custom token for erver
+        // dirty hack for check custom token for ever
         if (
             meta.custom === '0x0000000000000000000000000000000000000000'
             && pipeline.everscaleTokenAddress

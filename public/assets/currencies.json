@@ -12,7 +12,7 @@
         "tvm",
         "evm"
     ],
-    "timestamp": "2023-03-31T11:27:33.633Z",
+    "timestamp": "2023-08-17T14:00:00.633Z",
     "tokens": [
         {
             "name": "EVER",
@@ -45,6 +45,14 @@
             "decimals": 18,
             "logoURI": "/assets/icons/FTM.svg",
             "address": "0:d53f813f775ae9435cc1f35eb5d9608590e78b11420b0e4529acfa8b591c78f7"
+        },
+        {
+            "name": "KLAY",
+            "symbol": "KLAY",
+            "chainId": "42",
+            "decimals": 18,
+            "logoURI": "/assets/icons/KLAY.svg",
+            "address": "0:da8b2be3751278086929797a494d11a26bf94a379adb571abf0cecb0565b0ec6"
         },
         {
             "name": "AVAX",
@@ -92,6 +100,16 @@
             "address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
             "wrappedName": "Wrapped FTM",
             "wrappedSymbol": "WFTM"
+        },
+        {
+            "name": "KLAY",
+            "symbol": "KLAY",
+            "chainId": "8217",
+            "decimals": 18,
+            "logoURI": "/assets/icons/KLAY.svg",
+            "address": "0x19aac5f612f524b754ca7e7c41cbfa2e981a4432",
+            "wrappedName": "Wrapped Klay",
+            "wrappedSymbol": "WKLAY"
         },
         {
             "name": "AVAX",

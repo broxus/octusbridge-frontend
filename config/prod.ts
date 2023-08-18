@@ -50,6 +50,18 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
+        chainId: '8217',
+        currencySymbol: 'KLAY',
+        explorerBaseUrl: 'https://scope.klaytn.com/',
+        explorerLabel: 'Klaytn Scope',
+        id: 'evm-8217',
+        label: 'Klaytn',
+        name: 'Klaytn Mainnet Cypress',
+        rpcUrl: 'https://klaytn.blockpi.network/v1/rpc/public',
+        transactionType: '0x0',
+        type: 'evm',
+    },
+    {
         chainId: '137',
         currencySymbol: 'MATIC',
         explorerBaseUrl: 'https://polygonscan.com/',
@@ -123,9 +135,9 @@ export const StakingAccountAddress = new AddressLiteral('0:ec6a2fd6c3732e494684d
 
 export const DaoRootContractAddress = new AddressLiteral('0:6da8defd136c0227dfa24edde79728142d2bfb74bc9edf66ad86ae7cd8e56a86')
 
-export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/tokenlist/common.json'
+export const AlienTokenListURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-5/tokenlist/common.json'
 
-export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-4/main.json'
+export const BridgeAssetsURI = 'https://raw.githubusercontent.com/broxus/bridge-assets/multitoken-5/main.json'
 
 export const TokenListURI = 'https://raw.githubusercontent.com/broxus/ton-assets/master/manifest.json'
 
