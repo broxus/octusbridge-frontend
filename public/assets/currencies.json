@@ -159,6 +159,14 @@
         {
             "name": "EVER",
             "symbol": "EVER",
+            "chainId": "8217",
+            "logoURI": "/assets/icons/EVER.svg",
+            "decimals": 9,
+            "address": "0x1ffefd8036409cb6d652bd610de465933b226917"
+        },
+        {
+            "name": "EVER",
+            "symbol": "EVER",
             "chainId": "43114",
             "logoURI": "/assets/icons/EVER.svg",
             "decimals": 9,
