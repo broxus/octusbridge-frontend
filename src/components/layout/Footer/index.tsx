@@ -289,7 +289,7 @@ export function Footer(): JSX.Element {
                     <ul className="footer-soc">
                         <li>
                             <a
-                                href="https://discord.gg/6dryaZQNmC"
+                                href="https://discord.gg/broxus"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title="Discord"
@@ -319,7 +319,7 @@ export function Footer(): JSX.Element {
                         </li>
                         <li>
                             <a
-                                href="https://octusbridge.medium.com/"
+                                href="https://medium.com/broxus"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title="Medium"
