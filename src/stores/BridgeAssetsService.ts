@@ -1379,12 +1379,6 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
                 const token = this.get('evm', pipeline.chainId, root)
 
-                const data = await Promise.all([
-                    BridgeUtils.getEvmTokenName(root, sourceNetwork.rpcUrl),
-                    BridgeUtils.getEvmTokenSymbol(root, sourceNetwork.rpcUrl),
-                    BridgeUtils.getEvmTokenDecimals(root, sourceNetwork.rpcUrl),
-                ])
-
                 if (token?.symbol !== undefined && this.isNativeCurrency(root)) {
                     const everscaleTokenAddress = this.data.currencies.find(
                         i => (
@@ -1398,38 +1392,43 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                     }
                 }
 
-                if (
-                    !pipeline.everscaleTokenAddress
-                    || (data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined)
-                ) {
-                    try {
-                        const everscaleTokenAddress = await BridgeUtils.getDeriveAlienTokenRoot(
-                            pipeline.proxyAddress,
-                            {
-                                chainId: sourceId,
-                                decimals: data[2].toString(),
-                                name: data[0],
-                                symbol: data[1],
-                                token: root,
-                            },
-                        )
+                if (!pipeline.everscaleTokenAddress) {
+                    const data = await Promise.all([
+                        BridgeUtils.getEvmTokenName(root, sourceNetwork.rpcUrl),
+                        BridgeUtils.getEvmTokenSymbol(root, sourceNetwork.rpcUrl),
+                        BridgeUtils.getEvmTokenDecimals(root, sourceNetwork.rpcUrl),
+                    ])
 
-                        pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
-                    }
-                    catch (e) {
-                        error(e)
-                        return undefined
-                    }
+                    if ((data?.[0] !== undefined && data[1] !== undefined && data[2] !== undefined)) {
+                        try {
+                            const everscaleTokenAddress = await BridgeUtils.getDeriveAlienTokenRoot(
+                                pipeline.proxyAddress,
+                                {
+                                    chainId: sourceId,
+                                    decimals: data[2].toString(),
+                                    name: data[0],
+                                    symbol: data[1],
+                                    token: root,
+                                },
+                            )
 
-                    if (pipeline.everscaleTokenAddress !== undefined) {
-                        const canonicalTokenAddress = await BridgeUtils.getCanonicalToken(
-                            pipeline.everscaleTokenAddress,
-                            pipeline.proxyAddress,
-                        )
-                        if (canonicalTokenAddress !== undefined) {
-                            pipeline.canonicalTokenAddress = canonicalTokenAddress
-                            pipeline.everscaleTokenAddress = canonicalTokenAddress
+                            pipeline.everscaleTokenAddress = new Address(everscaleTokenAddress)
                         }
+                        catch (e) {
+                            error(e)
+                            return undefined
+                        }
+                    }
+                }
+
+                if (pipeline.everscaleTokenAddress !== undefined) {
+                    const canonicalTokenAddress = await BridgeUtils.getCanonicalToken(
+                        pipeline.everscaleTokenAddress,
+                        pipeline.proxyAddress,
+                    )
+                    if (canonicalTokenAddress !== undefined) {
+                        pipeline.canonicalTokenAddress = canonicalTokenAddress
+                        pipeline.everscaleTokenAddress = canonicalTokenAddress
                     }
                 }
             }
