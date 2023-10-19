@@ -104,9 +104,7 @@ export const WEVERVaultAddress = new AddressLiteral('0:557957cba74ab1dc544b4081b
 export const WEVERRootAddress = new AddressLiteral('0:a49cd4e158a9a15555e624759e2e4e766d22600b7800d891e46f9291f044a93d')
 
 export const WEVEREvmRoots = [
-    '0x29d578CEc46B50Fa5C88a99C6A4B70184C062953', // 1
-    '0x0A7e7D210C45c4abBA183C1D0551B53AD1756ecA', // 56
-    '0x1ffEFD8036409Cb6d652bd610DE465933b226917', // 137, 250, 43114
+    '0x1ffEFD8036409Cb6d652bd610DE465933b226917', // 1, 56, 137, 250, 43114
 ]
 
 export const Compounder = new AddressLiteral('0:8707c99c2e4a98642ba29a9d389656e804bd5b3cbe11a426ca12335792168d8a')

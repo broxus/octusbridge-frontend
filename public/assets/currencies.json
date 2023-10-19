@@ -138,7 +138,7 @@
             "chainId": "1",
             "logoURI": "/assets/icons/EVER.svg",
             "decimals": 9,
-            "address": "0x29d578CEc46B50Fa5C88a99C6A4B70184C062953"
+            "address": "0x1ffefd8036409cb6d652bd610de465933b226917"
         },
         {
             "name": "EVER",
@@ -146,7 +146,7 @@
             "chainId": "56",
             "logoURI": "/assets/icons/EVER.svg",
             "decimals": 9,
-            "address": "0x0A7e7D210C45c4abBA183C1D0551B53AD1756ecA"
+            "address": "0x1ffefd8036409cb6d652bd610de465933b226917"
         },
         {
             "name": "EVER",
