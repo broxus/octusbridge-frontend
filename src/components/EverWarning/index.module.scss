@@ -1,0 +1,42 @@
+.warning {
+    align-items: center;
+    background: rgb(230 172 0 / 80%);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: nowrap;
+    font-size: 16px;
+    font-weight: normal;
+    gap: 6px;
+    justify-content: center;
+    padding: 9px 16px;
+    padding-right: 70px;
+    position: relative;
+    text-align: center;
+    text-decoration: none !important;
+    width: 100%;
+
+    a {
+        display: inline;
+        font-weight: 700;
+        margin: 0;
+        padding: 0;
+        text-decoration: underline;
+
+        &:hover,
+        &:focus {
+            text-decoration: none;
+        }
+    }
+}
+
+.close {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    height: 16px;
+    justify-content: center;
+    position: absolute;
+    right: 27px;
+    width: 16px;
+}

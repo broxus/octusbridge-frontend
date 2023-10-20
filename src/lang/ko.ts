@@ -3,6 +3,7 @@ export default {
     OPEN_IN_EXPLORER: '에버스캔(EverScan)에서 열기',
     OPEN_IN_ETHERSCAN: '이더스캔({explorerLabel})에서 열기',
     REMOVE_ASSET: 'Remove asset',
+    EVER_WARNING_NOTE: 'WEVER 토큰에 대한 이더리움 및 BNB 체인 주소가 변경 되었습니다 추후 업데이트 소식이 확인 되기 전 까지 WEVER 토큰 네트워크 전송을 권장하지않습니다 자세한 내용은 <a href="https://t.me/broxus_chat" target="_blank" rel="noreferrer noopener">업데이트를</a> 확인하세요.',
     BEFORE_UNLOAD_ALERT: '확실히 떠나시겠습니까?',
     NAV_LINK_TEXT_BRIDGE: '브리지',
     NAV_LINK_TEXT_STAKING: '스테이킹',

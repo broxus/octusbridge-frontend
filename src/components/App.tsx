@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { IntlProvider } from 'react-intl'
 import {
     Redirect,
@@ -11,23 +11,15 @@ import {
 import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
 import { WalletConnectingModal } from '@/components/common/WalletConnectingModal'
 import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
+import { EverWarning } from '@/components/EverWarning'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { ScrollManager } from '@/components/layout/ScrollManager'
 import { LocalizationContext } from '@/context/Localization'
 import { BridgeTransferSummeryProvider } from '@/modules/Bridge'
 import Bridge from '@/pages/bridge'
-import TransferStatus from '@/pages/transfer'
-import TransferList from '@/pages/transfers'
 import LiquidityRequests from '@/pages/bridge/liquidity-requests'
 import LiquidityDeposit from '@/pages/bridge/liquidity-requests/item'
-import StakingSelf from '@/pages/staking/my'
-import StakingUser from '@/pages/staking/explorer/user'
-import StakingExplorer from '@/pages/staking/explorer'
-import Relayers from '@/pages/relayers/index'
-import RelayersValidationRound from '@/pages/relayers/validation-round'
-import RelayersBiddingRound from '@/pages/relayers/bidding-round'
-import RelayersEvent from '@/pages/relayers/events/item'
 import Relayer from '@/pages/relayers/item'
 import RelayersStatus from '@/pages/relayers/create'
 import RelayersKeys from '@/pages/relayers/create/keys'
@@ -35,12 +27,20 @@ import Overview from '@/pages/governance'
 import Proposals from '@/pages/governance/proposals'
 import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
+import RelayersBiddingRound from '@/pages/relayers/bidding-round'
+import RelayersEvent from '@/pages/relayers/events/item'
+import Relayers from '@/pages/relayers/index'
+import RelayersValidationRound from '@/pages/relayers/validation-round'
+import StakingExplorer from '@/pages/staking/explorer'
+import StakingUser from '@/pages/staking/explorer/user'
+import StakingSelf from '@/pages/staking/my'
+import TransferStatus from '@/pages/transfer'
+import TransferList from '@/pages/transfers'
 import { useEverWallet } from '@/stores/EverWalletService'
 import { useUpgradeTokens } from '@/stores/UpgradeTokens'
 import { noop } from '@/utils'
 
 import './App.scss'
-
 
 export function App(): JSX.Element {
     const everWallet = useEverWallet()
@@ -55,6 +55,7 @@ export function App(): JSX.Element {
             messages={localization.messages}
             onError={noop}
         >
+            <EverWarning />
             <Router>
                 <ScrollManager>
                     <div className="wrapper">

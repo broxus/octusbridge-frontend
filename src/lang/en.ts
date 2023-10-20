@@ -5,6 +5,7 @@ export default {
     OPEN_IN_ETHERSCAN: 'Open in {explorerLabel}',
     BEFORE_UNLOAD_ALERT: 'Are you sure you want to leave?',
     REMOVE_ASSET: 'Remove asset',
+    EVER_WARNING_NOTE: 'Attention! WEVER addresses on Ethereum and BNB Chain have changed. We advise against WEVER transfers until further notice. Find further updates <a href="https://t.me/broxus_chat" target="_blank" rel="noreferrer noopener">here</a>.',
 
     NAV_LINK_TEXT_BRIDGE: 'Bridge',
     NAV_LINK_TEXT_STAKING: 'Staking',
