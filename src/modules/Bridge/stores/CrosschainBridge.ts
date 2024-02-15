@@ -9,7 +9,7 @@ import Web3 from 'web3'
 
 import {
     Compounder,
-    EventCloser,
+    EventClosers,
     EverSafeAmount,
     Mediator,
     Unwrapper,
@@ -84,6 +84,8 @@ export const DEFAULT_CROSSCHAIN_BRIDGE_STORE_STATE: CrosschainBridgeStoreState =
     isProcessing: false,
     step: CrosschainBridgeStep.SELECT_ROUTE,
 }
+
+const eventClosers = EventClosers.map(addr => addr.toString().toLowerCase())
 
 export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, CrosschainBridgeStoreState> {
 
@@ -1205,11 +1207,11 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                             ] as const,
                         })
                         const checkEvmAddress = `0x${BigNumber(event.data.recipient)
-                        .toString(16)
-                        .padStart(40, '0')}`
+                            .toString(16)
+                            .padStart(40, '0')}`
 
                         if (
-                            [EventCloser.toString().toLowerCase(), this.leftAddress!.toLowerCase()].includes(
+                            [...eventClosers, this.leftAddress!.toLowerCase()].includes(
                                 event.data.remainingGasTo.toString().toLowerCase(),
                             )
                             && checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
@@ -1299,7 +1301,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 attachedAmount = gasPriceNumber.plus(eventInitialBalance)
             }
 
-            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.tvmWallet.account.address
+            const eventCloser = EventClosers[Math.floor(Math.random() * EventClosers.length)]
+            const remainingGasTo = this.isSwapEnabled ? eventCloser : this.tvmWallet.account.address
 
             await walletContract.methods
                 .transfer({
@@ -1435,7 +1438,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                         if (
                             [
-                                EventCloser.toString().toLowerCase(),
+                                ...eventClosers,
                                 Compounder.toString().toLowerCase(),
                                 this.leftAddress!.toLowerCase(),
                             ].includes(event.data.remainingGasTo.toString().toLowerCase())
@@ -1495,7 +1498,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 ] as const,
             })
 
-            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.tvmWallet.account.address
+            const eventCloser = EventClosers[Math.floor(Math.random() * EventClosers.length)]
+            const remainingGasTo = this.isSwapEnabled ? eventCloser : this.tvmWallet.account.address
 
             const compounderPayload = await staticRpc.packIntoCell({
                 data: {
@@ -1640,7 +1644,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
 
                         if (
                             [
-                                EventCloser.toString().toLowerCase(),
+                                ...eventClosers,
                                 Compounder.toString().toLowerCase(),
                                 this.leftAddress!.toLowerCase(),
                             ].includes(event.data.remainingGasTo.toString().toLowerCase())
@@ -1700,7 +1704,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 ] as const,
             })
 
-            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.tvmWallet.account.address
+            const eventCloser = EventClosers[Math.floor(Math.random() * EventClosers.length)]
+            const remainingGasTo = this.isSwapEnabled ? eventCloser : this.tvmWallet.account.address
 
             const compounderPayload = await staticRpc.packIntoCell({
                 data: {
@@ -1851,7 +1856,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                         ).toString(16)}`
 
                         if (
-                            [EventCloser.toString().toLowerCase(), this.leftAddress!.toLowerCase()].includes(
+                            [...eventClosers, this.leftAddress!.toLowerCase()].includes(
                                 event.data.remainingGasTo.toString().toLowerCase(),
                             )
                             && (checkEvmAddress.toLowerCase() === this.rightAddress.toLowerCase()
@@ -1902,7 +1907,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
                 attachedAmount = gasPriceNumber.plus(eventInitialBalance)
             }
 
-            const remainingGasTo = this.isSwapEnabled ? EventCloser : this.tvmWallet.account.address
+            const eventCloser = EventClosers[Math.floor(Math.random() * EventClosers.length)]
+            const remainingGasTo = this.isSwapEnabled ? eventCloser : this.tvmWallet.account.address
 
             const { mergePoolAddress, mergeEverscaleTokenAddress } = this.pipeline
 

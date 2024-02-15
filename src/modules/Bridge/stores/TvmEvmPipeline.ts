@@ -4,7 +4,7 @@ import { Address, type DecodedAbiFunctionOutputs } from 'everscale-inpage-provid
 import { type IReactionDisposer, computed, makeObservable, reaction, toJS } from 'mobx'
 import Web3 from 'web3'
 
-import { EventCloser, Unwrapper } from '@/config'
+import { EventClosers, Unwrapper } from '@/config'
 import staticRpc from '@/hooks/useStaticRpc'
 import { EthAbi, type MultiVaultAbi, TokenWallet } from '@/misc'
 import { BridgeUtils } from '@/misc/BridgeUtils'
@@ -78,6 +78,8 @@ export type TvmEvmPipelineState = {
         ttl?: number;
     };
 }
+
+const eventClosers = EventClosers.map(addr => addr.toString().toLowerCase())
 
 export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipelineState> {
 
@@ -247,7 +249,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
             const remainingGasTo = eventData.remainingGasTo_.toString().toLowerCase()
 
-            if (EventCloser.toString().toLowerCase() === leftAddress.toLowerCase()) {
+            if (eventClosers.includes(leftAddress.toLowerCase())) {
                 try {
                     const sender = await everscaleEventNativeContract(this.contractAddress)
                         .methods.sender()
@@ -288,7 +290,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                     requiredConfirmations: this.eventState?.requiredConfirmations || 0,
                     status: this.eventState?.status || 'pending',
                 },
-                isMultiVaultCredit: remainingGasTo === EventCloser.toString().toLowerCase(),
+                isMultiVaultCredit: eventClosers.includes(remainingGasTo),
                 prepareState: {
                     status: 'confirmed',
                 },
@@ -412,7 +414,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                 rightAddress = `0x${new BigNumber(ethereumAddress).toString(16).padStart(40, '0')}`
             const remainingGasTo = eventData.remainingGasTo_.toString().toLowerCase()
 
-            if (EventCloser.toString().toLowerCase() === leftAddress.toLowerCase()) {
+            if (eventClosers.includes(leftAddress.toLowerCase())) {
                 try {
                     const sender = await everscaleEventAlienContract(this.contractAddress)
                         .methods.sender()
@@ -453,7 +455,7 @@ export class TvmEvmPipeline extends BaseStore<TvmEvmPipelineData, TvmEvmPipeline
                     requiredConfirmations: this.eventState?.requiredConfirmations || 0,
                     status: this.eventState?.status || 'pending',
                 },
-                isMultiVaultCredit: remainingGasTo === EventCloser.toString().toLowerCase(),
+                isMultiVaultCredit: eventClosers.includes(remainingGasTo),
                 prepareState: {
                     status: 'confirmed',
                 },

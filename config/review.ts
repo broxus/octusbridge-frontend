@@ -111,6 +111,11 @@ export const Compounder = new AddressLiteral('0:8707c99c2e4a98642ba29a9d389656e8
 
 export const EventCloser = new AddressLiteral('0:6c5803db0fb7403421494ec458e5bc4763fb49cbb1b246ff2d3310e860845a78')
 
+export const EventClosers = [
+    new AddressLiteral('0:07abe0b552242744ef7efb200a021bd2d86662b8c3e0a5bef126d439c89f37f8'),
+    new AddressLiteral('0:7cc9d475a9c947120cb7b098f32275ec085a48655d39a4857f8d18b85ea9d57b'),
+]
+
 export const Mediator = new AddressLiteral('0:fc0794367a1597b988aeaa23f405aa305fcda8b6d7f17f89a600f492372b9df7')
 
 export const DexMiddleware = new AddressLiteral('0:7ab8004fe2941a5793447cf28c86237a3f43827a15de399a2eb315215632eb28')
