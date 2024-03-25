@@ -33,7 +33,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-56',
         label: 'BSC',
         name: 'Binance Smart Chain',
-        rpcUrl: 'https://bsc-dataseed.binance.org/',
+        rpcUrl: 'https://bsc.meowrpc.com',
         transactionType: '0x0',
         type: 'evm',
     },
