@@ -45,7 +45,7 @@ export const networks: NetworkShape[] = [
         id: 'evm-250',
         label: 'Fantom Opera',
         name: 'Fantom Opera',
-        rpcUrl: 'https://rpc.fantom.network',
+        rpcUrl: 'https://rpcapi.fantom.network',
         transactionType: '0x0',
         type: 'evm',
     },
