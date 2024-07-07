@@ -1,4 +1,3 @@
-
 /* eslint-disable sort-keys */
 export default {
     OPEN_IN_EXPLORER: 'Open in EVERScan',

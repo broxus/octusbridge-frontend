@@ -11,7 +11,6 @@ import {
 import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
 import { WalletConnectingModal } from '@/components/common/WalletConnectingModal'
 import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
-import { EverWarning } from '@/components/EverWarning'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { ScrollManager } from '@/components/layout/ScrollManager'
@@ -55,7 +54,6 @@ export function App(): JSX.Element {
             messages={localization.messages}
             onError={noop}
         >
-            <EverWarning />
             <Router>
                 <ScrollManager>
                     <div className="wrapper">
