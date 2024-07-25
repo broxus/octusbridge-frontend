@@ -1131,7 +1131,9 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
             alien = meta.base_chainId === targetId
         }
-        catch (e: any) {}
+        catch (e: any) {
+            error(`BridgeUtils.getAlienTokenRootMeta failed with an error [${e.code}]`, e)
+        }
 
         if (!alien) {
             try {
@@ -1145,7 +1147,9 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                     alien = merge !== undefined
                 }
             }
-            catch (e: any) {}
+            catch (e: any) {
+                error(`BridgeUtils.getMergedTokenDetails failed with an error [${e.code}]`, e)
+            }
         }
 
         if (alien) {
