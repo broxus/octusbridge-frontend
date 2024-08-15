@@ -50,8 +50,10 @@ export const networks: NetworkShape[] = [
         type: 'evm',
     },
     {
+        badge: 'Soon',
         chainId: '8217',
         currencySymbol: 'KLAY',
+        disabled: true,
         explorerBaseUrl: 'https://scope.klaytn.com/',
         explorerLabel: 'Klaytn Scope',
         id: 'evm-8217',
