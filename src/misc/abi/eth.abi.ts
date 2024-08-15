@@ -1217,46 +1217,243 @@ export abstract class EthAbi {
         {
             inputs: [
                 {
-                    internalType: 'bytes4',
-                    name: '_interfaceId',
-                    type: 'bytes4',
+                    components: [
+                        {
+                            components: [
+                                {
+                                    internalType: 'int8',
+                                    name: 'wid',
+                                    type: 'int8',
+                                },
+                                {
+                                    internalType: 'uint256',
+                                    name: 'addr',
+                                    type: 'uint256',
+                                },
+                            ],
+                            internalType: 'struct IEverscale.EverscaleAddress',
+                            name: 'recipient',
+                            type: 'tuple',
+                        },
+                        {
+                            internalType: 'address',
+                            name: 'token',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'amount',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'expected_evers',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'bytes',
+                            name: 'payload',
+                            type: 'bytes',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetDeposit.DepositParams',
+                    name: 'd',
+                    type: 'tuple',
                 },
             ],
-            name: 'supportsInterface',
-            outputs: [
-                {
-                    internalType: 'bool',
-                    name: '',
-                    type: 'bool',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'owner',
-            outputs: [
-                {
-                    internalType: 'address',
-                    name: 'owner_',
-                    type: 'address',
-                },
-            ],
-            stateMutability: 'view',
+            name: 'deposit',
+            outputs: [],
+            stateMutability: 'payable',
             type: 'function',
         },
         {
             inputs: [
                 {
-                    internalType: 'address',
-                    name: '_newOwner',
-                    type: 'address',
+                    components: [
+                        {
+                            components: [
+                                {
+                                    internalType: 'int8',
+                                    name: 'wid',
+                                    type: 'int8',
+                                },
+                                {
+                                    internalType: 'uint256',
+                                    name: 'addr',
+                                    type: 'uint256',
+                                },
+                            ],
+                            internalType: 'struct IEverscale.EverscaleAddress',
+                            name: 'recipient',
+                            type: 'tuple',
+                        },
+                        {
+                            internalType: 'address',
+                            name: 'token',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'amount',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'expected_evers',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'bytes',
+                            name: 'payload',
+                            type: 'bytes',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetDeposit.DepositParams',
+                    name: 'd',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'expectedMinBounty',
+                    type: 'uint256',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalIds',
+                    type: 'tuple[]',
                 },
             ],
-            name: 'transferOwnership',
+            name: 'deposit',
             outputs: [],
-            stateMutability: 'nonpayable',
+            stateMutability: 'payable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            components: [
+                                {
+                                    internalType: 'int8',
+                                    name: 'wid',
+                                    type: 'int8',
+                                },
+                                {
+                                    internalType: 'uint256',
+                                    name: 'addr',
+                                    type: 'uint256',
+                                },
+                            ],
+                            internalType: 'struct IEverscale.EverscaleAddress',
+                            name: 'recipient',
+                            type: 'tuple',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'amount',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'expected_evers',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'bytes',
+                            name: 'payload',
+                            type: 'bytes',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetDeposit.DepositNativeTokenParams',
+                    name: 'd',
+                    type: 'tuple',
+                },
+            ],
+            name: 'depositByNativeToken',
+            outputs: [],
+            stateMutability: 'payable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            components: [
+                                {
+                                    internalType: 'int8',
+                                    name: 'wid',
+                                    type: 'int8',
+                                },
+                                {
+                                    internalType: 'uint256',
+                                    name: 'addr',
+                                    type: 'uint256',
+                                },
+                            ],
+                            internalType: 'struct IEverscale.EverscaleAddress',
+                            name: 'recipient',
+                            type: 'tuple',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'amount',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'expected_evers',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'bytes',
+                            name: 'payload',
+                            type: 'bytes',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetDeposit.DepositNativeTokenParams',
+                    name: 'd',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'expectedMinBounty',
+                    type: 'uint256',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalIds',
+                    type: 'tuple[]',
+                },
+            ],
+            name: 'depositByNativeToken',
+            outputs: [],
+            stateMutability: 'payable',
             type: 'function',
         },
         {
@@ -1337,32 +1534,6 @@ export abstract class EthAbi {
             inputs: [
                 {
                     indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'BlacklistTokenAdded',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'BlacklistTokenRemoved',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
                     internalType: 'enum IMultiVaultFacetTokens.TokenType',
                     name: '_type',
                     type: 'uint8',
@@ -1405,75 +1576,6 @@ export abstract class EthAbi {
                 },
             ],
             name: 'Deposit',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'EarnTokenCash',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'EarnTokenFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'sender',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'lp_amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'MintLiquidity',
             type: 'event',
         },
         {
@@ -1530,6 +1632,983 @@ export abstract class EthAbi {
             ],
             name: 'NativeTransfer',
             type: 'event',
+        },
+        {
+            inputs: [],
+            name: 'defaultAlienDepositFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'defaultAlienWithdrawFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'defaultNativeDepositFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'defaultNativeWithdrawFee',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'fees',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultAlienDepositFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultAlienWithdrawFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultNativeDepositFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultNativeWithdrawFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: '_depositFee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setTokenDepositFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: '_withdrawFee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setTokenWithdrawFee',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'skim',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'EarnTokenFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'SkimFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultAlienDepositFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultAlienWithdrawFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultNativeDepositFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultNativeWithdrawFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateTokenDepositFee',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'fee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateTokenWithdrawFee',
+            type: 'event',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'convertLPToUnderlying',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'convertUnderlyingToLP',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'exchangeRateCurrent',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'getCash',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'getSupply',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'liquidity',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'uint256',
+                            name: 'activation',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'supply',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'cash',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'interest',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetLiquidity.Liquidity',
+                    name: '',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'address',
+                    name: 'recipient',
+                    type: 'address',
+                },
+            ],
+            name: 'mintLP',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'address',
+                    name: 'recipient',
+                    type: 'address',
+                },
+            ],
+            name: 'redeemLP',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'interest',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setDefaultInterest',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'interest',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setTokenInterest',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'EarnTokenCash',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'sender',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'lp_amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'MintLiquidity',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'sender',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'underlying_amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'RedeemLiquidity',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'inetrest',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDefaultLiquidityInterest',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'interest',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateTokenLiquidityInterest',
+            type: 'event',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    components: [
+                        {
+                            internalType: 'int8',
+                            name: 'wid',
+                            type: 'int8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'addr',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IEverscale.EverscaleAddress',
+                    name: 'recipient',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'expected_evers',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'bytes',
+                    name: 'payload',
+                    type: 'bytes',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            name: 'cancelPendingWithdrawal',
+            outputs: [],
+            stateMutability: 'payable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalIds',
+                    type: 'tuple[]',
+                },
+            ],
+            name: 'forceWithdraw',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'user',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+            ],
+            name: 'pendingWithdrawals',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'token',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'amount',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'bounty',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'timestamp',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus',
+                            name: 'approveStatus',
+                            type: 'uint8',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'chainId',
+                            type: 'uint256',
+                        },
+                        {
+                            components: [
+                                {
+                                    internalType: 'address',
+                                    name: 'recipient',
+                                    type: 'address',
+                                },
+                                {
+                                    internalType: 'bytes',
+                                    name: 'payload',
+                                    type: 'bytes',
+                                },
+                                {
+                                    internalType: 'bool',
+                                    name: 'strict',
+                                    type: 'bool',
+                                },
+                            ],
+                            internalType: 'struct IMultiVaultFacetWithdraw.Callback',
+                            name: 'callback',
+                            type: 'tuple',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalParams',
+                    name: '',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'user',
+                    type: 'address',
+                },
+            ],
+            name: 'pendingWithdrawalsPerUser',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'pendingWithdrawalsTotal',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
+                    name: 'pendingWithdrawalId',
+                    type: 'tuple[]',
+                },
+                {
+                    internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus[]',
+                    name: 'approveStatus',
+                    type: 'uint8[]',
+                },
+            ],
+            name: 'setPendingWithdrawalApprove',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'address',
+                            name: 'recipient',
+                            type: 'address',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'id',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId',
+                    name: 'pendingWithdrawalId',
+                    type: 'tuple',
+                },
+                {
+                    internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus',
+                    name: 'approveStatus',
+                    type: 'uint8',
+                },
+            ],
+            name: 'setPendingWithdrawalApprove',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'bounty',
+                    type: 'uint256',
+                },
+            ],
+            name: 'setPendingWithdrawalBounty',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'withdrawalLimits',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'uint256',
+                            name: 'undeclared',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'daily',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'bool',
+                            name: 'enabled',
+                            type: 'bool',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.WithdrawalLimits',
+                    name: '',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'withdrawalPeriodId',
+                    type: 'uint256',
+                },
+            ],
+            name: 'withdrawalPeriods',
+            outputs: [
+                {
+                    components: [
+                        {
+                            internalType: 'uint256',
+                            name: 'total',
+                            type: 'uint256',
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'considered',
+                            type: 'uint256',
+                        },
+                    ],
+                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.WithdrawalPeriodParams',
+                    name: '',
+                    type: 'tuple',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
         },
         {
             anonymous: false,
@@ -1704,1168 +2783,6 @@ export abstract class EthAbi {
                 },
             ],
             name: 'PendingWithdrawalWithdraw',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'sender',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'underlying_amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'RedeemLiquidity',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'bool',
-                    name: 'skim_to_everscale',
-                    type: 'bool',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'SkimFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'activation',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'bool',
-                    name: 'isNative',
-                    type: 'bool',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'depositFee',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'withdrawFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'TokenActivated',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'int8',
-                    name: 'native_wid',
-                    type: 'int8',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'native_addr',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'string',
-                    name: 'name_prefix',
-                    type: 'string',
-                },
-                {
-                    indexed: false,
-                    internalType: 'string',
-                    name: 'symbol_prefix',
-                    type: 'string',
-                },
-                {
-                    indexed: false,
-                    internalType: 'string',
-                    name: 'name',
-                    type: 'string',
-                },
-                {
-                    indexed: false,
-                    internalType: 'string',
-                    name: 'symbol',
-                    type: 'string',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint8',
-                    name: 'decimals',
-                    type: 'uint8',
-                },
-            ],
-            name: 'TokenCreated',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDefaultAlienDepositFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDefaultAlienWithdrawFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'inetrest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDefaultLiquidityInterest',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDefaultNativeDepositFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateDefaultNativeWithdrawFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateTokenDepositFee',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'interest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateTokenLiquidityInterest',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateTokenWithdrawFee',
-            type: 'event',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            components: [
-                                {
-                                    internalType: 'int8',
-                                    name: 'wid',
-                                    type: 'int8',
-                                },
-                                {
-                                    internalType: 'uint256',
-                                    name: 'addr',
-                                    type: 'uint256',
-                                },
-                            ],
-                            internalType: 'struct IEverscale.EverscaleAddress',
-                            name: 'recipient',
-                            type: 'tuple',
-                        },
-                        {
-                            internalType: 'address',
-                            name: 'token',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'expected_evers',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'bytes',
-                            name: 'payload',
-                            type: 'bytes',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetDeposit.DepositParams',
-                    name: 'd',
-                    type: 'tuple',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            components: [
-                                {
-                                    internalType: 'int8',
-                                    name: 'wid',
-                                    type: 'int8',
-                                },
-                                {
-                                    internalType: 'uint256',
-                                    name: 'addr',
-                                    type: 'uint256',
-                                },
-                            ],
-                            internalType: 'struct IEverscale.EverscaleAddress',
-                            name: 'recipient',
-                            type: 'tuple',
-                        },
-                        {
-                            internalType: 'address',
-                            name: 'token',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'expected_evers',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'bytes',
-                            name: 'payload',
-                            type: 'bytes',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetDeposit.DepositParams',
-                    name: 'd',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'expectedMinBounty',
-                    type: 'uint256',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalIds',
-                    type: 'tuple[]',
-                },
-            ],
-            name: 'deposit',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            components: [
-                                {
-                                    internalType: 'int8',
-                                    name: 'wid',
-                                    type: 'int8',
-                                },
-                                {
-                                    internalType: 'uint256',
-                                    name: 'addr',
-                                    type: 'uint256',
-                                },
-                            ],
-                            internalType: 'struct IEverscale.EverscaleAddress',
-                            name: 'recipient',
-                            type: 'tuple',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'expected_evers',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'bytes',
-                            name: 'payload',
-                            type: 'bytes',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetDeposit.DepositNativeTokenParams',
-                    name: 'd',
-                    type: 'tuple',
-                },
-            ],
-            name: 'depositByNativeToken',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            components: [
-                                {
-                                    internalType: 'int8',
-                                    name: 'wid',
-                                    type: 'int8',
-                                },
-                                {
-                                    internalType: 'uint256',
-                                    name: 'addr',
-                                    type: 'uint256',
-                                },
-                            ],
-                            internalType: 'struct IEverscale.EverscaleAddress',
-                            name: 'recipient',
-                            type: 'tuple',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'expected_evers',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'bytes',
-                            name: 'payload',
-                            type: 'bytes',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetDeposit.DepositNativeTokenParams',
-                    name: 'd',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'expectedMinBounty',
-                    type: 'uint256',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalIds',
-                    type: 'tuple[]',
-                },
-            ],
-            name: 'depositByNativeToken',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'defaultAlienDepositFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'defaultAlienWithdrawFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'defaultNativeDepositFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [],
-            name: 'defaultNativeWithdrawFee',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: '_token',
-                    type: 'address',
-                },
-            ],
-            name: 'fees',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setDefaultAlienDepositFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setDefaultAlienWithdrawFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setDefaultNativeDepositFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'fee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setDefaultNativeWithdrawFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_depositFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setTokenDepositFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: '_withdrawFee',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setTokenWithdrawFee',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'skim',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'recipient',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'expected_evers',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'bytes',
-                    name: 'payload',
-                    type: 'bytes',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'cancelPendingWithdrawal',
-            outputs: [],
-            stateMutability: 'payable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalIds',
-                    type: 'tuple[]',
-                },
-            ],
-            name: 'forceWithdraw',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'user',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-            ],
-            name: 'pendingWithdrawals',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'token',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'amount',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'bounty',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'timestamp',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus',
-                            name: 'approveStatus',
-                            type: 'uint8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'chainId',
-                            type: 'uint256',
-                        },
-                        {
-                            components: [
-                                {
-                                    internalType: 'address',
-                                    name: 'recipient',
-                                    type: 'address',
-                                },
-                                {
-                                    internalType: 'bytes',
-                                    name: 'payload',
-                                    type: 'bytes',
-                                },
-                                {
-                                    internalType: 'bool',
-                                    name: 'strict',
-                                    type: 'bool',
-                                },
-                            ],
-                            internalType: 'struct IMultiVaultFacetWithdraw.Callback',
-                            name: 'callback',
-                            type: 'tuple',
-                        },
-                    ],
-                    internalType:
-                        'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalParams',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'user',
-                    type: 'address',
-                },
-            ],
-            name: 'pendingWithdrawalsPerUser',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: '_token',
-                    type: 'address',
-                },
-            ],
-            name: 'pendingWithdrawalsTotal',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId[]',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple[]',
-                },
-                {
-                    internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus[]',
-                    name: 'approveStatus',
-                    type: 'uint8[]',
-                },
-            ],
-            name: 'setPendingWithdrawalApprove',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'address',
-                            name: 'recipient',
-                            type: 'address',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'id',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.PendingWithdrawalId',
-                    name: 'pendingWithdrawalId',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'enum IMultiVaultFacetPendingWithdrawals.ApproveStatus',
-                    name: 'approveStatus',
-                    type: 'uint8',
-                },
-            ],
-            name: 'setPendingWithdrawalApprove',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'id',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'bounty',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setPendingWithdrawalBounty',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'withdrawalLimits',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'undeclared',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'daily',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'bool',
-                            name: 'enabled',
-                            type: 'bool',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetPendingWithdrawals.WithdrawalLimits',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'withdrawalPeriodId',
-                    type: 'uint256',
-                },
-            ],
-            name: 'withdrawalPeriods',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'total',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'considered',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType:
-                        'struct IMultiVaultFacetPendingWithdrawals.WithdrawalPeriodParams',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'bool',
-                    name: 'active',
-                    type: 'bool',
-                },
-            ],
-            name: 'EmergencyShutdown',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'uint8',
-                    name: 'version',
-                    type: 'uint8',
-                },
-            ],
-            name: 'Initialized',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'governance',
-                    type: 'address',
-                },
-            ],
-            name: 'NewPendingGovernance',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'bridge',
-                    type: 'address',
-                },
-            ],
-            name: 'UpdateBridge',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'enum IMultiVaultFacetTokens.TokenType',
-                    name: '_type',
-                    type: 'uint8',
-                },
-                {
-                    indexed: false,
-                    internalType: 'int128',
-                    name: 'wid',
-                    type: 'int128',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'addr',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateConfiguration',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'governance',
-                    type: 'address',
-                },
-            ],
-            name: 'UpdateGovernance',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'guardian',
-                    type: 'address',
-                },
-            ],
-            name: 'UpdateGuardian',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'address',
-                    name: 'management',
-                    type: 'address',
-                },
-            ],
-            name: 'UpdateManagement',
-            type: 'event',
-        },
-        {
-            anonymous: false,
-            inputs: [
-                {
-                    indexed: false,
-                    internalType: 'int128',
-                    name: 'wid',
-                    type: 'int128',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'addr',
-                    type: 'uint256',
-                },
-            ],
-            name: 'UpdateRewards',
             type: 'event',
         },
         {
@@ -3053,31 +2970,6 @@ export abstract class EthAbi {
             type: 'function',
         },
         {
-            inputs: [],
-            name: 'rewards',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
             inputs: [
                 {
                     components: [
@@ -3130,36 +3022,6 @@ export abstract class EthAbi {
         {
             inputs: [
                 {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'token',
-                    type: 'tuple',
-                },
-                {
-                    internalType: 'address',
-                    name: 'custom',
-                    type: 'address',
-                },
-            ],
-            name: 'setCustomNative',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
                     internalType: 'address',
                     name: 'token',
                     type: 'address',
@@ -3205,7 +3067,7 @@ export abstract class EthAbi {
             inputs: [
                 {
                     internalType: 'address',
-                    name: '_governance',
+                    name: '',
                     type: 'address',
                 },
             ],
@@ -3218,7 +3080,7 @@ export abstract class EthAbi {
             inputs: [
                 {
                     internalType: 'address',
-                    name: '_guardian',
+                    name: '',
                     type: 'address',
                 },
             ],
@@ -3231,36 +3093,11 @@ export abstract class EthAbi {
             inputs: [
                 {
                     internalType: 'address',
-                    name: '_management',
+                    name: '',
                     type: 'address',
                 },
             ],
             name: 'setManagement',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: '_rewards',
-                    type: 'tuple',
-                },
-            ],
-            name: 'setRewards',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -3284,6 +3121,19 @@ export abstract class EthAbi {
             type: 'function',
         },
         {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '_withdrawGuardian',
+                    type: 'address',
+                },
+            ],
+            name: 'setWithdrawGuardian',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
             inputs: [],
             name: 'withdrawGuardian',
             outputs: [
@@ -3297,36 +3147,334 @@ export abstract class EthAbi {
             type: 'function',
         },
         {
-            inputs: [],
-            name: 'getInitHash',
-            outputs: [
+            anonymous: false,
+            inputs: [
                 {
-                    internalType: 'bytes32',
-                    name: '',
-                    type: 'bytes32',
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'active',
+                    type: 'bool',
                 },
             ],
-            stateMutability: 'pure',
+            name: 'EmergencyShutdown',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'governance',
+                    type: 'address',
+                },
+            ],
+            name: 'NewPendingGovernance',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'bridge',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateBridge',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'enum IMultiVaultFacetTokens.TokenType',
+                    name: '_type',
+                    type: 'uint8',
+                },
+                {
+                    indexed: false,
+                    internalType: 'int128',
+                    name: 'wid',
+                    type: 'int128',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'addr',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateConfiguration',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'limit',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateDailyWithdrawalLimits',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'gasDonor',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateGasDonor',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'governance',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateGovernance',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'guardian',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateGuardian',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'management',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateManagement',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'int128',
+                    name: 'wid',
+                    type: 'int128',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'addr',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateRewards',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'limit',
+                    type: 'uint256',
+                },
+            ],
+            name: 'UpdateUndeclaredWithdrawalLimits',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'weth',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateWeth',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'withdrawGuardian',
+                    type: 'address',
+                },
+            ],
+            name: 'UpdateWithdrawGuardian',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'status',
+                    type: 'bool',
+                },
+            ],
+            name: 'UpdateWithdrawalLimitStatus',
+            type: 'event',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: 'owner',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'burn',
+            outputs: [],
+            stateMutability: 'nonpayable',
             type: 'function',
         },
         {
             inputs: [
                 {
-                    components: [
-                        {
-                            internalType: 'int8',
-                            name: 'wid',
-                            type: 'int8',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'addr',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IEverscale.EverscaleAddress',
-                    name: 'native',
-                    type: 'tuple',
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'deployLPToken',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: 'lp',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'int8',
+                    name: 'wid',
+                    type: 'int8',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'addr',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'string',
+                    name: 'name',
+                    type: 'string',
+                },
+                {
+                    internalType: 'string',
+                    name: 'symbol',
+                    type: 'string',
+                },
+                {
+                    internalType: 'uint8',
+                    name: 'decimals',
+                    type: 'uint8',
+                },
+            ],
+            name: 'deployTokenForNative',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+            ],
+            name: 'getLPToken',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: 'lp',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'int8',
+                    name: 'wid',
+                    type: 'int8',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'addr',
+                    type: 'uint256',
                 },
             ],
             name: 'getNativeToken',
@@ -3338,6 +3486,29 @@ export abstract class EthAbi {
                 },
             ],
             stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: 'recipient',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'mint',
+            outputs: [],
+            stateMutability: 'nonpayable',
             type: 'function',
         },
         {
@@ -3415,17 +3586,12 @@ export abstract class EthAbi {
                     type: 'address',
                 },
                 {
-                    internalType: 'string',
-                    name: 'name_prefix',
-                    type: 'string',
-                },
-                {
-                    internalType: 'string',
-                    name: 'symbol_prefix',
-                    type: 'string',
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
                 },
             ],
-            name: 'setPrefix',
+            name: 'setDepositLimit',
             outputs: [],
             stateMutability: 'nonpayable',
             type: 'function',
@@ -3490,6 +3656,11 @@ export abstract class EthAbi {
                             name: 'custom',
                             type: 'address',
                         },
+                        {
+                            internalType: 'uint256',
+                            name: 'depositLimit',
+                            type: 'uint256',
+                        },
                     ],
                     internalType: 'struct IMultiVaultFacetTokens.Token',
                     name: '',
@@ -3504,16 +3675,41 @@ export abstract class EthAbi {
             inputs: [
                 {
                     indexed: false,
-                    internalType: 'enum IMultiVaultFacetTokens.TokenType',
-                    name: '_type',
-                    type: 'uint8',
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
                 },
                 {
                     indexed: false,
-                    internalType: 'bytes32',
-                    name: 'payloadId',
-                    type: 'bytes32',
+                    internalType: 'uint256',
+                    name: 'activation',
+                    type: 'uint256',
                 },
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'isNative',
+                    type: 'bool',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'depositFee',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'withdrawFee',
+                    type: 'uint256',
+                },
+            ],
+            name: 'TokenActivated',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
                 {
                     indexed: false,
                     internalType: 'address',
@@ -3522,24 +3718,111 @@ export abstract class EthAbi {
                 },
                 {
                     indexed: false,
+                    internalType: 'int8',
+                    name: 'native_wid',
+                    type: 'int8',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'native_addr',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'name_prefix',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'symbol_prefix',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'name',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'symbol',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint8',
+                    name: 'decimals',
+                    type: 'uint8',
+                },
+            ],
+            name: 'TokenCreated',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
                     internalType: 'address',
-                    name: 'recipient',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'status',
+                    type: 'bool',
+                },
+            ],
+            name: 'UpdateTokenBlacklist',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
                     type: 'address',
                 },
                 {
                     indexed: false,
                     internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    indexed: false,
-                    internalType: 'uint256',
-                    name: 'fee',
+                    name: 'limit',
                     type: 'uint256',
                 },
             ],
-            name: 'Withdraw',
+            name: 'UpdateTokenDepositLimit',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'name_prefix',
+                    type: 'string',
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'symbol_prefix',
+                    type: 'string',
+                },
+            ],
+            name: 'UpdateTokenPrefix',
             type: 'event',
         },
         {
@@ -3605,7 +3888,7 @@ export abstract class EthAbi {
             inputs: [
                 {
                     internalType: 'bytes32',
-                    name: 'id',
+                    name: '',
                     type: 'bytes32',
                 },
             ],
@@ -3621,227 +3904,47 @@ export abstract class EthAbi {
             type: 'function',
         },
         {
+            anonymous: false,
             inputs: [
                 {
+                    indexed: false,
+                    internalType: 'enum IMultiVaultFacetTokens.TokenType',
+                    name: '_type',
+                    type: 'uint8',
+                },
+                {
+                    indexed: false,
+                    internalType: 'bytes32',
+                    name: 'payloadId',
+                    type: 'bytes32',
+                },
+                {
+                    indexed: false,
                     internalType: 'address',
                     name: 'token',
                     type: 'address',
                 },
                 {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'convertLPToUnderlying',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
+                    indexed: false,
                     internalType: 'address',
-                    name: 'token',
+                    name: 'recipient',
                     type: 'address',
                 },
                 {
-                    internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-            ],
-            name: 'convertUnderlyingToLP',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'exchangeRateCurrent',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'getCash',
-            outputs: [
-                {
-                    internalType: 'uint256',
-                    name: '',
-                    type: 'uint256',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'getLPToken',
-            outputs: [
-                {
-                    internalType: 'address',
-                    name: '',
-                    type: 'address',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-            ],
-            name: 'liquidity',
-            outputs: [
-                {
-                    components: [
-                        {
-                            internalType: 'uint256',
-                            name: 'activation',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'supply',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'cash',
-                            type: 'uint256',
-                        },
-                        {
-                            internalType: 'uint256',
-                            name: 'interest',
-                            type: 'uint256',
-                        },
-                    ],
-                    internalType: 'struct IMultiVaultFacetLiquidity.Liquidity',
-                    name: '',
-                    type: 'tuple',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
+                    indexed: false,
                     internalType: 'uint256',
                     name: 'amount',
                     type: 'uint256',
                 },
                 {
-                    internalType: 'address',
-                    name: 'receiver',
-                    type: 'address',
-                },
-            ],
-            name: 'mint',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
+                    indexed: false,
                     internalType: 'uint256',
-                    name: 'amount',
-                    type: 'uint256',
-                },
-                {
-                    internalType: 'address',
-                    name: 'receiver',
-                    type: 'address',
-                },
-            ],
-            name: 'redeem',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'uint256',
-                    name: 'interest',
+                    name: 'fee',
                     type: 'uint256',
                 },
             ],
-            name: 'setDefaultInterest',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-        },
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: 'token',
-                    type: 'address',
-                },
-                {
-                    internalType: 'uint256',
-                    name: 'interest',
-                    type: 'uint256',
-                },
-            ],
-            name: 'setTokenInterest',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
+            name: 'Withdraw',
+            type: 'event',
         },
     ]
 

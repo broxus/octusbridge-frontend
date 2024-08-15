@@ -1,6 +1,5 @@
 export * from '@/misc/abi'
 export * from '@/misc/BridgeUtils'
-export * from '@/misc/dex'
 export * from '@/misc/dex-constants'
 export * from '@/misc/token-wallet'
 export * from '@/misc/token-wallet-v4'

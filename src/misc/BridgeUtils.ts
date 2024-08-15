@@ -66,7 +66,7 @@ export abstract class BridgeUtils {
     ): Promise<string> {
         const [nativeWid, nativeAddress] = tokenAddress.toString().split(':')
         return evmMultiVaultContract(vaultAddress, rpcUrl)
-            .methods.getNativeToken([nativeWid, `0x${nativeAddress}`])
+            .methods.getNativeToken(nativeWid, `0x${nativeAddress}`)
             .call()
     }
 
@@ -162,19 +162,22 @@ export abstract class BridgeUtils {
         alienProxyAddress: Address | string,
         chainId: string,
     ): Promise<MergedTokenDetails | undefined> {
-        const mergeRouterAddress = (
-            await alienProxyContract(resolveEverscaleAddress(alienProxyAddress))
+        const mergeRouter = await alienProxyContract(resolveEverscaleAddress(alienProxyAddress))
                 .methods.deriveMergeRouter({
                     answerId: 0,
                     token: resolveEverscaleAddress(tokenAddress),
                 })
-                .call()
-        ).router
+                .call({ responsible: true })
+        const mergeRouterAddress = mergeRouter.router
 
-        const mergePoolAddress = (await mergeRouterContract(mergeRouterAddress).methods.getPool({ answerId: 0 }).call())
-            .value0
+        const mergePool = await mergeRouterContract(mergeRouterAddress)
+            .methods.getPool({ answerId: 0 })
+            .call({ responsible: true })
+        const mergePoolAddress = mergePool.value0
 
-        const mergedTokens = await mergePoolContract(mergePoolAddress).methods.getTokens({ answerId: 0 }).call()
+        const mergedTokens = await mergePoolContract(mergePoolAddress)
+            .methods.getTokens({ answerId: 0 })
+            .call({ responsible: true })
 
         const aliens = await Promise.all(
             mergedTokens._tokens.map(async ([address, settings]) => {
@@ -188,7 +191,7 @@ export abstract class BridgeUtils {
                             isMerged: meta.base_chainId === chainId,
                         }
                     }
- catch (e) {
+                    catch (e) {
                         return { isMerged: false }
                     }
                 }
@@ -214,31 +217,34 @@ export abstract class BridgeUtils {
         proxyAddress: Address | string,
     ): Promise<Address | undefined> {
         try {
-            const mergeRouterAddress = (
-                await alienProxyContract(proxyAddress)
-                    .methods.deriveMergeRouter({
-                        token: resolveEverscaleAddress(tokenAddress),
-                        answerId: 0,
-                    })
-                    .call()
-            ).router
+            const mergeRouter = await alienProxyContract(proxyAddress)
+                .methods.deriveMergeRouter({
+                    answerId: 0,
+                    token: resolveEverscaleAddress(tokenAddress),
+                })
+                .call({ responsible: true })
+            const mergeRouterAddress = mergeRouter.router
 
             const mergeRouterState = await getFullContractState(mergeRouterAddress)
 
             if (mergeRouterState?.isDeployed) {
-                const mergePoolAddress = (
-                    await mergeRouterContract(mergeRouterAddress).methods.getPool({ answerId: 0 }).call()
-                ).value0
+                const mergePool = await mergeRouterContract(mergeRouterAddress)
+                    .methods.getPool({ answerId: 0 })
+                    .call({ responsible: true })
+                const mergePoolAddress = mergePool.value0
 
                 const mergePoolState = await getFullContractState(mergePoolAddress)
 
                 if (mergePoolState?.isDeployed) {
-                    return (await mergePoolContract(mergePoolAddress).methods.getCanon({ answerId: 0 }).call()).value0
+                    const canonToken = await mergePoolContract(mergePoolAddress)
+                        .methods.getCanon({ answerId: 0 })
+                        .call({ responsible: true })
+                    return canonToken.value0
                 }
             }
             return undefined
         }
- catch (e) {
+        catch (e) {
             return undefined
         }
     }

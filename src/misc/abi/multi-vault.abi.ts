@@ -2639,10 +2639,7 @@ export abstract class MultiVaultAbi {
                 ],
             },
         ],
-        header: [
-            'pubkey',
-            'time',
-        ],
+        header: ['pubkey', 'time', 'expire'],
         version: '2.2',
     } as const
 
@@ -3117,105 +3114,6 @@ export abstract class MultiVaultAbi {
             { name: 'walletVersion_', type: 'uint32' },
             { name: 'base_chainId_', type: 'uint256' },
             { name: 'base_token_', type: 'uint160' },
-        ],
-    } as const
-
-    static Mediator = {
-        'ABI version': 2,
-        version: '2.2',
-        header: ['time', 'expire'],
-        functions: [
-            {
-                name: 'constructor',
-                inputs: [
-                    { name: '_owner', type: 'address' },
-                    { name: '_nativeProxy', type: 'address' },
-                    { name: '_alienTokenWalletPlatformCode', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'setNativeProxy',
-                inputs: [{ name: '_nativeProxy', type: 'address' }],
-                outputs: [],
-            },
-            {
-                name: 'onAcceptTokensMint',
-                inputs: [
-                    { name: 'tokenRoot', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'remainingGasTo', type: 'address' },
-                    { name: 'payloadWithNonce', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'onAcceptTokensTransfer',
-                inputs: [
-                    { name: 'value0', type: 'address' },
-                    { name: 'amount', type: 'uint128' },
-                    { name: 'sender', type: 'address' },
-                    { name: 'value3', type: 'address' },
-                    { name: 'remainingGasTo', type: 'address' },
-                    { name: 'payloadWithNonce', type: 'cell' },
-                ],
-                outputs: [],
-            },
-            {
-                name: 'upgrade',
-                inputs: [{ name: 'code', type: 'cell' }],
-                outputs: [],
-            },
-            {
-                name: 'transferOwnership',
-                inputs: [{ name: 'newOwner', type: 'address' }],
-                outputs: [],
-            },
-            {
-                name: 'renounceOwnership',
-                inputs: [],
-                outputs: [],
-            },
-            {
-                name: 'owner',
-                inputs: [],
-                outputs: [{ name: 'owner', type: 'address' }],
-            },
-            {
-                name: '_randomNonce',
-                inputs: [],
-                outputs: [{ name: '_randomNonce', type: 'uint256' }],
-            },
-            {
-                name: 'alienTokenWalletPlatformCode',
-                inputs: [],
-                outputs: [{ name: 'alienTokenWalletPlatformCode', type: 'cell' }],
-            },
-            {
-                name: 'nativeProxy',
-                inputs: [],
-                outputs: [{ name: 'nativeProxy', type: 'address' }],
-            },
-        ],
-        data: [{ key: 1, name: '_randomNonce', type: 'uint256' }],
-        events: [
-            {
-                name: 'OwnershipTransferred',
-                inputs: [
-                    { name: 'previousOwner', type: 'address' },
-                    { name: 'newOwner', type: 'address' },
-                ],
-                outputs: [],
-            },
-        ],
-        fields: [
-            { name: '_pubkey', type: 'uint256' },
-            { name: '_timestamp', type: 'uint64' },
-            { name: '_constructorFlag', type: 'bool' },
-            { name: 'owner', type: 'address' },
-            { name: '_randomNonce', type: 'uint256' },
-            { name: 'alienTokenWalletPlatformCode', type: 'cell' },
-            { name: 'nativeProxy', type: 'address' },
         ],
     } as const
 

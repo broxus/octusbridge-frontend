@@ -1131,7 +1131,9 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
 
             alien = meta.base_chainId === targetId
         }
-        catch (e: any) {}
+        catch (e: any) {
+            error(e)
+        }
 
         if (!alien) {
             try {
@@ -1145,7 +1147,9 @@ export class BridgeAssetsService extends BaseStore<BridgeAssetsServiceData, Brid
                     alien = merge !== undefined
                 }
             }
-            catch (e: any) {}
+            catch (e: any) {
+                error(e)
+            }
         }
 
         if (alien) {
