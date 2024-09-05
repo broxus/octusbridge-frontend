@@ -1,31 +1,14 @@
 export type TransferType = 'Default' | 'Credit' | 'Transit'
 
-export type TransferKind =
-    | 'EthToEth'
-    | 'EthToTon'
-    | 'TonToEth'
-    | 'CreditEthToTon'
-    | 'AlienEthToEth'
-    | 'AlienEthToTon'
-    | 'AlienTonToEth'
-    | 'NativeEthToEth'
-    | 'NativeEthToTon'
-    | 'NativeTonToEth'
+export type TransferKind = 'EthToEth' | 'EthToTon' | 'TonToEth' | 'CreditEthToTon'
 
 export type TransferKindFilter = Lowercase<TransferKind>
 
-export type TransferStatus =
-    | 'Pending'
-    | 'Rejected'
-    | 'Confirmed'
+export type TransferStatus = 'Pending' | 'Rejected' | 'Confirmed'
 
 export type TransfersRequestStatus = Lowercase<TransferStatus>
 
-export type TransfersOrdering =
-    | 'updateatascending'
-    | 'updateatdescending'
-    | 'createdatascending'
-    | 'createdatdescending'
+export type TransfersOrdering = 'updateatascending' | 'updateatdescending' | 'createdatascending' | 'createdatdescending'
 
 export type TransferOld = {
     confirmVotes?: number;

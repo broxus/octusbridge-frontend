@@ -94,39 +94,39 @@ function TransfersListInner(): JSX.Element {
         if (from && to && from.type === 'evm' && to.type === 'evm') {
             ethTonChainId = parseInt(from.chainId, 10)
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = ['ethtoeth', 'alienethtoeth', 'nativeethtoeth']
+            transferKinds = ['ethtoeth']
         }
         else if (from && to && from.type === 'evm' && to.type === 'tvm') {
-            const validKinds: TransferKindFilter[] = ['ethtoton', 'creditethtoton', 'alienethtoton', 'nativeethtoton']
+            const validKinds: TransferKindFilter[] = ['ethtoton', 'creditethtoton']
 
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = validKinds
         }
         else if (from && to && from.type === 'tvm' && to.type === 'evm') {
             tonEthChainId = parseInt(to.chainId, 10)
-            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            transferKinds = ['tontoeth']
         }
         else if (from && from.type === 'evm') {
-            const validKinds: TransferKindFilter[] = ['ethtoton', 'creditethtoton', 'alienethtoton', 'nativeethtoton']
+            const validKinds: TransferKindFilter[] = ['ethtoton', 'creditethtoton']
             if (to && to.type === 'evm') {
-                validKinds.push('ethtoeth', 'alienethtoeth', 'nativeethtoeth')
+                validKinds.push('ethtoeth')
             }
             ethTonChainId = parseInt(from.chainId, 10)
             transferKinds = validKinds
         }
         else if (to && to.type === 'evm') {
-            const validKinds: TransferKindFilter[] = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            const validKinds: TransferKindFilter[] = ['tontoeth']
             if (from && from.type === 'evm') {
-                validKinds.push('ethtoeth', 'alienethtoeth', 'nativeethtoeth')
+                validKinds.push('ethtoeth')
             }
             tonEthChainId = parseInt(to.chainId, 10)
             transferKinds = validKinds
         }
         else if (from && from.type === 'tvm') {
-            transferKinds = ['tontoeth', 'alientontoeth', 'nativetontoeth']
+            transferKinds = ['tontoeth']
         }
         else if (to && to.type === 'tvm') {
-            transferKinds = ['ethtoton', 'creditethtoton', 'alienethtoton', 'nativeethtoton']
+            transferKinds = ['ethtoton', 'creditethtoton']
         }
         else {
             transferKinds = []
