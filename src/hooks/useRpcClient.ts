@@ -1,5 +1,18 @@
-import { ProviderRpcClient } from 'everscale-inpage-provider'
+import {
+    EverscaleProviderAdapter,
+    ProviderRpcClient,
+    SparxProviderAdapter,
+} from 'everscale-inpage-provider'
 
-const rpc = new ProviderRpcClient()
+let isSparxWallet = false
+
+try {
+    isSparxWallet = navigator.userAgent.includes('SparXWalletBrowser')
+}
+catch {}
+
+const rpc = new ProviderRpcClient({
+    provider: isSparxWallet ? new SparxProviderAdapter() : new EverscaleProviderAdapter(),
+})
 
 export default rpc
