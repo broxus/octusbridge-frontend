@@ -9,7 +9,6 @@ import {
 } from 'react-router-dom'
 
 import { TokensUpgradeModal } from '@/components/common/TokensUpgradeModal'
-import { WalletConnectingModal } from '@/components/common/WalletConnectingModal'
 import { WalletUpdateModal } from '@/components/common/WalletUpdateModal'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
@@ -19,16 +18,16 @@ import { BridgeTransferSummeryProvider } from '@/modules/Bridge'
 import Bridge from '@/pages/bridge'
 import LiquidityRequests from '@/pages/bridge/liquidity-requests'
 import LiquidityDeposit from '@/pages/bridge/liquidity-requests/item'
-import Relayer from '@/pages/relayers/item'
-import RelayersStatus from '@/pages/relayers/create'
-import RelayersKeys from '@/pages/relayers/create/keys'
 import Overview from '@/pages/governance'
 import Proposals from '@/pages/governance/proposals'
-import Proposal from '@/pages/governance/proposals/item'
 import ProposalCreate from '@/pages/governance/proposals/create'
+import Proposal from '@/pages/governance/proposals/item'
 import RelayersBiddingRound from '@/pages/relayers/bidding-round'
+import RelayersStatus from '@/pages/relayers/create'
+import RelayersKeys from '@/pages/relayers/create/keys'
 import RelayersEvent from '@/pages/relayers/events/item'
 import Relayers from '@/pages/relayers/index'
+import Relayer from '@/pages/relayers/item'
 import RelayersValidationRound from '@/pages/relayers/validation-round'
 import StakingExplorer from '@/pages/staking/explorer'
 import StakingUser from '@/pages/staking/explorer/user'
@@ -137,11 +136,10 @@ export function App(): JSX.Element {
                         <Footer key="footer" />
                     </div>
                 </ScrollManager>
-                <WalletConnectingModal />
                 <Observer>
                     {() => (
                         <>
-                            {(everWallet.isInitialized && everWallet.isOutdated) ? (
+                            {(everWallet.isOutdated) ? (
                                 <WalletUpdateModal />
                             ) : null}
 

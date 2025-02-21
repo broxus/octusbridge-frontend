@@ -1,6 +1,5 @@
-import * as React from 'react'
 import { uniqueKey } from '@broxus/js-utils'
-
+import * as React from 'react'
 
 function getSize(height: number, width: number, ratio: number = 1) {
     return {
@@ -275,6 +274,96 @@ const library = t({
                 fill="#C5E4F3"
                 className="uk-preserve"
             />
+        </svg>
+    ),
+
+    sparxWalletIcon: ({ ratio, ...props }) => (
+        <svg {...defaultProps} {...props} viewBox="0 0 1200 1200" {...getSize(20, 20, ratio)}>
+            <g clipPath="url(#clip0_465_2)">
+                <g filter="url(#filter0_d_465_2)">
+                    <rect
+                        x="20" y="20" width="1160"
+                        height="1160" rx="580" fill="#0F1224"
+                    />
+                    <path d="M309.86 842.504L267.058 799.702L377.252 689.508C426.589 640.172 426.589 559.884 377.252 510.548L267 400.296L309.802 357.494L420.054 467.746C492.995 540.687 492.995 659.369 420.054 732.31L309.86 842.504Z" fill="url(#paint0_linear_465_2)" />
+                    <path d="M799.702 933L689.508 822.806C640.172 773.47 559.885 773.47 510.549 822.806L400.354 933L357.552 890.198L467.747 780.004C540.688 707.063 659.369 707.063 732.31 780.004L842.504 890.198L799.702 933Z" fill="url(#paint1_linear_465_2)" />
+                    <path d="M890.198 842.504L780.004 732.31C707.063 659.369 707.063 540.688 780.004 467.747L890.198 357.552L933 400.354L822.806 510.549C773.47 559.885 773.47 640.172 822.806 689.508L933 799.702L890.198 842.504Z" fill="url(#paint2_linear_465_2)" />
+                    <path d="M600.019 474.765C552.114 474.765 504.208 456.535 467.747 420.055L357.495 309.802L400.297 267L510.549 377.253C559.885 426.589 640.173 426.589 689.509 377.253L799.703 267.058L842.505 309.86L732.311 420.055C695.83 456.515 647.944 474.765 600.039 474.765H600.019Z" fill="url(#paint3_linear_465_2)" />
+                </g>
+            </g>
+            <defs>
+                <filter
+                    id="filter0_d_465_2" x="-25" y="-25"
+                    width="1250" height="1250" filterUnits="userSpaceOnUse"
+                    colorInterpolationFilters="sRGB"
+                >
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                        in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                        result="hardAlpha"
+                    />
+                    <feOffset />
+                    <feGaussianBlur stdDeviation="22.5" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix type="matrix" values="0 0 0 0 0.164706 0 0 0 0 0.741176 0 0 0 0 0.894118 0 0 0 0.1 0" />
+                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_465_2" />
+                    <feBlend
+                        mode="normal" in="SourceGraphic" in2="effect1_dropShadow_465_2"
+                        result="shape"
+                    />
+                </filter>
+                <linearGradient
+                    id="paint0_linear_465_2" x1="370.873" y1="839.875"
+                    x2="370.873" y2="360.955" gradientUnits="userSpaceOnUse"
+                >
+                    <stop stopColor="#00B2E3" stopOpacity="0" />
+                    <stop offset="0.07" stopColor="#05B3E3" stopOpacity="0.03" />
+                    <stop offset="0.19" stopColor="#13B7E3" stopOpacity="0.13" />
+                    <stop offset="0.33" stopColor="#2ABDE4" stopOpacity="0.28" />
+                    <stop offset="0.49" stopColor="#4AC5E5" stopOpacity="0.49" />
+                    <stop offset="0.66" stopColor="#73D0E6" stopOpacity="0.75" />
+                    <stop offset="0.81" stopColor="#9ADBE8" />
+                </linearGradient>
+                <linearGradient
+                    id="paint1_linear_465_2" x1="840.687" y1="829.147"
+                    x2="358.461" y2="829.147" gradientUnits="userSpaceOnUse"
+                >
+                    <stop stopColor="#00B2E3" stopOpacity="0" />
+                    <stop offset="0.07" stopColor="#05B3E3" stopOpacity="0.03" />
+                    <stop offset="0.19" stopColor="#13B7E3" stopOpacity="0.13" />
+                    <stop offset="0.33" stopColor="#2ABDE4" stopOpacity="0.28" />
+                    <stop offset="0.49" stopColor="#4AC5E5" stopOpacity="0.49" />
+                    <stop offset="0.66" stopColor="#73D0E6" stopOpacity="0.75" />
+                    <stop offset="0.81" stopColor="#9ADBE8" />
+                </linearGradient>
+                <linearGradient
+                    id="paint2_linear_465_2" x1="829.147" y1="358.326"
+                    x2="829.147" y2="837.033" gradientUnits="userSpaceOnUse"
+                >
+                    <stop stopColor="#00B2E3" stopOpacity="0" />
+                    <stop offset="0.07" stopColor="#05B3E3" stopOpacity="0.03" />
+                    <stop offset="0.19" stopColor="#13B7E3" stopOpacity="0.13" />
+                    <stop offset="0.33" stopColor="#2ABDE4" stopOpacity="0.28" />
+                    <stop offset="0.49" stopColor="#4AC5E5" stopOpacity="0.49" />
+                    <stop offset="0.66" stopColor="#73D0E6" stopOpacity="0.75" />
+                    <stop offset="0.81" stopColor="#9ADBE8" />
+                </linearGradient>
+                <linearGradient
+                    id="paint3_linear_465_2" x1="356.296" y1="370.873"
+                    x2="842.776" y2="370.873" gradientUnits="userSpaceOnUse"
+                >
+                    <stop stopColor="#00B2E3" stopOpacity="0" />
+                    <stop offset="0.07" stopColor="#05B3E3" stopOpacity="0.03" />
+                    <stop offset="0.19" stopColor="#13B7E3" stopOpacity="0.13" />
+                    <stop offset="0.33" stopColor="#2ABDE4" stopOpacity="0.28" />
+                    <stop offset="0.49" stopColor="#4AC5E5" stopOpacity="0.49" />
+                    <stop offset="0.66" stopColor="#73D0E6" stopOpacity="0.75" />
+                    <stop offset="0.81" stopColor="#9ADBE8" />
+                </linearGradient>
+                <clipPath id="clip0_465_2">
+                    <rect width="1200" height="1200" fill="white" />
+                </clipPath>
+            </defs>
         </svg>
     ),
 

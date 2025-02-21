@@ -1,18 +1,17 @@
+import BigNumber from 'bignumber.js'
 import { Address } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
-import BigNumber from 'bignumber.js'
 
-import {
-    EthAction, ProposalCreateStoreState, TonAction,
-} from '@/modules/Governance/types'
-import { UserDataStore } from '@/modules/Governance/stores/UserData'
-import { DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
-import { DaoAbi, DexConstants } from '@/misc'
 import { DaoRootContractAddress } from '@/config'
+import { DaoAbi, DexConstants } from '@/misc'
+import { type DaoConfigStore } from '@/modules/Governance/stores/DaoConfig'
+import { type UserDataStore } from '@/modules/Governance/stores/UserData'
+import {
+    type EthAction, type ProposalCreateStoreState, type TonAction,
+} from '@/modules/Governance/types'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokenCache } from '@/types'
 import { error, throwException } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { TokenCache } from '@/types'
 
 export class ProposalCreateStore {
 
@@ -42,6 +41,12 @@ export class ProposalCreateStore {
         _tonActions: TonAction[],
         _ethActions: EthAction[],
     ): Promise<string | undefined> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return undefined
+        }
+
         this.setState('createLoading', true)
 
         let proposalId

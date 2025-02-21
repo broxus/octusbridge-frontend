@@ -1,12 +1,12 @@
 import {
-    IReactionDisposer, makeAutoObservable, reaction, runInAction,
+    type IReactionDisposer, makeAutoObservable, reaction, runInAction,
 } from 'mobx'
 
 import { DaoRootContractAddress } from '@/config'
-import { DaoAbi, ProposalConfig } from '@/misc'
+import { staticRpc } from '@/hooks/useStaticRpc'
+import { DaoAbi, type ProposalConfig } from '@/misc'
+import { type EverWalletService } from '@/stores/EverWalletService'
 import { error } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
 
 type Data = {
     config?: ProposalConfig
@@ -47,7 +47,7 @@ export class DaoConfigStore {
 
     public async sync(): Promise<void> {
         try {
-            const daoContract = rpc.createContract(DaoAbi.Root, DaoRootContractAddress)
+            const daoContract = staticRpc.createContract(DaoAbi.Root, DaoRootContractAddress)
             const result = await daoContract.methods.proposalConfiguration({}).call()
             runInAction(() => {
                 this.data.config = result.proposalConfiguration

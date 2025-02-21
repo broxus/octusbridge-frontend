@@ -1,39 +1,15 @@
 import * as React from 'react'
-import { Observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import { Link } from 'react-router-dom'
 
 import { Icon } from '@/components/common/Icon'
 import { Logo } from '@/components/layout/Logo'
-import { useEverWallet } from '@/stores/EverWalletService'
 
 import './index.scss'
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 export function Footer(): JSX.Element {
     const intl = useIntl()
-    const tonWallet = useEverWallet()
-
-    const toolbar = (
-        <Observer>
-            {() => (
-                <div className="toolbar">
-                    {!tonWallet.hasProvider && (
-                        <a
-                            href="https://l1.broxus.com/everscale/wallet"
-                            className="btn btn--tertiary btn--md footer-tool"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {intl.formatMessage({
-                                id: 'WALLET_INSTALLATION_LINK_TEXT',
-                            })}
-                        </a>
-                    )}
-                </div>
-            )}
-        </Observer>
-    )
 
     return (
         <footer className="footer">
@@ -43,7 +19,6 @@ export function Footer(): JSX.Element {
                         <Link to="/" className="footer-logo">
                             <Logo />
                         </Link>
-                        {toolbar}
                     </div>
                     <nav className="footer-nav">
                         <div className="footer-nav__col">
@@ -282,7 +257,6 @@ export function Footer(): JSX.Element {
                         </div>
                     </nav>
                     <div className="footer__right">
-                        {toolbar}
                     </div>
                 </div>
                 <div className="footer__bottom">

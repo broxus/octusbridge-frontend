@@ -1,10 +1,9 @@
-import * as React from 'react'
 import { observer } from 'mobx-react-lite'
+import * as React from 'react'
 
-import { InstallWallet } from '@/modules/TonWalletConnector/components/InstallWallet'
-import { ConnectWallet } from '@/modules/TonWalletConnector/components/ConnectWallet'
-import { Panel, PanelProps } from '@/modules/TonWalletConnector/components/Panel'
 import { useDebounce } from '@/hooks'
+import { ConnectWallet } from '@/modules/TonWalletConnector/components/ConnectWallet'
+import { Panel, type PanelProps } from '@/modules/TonWalletConnector/components/Panel'
 import { useEverWallet } from '@/stores/EverWalletService'
 
 type Props = {
@@ -29,15 +28,7 @@ export const WalletConnector = observer(({
         return null
     }
 
-    if (!wallet.hasProvider) {
-        return (
-            <Panel size={size}>
-                <InstallWallet />
-            </Panel>
-        )
-    }
-
-    if (wallet.isConnecting || !wallet.isConnected) {
+    if (!wallet.isConnected) {
         return (
             <Panel size={size}>
                 <ConnectWallet

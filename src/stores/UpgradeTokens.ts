@@ -1,19 +1,17 @@
 import BigNumber from 'bignumber.js'
 import { Address } from 'everscale-inpage-provider'
 import {
+    ObservableMap,
     makeAutoObservable,
     observable,
-    ObservableMap,
     reaction,
     runInAction,
 } from 'mobx'
 
 import { UpgradeTokenListURI } from '@/config'
-import rpc from '@/hooks/useRpcClient'
 import { MigrationTokenAbi, TokenWallet, TokenWalletV4 } from '@/misc'
-import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
+import { type EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { error } from '@/utils'
-
 
 export type OutdatedTokenRaw = {
     logoURI?: string;
@@ -43,7 +41,6 @@ export type UpgradeTokensState = {
     upgradedTokens: ObservableMap<string, boolean>;
     upgradingTokens: ObservableMap<string, boolean>;
 }
-
 
 export class UpgradeTokens {
 
@@ -80,7 +77,9 @@ export class UpgradeTokens {
     }
 
     public async checkForUpdates(): Promise<void> {
-        if (this.tonWallet.account?.address === undefined) {
+        const rpc = this.tonWallet.getProvider()
+
+        if (this.tonWallet.account?.address === undefined || !rpc) {
             return
         }
 
@@ -159,12 +158,15 @@ export class UpgradeTokens {
     }
 
     public async upgrade(token: OutdatedToken): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
         if (
             this.isTokenUpgrading(token.rootV4)
             || this.tonWallet.account?.address === undefined
             || token.wallet === undefined
             || token.proxy === undefined
             || token.balance === undefined
+            || !rpc
         ) {
             return
         }
@@ -212,7 +214,6 @@ export class UpgradeTokens {
     }
 
 }
-
 
 const store = new UpgradeTokens(useEverWallet())
 

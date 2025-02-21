@@ -1,14 +1,13 @@
 import { makeAutoObservable, toJS } from 'mobx'
 
-import { CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { VotingStoreState } from '@/modules/Governance/types'
-import { UserDataStore } from '@/modules/Governance/stores/UserData'
-import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
-import { error, throwException } from '@/utils'
 import { GasToCastVote, StakingAccountAddress } from '@/config'
-import rpc from '@/hooks/useRpcClient'
-import { TokenCache } from '@/types'
+import { type CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
+import { type UserDataStore } from '@/modules/Governance/stores/UserData'
+import { type VotingStoreState } from '@/modules/Governance/types'
+import { calcGazToUnlockVotes } from '@/modules/Governance/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokenCache } from '@/types'
+import { error, throwException } from '@/utils'
 
 export class VotingStore {
 
@@ -35,6 +34,11 @@ export class VotingStore {
     }
 
     public async castVote(proposalId: number, support: boolean, reason?: string): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+        if (!rpc) {
+            return
+        }
+
         this.setState('castLoading', true)
 
         const subscriber = rpc.createSubscriber()
@@ -101,6 +105,11 @@ export class VotingStore {
     }
 
     public async unlockCastedVote(proposalIds: number[]): Promise<boolean> {
+        const rpc = this.tonWallet.getProvider()
+        if (!rpc) {
+            return false
+        }
+
         this.setState('unlockLoading', true)
 
         let success = false

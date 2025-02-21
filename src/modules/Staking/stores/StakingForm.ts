@@ -1,19 +1,18 @@
 import BigNumber from 'bignumber.js'
-import { action, makeAutoObservable } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
+import { action, makeAutoObservable } from 'mobx'
 
-import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
+import { GasToStaking } from '@/config'
 import {
     STAKING_FORM_STORE_DEFAULT_DATA, STAKING_FORM_STORE_DEFAULT_STATE,
     STAKING_PAYLOAD,
 } from '@/modules/Staking/constants'
+import { type AccountDataStore } from '@/modules/Staking/stores/AccountData'
+import { type StakingFormStoreData, type StakingFormStoreState } from '@/modules/Staking/types'
 import { getStakingContract } from '@/modules/Staking/utils'
-import { StakingFormStoreData, StakingFormStoreState } from '@/modules/Staking/types'
-import { TokensCacheService } from '@/stores/TokensCacheService'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokensCacheService } from '@/stores/TokensCacheService'
 import { error, throwException } from '@/utils'
-import { GasToStaking } from '@/config'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
 
 export class StakingFormStore {
 
@@ -36,6 +35,12 @@ export class StakingFormStore {
     }
 
     public async submit(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         const subscriber = rpc.createSubscriber()
 
         this.setIsLoading(true)
@@ -69,6 +74,7 @@ export class StakingFormStore {
 
             const walletContract = await this.tokensCache.getTokenWalletContract(
                 this.accountData.tokenAddress,
+                rpc,
             )
 
             if (!walletContract) {
@@ -77,7 +83,7 @@ export class StakingFormStore {
 
             const ownerAddress = new Address(this.tonWallet.address)
             const { tokenStakingBalance } = this.accountData
-            const stackingContract = getStakingContract()
+            const stackingContract = getStakingContract(rpc)
 
             const successStream = subscriber
                 .transactions(stackingContract.address)

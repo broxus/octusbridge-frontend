@@ -1,7 +1,6 @@
-import { Address, type FullContractState, type TransactionId } from 'everscale-inpage-provider'
+import { Address, type FullContractState, type ProviderRpcClient, type TransactionId } from 'everscale-inpage-provider'
 
-import rpc from '@/hooks/useRpcClient'
-import staticRpc from '@/hooks/useStaticRpc'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import { tokenRootContract, tokenWalletContract } from '@/misc/contracts'
 import { type EverscaleTokenData } from '@/models'
 import { debug, error } from '@/utils'
@@ -131,7 +130,7 @@ export class TokenWallet {
     public static async getTokenFullDetails(root: string): Promise<Partial<EverscaleTokenData> | undefined> {
         const address = new Address(root)
 
-        const { state } = await rpc.getFullContractState({ address })
+        const { state } = await staticRpc.getFullContractState({ address })
 
         if (!state) {
             return undefined
@@ -210,6 +209,7 @@ export class TokenWallet {
             recipient: Address
             owner: Address
             tokens: string
+            rpc: ProviderRpcClient
         }>()({
             bounce: true,
             grams: '500000000',
@@ -226,7 +226,7 @@ export class TokenWallet {
             })
         }
 
-        const { id } = await tokenWalletContract(address)
+        const { id } = await tokenWalletContract(address, args.rpc)
             .methods.transferToWallet({
                 amount: args.tokens,
                 notify: true,

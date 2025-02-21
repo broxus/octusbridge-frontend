@@ -1,20 +1,20 @@
-import { makeAutoObservable, toJS } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
+import { makeAutoObservable, toJS } from 'mobx'
 
+import { staticRpc } from '@/hooks/useStaticRpc'
+import { ProposalAbi } from '@/misc'
+import { type UserDataStore } from '@/modules/Governance/stores/UserData'
+import { VotesStore } from '@/modules/Governance/stores/Votes'
 import {
-    Description, EthAction, Proposal, ProposalsRequest,
-    ProposalsResponse, ProposalState, ProposalStoreData,
-    ProposalStoreState, TonAction,
+    type Description, type EthAction, type Proposal, type ProposalState,
+    type ProposalStoreData, type ProposalStoreState, type ProposalsRequest,
+    type ProposalsResponse, type TonAction,
 } from '@/modules/Governance/types'
 import { handleProposals, parseDescription } from '@/modules/Governance/utils'
-import { UserDataStore } from '@/modules/Governance/stores/UserData'
-import { VotesStore } from '@/modules/Governance/stores/Votes'
-import { ProposalAbi } from '@/misc'
+import { type EverWalletService } from '@/stores/EverWalletService'
 import {
     error, lastOfCalls, throwException, validateUrl,
 } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ProposalStore {
 
@@ -127,9 +127,15 @@ export class ProposalStore {
     }
 
     public async cancel(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         this.setState('cancelLoading', true)
 
-        const subscriber = rpc.createSubscriber()
+        const subscriber = staticRpc.createSubscriber()
 
         try {
             if (!this.tonWallet.account?.address) {
@@ -180,6 +186,12 @@ export class ProposalStore {
     }
 
     public async queue(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         this.setState('queueLoading', true)
 
         const subscriber = rpc.createSubscriber()
@@ -230,6 +242,12 @@ export class ProposalStore {
     }
 
     public async execute(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         this.setState('executeLoading', true)
 
         const subscriber = rpc.createSubscriber()

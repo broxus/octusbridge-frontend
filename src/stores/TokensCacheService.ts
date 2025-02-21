@@ -1,24 +1,26 @@
 import { Mutex } from '@broxus/await-semaphore'
 import {
+    Address,
+    type Contract,
+    type ProviderEventData,
+    type ProviderRpcClient,
+    type Subscription,
+} from 'everscale-inpage-provider'
+import {
     action,
     computed,
     makeObservable,
     reaction,
     runInAction,
 } from 'mobx'
-import {
-    Address,
-    Contract,
-    ProviderEventData,
-    Subscription,
-} from 'everscale-inpage-provider'
 
 import { TokenListURI } from '@/config'
-import rpc from '@/hooks/useRpcClient'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import { TokenAbi, TokenWallet } from '@/misc'
 import { BaseStore } from '@/stores/BaseStore'
-import { EverWalletService, useEverWallet } from '@/stores/EverWalletService'
+import { type EverWalletService, useEverWallet } from '@/stores/EverWalletService'
 import { TokensListService } from '@/stores/TokensListService'
+import { type TokenCache } from '@/types'
 import {
     debug,
     error,
@@ -27,8 +29,6 @@ import {
     storage,
     warn,
 } from '@/utils'
-import { TokenCache } from '@/types'
-
 
 export type TokensCacheData<T> = {
     tokens: T[];
@@ -48,14 +48,11 @@ export type TokensCacheCtorOptions = {
     withImportedTokens?: boolean;
 }
 
-
 export const IMPORTED_TOKENS_STORAGE_KEY = 'imported_tokens'
-
 
 export function getImportedTokens(): string[] {
     return JSON.parse(storage.get(IMPORTED_TOKENS_STORAGE_KEY) || '[]')
 }
-
 
 export class TokensCacheService<
     T extends TokenCache | Record<string, any> = TokenCache,
@@ -325,7 +322,10 @@ export class TokensCacheService<
      * Returns Everscale token wallet Contract by the given token `root`
      * @param {string} root
      */
-    public async getTokenWalletContract(root: string): Promise<Contract<typeof TokenAbi.Wallet> | undefined> {
+    public async getTokenWalletContract(
+        root: string,
+        rpc: ProviderRpcClient,
+    ): Promise<Contract<typeof TokenAbi.Wallet> | undefined> {
         let wallet = this.get(root)?.wallet
 
         if (wallet === undefined) {
@@ -479,7 +479,7 @@ export class TokensCacheService<
 
                 const address = new Address(token.wallet)
 
-                const subscription = (await rpc.subscribe('contractStateChanged', {
+                const subscription = (await staticRpc.subscribe('contractStateChanged', {
                     address,
                 })).on('data', async event => {
                     debug(
@@ -758,7 +758,6 @@ export class TokensCacheService<
     #tokensBalancesSubscribersMutex: Mutex
 
 }
-
 
 let service: TokensCacheService
 

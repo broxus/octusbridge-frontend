@@ -1,21 +1,21 @@
 import BigNumber from 'bignumber.js'
-import { makeAutoObservable, runInAction } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
+import { makeAutoObservable, runInAction } from 'mobx'
 
 import { StakingAccountAddress } from '@/config'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import { StackingAbi, UserDataAbi } from '@/misc'
-import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
-import { UserDataStoreData } from '@/modules/Relayers/types'
-import { useEverWallet } from '@/stores/EverWalletService'
 import { RelayersDataStore } from '@/modules/Relayers/store/RelayersData'
-import rpc from '@/hooks/useRpcClient'
+import { type UserDataStoreData } from '@/modules/Relayers/types'
+import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
+import { useEverWallet } from '@/stores/EverWalletService'
 import { error } from '@/utils'
 
 export class UserDataStore {
 
     protected data: UserDataStoreData = {}
 
-    protected stakingContract = rpc.createContract(
+    protected stakingContract = staticRpc.createContract(
         StackingAbi.Root,
         StakingAccountAddress,
     )
@@ -35,6 +35,11 @@ export class UserDataStore {
     public async fetch(): Promise<void> {
         try {
             const { address } = this.everWallet
+            const rpc = this.everWallet.getProvider()
+
+            if (!rpc) {
+                return
+            }
 
             if (!address) {
                 throw new Error('Ton wallet must be connected')

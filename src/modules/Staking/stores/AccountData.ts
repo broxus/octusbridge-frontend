@@ -1,19 +1,20 @@
-import {
-    action, IReactionDisposer, makeAutoObservable, reaction, runInAction,
-} from 'mobx'
-import { Address } from 'everscale-inpage-provider'
+/* eslint-disable class-methods-use-this */
 import BigNumber from 'bignumber.js'
-
-import { AccountDataStoreData, AccountDataStoreState, CurrencyResponse } from '@/modules/Staking/types'
-import { getStakingContract, handleCurrency } from '@/modules/Staking/utils'
-import { TokensCacheService } from '@/stores/TokensCacheService'
+import { Address } from 'everscale-inpage-provider'
 import {
-    CastedVotes, PendingReward, RelayConfig, StackingDetails, UserDataAbi, UserDetails,
+    type IReactionDisposer, action, makeAutoObservable, reaction, runInAction,
+} from 'mobx'
+
+import { staticRpc } from '@/hooks/useStaticRpc'
+import {
+    type CastedVotes, type PendingReward, type RelayConfig, type StackingDetails, UserDataAbi, type UserDetails,
 } from '@/misc'
+import { type AccountDataStoreData, type AccountDataStoreState, type CurrencyResponse } from '@/modules/Staking/types'
+import { getStakingContract, handleCurrency } from '@/modules/Staking/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokensCacheService } from '@/stores/TokensCacheService'
+import { type TokenCache } from '@/types'
 import { error, throwException } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { TokenCache } from '@/types'
 
 export class AccountDataStore {
 
@@ -22,8 +23,6 @@ export class AccountDataStore {
     protected state: AccountDataStoreState = {}
 
     protected data: AccountDataStoreData = {}
-
-    protected stakingContract = getStakingContract()
 
     constructor(
         public readonly tokensCache: TokensCacheService,
@@ -56,7 +55,8 @@ export class AccountDataStore {
 
     protected async fetchRelayConfig(): Promise<RelayConfig | undefined> {
         try {
-            const { value0: relayConfig } = await this.stakingContract.methods.getRelayConfig({
+            const stakingContract = getStakingContract(staticRpc)
+            const { value0: relayConfig } = await stakingContract.methods.getRelayConfig({
                 answerId: 0,
             }).call()
 
@@ -69,7 +69,8 @@ export class AccountDataStore {
 
     protected async fetchStakingDetails(): Promise<StackingDetails | undefined> {
         try {
-            const { value0: stackingDetails } = await this.stakingContract.methods.getDetails({
+            const stakingContract = getStakingContract(staticRpc)
+            const { value0: stackingDetails } = await stakingContract.methods.getDetails({
                 answerId: 0,
             }).call()
 
@@ -86,8 +87,8 @@ export class AccountDataStore {
             if (!this.tonWallet.address) {
                 throwException('Ton wallet must be connected')
             }
-
-            const { value0: userDataAddress } = await this.stakingContract.methods.getUserDataAddress({
+            const stakingContract = getStakingContract(staticRpc)
+            const { value0: userDataAddress } = await stakingContract.methods.getUserDataAddress({
                 answerId: 0,
                 user: new Address(this.tonWallet.address),
             }).call()
@@ -106,7 +107,7 @@ export class AccountDataStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = staticRpc.createContract(UserDataAbi.Root, userDataAddress)
 
             const { value0: userDetails } = await userDataContract.methods.getDetails({
                 answerId: 0,
@@ -126,7 +127,7 @@ export class AccountDataStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const userDataContract = rpc.createContract(UserDataAbi.Root, userDataAddress)
+            const userDataContract = staticRpc.createContract(UserDataAbi.Root, userDataAddress)
 
             const { casted_votes: castedVotes } = await userDataContract.methods.casted_votes({}).call()
 
@@ -140,7 +141,8 @@ export class AccountDataStore {
 
     protected async fetchPendingReward(userDetails: UserDetails): Promise<PendingReward | undefined> {
         try {
-            const { value0: pendingReward } = await this.stakingContract.methods.pendingReward({
+            const stakingContract = getStakingContract(staticRpc)
+            const { value0: pendingReward } = await stakingContract.methods.pendingReward({
                 answerId: 0,
                 user_token_balance: userDetails.token_balance,
                 user_reward_data: userDetails.rewardRounds,

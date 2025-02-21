@@ -1,7 +1,6 @@
-import { type Address, type Contract, type FullContractState } from 'everscale-inpage-provider'
+import { type Address, type Contract, type FullContractState, type ProviderRpcClient } from 'everscale-inpage-provider'
 
-import rpc from '@/hooks/useRpcClient'
-import staticRpc from '@/hooks/useStaticRpc'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import { resolveEverscaleAddress } from '@/utils'
 
 import {
@@ -10,7 +9,6 @@ import {
     MultiVaultAbi,
     TokenAbi,
 } from './abi'
-
 
 export async function getFullContractState(address: Address | string): Promise<FullContractState | undefined> {
     return (await staticRpc.getFullContractState({ address: resolveEverscaleAddress(address) })).state
@@ -39,7 +37,7 @@ export function tokenRootContract(
 
 export function tokenWalletContract(
     address: Address | string,
-    provider = rpc,
+    provider: ProviderRpcClient,
 ): Contract<typeof TokenAbi.Wallet> {
     return new provider.Contract(TokenAbi.Wallet, resolveEverscaleAddress(address))
 }
@@ -186,7 +184,7 @@ export function tokenTransferSolEverEventContract(
 
 export function wrappedCoinVaultContract(
     address: Address | string,
-    provider = rpc,
+    provider: ProviderRpcClient,
 ): Contract<typeof EverAbi.WeverVault> {
     return new provider.Contract(EverAbi.WeverVault, resolveEverscaleAddress(address))
 }

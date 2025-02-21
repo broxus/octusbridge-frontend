@@ -25,4 +25,6 @@ const rpc = new ProviderRpcClient({
     provider: new StandaloneClientAdapter(),
 })
 
+export const staticRpc = rpc
+
 export default rpc

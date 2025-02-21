@@ -29,6 +29,7 @@
     "dependencies": {
         "@broxus/await-semaphore": "^0.1.5",
         "@broxus/js-utils": "^1.3.0",
+        "@broxus/tvm-connect-ui": "^1.0.4",
         "@solana/spl-token": "^0.3.7",
         "@solana/wallet-adapter-base": "^0.9.22",
         "@solana/wallet-adapter-phantom": "^0.9.22",

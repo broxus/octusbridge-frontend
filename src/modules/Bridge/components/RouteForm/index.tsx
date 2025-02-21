@@ -122,7 +122,7 @@ export function RouteForm({
                                 <>
                                     {(() => {
                                         switch (true) {
-                                            case !wallet?.hasProvider && network?.type === 'evm':
+                                            case network?.type === 'evm':
                                                 return null
 
                                             default:

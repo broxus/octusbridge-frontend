@@ -1,21 +1,20 @@
-import { Address } from 'everscale-inpage-provider'
+import { type Address } from 'everscale-inpage-provider'
 import {
-    IReactionDisposer,
+    type IReactionDisposer,
     makeAutoObservable,
     reaction,
     toJS,
 } from 'mobx'
 
 import { StakingAccountAddress } from '@/config'
-import { CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
-import { UserDataStoreData, UserDataStoreState } from '@/modules/Governance/types'
+import { staticRpc } from '@/hooks/useStaticRpc'
+import { type CastedVotes, StackingAbi, UserDataAbi } from '@/misc'
+import { type UserDataStoreData, type UserDataStoreState } from '@/modules/Governance/types'
 import { handleProposalsCount, handleStakeholder } from '@/modules/Governance/utils'
-import { TokensCacheService } from '@/stores/TokensCacheService'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokensCacheService } from '@/stores/TokensCacheService'
+import { type TokenCache } from '@/types'
 import { error, throwException } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { TokenCache } from '@/types'
-
 
 export class UserDataStore {
 
@@ -59,7 +58,7 @@ export class UserDataStore {
                 throwException('Wallet must be connected')
             }
 
-            const stakingContract = rpc.createContract(StackingAbi.Root, StakingAccountAddress)
+            const stakingContract = staticRpc.createContract(StackingAbi.Root, StakingAccountAddress)
 
             const [
                 { value0: userDataAddress },
@@ -88,7 +87,7 @@ export class UserDataStore {
                 throwException('userDataAddress must be defined in data')
             }
 
-            const userDataContract = rpc.createContract(UserDataAbi.Root, this.data.userDataAddress)
+            const userDataContract = staticRpc.createContract(UserDataAbi.Root, this.data.userDataAddress)
 
             const [
                 { value0: userDetails },

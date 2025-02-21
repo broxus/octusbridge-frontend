@@ -18,7 +18,7 @@ import {
     WEVERVaultAddress,
     networks,
 } from '@/config'
-import staticRpc from '@/hooks/useStaticRpc'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import { BridgeUtils, EthAbi } from '@/misc'
 import {
     ethereumEventConfigurationContract,
@@ -1159,12 +1159,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @returns {Promise<void>}
      */
     public async transferTvmNativeToken(reject?: (e: any) => void): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this.tvmWallet.address === undefined
             || this.rightNetwork?.chainId === undefined
             || this.token === undefined
             || this.pipeline?.everscaleConfiguration === undefined
             || this.tvmWallet.account?.address === undefined
+            || !rpc
         ) {
             return
         }
@@ -1174,7 +1177,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isProcessing', true)
 
-            const walletContract = tokenWalletContract((this.token as EverscaleToken).wallet as Address)
+            const walletContract = tokenWalletContract((this.token as EverscaleToken).wallet as Address, rpc)
             const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
 
             const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
@@ -1385,12 +1388,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @returns {Promise<void>}
      */
     public async transferTvmNativeCombination(reject?: (e: any) => void): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this.tvmWallet.address === undefined
             || this.rightNetwork?.chainId === undefined
             || this.token === undefined
             || this.pipeline?.everscaleConfiguration === undefined
             || this.tvmWallet.account?.address === undefined
+            || !rpc
         ) {
             return
         }
@@ -1400,7 +1406,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isProcessing', true)
 
-            const walletContract = tokenWalletContract((this.token as EverscaleToken).wallet as Address)
+            const walletContract = tokenWalletContract((this.token as EverscaleToken).wallet as Address, rpc)
             const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
 
             const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
@@ -1591,12 +1597,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @returns {Promise<void>}
      */
     public async wrapTvmNativeCurrency(reject?: (e: any) => void): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this.tvmWallet.address === undefined
             || this.rightNetwork?.chainId === undefined
             || this.token === undefined
             || this.pipeline?.everscaleConfiguration === undefined
             || this.tvmWallet.account?.address === undefined
+            || !rpc
         ) {
             return
         }
@@ -1606,7 +1615,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
         try {
             this.setState('isProcessing', true)
 
-            const WEVERVault = wrappedCoinVaultContract(WEVERVaultAddress)
+            const WEVERVault = wrappedCoinVaultContract(WEVERVaultAddress, rpc)
             const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
 
             const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
@@ -1798,12 +1807,15 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @returns {Promise<void>}
      */
     public async burnTvmAlienToken(reject?: (e: any) => void): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this.tvmWallet.account?.address === undefined
             || this.rightNetwork?.chainId === undefined
             || this.token === undefined
             || (this.token as EverscaleToken)?.wallet === undefined
             || this.pipeline?.everscaleConfiguration === undefined
+            || !rpc
         ) {
             return
         }
@@ -1814,7 +1826,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             this.setState('isProcessing', true)
 
             const everscaleConfigContract = everscaleEventConfigurationContract(this.pipeline.everscaleConfiguration)
-            const walletContract = tokenWalletContract((this.token as EverscaleToken)?.wallet as Address)
+            const walletContract = tokenWalletContract((this.token as EverscaleToken)?.wallet as Address, rpc)
 
             const everscaleConfigState = await getFullContractState(everscaleConfigContract.address)
             const startLt = everscaleConfigState?.lastTransactionId?.lt
@@ -2509,6 +2521,8 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
      * @returns {Promise<void>}
      */
     public async prepareTvmToSolana(reject?: (e: any) => void): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this.tvmWallet.account?.address === undefined
             || this.solanaWallet.publicKey == null
@@ -2520,6 +2534,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             || this.pipeline?.everscaleConfiguration === undefined
             || this.pipeline.settings === undefined
             || this.pipeline.solanaTokenAddress === undefined
+            || !rpc
         ) {
             return
         }
@@ -2675,7 +2690,7 @@ export class CrosschainBridge extends BaseStore<CrosschainBridgeStoreData, Cross
             })
             /* eslint-enable sort-keys */
 
-            await tokenWalletContract((this.token as EverscaleToken).wallet as Address)
+            await tokenWalletContract((this.token as EverscaleToken).wallet as Address, rpc)
             .methods.burn({
                 amount: this.amountNumber.shiftedBy(this.token.decimals).toFixed(),
                 callbackTo: this.pipeline.proxyAddress,

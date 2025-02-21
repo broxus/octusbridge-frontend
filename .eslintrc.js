@@ -55,7 +55,7 @@ module.exports = {
         'import/extensions': ['error', 'never', { json: 'always', scss: 'always' }],
         'no-await-in-loop': 'off',
         'no-restricted-syntax': 'off',
-        // 'sort-keys': 'off',
+        'sort-keys': 'off',
     },
 
     settings: {

@@ -1,25 +1,23 @@
 import BigNumber from 'bignumber.js'
-import { action, makeAutoObservable } from 'mobx'
 import { Address } from 'everscale-inpage-provider'
+import { action, makeAutoObservable } from 'mobx'
 
 import {
     ETH_ADDRESS_REGEXP, RELAYER_LINK_STORE_DATA, RELAYER_LINK_STORE_STATE,
     TON_PUBLIC_KEY_REGEXP,
 } from '@/modules/Relayers/constants'
-import { RelayerLinkStoreData, RelayerLinkStoreState } from '@/modules/Relayers/types'
-import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
+import { type StakingDataStore } from '@/modules/Relayers/store/StakingData'
+import { type RelayerLinkStoreData, type RelayerLinkStoreState } from '@/modules/Relayers/types'
 import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
 import { getStakingContract } from '@/modules/Staking/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
 import { error, throwException } from '@/utils'
-import { EverWalletService } from '@/stores/EverWalletService'
 
 export class RelayerLinkStore {
 
     protected state: RelayerLinkStoreState = RELAYER_LINK_STORE_STATE
 
     protected data: RelayerLinkStoreData = RELAYER_LINK_STORE_DATA
-
-    protected stackingContract = getStakingContract()
 
     constructor(
         protected tonWallet: EverWalletService,
@@ -35,6 +33,12 @@ export class RelayerLinkStore {
     }
 
     public async linkAccounts(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         this.setIsLoading(true)
 
         try {
@@ -55,7 +59,9 @@ export class RelayerLinkStore {
             const tonPubKey = normalizeTonPubKey(this.tonPublicKey)
             const ethAddress = normalizeEthAddress(this.ethAddress)
 
-            await this.stackingContract.methods.linkRelayAccounts({
+            const stackingContract = getStakingContract(rpc)
+
+            await stackingContract.methods.linkRelayAccounts({
                 ton_pubkey: tonPubKey,
                 eth_address: ethAddress,
             })

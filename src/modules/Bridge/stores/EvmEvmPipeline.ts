@@ -5,7 +5,6 @@ import { Address } from 'everscale-inpage-provider'
 import { type IReactionDisposer, computed, makeObservable, reaction, toJS } from 'mobx'
 import Web3 from 'web3'
 
-import rpc from '@/hooks/useRpcClient'
 import { BridgeUtils, EthAbi, TokenWallet } from '@/misc'
 import {
     ethereumEventConfigurationContract,
@@ -541,10 +540,13 @@ export class EvmEvmPipeline extends BaseStore<EvmEvmPipelineData, EvmEvmPipeline
     }
 
     public async prepare(): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this._tvmWallet.account?.address === undefined
             || this.pipeline?.ethereumConfiguration === undefined
             || this.data.eventVoteData === undefined
+            || !rpc
         ) {
             return
         }

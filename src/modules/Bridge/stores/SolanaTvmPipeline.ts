@@ -5,8 +5,7 @@ import { Address } from 'everscale-inpage-provider'
 import { computed, makeObservable, reaction, toJS } from 'mobx'
 import { type IReactionDisposer } from 'mobx'
 
-import rpc from '@/hooks/useRpcClient'
-import staticRpc from '@/hooks/useStaticRpc'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import {
     getFullContractState,
     solEverEventConfigurationContract,
@@ -302,10 +301,13 @@ export class SolanaTvmPipeline extends BaseStore<SolanaTvmPipelineData, SolanaTv
     }
 
     public async prepare(): Promise<void> {
+        const rpc = this.everWallet.getProvider()
+
         if (
             this.everWallet.account?.address === undefined
             || this.pipeline?.solanaConfiguration === undefined
             || this.data.eventVoteData === undefined
+            || !rpc
         ) {
             return
         }

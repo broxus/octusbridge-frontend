@@ -1,12 +1,11 @@
-import * as React from 'react'
 import { observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
 import { PrepareStatus } from '@/modules/Bridge/components/Statuses'
 import { useSolanaTvmPipelineContext } from '@/modules/Bridge/providers'
 import { getEverscaleMainNetwork, isSolanaTxSignatureValid } from '@/utils'
-
 
 function PrepareStatusIndicatorInner(): JSX.Element {
     const intl = useIntl()

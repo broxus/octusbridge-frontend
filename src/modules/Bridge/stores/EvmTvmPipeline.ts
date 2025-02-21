@@ -6,7 +6,6 @@ import { type IReactionDisposer, computed, makeObservable, reaction, toJS } from
 import Web3 from 'web3'
 
 import { DexMiddleware, WEVEREvmRoots, WEVERRootAddress } from '@/config'
-import rpc from '@/hooks/useRpcClient'
 import { BridgeUtils, EthAbi, TokenWallet } from '@/misc'
 import {
     ethereumEventConfigurationContract,
@@ -526,10 +525,13 @@ export class EvmTvmPipeline extends BaseStore<EvmTvmPipelineData, EvmTvmPipeline
     }
 
     public async prepare(): Promise<void> {
+        const rpc = this.tvmWallet.getProvider()
+
         if (
             this._tvmWallet.account?.address === undefined
             || this.pipeline?.ethereumConfiguration === undefined
             || this.data.eventVoteData === undefined
+            || !rpc
         ) {
             return
         }

@@ -1,32 +1,32 @@
-import Web3 from 'web3'
-import BigNumber from 'bignumber.js'
-import { action, makeAutoObservable } from 'mobx'
-import { Address, FullContractState } from 'everscale-inpage-provider'
 import { addABI, decodeLogs, keepNonDecodedLogs } from 'abi-decoder'
+import BigNumber from 'bignumber.js'
 import { mapEthBytesIntoTonCell } from 'eth-ton-abi-converter'
+import { type Address, type FullContractState } from 'everscale-inpage-provider'
+import { action, makeAutoObservable } from 'mobx'
+import Web3 from 'web3'
 
-import { TokensCacheService } from '@/stores/TokensCacheService'
-import { StakingDataStoreData, StakingDataStoreState } from '@/modules/Relayers/types'
-import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
-import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
-import { getStakingContract } from '@/modules/Staking/utils'
-import { error, throwException } from '@/utils'
-import {
-    EventVoteData,
-    RelayConfig,
-    StackingDetails,
-    UserDetails,
-} from '@/misc/types'
+import { Web3Url } from '@/config'
+import { staticRpc } from '@/hooks/useStaticRpc'
 import {
     EthAbi,
-    EventConfigDetails,
+    type EventConfigDetails,
     UserDataAbi,
 } from '@/misc'
-import { Web3Url } from '@/config'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
-import { TokenCache } from '@/types'
 import { ethereumEventConfigurationContract } from '@/misc/contracts'
+import {
+    type EventVoteData,
+    type RelayConfig,
+    type StackingDetails,
+    type UserDetails,
+} from '@/misc/types'
+import { STAKING_DATA_STORE_DEFAULT_DATA, STAKING_DATA_STORE_DEFAULT_STATE } from '@/modules/Relayers/constants'
+import { type StakingDataStoreData, type StakingDataStoreState } from '@/modules/Relayers/types'
+import { normalizeEthAddress, normalizeTonPubKey } from '@/modules/Relayers/utils'
+import { getStakingContract } from '@/modules/Staking/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { type TokensCacheService } from '@/stores/TokensCacheService'
+import { type TokenCache } from '@/types'
+import { error, throwException } from '@/utils'
 
 export class StakingDataStore {
 
@@ -34,7 +34,7 @@ export class StakingDataStore {
 
     protected data: StakingDataStoreData = STAKING_DATA_STORE_DEFAULT_DATA
 
-    protected stackingContract = getStakingContract()
+    protected stackingContract = getStakingContract(staticRpc)
 
     protected syncTimeoutId?: number
 
@@ -81,9 +81,10 @@ export class StakingDataStore {
 
     protected async getUserDetails(): Promise<UserDetails | undefined> {
         try {
+            const rpc = this.tonWallet.getProvider()
             const ownerAddress = this.tonWallet.account?.address
 
-            if (!ownerAddress) {
+            if (!ownerAddress || !rpc) {
                 throwException('Ton wallet must be connected')
             }
 
@@ -113,7 +114,7 @@ export class StakingDataStore {
         try {
             const eventConfigContract = ethereumEventConfigurationContract(
                 stackingDetails.bridge_event_config_eth_ton,
-                rpc,
+                staticRpc,
             )
             return eventConfigContract.methods.getDetails({
                 answerId: 0,
@@ -197,13 +198,13 @@ export class StakingDataStore {
         try {
             const eventConfigContract = ethereumEventConfigurationContract(
                 stackingDetails.bridge_event_config_eth_ton,
-                rpc,
+                staticRpc,
             )
             const eventAddress = await eventConfigContract.methods.deriveEventAddress({
                 eventVoteData,
                 answerId: 0,
             }).call()
-            const { state: eventState } = await rpc.getFullContractState({
+            const { state: eventState } = await staticRpc.getFullContractState({
                 address: eventAddress.eventContract,
             })
 
@@ -341,8 +342,7 @@ export class StakingDataStore {
     }
 
     public get isConnected(): boolean {
-        return this.tonWallet.isInitialized
-            && this.tokensCache.isReady
+        return this.tokensCache.isReady
             && this.tonWallet.isConnected
     }
 

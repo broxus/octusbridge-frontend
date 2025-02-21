@@ -1,7 +1,7 @@
-import * as React from 'react'
 import classNames from 'classnames'
 import Overflow from 'rc-overflow'
 import warning from 'rc-util/lib/warning'
+import * as React from 'react'
 
 import { useNavId } from '@/components/common/Nav/context/IdContext'
 import { NavContext, NavContextProvider } from '@/components/common/Nav/context/NavContext'
@@ -16,17 +16,16 @@ import useMemoCallback from '@/components/common/Nav/hooks/useMemoCallback'
 import { InlineSubNavList } from '@/components/common/Nav/Sub/InlineSubNavList'
 import { PopupTrigger } from '@/components/common/Nav/Sub/PopupTrigger'
 import { SubNavList } from '@/components/common/Nav/Sub/SubNavList'
+import {
+    type NavClickEventHandler,
+    type NavHoverEventHandler,
+    type NavInfo,
+    type NavTitleInfo,
+    type RenderIconType,
+} from '@/components/common/Nav/types'
 import { parseChildren } from '@/components/common/Nav/utils/nodeUtil'
 import { warnItemProp } from '@/components/common/Nav/utils/warnUtil'
-import type {
-    NavClickEventHandler,
-    NavHoverEventHandler,
-    NavInfo,
-    NavTitleInfo,
-    RenderIconType,
-} from '@/components/common/Nav/types'
 import { noop } from '@/utils'
-
 
 export interface SubNavProps {
     className?: string;
@@ -65,7 +64,6 @@ export interface SubNavProps {
     // >>>>>>>>>>>>>>>>>>>>> Next  Round <<<<<<<<<<<<<<<<<<<<<<<
     // onDestroy?: DestroyEventHandler;
 }
-
 
 function InternalSubNav({
     children,
@@ -350,7 +348,6 @@ export function Sub(props: SubNavProps): JSX.Element {
         </PathTrackerContext.Provider>
     )
 }
-
 
 if (process.env.NODE_ENV !== 'production') {
     Sub.displayName = 'Nav.Sub'

@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { Observer } from 'mobx-react-lite'
+import * as React from 'react'
 import { useIntl } from 'react-intl'
 
 import { Button } from '@/components/common/Button'
@@ -9,7 +9,6 @@ import { useEverWallet } from '@/stores/EverWalletService'
 import { formattedTokenAmount, sliceAddress } from '@/utils'
 
 import './index.scss'
-
 
 export function EverWallet(): JSX.Element | null {
     const intl = useIntl()
@@ -56,7 +55,11 @@ export function EverWallet(): JSX.Element | null {
                                 <div className="wallet__user-avatar">
                                     <Icon icon="everscale1BlockchainIcon" ratio={1.6} />
                                     <div className="wallet-icon">
-                                        <Icon icon="everWalletIcon" ratio={0.8} />
+                                        {wallet.providerId === 'SparXWallet' ? (
+                                            <Icon icon="sparxWalletIcon" ratio={0.8} />
+                                        ) : (
+                                            <Icon icon="everWalletIcon" ratio={0.8} />
+                                        )}
                                     </div>
                                 </div>
                                 <div className="wallet__info">

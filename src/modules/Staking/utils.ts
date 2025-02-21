@@ -1,15 +1,16 @@
-import {
-    CurrencyResponse, GraphRequest, GraphResponse, StakeholderKindApiResponse,
-    StakeholdersApiRequest, StakeholdersApiResponse, StakingMainApiResponse,
-    StakingUserApiRequest, StakingUserApiResponse, TransactionKindApiResponse,
-    TransactionsApiRequest, TransactionsApiResponse,
-} from '@/modules/Staking/types'
-import { StackingAbi, StackingContract } from '@/misc'
-import { DexIndexerApiBaseUrl, IndexerApiBaseUrl, StakingAccountAddress } from '@/config'
-import { handleApi } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
+import { type ProviderRpcClient } from 'everscale-inpage-provider'
 
-export function getStakingContract(): StackingContract {
+import { DexIndexerApiBaseUrl, IndexerApiBaseUrl, StakingAccountAddress } from '@/config'
+import { StackingAbi, type StackingContract } from '@/misc'
+import {
+    type CurrencyResponse, type GraphRequest, type GraphResponse, type StakeholderKindApiResponse,
+    type StakeholdersApiRequest, type StakeholdersApiResponse, type StakingMainApiResponse,
+    type StakingUserApiRequest, type StakingUserApiResponse, type TransactionKindApiResponse,
+    type TransactionsApiRequest, type TransactionsApiResponse,
+} from '@/modules/Staking/types'
+import { handleApi } from '@/utils'
+
+export function getStakingContract(rpc: ProviderRpcClient): StackingContract {
     return rpc.createContract(StackingAbi.Root, StakingAccountAddress)
 }
 

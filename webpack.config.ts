@@ -162,7 +162,7 @@ export default (_: any, options: any): WebpackConfig => {
                 use: isProduction ? 'babel-loader' : 'swc-loader',
             },
             {
-                test: /\.s[ac]ss$/i,
+                test: /\.s?[ac]ss$/i,
                 exclude: /\.module.(s[ac]ss)$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',

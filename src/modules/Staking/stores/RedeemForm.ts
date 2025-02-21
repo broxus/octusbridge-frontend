@@ -1,14 +1,13 @@
-import { action, makeAutoObservable } from 'mobx'
 import BigNumber from 'bignumber.js'
+import { action, makeAutoObservable } from 'mobx'
 
-import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
-import { getStakingContract } from '@/modules/Staking/utils'
-import { RedeemFormStoreData, RedeemFormStoreState } from '@/modules/Staking/types'
-import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
-import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
+import { REDEEM_FORM_STORE_DEFAULT_DATA, REDEEM_FORM_STORE_DEFAULT_STATE } from '@/modules/Staking/constants'
+import { type AccountDataStore } from '@/modules/Staking/stores/AccountData'
+import { type RedeemFormStoreData, type RedeemFormStoreState } from '@/modules/Staking/types'
+import { getStakingContract } from '@/modules/Staking/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { error, throwException } from '@/utils'
 
 export class RedeemFormStore {
 
@@ -30,6 +29,12 @@ export class RedeemFormStore {
     }
 
     public async submit(): Promise<void> {
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
+
         const subscriber = rpc.createSubscriber()
 
         this.setIsLoading(true)
@@ -54,7 +59,7 @@ export class RedeemFormStore {
             }
 
             const { tokenWalletBalance } = this.accountData
-            const stackingContract = getStakingContract()
+            const stackingContract = getStakingContract(rpc)
 
             const successStream = subscriber
                 .transactions(stackingContract.address)

@@ -1,13 +1,12 @@
-import { action, makeAutoObservable, runInAction } from 'mobx'
 import BigNumber from 'bignumber.js'
+import { action, makeAutoObservable, runInAction } from 'mobx'
 
-import { AccountDataStore } from '@/modules/Staking/stores/AccountData'
-import { ClaimFormState } from '@/modules/Staking/types'
-import { getStakingContract } from '@/modules/Staking/utils'
-import { error, throwException } from '@/utils'
 import { GasToStaking } from '@/config'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
+import { type AccountDataStore } from '@/modules/Staking/stores/AccountData'
+import { type ClaimFormState } from '@/modules/Staking/types'
+import { getStakingContract } from '@/modules/Staking/utils'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { error, throwException } from '@/utils'
 
 export class ClaimFormStore {
 
@@ -25,7 +24,9 @@ export class ClaimFormStore {
     }
 
     public async submit(): Promise<void> {
-        if (this.state.isLoading) {
+        const rpc = this.tonWallet.getProvider()
+
+        if (this.state.isLoading || !rpc) {
             return
         }
 
@@ -50,7 +51,7 @@ export class ClaimFormStore {
                 throwException('Ton wallet must be connected')
             }
 
-            const stackingContract = getStakingContract()
+            const stackingContract = getStakingContract(rpc)
             const { tokenWalletBalance } = this.accountData
 
             const successStream = subscriber

@@ -1,13 +1,12 @@
 import {
-    IReactionDisposer, makeAutoObservable, runInAction, toJS,
+    type IReactionDisposer, makeAutoObservable, runInAction, toJS,
 } from 'mobx'
 
 import { StakingAccountAddress } from '@/config'
-import { RelayersDataStoreData } from '@/modules/Relayers/types'
-import { RelayConfig, StackingAbi } from '@/misc'
+import { staticRpc } from '@/hooks/useStaticRpc'
+import { type RelayConfig, StackingAbi } from '@/misc'
+import { type RelayersDataStoreData } from '@/modules/Relayers/types'
 import { error } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-
 
 export class RelayersDataStore {
 
@@ -15,7 +14,7 @@ export class RelayersDataStore {
 
     protected data: RelayersDataStoreData = {}
 
-    protected stakingContract = rpc.createContract(
+    protected stakingContract = staticRpc.createContract(
         StackingAbi.Root,
         StakingAccountAddress,
     )

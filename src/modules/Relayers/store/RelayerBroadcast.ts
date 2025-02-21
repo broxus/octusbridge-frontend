@@ -1,22 +1,18 @@
 import BigNumber from 'bignumber.js'
 import { action, makeAutoObservable } from 'mobx'
 
-import { RELAYER_BROADCAST_STORE_DATA, RELAYER_BROADCAST_STORE_STATE } from '@/modules/Relayers/constants'
-import { ConfirmationStatus, RelayerBroadcastStoreData, RelayerBroadcastStoreState } from '@/modules/Relayers/types'
-import { StakingDataStore } from '@/modules/Relayers/store/StakingData'
-import { getStakingContract } from '@/modules/Staking/utils'
-import { error, throwException } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
 import { ethereumEventConfigurationContract } from '@/misc/contracts'
+import { RELAYER_BROADCAST_STORE_DATA, RELAYER_BROADCAST_STORE_STATE } from '@/modules/Relayers/constants'
+import { type StakingDataStore } from '@/modules/Relayers/store/StakingData'
+import { type ConfirmationStatus, type RelayerBroadcastStoreData, type RelayerBroadcastStoreState } from '@/modules/Relayers/types'
+import { type EverWalletService } from '@/stores/EverWalletService'
+import { error, throwException } from '@/utils'
 
 export class RelayerBroadcastStore {
 
     protected state: RelayerBroadcastStoreState = RELAYER_BROADCAST_STORE_STATE
 
     protected data: RelayerBroadcastStoreData = RELAYER_BROADCAST_STORE_DATA
-
-    protected stackingContract = getStakingContract()
 
     constructor(
         protected tonWallet: EverWalletService,
@@ -29,6 +25,12 @@ export class RelayerBroadcastStore {
 
     public async broadcast(): Promise<void> {
         this.setIsLoading(true)
+
+        const rpc = this.tonWallet.getProvider()
+
+        if (!rpc) {
+            return
+        }
 
         try {
             await this.stakingData.forceUpdate()

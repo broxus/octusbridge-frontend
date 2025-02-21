@@ -1,11 +1,10 @@
 import { Address } from 'everscale-inpage-provider'
 import { makeAutoObservable } from 'mobx'
 
-import { ConfigStoreData, ConfigStoreState } from '@/modules/Governance/types'
-import { ProposalAbi, ProposalConfig } from '@/misc'
+import { ProposalAbi, type ProposalConfig } from '@/misc'
+import { type ConfigStoreData, type ConfigStoreState } from '@/modules/Governance/types'
+import { type EverWalletService } from '@/stores/EverWalletService'
 import { error } from '@/utils'
-import rpc from '@/hooks/useRpcClient'
-import { EverWalletService } from '@/stores/EverWalletService'
 
 export class ProposalConfigStore {
 
@@ -22,7 +21,9 @@ export class ProposalConfigStore {
     }
 
     public async fetch(address: string): Promise<void> {
-        if (this.state.loading) {
+        const rpc = this.tonWallet.getProvider()
+
+        if (this.state.loading || !rpc) {
             return
         }
 
